@@ -1,0 +1,283 @@
+import { useState, useEffect } from "react";
+import { useTheme } from "../hooks/useTheme";
+import { useAuth } from "../hooks/useAuth";
+import { getHistory, clearHistory, getReadLater, removeReadLater,
+         getSaved, unsaveItem, saveItem } from "../lib/supabase";
+import FeedItem from "../components/FeedItem";
+import ContentViewer from "../components/ContentViewer";
+import { Button, EmptyState, Spinner } from "../components/UI";
+import { getOpenAIKey, setOpenAIKey, getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
+
+// ── Shared page shell ─────────────────────────────────────────
+function PageShell({ title, subtitle, action, children }) {
+  const { T } = useTheme();
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
+      <div style={{ padding: "14px 22px 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>{title}</div>
+          {subtitle && <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{subtitle}</div>}
+        </div>
+        {action}
+      </div>
+      <div style={{ flex: 1, overflowY: "auto" }}>{children}</div>
+    </div>
+  );
+}
+
+// ── Read Later page ───────────────────────────────────────────
+export function ReadLaterPage() {
+  const { T } = useTheme();
+  const { user }  = useAuth();
+  const [items, setItems]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [openItem, setOpenItem] = useState(null);
+
+  useEffect(() => {
+    if (!user) return;
+    getReadLater(user.id).then(setItems).catch(console.error).finally(() => setLoading(false));
+  }, [user]);
+
+  async function handleRemove(url) {
+    await removeReadLater(user.id, url);
+    setItems((prev) => prev.filter((s) => s.url !== url));
+  }
+
+  return (
+    <PageShell title="Read Later" subtitle={`${items.length} articles saved`}>
+      {loading && <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}><Spinner size={28} /></div>}
+      {!loading && items.length === 0 && (
+        <EmptyState icon="⏱" title="Nothing queued" subtitle="Press L while reading any article to save it here for later." />
+      )}
+      {items.map((item) => (
+        <FeedItem key={item.url} item={{ ...item, date: item.saved_at }}
+          onClick={() => setOpenItem(item)}
+          onDelete={() => handleRemove(item.url)}
+        />
+      ))}
+      {openItem && <ContentViewer item={openItem} onClose={() => setOpenItem(null)} />}
+    </PageShell>
+  );
+}
+
+// ── History page ──────────────────────────────────────────────
+export function HistoryPage() {
+  const { user }  = useAuth();
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [openItem, setOpenItem] = useState(null);
+
+  useEffect(() => {
+    if (!user) return;
+    getHistory(user.id).then(setHistory).catch(console.error).finally(() => setLoading(false));
+  }, [user]);
+
+  async function handleClear() {
+    if (!confirm("Clear all reading history?")) return;
+    const { clearHistory } = await import("../lib/supabase");
+    await clearHistory(user.id);
+    setHistory([]);
+  }
+
+  return (
+    <PageShell title="History" subtitle={`${history.length} items`}
+      action={history.length > 0 && <Button variant="ghost" size="sm" onClick={handleClear}>Clear all</Button>}
+    >
+      {loading && <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}><Spinner size={28} /></div>}
+      {!loading && history.length === 0 && <EmptyState icon="🕑" title="No history yet" subtitle="Articles and videos you open will appear here." />}
+      {history.map((item) => (
+        <FeedItem key={item.url} item={{ ...item, date: item.read_at }} onClick={() => setOpenItem(item)} />
+      ))}
+      {openItem && <ContentViewer item={openItem} onClose={() => setOpenItem(null)} />}
+    </PageShell>
+  );
+}
+
+// ── Settings page ─────────────────────────────────────────────
+export function SettingsPage() {
+  const { T, isDark, setIsDark } = useTheme();
+  const { user, signOut } = useAuth();
+  const [voices, setVoices] = useState([]);
+
+  useEffect(() => {
+    function load() { setVoices(window.speechSynthesis?.getVoices().filter((v) => v.lang.startsWith("en")) || []); }
+    load();
+    window.speechSynthesis?.addEventListener("voiceschanged", load);
+    return () => window.speechSynthesis?.removeEventListener("voiceschanged", load);
+  }, []);
+
+  const shortcuts = [
+    { key: "J / ↓",   action: "Next article" },
+    { key: "K / ↑",   action: "Previous article" },
+    { key: "O / Enter", action: "Open article" },
+    { key: "R",        action: "Toggle read/unread" },
+    { key: "L",        action: "Add to Read Later" },
+    { key: "S",        action: "Save article" },
+    { key: "A",        action: "Add feed / URL" },
+    { key: "Esc",      action: "Close reader" },
+  ];
+
+  return (
+    <PageShell title="Settings">
+      <div style={{ maxWidth: 520, padding: "24px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
+
+        {/* Account */}
+        <Card title="Account" T={T}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+            {user?.user_metadata?.avatar_url
+              ? <img src={user.user_metadata.avatar_url} alt="" style={{ width: 44, height: 44, borderRadius: "50%" }} />
+              : <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
+            }
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{user?.user_metadata?.full_name || user?.user_metadata?.user_name || "GitHub User"}</div>
+              <div style={{ fontSize: 12, color: T.textSecondary }}>{user?.email}</div>
+            </div>
+          </div>
+          <Button variant="secondary" size="sm" onClick={signOut}>Sign out</Button>
+        </Card>
+
+        {/* Appearance */}
+        <Card title="Appearance" T={T}>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[{ label: "☀️  Light", dark: false }, { label: "🌙  Dark", dark: true }].map(({ label, dark }) => (
+              <button key={label} onClick={() => setIsDark(dark)} style={{
+                flex: 1, padding: "10px 0",
+                border: `1.5px solid ${isDark === dark ? T.accent : T.border}`,
+                borderRadius: 10, background: isDark === dark ? T.accentSurface : T.surface,
+                color: isDark === dark ? T.accentText : T.textSecondary,
+                fontWeight: isDark === dark ? 600 : 400, fontSize: 13,
+                cursor: "pointer", fontFamily: "inherit",
+              }}>{label}</button>
+            ))}
+          </div>
+        </Card>
+
+        {/* Keyboard shortcuts */}
+        <Card title="Keyboard Shortcuts" T={T}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {shortcuts.map(({ key, action }) => (
+              <div key={key} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <kbd style={{
+                  background: T.surface2, border: `1px solid ${T.border}`,
+                  borderRadius: 6, padding: "2px 8px", fontSize: 11,
+                  fontFamily: "monospace", color: T.text, flexShrink: 0, minWidth: 80,
+                  textAlign: "center",
+                }}>{key}</kbd>
+                <span style={{ fontSize: 13, color: T.textSecondary }}>{action}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* API Keys */}
+        <Card title="API Keys" T={T}>
+          <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14, lineHeight: 1.6 }}>
+            Keys are stored in your browser only — never sent to any server other than the respective API.
+          </div>
+
+          <ApiKeyInput
+            label="OpenAI API Key"
+            placeholder="sk-..."
+            hint="Used for TTS (nova voice). Get at platform.openai.com"
+            getValue={getOpenAIKey}
+            setValue={setOpenAIKey}
+            T={T}
+          />
+
+          <div style={{ height: 12 }} />
+
+          <ApiKeyInput
+            label="Anthropic API Key"
+            placeholder="sk-ant-..."
+            hint="Used for AI summaries. Get at console.anthropic.com"
+            getValue={getAnthropicKey}
+            setValue={setAnthropicKey}
+            T={T}
+          />
+        </Card>
+
+        {/* TTS */}
+        <Card title="Text-to-Speech" T={T}>
+          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7, marginBottom: 8 }}>
+            With an OpenAI key set above, articles are read by <strong>tts-1-hd (nova)</strong> — a natural, high-quality voice. Without a key, your device's built-in voices are used.
+          </div>
+          <div style={{ fontSize: 12, color: T.textTertiary }}>
+            {voices.length > 0 ? `${voices.length} device English voices available.` : "Device voices load on first TTS use."}
+          </div>
+          <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 4 }}>
+            Best iPhone voice: <strong>Settings → Accessibility → Spoken Content → Voices → English → Premium</strong>
+          </div>
+        </Card>
+
+        {/* About */}
+        <Card title="About" T={T}>
+          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
+            Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
+          </div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.0.0</div>
+        </Card>
+      </div>
+    </PageShell>
+  );
+}
+
+function ApiKeyInput({ label, placeholder, hint, getValue, setValue, T }) {
+  const [value, setLocalValue] = useState(() => getValue());
+  const [saved, setSaved]      = useState(false);
+  const [show, setShow]        = useState(false);
+
+  function handleSave() {
+    setValue(value);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  const displayValue = show ? value : value ? value.slice(0, 8) + "•".repeat(Math.max(0, value.length - 8)) : "";
+
+  return (
+    <div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 6 }}>{label}</div>
+      <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ flex: 1, position: "relative" }}>
+          <input
+            type={show ? "text" : "password"}
+            value={value}
+            onChange={e => { setLocalValue(e.target.value); setSaved(false); }}
+            placeholder={placeholder}
+            style={{
+              width: "100%", boxSizing: "border-box",
+              background: T.surface, border: `1px solid ${T.border}`,
+              borderRadius: 9, padding: "8px 36px 8px 12px",
+              fontSize: 13, color: T.text, fontFamily: "monospace", outline: "none",
+            }}
+            onFocus={e => { e.target.style.borderColor = T.accent; }}
+            onBlur={e => { e.target.style.borderColor = T.border; }}
+            onKeyDown={e => { if (e.key === "Enter") handleSave(); }}
+          />
+          <button onClick={() => setShow(v => !v)} style={{
+            position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+            background: "none", border: "none", cursor: "pointer",
+            color: T.textTertiary, fontSize: 14, padding: 2,
+          }}>{show ? "🙈" : "👁"}</button>
+        </div>
+        <button onClick={handleSave} style={{
+          background: saved ? T.green?.bg || T.accentSurface : T.accent,
+          border: "none", borderRadius: 9, padding: "8px 14px",
+          cursor: "pointer", fontSize: 12, fontWeight: 700,
+          color: saved ? T.green?.text || T.accentText : "#fff", fontFamily: "inherit",
+          flexShrink: 0, transition: "all .2s",
+        }}>{saved ? "✓ Saved" : "Save"}</button>
+      </div>
+      <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 5 }}>{hint}</div>
+    </div>
+  );
+}
+
+function Card({ title, children, T }) {
+  return (
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: "16px 18px" }}>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, marginBottom: 14 }}>{title}</div>
+      {children}
+    </div>
+  );
+}

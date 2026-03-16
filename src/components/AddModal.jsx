@@ -1,0 +1,113 @@
+import { useState } from "react";
+import { useTheme } from "../hooks/useTheme";
+import { Input, Button } from "./UI";
+import { detectInputType } from "../lib/fetchers";
+
+const TYPE_INFO = {
+  rss:     { icon: "📡", label: "RSS Feed",      desc: "All articles from this feed will appear in your inbox" },
+  youtube: { icon: "▶️", label: "YouTube Video", desc: "Watch the video with an AI-generated summary" },
+  article: { icon: "📰", label: "Article",        desc: "Read this article in a clean, focused view" },
+};
+
+export default function AddModal({ onAdd, onClose }) {
+  const { T } = useTheme();
+  const [url, setUrl]           = useState("");
+  const [feedName, setFeedName] = useState("");
+  const [detected, setDetected] = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+
+  function handleUrlChange(val) {
+    setUrl(val); setError("");
+    try { new URL(val.trim()); setDetected(detectInputType(val.trim())); }
+    catch { setDetected(null); }
+  }
+
+  async function handleSubmit() {
+    if (!url.trim()) return;
+    setLoading(true); setError("");
+    try {
+      await onAdd({ url: url.trim(), type: detected || "article", name: feedName.trim() || null });
+      onClose();
+    } catch (err) {
+      setError(err.message || "Something went wrong. Check the URL and try again.");
+    } finally { setLoading(false); }
+  }
+
+  const info = detected ? TYPE_INFO[detected] : null;
+
+  return (
+    // Centered dialog overlay
+    <div style={{
+      position: "fixed", inset: 0, background: T.overlay, zIndex: 1000,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: "24px",
+    }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+
+      <div style={{
+        background: T.card,
+        borderRadius: 18,
+        padding: "28px 28px 24px",
+        width: "100%", maxWidth: 480,
+        boxShadow: "0 24px 80px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.1)",
+        animation: "fadeInScale .2s ease",
+        border: `1px solid ${T.border}`,
+      }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 22 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 9, background: T.accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, marginRight: 12 }}>+</div>
+          <div>
+            <h2 style={{ fontSize: 17, fontWeight: 700, color: T.text, margin: 0 }}>Add to Feedbox</h2>
+            <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>RSS feed, article URL, or YouTube link</div>
+          </div>
+          <button onClick={onClose} style={{
+            marginLeft: "auto", background: T.surface2, border: "none",
+            borderRadius: 8, width: 30, height: 30, cursor: "pointer",
+            color: T.textSecondary, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>×</button>
+        </div>
+
+        {/* URL input */}
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, display: "block", marginBottom: 7, textTransform: "uppercase", letterSpacing: ".06em" }}>URL</label>
+          <Input value={url} onChange={handleUrlChange}
+            placeholder="https://example.com/feed or article URL…"
+            autoFocus onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }} />
+        </div>
+
+        {/* Detected type pill */}
+        {info && (
+          <div style={{
+            display: "flex", gap: 10, padding: "10px 14px", borderRadius: 10,
+            background: T.accentSurface, border: `1px solid ${T.border}`, marginBottom: 14, alignItems: "center",
+          }}>
+            <span style={{ fontSize: 20 }}>{info.icon}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.accentText }}>{info.label}</div>
+              <div style={{ fontSize: 12, color: T.textSecondary }}>{info.desc}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Optional nickname for RSS */}
+        {detected === "rss" && (
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, display: "block", marginBottom: 7, textTransform: "uppercase", letterSpacing: ".06em" }}>Nickname (optional)</label>
+            <Input value={feedName} onChange={setFeedName} placeholder="e.g. Hacker News, The Verge…" />
+          </div>
+        )}
+
+        {error && (
+          <div style={{ fontSize: 13, color: T.danger, padding: "9px 13px", background: `${T.danger}15`, borderRadius: 9, marginBottom: 14, lineHeight: 1.5 }}>{error}</div>
+        )}
+
+        <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+          <Button variant="secondary" onClick={onClose} style={{ flex: 1, justifyContent: "center" }}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={!url.trim() || loading} style={{ flex: 2, justifyContent: "center" }}>
+            {loading ? "Loading…" : detected === "rss" ? "Subscribe to Feed" : "Open"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
