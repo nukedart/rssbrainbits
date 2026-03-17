@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Feedbox brand icon: dark charcoal background, teal RSS-inspired mark -->
+  <rect width="32" height="32" rx="7" fill="#2F373B"/>
+  <!-- RSS-style radiating arcs -->
+  <circle cx="7" cy="25" r="2.5" fill="#65D5C4"/>
+  <path d="M7 19 a10 10 0 0 1 10 10" fill="none" stroke="#65D5C4" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M7 13 a16 16 0 0 1 16 16" fill="none" stroke="#65D5C4" stroke-width="2.2" stroke-linecap="round" opacity="0.6"/>
+</svg>
