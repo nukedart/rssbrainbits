@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { Input, Button } from "./UI";
-import { detectInputType } from "../lib/fetchers";
+import { detectInputType, discoverFeed } from "../lib/fetchers";
 
 const TYPE_INFO = {
   rss:     { icon: "📡", label: "RSS Feed",      desc: "All articles from this feed will appear in your inbox" },
@@ -14,20 +14,36 @@ export default function AddModal({ onAdd, onClose }) {
   const [url, setUrl]           = useState("");
   const [feedName, setFeedName] = useState("");
   const [detected, setDetected] = useState(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const [loading, setLoading]       = useState(false);
+  const [discovering, setDiscovering] = useState(false);
+  const [discovered, setDiscovered]   = useState(null); // { feedUrl, title }
+  const [error, setError]             = useState("");
 
   function handleUrlChange(val) {
-    setUrl(val); setError("");
-    try { new URL(val.trim()); setDetected(detectInputType(val.trim())); }
-    catch { setDetected(null); }
+    setUrl(val); setError(""); setDiscovered(null);
+    try {
+      new URL(val.trim());
+      const type = detectInputType(val.trim());
+      setDetected(type);
+      // Auto-discover RSS if it looks like a plain website
+      if (type === "article") {
+        setDiscovering(true);
+        discoverFeed(val.trim()).then(result => {
+          setDiscovered(result);
+          if (result) setDetected("rss");
+        }).catch(() => {}).finally(() => setDiscovering(false));
+      }
+    } catch { setDetected(null); }
   }
 
   async function handleSubmit() {
     if (!url.trim()) return;
     setLoading(true); setError("");
     try {
-      await onAdd({ url: url.trim(), type: detected || "article", name: feedName.trim() || null });
+      // Use the discovered feed URL if auto-discovery found one
+      const finalUrl  = discovered?.feedUrl || url.trim();
+      const finalName = feedName.trim() || discovered?.title || null;
+      await onAdd({ url: finalUrl, type: detected || "article", name: finalName });
       onClose();
     } catch (err) {
       setError(err.message || "Something went wrong. Check the URL and try again.");
@@ -35,6 +51,7 @@ export default function AddModal({ onAdd, onClose }) {
   }
 
   const info = detected ? TYPE_INFO[detected] : null;
+  const showDiscovery = discovering || discovered;
 
   return (
     // Centered dialog overlay
@@ -48,7 +65,7 @@ export default function AddModal({ onAdd, onClose }) {
         background: T.card,
         borderRadius: 18,
         padding: "28px 28px 24px",
-        width: "100%", maxWidth: 480,
+        width: "100%", maxWidth: "min(480px, 95vw)",
         boxShadow: "0 24px 80px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.1)",
         animation: "fadeInScale .2s ease",
         border: `1px solid ${T.border}`,

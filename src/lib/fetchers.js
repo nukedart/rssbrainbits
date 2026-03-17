@@ -4,7 +4,8 @@ import { getAnthropicKey } from "./apiKeys.js";
 
 const PROXY_PRIMARY  = "https://corsproxy.io/?";
 const PROXY_FALLBACK = "https://api.allorigins.win/get?url=";
-const TIMEOUT_MS     = 6000; // 6s timeout
+const PROXY_THIRD    = "https://api.codetabs.com/v1/proxy?quest=";
+const TIMEOUT_MS     = 10000; // 10s — some sites are slow
 
 async function fetchWithTimeout(url, ms = TIMEOUT_MS) {
   const controller = new AbortController();
@@ -20,28 +21,34 @@ async function fetchWithTimeout(url, ms = TIMEOUT_MS) {
 }
 
 async function proxiedFetch(targetUrl) {
-  // Race BOTH proxies simultaneously from the start — fastest wins.
-  // No delay on fallback. Typical improvement: 4-6s → 1-2s.
+  // Race ALL THREE proxies — fastest non-empty response wins.
   const enc = encodeURIComponent(targetUrl);
 
   const p1 = fetchWithTimeout(PROXY_PRIMARY + enc, TIMEOUT_MS)
     .then(async res => {
-      if (!res.ok) throw new Error(`proxy1 ${res.status}`);
+      if (!res.ok) throw new Error(`corsproxy ${res.status}`);
       const text = await res.text();
-      if (!text?.trim()) throw new Error("proxy1 empty response");
+      if (!text?.trim() || text.includes("Access denied") || text.includes("blocked")) throw new Error("corsproxy blocked");
       return text;
     });
 
   const p2 = fetchWithTimeout(PROXY_FALLBACK + enc, TIMEOUT_MS)
     .then(async res => {
-      if (!res.ok) throw new Error(`proxy2 ${res.status}`);
+      if (!res.ok) throw new Error(`allorigins ${res.status}`);
       const json = await res.json();
-      if (!json?.contents?.trim()) throw new Error("proxy2 empty");
+      if (!json?.contents?.trim()) throw new Error("allorigins empty");
       return json.contents;
     });
 
-  // Use whichever proxy wins; if both fail, throw a user-friendly error
-  const result = await Promise.any([p1, p2]).catch(() => {
+  const p3 = fetchWithTimeout(PROXY_THIRD + enc, TIMEOUT_MS)
+    .then(async res => {
+      if (!res.ok) throw new Error(`codetabs ${res.status}`);
+      const text = await res.text();
+      if (!text?.trim()) throw new Error("codetabs empty");
+      return text;
+    });
+
+  const result = await Promise.any([p1, p2, p3]).catch(() => {
     throw new Error("Could not reach this feed. The site may block external requests or the URL may have changed.");
   });
   return result;
@@ -195,19 +202,36 @@ export async function fetchArticleContent(articleUrl) {
   // ── Find the best article container ──────────────────────────
   // Scored selector list — higher = better match
   const SELECTORS = [
-    { sel: "article",                           score: 10 },
-    { sel: "[itemprop='articleBody']",          score: 10 },
-    { sel: ".article-body",                     score:  9 },
-    { sel: ".post-content",                     score:  9 },
-    { sel: ".entry-content",                    score:  9 },
-    { sel: ".story-body",                       score:  9 },
-    { sel: ".content-body",                     score:  8 },
-    { sel: ".article-content",                  score:  8 },
-    { sel: "#article-body",                     score:  8 },
-    { sel: '[role="main"]',                     score:  7 },
-    { sel: "main",                              score:  6 },
-    { sel: ".content",                          score:  4 },
-    { sel: "body",                              score:  1 },
+    // Standard semantic
+    { sel: "article",                              score: 10 },
+    { sel: "[itemprop='articleBody']",             score: 10 },
+    // 9to5Mac, 9to5Google, Electrek (WordPress VIP)
+    { sel: ".article-content",                     score: 10 },
+    { sel: ".post-content",                        score:  9 },
+    { sel: ".entry-content",                       score:  9 },
+    { sel: ".single-article-content",             score:  9 },
+    // The Verge, Vox Media
+    { sel: ".duet--article--article-body-component", score: 10 },
+    { sel: "[data-component='article-body']",      score: 10 },
+    // Ars Technica
+    { sel: ".article-content.post-page",           score: 10 },
+    { sel: "#article-guts",                        score:  9 },
+    // General news
+    { sel: ".article-body",                        score:  9 },
+    { sel: ".story-body",                          score:  9 },
+    { sel: ".story-content",                       score:  9 },
+    { sel: ".content-body",                        score:  8 },
+    { sel: ".body-content",                        score:  8 },
+    { sel: "#article-body",                        score:  8 },
+    { sel: ".post-body",                           score:  8 },
+    { sel: ".article__body",                       score:  8 },
+    // Substack, Ghost, Medium
+    { sel: ".available-content",                   score:  9 },
+    { sel: ".post",                                score:  7 },
+    { sel: '[role="main"]',                        score:  7 },
+    { sel: "main",                                 score:  6 },
+    { sel: ".content",                             score:  4 },
+    { sel: "body",                                 score:  1 },
   ];
 
   let articleEl = null;
@@ -223,6 +247,13 @@ export async function fetchArticleContent(articleUrl) {
     ".sidebar",".related",".comments",".social",".share",".newsletter",
     ".subscription","[class*='popup']","[class*='banner']",
     "figure.wp-block-embed","iframe",
+    // 9to5Mac / WordPress VIP specific
+    "[class*='sharedaddy']","[class*='jp-relatedposts']",
+    "[class*='wpcnt']","[id*='respond']","[class*='post-nav']",
+    "[class*='author-info']","[class*='tags-links']",
+    // Paywall / subscription prompts
+    "[class*='paywall']","[class*='subscribe']","[class*='membership']",
+    "[class*='piano-']","[class*='tp-']",
   ];
   NOISE.forEach((sel) => {
     try { articleEl?.querySelectorAll(sel).forEach((el) => el.remove()); } catch {}
@@ -276,6 +307,58 @@ export function detectInputType(url) {
   if (parseYouTubeUrl(url).isYouTube) return "youtube";
   if (isRSSUrl(url)) return "rss";
   return "article";
+}
+
+
+// ── RSS Auto-discovery ────────────────────────────────────────
+// Given any website URL, fetches the page and looks for:
+//   <link rel="alternate" type="application/rss+xml" href="...">
+//   <link rel="alternate" type="application/atom+xml" href="...">
+// Returns { feedUrl, title } or null if none found.
+export async function discoverFeed(pageUrl) {
+  try {
+    const html = await proxiedFetch(pageUrl);
+    const parser = new DOMParser();
+    const doc    = parser.parseFromString(html, "text/html");
+
+    const FEED_TYPES = [
+      "application/rss+xml",
+      "application/atom+xml",
+      "application/feed+json",
+      "application/rdf+xml",
+    ];
+
+    for (const type of FEED_TYPES) {
+      const link = doc.querySelector(`link[rel="alternate"][type="${type}"]`);
+      if (link) {
+        const href  = link.getAttribute("href");
+        const title = link.getAttribute("title") || doc.title || new URL(pageUrl).hostname;
+        if (!href) continue;
+        // Resolve relative URLs against the page origin
+        const feedUrl = href.startsWith("http") ? href : new URL(href, pageUrl).href;
+        return { feedUrl, title };
+      }
+    }
+
+    // Fallback: try common feed paths if no <link> tag found
+    const base = new URL(pageUrl).origin;
+    const COMMON_PATHS = ["/feed", "/feed.xml", "/rss", "/rss.xml", "/atom.xml", "/feeds/posts/default"];
+    for (const path of COMMON_PATHS) {
+      try {
+        const candidate = base + path;
+        const text = await proxiedFetch(candidate);
+        if (text.includes("<rss") || text.includes("<feed") || text.includes("<rdf:RDF")) {
+          const titleMatch = text.match(/<title[^>]*>([^<]+)<\/title>/i);
+          const title = titleMatch?.[1]?.trim() || new URL(pageUrl).hostname;
+          return { feedUrl: candidate, title };
+        }
+      } catch { continue; }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 // ── AI Summarization ──────────────────────────────────────────

@@ -1,20 +1,23 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
-import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem,
+import { getFeeds, addFeed, deleteFeed, getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder, addToHistory, saveItem,
          addReadLater, getReadUrls, markRead, markUnread, matchesSmartFeed } from "../lib/supabase";
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl } from "../lib/fetchers";
 import { invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import AddModal from "../components/AddModal";
+import FolderModal from "../components/FolderModal";
 import { Button, EmptyState, Spinner } from "../components/UI";
+import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
 
-export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount }) {
+export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount, folders = [], onAddFolder, onEditFolder, onMoveFeedToFolder }) {
   const { T } = useTheme();
   const { user } = useAuth();
+  const { isMobile, isTablet } = useBreakpoint();
 
   const [feeds, setFeeds]               = useState([]);
   const [allItems, setAllItems]         = useState([]);
@@ -32,8 +35,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [searchResult, setSearchResult]   = useState(null);
   const [feedErrors, setFeedErrors]         = useState({});   // feedId -> error message
   const [feedLoading, setFeedLoading]       = useState({});   // feedId -> bool
-  const [lastRefresh, setLastRefresh]       = useState(null); // Date of last refresh
+  const [lastRefresh, setLastRefresh]       = useState(null);
+  const [newArticleCount, setNewArticleCount] = useState(0);
+  const prevItemUrlsRef = useRef(new Set());
   const [showOPML, setShowOPML]           = useState(false);
+  const [editingFolder, setEditingFolder]   = useState(null);
+  const [dragFeedId, setDragFeedId]         = useState(null);
   const listRef = useRef(null);
 
   useEffect(() => {
@@ -56,6 +63,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       function mergeAndSort(newItems) {
         newItems.forEach(item => { if (item.url) itemMap.set(item.url, item); });
         const sorted = [...itemMap.values()].sort((a, b) => new Date(b.date) - new Date(a.date));
+        // Count genuinely new articles (not seen in previous fetch)
+        if (prevItemUrlsRef.current.size > 0) {
+          const newCount = sorted.filter(i => !prevItemUrlsRef.current.has(i.url)).length;
+          if (newCount > 0) setNewArticleCount(n => n + newCount);
+        }
         setAllItems(sorted);
         setLoadingItems(false);
       }
@@ -87,9 +99,23 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
       setLoadingItems(false);
       setLastRefresh(new Date());
+      // Store all known URLs for new-article detection on next refresh
+      setAllItems(prev => { prevItemUrlsRef.current = new Set(prev.map(i => i.url)); return prev; });
     };
 
     fetchAll();
+
+    // ── Auto-refresh every 30 minutes ────────────────────────
+    const REFRESH_INTERVAL = 30 * 60 * 1000;
+    const timer = setInterval(() => {
+      // Silent background refresh — compare new items against known URLs
+      const prevUrls = prevItemUrlsRef.current;
+      fetchAll(false).then(() => {
+        // newArticleCount updated inside fetchAll via setAllItems
+      });
+    }, REFRESH_INTERVAL);
+
+    return () => clearInterval(timer);
   }, [feeds]);
 
   // ── Filtered + sorted item list ───────────────────────────────
@@ -102,8 +128,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     if (filterMode === "unread") {
       items = items.filter((i) => !readUrls.has(i.url));
     }
-    if (filterMode === "smart" && smartFeedDef) {
-      items = items.filter((i) => matchesSmartFeed(i, smartFeedDef.keywords));
+    if (filterMode === "smart") {
+      if (!smartFeedDef) return []; // still loading — return empty
+      items = items.filter((i) => matchesSmartFeed(i, smartFeedDef));
     }
     if (filterMode !== "unread" && hideRead) items = items.filter((i) => !readUrls.has(i.url));
     return items;
@@ -266,7 +293,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
 
       {/* ── Source list (only on inbox/today mode) ── */}
-      {filterMode !== "today" && filterMode !== "unread" && filterMode !== "smart" && (
+      {filterMode !== "today" && filterMode !== "unread" && filterMode !== "smart" && !isMobile && !isTablet && (
         <div style={{ width: 234, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: T.bg, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div style={{ padding: "13px 12px 10px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
             <span style={{ flex: 1, fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em" }}>Sources</span>
@@ -287,13 +314,57 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             <SourceItem label="All Items" icon="📥" count={allItems.filter(i => !readUrls.has(i.url)).length}
               active={activeSource === "all"} onClick={() => setActiveSource("all")} />
 
-            {feeds.length > 0 && (
-              <div style={{ padding: "12px 8px 4px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".1em", color: T.textTertiary }}>Feeds</div>
+            {/* ── Folders ── */}
+            {folders.length > 0 && folders.map(folder => {
+              const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
+              const folderUnread = folderFeeds.reduce((n, f) => n + allItems.filter(i => i.feedId === f.id && !readUrls.has(i.url)).length, 0);
+              const dotColor = { gray:"#8A9099", teal:"#4BBFAF", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" }[folder.color] || "#8A9099";
+              const [open, setOpen] = useState(true);
+              return (
+                <div key={folder.id}>
+                  <div style={{ display:"flex", alignItems:"center", padding:"7px 8px 3px", cursor:"pointer" }}
+                    onClick={() => setOpen(v => !v)}>
+                    <span style={{ fontSize:9, color:dotColor, marginRight:5, display:"inline-block", transform: open?"rotate(90deg)":"rotate(0deg)", transition:"transform .15s" }}>▶</span>
+                    <span style={{ width:7, height:7, borderRadius:"50%", background:dotColor, flexShrink:0, marginRight:6 }} />
+                    <span style={{ flex:1, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:T.textSecondary }}>{folder.name}</span>
+                    <span style={{ fontSize:9, color:T.textTertiary, marginRight:4 }}>{folderUnread > 0 ? folderUnread : ""}</span>
+                    <span onClick={e => { e.stopPropagation(); onEditFolder?.(folder); }} style={{ fontSize:12, color:T.textTertiary, cursor:"pointer", opacity:0, padding:"0 2px" }}
+                      onMouseEnter={e => e.currentTarget.style.opacity="1"}
+                      onMouseLeave={e => e.currentTarget.style.opacity="0"}
+                    >···</span>
+                  </div>
+                  {open && folderFeeds.map(feed => {
+                    const feedUnread = allItems.filter(i => i.feedId === feed.id && !readUrls.has(i.url)).length;
+                    return (
+                      <div key={feed.id} style={{ paddingLeft: 12 }}>
+                        <SourceItem
+                          label={feed.name || new URL(feed.url).hostname}
+                          feedUrl={feed.url}
+                          count={feedUnread}
+                          active={activeSource === feed.id}
+                          onClick={() => setActiveSource(feed.id)}
+                          onDelete={() => handleDeleteFeed(feed.id)}
+                          onRetry={() => handleRetryFeed(feed)}
+                          isLoading={feedLoading[feed.id]}
+                          error={feedErrors[feed.id]}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+
+            {/* ── Ungrouped feeds ── */}
+            {feeds.filter(f => !f.folder_id).length > 0 && (
+              <div style={{ padding: "8px 8px 3px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".1em", color: T.textTertiary }}>
+                {folders.length > 0 ? "Ungrouped" : "Feeds"}
+              </div>
             )}
 
             {loadingFeeds
               ? <div style={{ padding: "14px 8px" }}><Spinner size={14} /></div>
-              : feeds.map((feed) => {
+              : feeds.filter(f => !f.folder_id).map((feed) => {
                   const feedUnread = allItems.filter(i => i.feedId === feed.id && !readUrls.has(i.url)).length;
                   return (
                     <SourceItem key={feed.id}
@@ -310,6 +381,20 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                   );
                 })
             }
+
+            {/* ── New folder button ── */}
+            <button onClick={() => onAddFolder?.()} style={{
+              display: "flex", alignItems: "center", gap: 6,
+              width: "100%", background: "none", border: "none", cursor: "pointer",
+              padding: "8px 10px 4px", fontSize: 12, color: T.textTertiary,
+              fontFamily: "inherit", textAlign: "left", marginTop: 4,
+              borderTop: `1px solid ${T.border}`,
+            }}
+              onMouseEnter={e => e.currentTarget.style.color=T.accent}
+              onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+            >
+              <span style={{ fontSize: 14, lineHeight: 1 }}>+</span> New folder
+            </button>
           </div>
         </div>
       )}
@@ -318,7 +403,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg }}>
 
         {/* Toolbar */}
-        <div style={{ padding: "0 14px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: 52 }}>
+        <div style={{ padding: "0 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 6 : 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 52 }}>
 
           {/* Title + unread badge */}
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
@@ -364,7 +449,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
               color: hideRead ? T.accentText : T.textSecondary, fontFamily: "inherit",
               display: "flex", alignItems: "center",
             }}>
-              {hideRead ? "Unread only" : "All"}
+              {isMobile ? (hideRead ? "·" : "·") : (hideRead ? "Unread only" : "All")}
             </button>
           )}
 
@@ -396,7 +481,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             </div>
           </div>
 
-          <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: 32, paddingLeft: 12, paddingRight: 12 }}>+ Add</Button>
+          <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: 32, paddingLeft: isMobile ? 10 : 12, paddingRight: isMobile ? 10 : 12, flexShrink: 0 }}>{isMobile ? "+" : "+ Add"}</Button>
         </div>
 
         {/* Article list / grid */}
@@ -424,10 +509,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
           )}
 
           {viewMode === "card" ? (
-            <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: cardSize === "lg" ? 18 : 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: cardSize === "lg" ? 18 : 14 }}>
               {baseItems.map((item, i) => (
                 <div key={item.url + i} style={{ animation: `fadeInUp .2s ease both`, animationDelay: `${Math.min(i * 30, 300)}ms` }}>
-                <FeedItem item={item} viewMode="card" cardSize={cardSize}
+                <FeedItem item={item} viewMode="card" cardSize={isMobile ? "md" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
                   onClick={() => openByIdx(i)}
@@ -468,6 +553,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       {openItem && <ContentViewer item={openItem} onClose={() => { setOpenItem(null); setOpenIdx(-1); }} />}
       {searchResult && <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />}
       {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
+      {editingFolder && <FolderModal folder={editingFolder === "new" ? null : editingFolder} onSave={async (data) => { editingFolder === "new" ? await onAddFolder?.(data) : await onEditFolder?.(editingFolder, data); setEditingFolder(null); }} onDelete={async (id) => { /* handled in App */ setEditingFolder(null); }} onClose={() => setEditingFolder(null)} />}
     </div>
   );
 }

@@ -163,3 +163,29 @@ img { max-width: 100%; }
 
 /* Smooth transitions on interactive elements */
 button { transition: opacity .12s, background .12s, color .12s, border-color .12s, box-shadow .12s; }
+
+/* ── Responsive / Mobile ─────────────────────────────────────── */
+
+/* Smooth scroll on mobile */
+@media (max-width: 767px) {
+  html { -webkit-overflow-scrolling: touch; }
+
+  /* Prevent double-tap zoom on buttons */
+  button, a { touch-action: manipulation; }
+
+  /* Larger touch targets */
+  button { min-height: 36px; }
+
+  /* Bottom nav safe area */
+  .bottom-nav-spacer { height: env(safe-area-inset-bottom, 0px); }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Sources panel hidden — handled via JS breakpoint */
+}
+
+/* Ensure modals/overlays don't overflow on small screens */
+@media (max-width: 520px) {
+  /* Modals take full width on very small screens */
+}

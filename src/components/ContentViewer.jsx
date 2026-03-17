@@ -10,13 +10,16 @@ import TagsInput from "./TagsInput";
 import {
   saveItem, addHighlight, getHighlights, updateHighlightNote, deleteHighlight,
   getArticleTags, addArticleTag, deleteArticleTag, getAllTags,
+  getReadingProgress, setReadingProgress,
 } from "../lib/supabase";
 import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
+import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 
 export default function ContentViewer({ item, onClose }) {
   const { T } = useTheme();
   const { user } = useAuth();
+  const { isMobile } = useBreakpoint();
 
   // Article
   const [content, setContent]     = useState(null);
@@ -41,7 +44,10 @@ export default function ContentViewer({ item, onClose }) {
   // Reader preferences
   const [readerPrefs, setReaderPrefsState] = useState(() => getReaderPrefs());
   const [showReaderControls, setShowReaderControls] = useState(false);
-  const [exportFeedback, setExportFeedback] = useState(null);
+  const [exportFeedback, setExportFeedback]   = useState(null);
+  const [readProgress, setReadProgress]         = useState(0);
+  const [shareFeedback, setShareFeedback]       = useState(null);
+  const scrollContainerRef = useRef(null);
 
   const articleRef = useRef(null);
   const yt = item?.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
@@ -77,6 +83,17 @@ export default function ContentViewer({ item, onClose }) {
   useEffect(() => {
     if (!user || !item?.url) return;
     getHighlights(user.id, item.url).then(setHighlights).catch(console.error);
+    // Load saved reading progress
+    getReadingProgress(user.id, item.url).then(prog => {
+      setReadProgress(prog);
+      // Restore scroll position after content loads
+      if (prog > 0) {
+        setTimeout(() => {
+          const el = scrollContainerRef.current;
+          if (el) el.scrollTop = (prog / 100) * (el.scrollHeight - el.clientHeight);
+        }, 400);
+      }
+    }).catch(console.error);
     getArticleTags(user.id, item.url).then((rows) => setTags(rows.map((r) => r.tag))).catch(console.error);
     getAllTags(user.id).then(setAllTags).catch(console.error);
   }, [user, item?.url]);
@@ -126,6 +143,41 @@ export default function ContentViewer({ item, onClose }) {
     setReaderPrefsState({ ...updated });
   }
 
+  // ── Scroll progress tracking ─────────────────────────────
+  function handleScroll(e) {
+    const el = e.currentTarget;
+    const max = el.scrollHeight - el.clientHeight;
+    if (max <= 0) return;
+    const pct = Math.round((el.scrollTop / max) * 100);
+    setReadProgress(pct);
+    // Debounce Supabase write — only save every 5% change
+    if (Math.abs(pct - (handleScroll._last || 0)) >= 5) {
+      handleScroll._last = pct;
+      setReadingProgress(user.id, item.url, pct).catch(console.error);
+    }
+  }
+
+  // ── Share ─────────────────────────────────────────────────
+  async function handleShare() {
+    const title = content?.title || item.title || "Article";
+    const url   = item.url;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch { /* user cancelled — no feedback needed */ }
+    }
+    // Fallback: copy URL to clipboard
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareFeedback("✓ Link copied");
+      setTimeout(() => setShareFeedback(null), 2000);
+    } catch {
+      setShareFeedback("Copy failed");
+      setTimeout(() => setShareFeedback(null), 2000);
+    }
+  }
+
   async function handleExportHighlights(asFile = false) {
     const md = highlightsToMarkdown(highlights, content?.title || item.title, item.url);
     if (!md) return;
@@ -155,14 +207,25 @@ export default function ContentViewer({ item, onClose }) {
     <div style={{
       position: "fixed", inset: 0, background: T.bg, zIndex: 500,
       borderLeft: `1px solid ${T.border}`,
-      display: "flex", flexDirection: "column", overflowY: "auto",
+      display: "flex", flexDirection: "column", overflow: "hidden",
     }}>
+
+      {/* ── Reading progress bar — always visible track ── */}
+      <div style={{ height: 3, background: T.surface2, flexShrink: 0, position: "relative" }}>
+        <div style={{
+          position: "absolute", inset: 0, right: `${100 - readProgress}%`,
+          background: `linear-gradient(90deg, ${T.accent}, ${T.teal || T.accent})`,
+          transition: "right .25s ease",
+          borderRadius: "0 2px 2px 0",
+          opacity: readProgress > 0 ? 1 : 0,
+        }} />
+      </div>
 
       {/* ── Top bar ── */}
       <div style={{
         position: "sticky", top: 0, zIndex: 10,
         background: T.card, borderBottom: `1px solid ${T.border}`,
-        padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
+        padding: isMobile ? "10px 12px" : "12px 16px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 10,
         flexShrink: 0,
       }}>
         <button onClick={onClose} style={{
@@ -223,9 +286,18 @@ export default function ContentViewer({ item, onClose }) {
               border: "none", borderRadius: 8, padding: "6px 10px",
               cursor: "pointer", fontSize: 12, fontWeight: 700,
               color: showReaderControls ? T.accentText : T.textSecondary,
-              fontFamily: "inherit",
+              fontFamily: "inherit", flexShrink: 0,
             }}>Aa</button>
           )}
+          <button onClick={handleShare} title={shareFeedback || "Share article"} style={{
+            background: shareFeedback ? T.accentSurface : T.surface2,
+            border: "none", borderRadius: 8, padding: "6px 10px",
+            cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0,
+            color: shareFeedback ? T.accentText : T.textSecondary,
+            fontFamily: "inherit", transition: "all .15s",
+          }}>
+            {shareFeedback || "Share"}
+          </button>
           <Button variant="secondary" size="sm" onClick={() => window.open(item.url, "_blank")}>↗</Button>
           <Button size="sm" onClick={handleSave} disabled={saved}>{saved ? "✓" : "Save"}</Button>
         </div>
@@ -241,60 +313,58 @@ export default function ContentViewer({ item, onClose }) {
         </div>
       )}
 
-      {/* ── Reader controls panel ── */}
-      {showReaderControls && (
-        <div style={{ background: T.surface, borderBottom: `1px solid ${T.border}`, padding: "14px 20px", flexShrink: 0 }}>
-          <div style={{ maxWidth: 680, margin: "0 auto", display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
-            {/* Font size */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 160 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", whiteSpace: "nowrap" }}>Size</span>
-              <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
-                onChange={e => updatePref("fontSize", parseInt(e.target.value))}
-                style={{ flex: 1, accentColor: T.accent }} />
-              <span style={{ fontSize: 11, color: T.textSecondary, minWidth: 28, textAlign: "right" }}>{readerPrefs.fontSize}px</span>
-            </div>
-            {/* Line width */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 4 }}>Width</span>
-              {["narrow","medium","wide"].map(w => (
-                <button key={w} onClick={() => updatePref("lineWidth", w)} style={{
-                  padding: "4px 10px", borderRadius: 7, border: `1px solid ${readerPrefs.lineWidth === w ? T.accent : T.border}`,
-                  background: readerPrefs.lineWidth === w ? T.accentSurface : "transparent",
-                  color: readerPrefs.lineWidth === w ? T.accentText : T.textSecondary,
-                  cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit",
-                  textTransform: "capitalize",
-                }}>{w}</button>
-              ))}
-            </div>
-            {/* Font family */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 4 }}>Font</span>
-              {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
-                <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} style={{
-                  padding: "4px 10px", borderRadius: 7, border: `1px solid ${readerPrefs.fontFamily === f.id ? T.accent : T.border}`,
-                  background: readerPrefs.fontFamily === f.id ? T.accentSurface : "transparent",
-                  color: readerPrefs.fontFamily === f.id ? T.accentText : T.textSecondary,
-                  cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit",
-                }}>{f.label}</button>
-              ))}
-            </div>
-            {/* Bionic reading */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Bionic</span>
-              <button onClick={() => updatePref("bionic", !readerPrefs.bionic)} style={{
-                width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer",
-                background: readerPrefs.bionic ? T.accent : T.border,
-                position: "relative", transition: "background .2s", flexShrink: 0,
-              }}>
-                <span style={{ position: "absolute", top: 2, left: readerPrefs.bionic ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} />
-              </button>
+
+
+      {/* ── Main content — scroll container ── */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        style={{ flex: 1, overflowY: "auto", position: "relative" }}
+      >
+        {/* Aa floating reader controls — sticky inside scroll area */}
+        {showReaderControls && (
+          <div style={{
+            position: "sticky", top: 12, zIndex: 20,
+            maxWidth: "var(--reader-line-width)", margin: "12px auto 0",
+            padding: "0 20px",
+          }}>
+            <div style={{
+              background: T.card, border: `1px solid ${T.border}`,
+              borderRadius: 14, padding: "12px 16px",
+              boxShadow: "0 4px 20px rgba(0,0,0,.12)",
+              display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "1 1 140px" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Size</span>
+                <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
+                  onChange={e => updatePref("fontSize", parseInt(e.target.value))}
+                  style={{ flex: 1, accentColor: T.accent }} />
+                <span style={{ fontSize: 11, color: T.textSecondary, minWidth: 26 }}>{readerPrefs.fontSize}px</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 2 }}>Width</span>
+                {["narrow","medium","wide"].map(w => (
+                  <button key={w} onClick={() => updatePref("lineWidth", w)} style={{ padding: "3px 8px", borderRadius: 6, border: `1px solid ${readerPrefs.lineWidth===w?T.accent:T.border}`, background: readerPrefs.lineWidth===w?T.accentSurface:"transparent", color: readerPrefs.lineWidth===w?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit", textTransform: "capitalize" }}>{w}</button>
+                ))}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 2 }}>Font</span>
+                {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
+                  <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} style={{ padding: "3px 8px", borderRadius: 6, border: `1px solid ${readerPrefs.fontFamily===f.id?T.accent:T.border}`, background: readerPrefs.fontFamily===f.id?T.accentSurface:"transparent", color: readerPrefs.fontFamily===f.id?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit" }}>{f.label}</button>
+                ))}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Bionic</span>
+                <button onClick={() => updatePref("bionic", !readerPrefs.bionic)} style={{ width: 32, height: 18, borderRadius: 9, border: "none", cursor: "pointer", background: readerPrefs.bionic?T.accent:T.border, position: "relative", transition: "background .2s", flexShrink: 0 }}>
+                  <span style={{ position: "absolute", top: 2, left: readerPrefs.bionic?16:2, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .18s", boxShadow: "0 1px 3px rgba(0,0,0,.15)" }} />
+                </button>
+              </div>
+              <button onClick={() => setShowReaderControls(false)} style={{ marginLeft: "auto", background: T.surface2, border: "none", borderRadius: 7, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.textSecondary, fontSize: 16, fontFamily: "inherit" }}>×</button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Main content ── */}
-      <div style={{ position: "relative", maxWidth: 680, margin: "0 auto", padding: "28px 20px 80px", width: "100%" }}>
+        <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "20px 16px 100px" : "28px 20px 100px", width: "100%" }}>
 
         {/* YouTube */}
         {yt.isYouTube && (
@@ -364,7 +434,29 @@ export default function ContentViewer({ item, onClose }) {
         {!yt.isYouTube && content && (
           <SelectionToolbar containerRef={articleRef} onHighlight={handleHighlight} />
         )}
-      </div>
+        </div>{/* closes inner maxWidth wrapper */}
+
+        {/* ── Scroll to top FAB ── */}
+        {readProgress > 8 && (
+          <button
+            onClick={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+            title="Back to top"
+            style={{
+              position: "sticky", bottom: isMobile ? 74 : 20,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              marginLeft: "auto", marginRight: 16, marginBottom: 16,
+              width: 38, height: 38, borderRadius: "50%",
+              background: T.card, border: `1px solid ${T.border}`,
+              boxShadow: "0 2px 12px rgba(0,0,0,.15)",
+              cursor: "pointer", fontSize: 18, color: T.textSecondary,
+              transition: "all .15s", zIndex: 20,
+              animation: "fadeInScale .2s ease",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background=T.accentSurface; e.currentTarget.style.color=T.accent; }}
+            onMouseLeave={e => { e.currentTarget.style.background=T.card; e.currentTarget.style.color=T.textSecondary; }}
+          >↑</button>
+        )}
+      </div>{/* closes scrollContainerRef */}
 
       {/* ── Note panel ── */}
       {activeNote && (

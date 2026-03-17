@@ -235,22 +235,25 @@ export async function getSmartFeeds(userId) {
     .from("smart_feeds").select("*").eq("user_id", userId)
     .order("created_at", { ascending: true });
   if (error) throw error;
-  return data;
+  // Normalise: feed_ids may not exist on older DBs — default to null
+  return (data || []).map(sf => ({ ...sf, feed_ids: sf.feed_ids ?? null }));
 }
 
-export async function addSmartFeed(userId, { name, keywords, color }) {
+export async function addSmartFeed(userId, { name, keywords, color, feed_ids = null }) {
+  // Only include feed_ids in payload if column exists (safe for older DBs)
+  const payload = { user_id: userId, name, keywords, color };
+  if (feed_ids?.length) payload.feed_ids = feed_ids;
   const { data, error } = await supabase
-    .from("smart_feeds")
-    .insert({ user_id: userId, name, keywords, color })
-    .select().single();
+    .from("smart_feeds").insert(payload).select().single();
   if (error) throw error;
   return data;
 }
 
-export async function updateSmartFeed(id, { name, keywords, color }) {
+export async function updateSmartFeed(id, { name, keywords, color, feed_ids = null }) {
+  const payload = { name, keywords, color };
+  payload.feed_ids = feed_ids?.length ? feed_ids : null;
   const { data, error } = await supabase
-    .from("smart_feeds").update({ name, keywords, color }).eq("id", id)
-    .select().single();
+    .from("smart_feeds").update(payload).eq("id", id).select().single();
   if (error) throw error;
   return data;
 }
@@ -260,12 +263,32 @@ export async function deleteSmartFeed(id) {
   if (error) throw error;
 }
 
-// Match articles against smart feed keywords (client-side)
-// Returns true if any keyword matches title, description, or source
-export function matchesSmartFeed(item, keywords) {
+// Match articles against a smart feed definition (client-side).
+// Accepts either the full smartFeedDef object { keywords, feed_ids }
+// or a plain keywords array for backwards compatibility.
+export function matchesSmartFeed(item, defOrKeywords) {
+  if (!defOrKeywords) return false;
+
+  // Normalise — accept both a plain array and a feed def object
+  const keywords = Array.isArray(defOrKeywords)
+    ? defOrKeywords
+    : defOrKeywords.keywords;
+
+  const feedIds = Array.isArray(defOrKeywords)
+    ? null
+    : defOrKeywords.feed_ids;
+
+  if (!keywords?.length) return false;
+
+  // If scoped to specific feeds, skip articles from other feeds
+  if (feedIds?.length && item.feedId && !feedIds.includes(item.feedId)) {
+    return false;
+  }
+
   const haystack = [item.title, item.description, item.source, item.author]
     .filter(Boolean).join(" ").toLowerCase();
-  return keywords.some(kw => haystack.includes(kw.toLowerCase().trim()));
+
+  return keywords.some(kw => kw && haystack.includes(kw.toLowerCase().trim()));
 }
 
 // ── Notes & Highlights (cross-article) ───────────────────────
@@ -284,4 +307,54 @@ export async function getAllHighlightsWithNotes(userId) {
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
+}
+
+// ── Reading progress ──────────────────────────────────────────
+export async function getReadingProgress(userId, articleUrl) {
+  const { data } = await supabase
+    .from("reading_progress").select("progress")
+    .eq("user_id", userId).eq("article_url", articleUrl).single();
+  return data?.progress ?? 0;
+}
+
+export async function setReadingProgress(userId, articleUrl, progress) {
+  await supabase.from("reading_progress").upsert(
+    { user_id: userId, article_url: articleUrl, progress, updated_at: new Date().toISOString() },
+    { onConflict: "user_id,article_url" }
+  );
+}
+
+// ── Feed folders ──────────────────────────────────────────────
+export async function getFolders(userId) {
+  const { data, error } = await supabase
+    .from("feed_folders").select("*").eq("user_id", userId)
+    .order("position").order("name");
+  if (error) throw error;
+  return data || [];
+}
+
+export async function addFolder(userId, { name, color = "gray" }) {
+  const { data, error } = await supabase
+    .from("feed_folders").insert({ user_id: userId, name, color }).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateFolder(id, updates) {
+  const { data, error } = await supabase
+    .from("feed_folders").update(updates).eq("id", id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteFolder(id) {
+  // Feeds in the folder become ungrouped (folder_id SET NULL via cascade)
+  const { error } = await supabase.from("feed_folders").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function setFeedFolder(feedId, folderId) {
+  const { error } = await supabase
+    .from("feeds").update({ folder_id: folderId }).eq("id", feedId);
+  if (error) throw error;
 }

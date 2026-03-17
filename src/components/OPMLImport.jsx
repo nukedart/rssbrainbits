@@ -126,7 +126,7 @@ export default function OPMLImport({ onImport, onClose }) {
     >
       <div style={{
         background: T.card, borderRadius: 18,
-        padding: "28px 28px 24px", width: "100%", maxWidth: 520,
+        padding: "28px 28px 24px", width: "100%", maxWidth: "min(520px, 95vw)",
         boxShadow: "0 24px 80px rgba(0,0,0,.22)",
         border: `1px solid ${T.border}`,
         animation: "fadeInScale .2s ease",

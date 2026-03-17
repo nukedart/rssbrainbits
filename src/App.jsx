@@ -8,22 +8,39 @@ import NotesPage from "./components/NotesPage";
 import SmartFeedModal from "./components/SmartFeedModal";
 import Sidebar from "./components/Sidebar";
 import { Spinner } from "./components/UI";
-import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed } from "./lib/supabase";
+import BottomNav from "./components/BottomNav";
+import { useBreakpoint } from "./hooks/useBreakpoint.js";
+import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
+         getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder,
+         getFeeds } from "./lib/supabase";
+import FolderModal from "./components/FolderModal";
 
 function AppShell() {
   const { user } = useAuth();
   const { T }    = useTheme();
+  const { isMobile } = useBreakpoint();
 
   // ── ALL state at the top — no hooks after conditional returns ──
   const [page, setPage]             = useState("inbox");
   const [unreadCount, setUnreadCount] = useState(0);
   const [smartFeeds, setSmartFeeds]   = useState([]);
-  const [editingSF, setEditingSF]     = useState(null); // null | "new" | {feed}
+  const [editingSF, setEditingSF]     = useState(null);
+  const [folders, setFolders]         = useState([]);
+  const [editingFolder, setEditingFolder] = useState(null); // null | "new" | {folder}
+  const [feeds, setFeeds]             = useState([]); // for SmartFeedModal feed picker
 
   // Load smart feeds once user is known
   useEffect(() => {
     if (!user) return;
-    getSmartFeeds(user.id).then(setSmartFeeds).catch(console.error);
+    getSmartFeeds(user.id)
+      .then(setSmartFeeds)
+      .catch(err => { console.error("getSmartFeeds:", err); setSmartFeeds([]); });
+    getFolders(user.id)
+      .then(setFolders)
+      .catch(err => { console.error("getFolders:", err); setFolders([]); });
+    getFeeds(user.id)
+      .then(setFeeds)
+      .catch(err => { console.error("getFeeds:", err); setFeeds([]); });
   }, [user]);
 
   // ── Smart feed handlers ────────────────────────────────────
@@ -45,6 +62,24 @@ function AppShell() {
     setEditingSF(null);
   }
 
+  // ── Folder handlers ───────────────────────────────────────
+  async function handleSaveFolder({ name, color }) {
+    if (editingFolder && editingFolder !== "new") {
+      const updated = await updateFolder(editingFolder.id, { name, color });
+      setFolders(prev => prev.map(f => f.id === updated.id ? updated : f));
+    } else {
+      const created = await addFolder(user.id, { name, color });
+      setFolders(prev => [...prev, created]);
+    }
+    setEditingFolder(null);
+  }
+
+  async function handleDeleteFolder(id) {
+    await deleteFolder(id);
+    setFolders(prev => prev.filter(f => f.id !== id));
+    setEditingFolder(null);
+  }
+
   // ── Early returns AFTER all hooks ─────────────────────────
   if (user === undefined) {
     return (
@@ -61,17 +96,22 @@ function AppShell() {
     if (page.startsWith("smart:")) {
       const sfId  = page.replace("smart:", "");
       const sfDef = smartFeeds.find(sf => sf.id === sfId);
-      return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} />;
+      // Guard: if smartFeeds hasn't loaded yet, sfDef may be undefined —
+      // fall back to inbox while it loads rather than passing undefined
+      if (!sfDef) {
+        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
+      }
+      return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
     }
     switch (page) {
-      case "inbox":     return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} />;
-      case "unread":    return <InboxPage filterMode="unread" onUnreadCount={setUnreadCount} />;
-      case "today":     return <InboxPage filterMode="today"  onUnreadCount={setUnreadCount} />;
+      case "inbox":     return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
+      case "unread":    return <InboxPage filterMode="unread" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
+      case "today":     return <InboxPage filterMode="today"  onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
       case "readlater": return <ReadLaterPage />;
       case "history":   return <HistoryPage />;
       case "notes":     return <NotesPage />;
       case "settings":  return <SettingsPage />;
-      default:          return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} />;
+      default:          return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
     }
   }
 
@@ -89,16 +129,33 @@ function AppShell() {
         smartFeeds={smartFeeds}
         onAddSmartFeed={() => setEditingSF("new")}
         onEditSmartFeed={(sf) => setEditingSF(sf)}
+        folders={folders}
+        feeds={feeds}
+        onAddFolder={() => setEditingFolder("new")}
+        onEditFolder={(f) => setEditingFolder(f)}
+        onMoveFeedToFolder={setFeedFolder}
       />
-      <div style={{ flex: 1, display: "flex", minWidth: 0, overflow: "hidden" }}>
-        {renderPage()}
+      <div style={{ flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column" }}>
+        <div style={{ flex: 1, overflow: "hidden", paddingBottom: isMobile ? 62 : 0, display: "flex", flexDirection: "column" }}>
+          {renderPage()}
+        </div>
+        {isMobile && <BottomNav active={page} onNavigate={setPage} unreadCount={unreadCount} />}
       </div>
       {editingSF && (
         <SmartFeedModal
           feed={editingSF === "new" ? null : editingSF}
+          feeds={feeds}
           onSave={handleSaveSmartFeed}
           onDelete={handleDeleteSmartFeed}
           onClose={() => setEditingSF(null)}
+        />
+      )}
+      {editingFolder && (
+        <FolderModal
+          folder={editingFolder === "new" ? null : editingFolder}
+          onSave={handleSaveFolder}
+          onDelete={handleDeleteFolder}
+          onClose={() => setEditingFolder(null)}
         />
       )}
     </div>

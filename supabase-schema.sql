@@ -159,3 +159,34 @@ CREATE POLICY "own smart_feeds select" ON smart_feeds FOR SELECT USING (auth.uid
 CREATE POLICY "own smart_feeds insert" ON smart_feeds FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "own smart_feeds update" ON smart_feeds FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "own smart_feeds delete" ON smart_feeds FOR DELETE USING (auth.uid() = user_id);
+
+-- ── Reading progress ──────────────────────────────────────────
+-- Stores per-article scroll progress (0-100%) per user
+CREATE TABLE IF NOT EXISTS reading_progress (
+  user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  article_url TEXT NOT NULL,
+  progress    INTEGER NOT NULL DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+  updated_at  TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, article_url)
+);
+ALTER TABLE reading_progress ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own progress" ON reading_progress
+  FOR ALL USING (auth.uid() = user_id);
+
+-- ── Feed folders ──────────────────────────────────────────────
+-- Add folder_id to feeds (nullable — feeds without a folder are ungrouped)
+ALTER TABLE feeds ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES feed_folders(id) ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS feed_folders (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name       TEXT NOT NULL,
+  color      TEXT DEFAULT 'gray',
+  position   INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE feed_folders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own folders" ON feed_folders FOR ALL USING (auth.uid() = user_id);
+
+-- Add feed_ids to smart_feeds for scoped matching (null = all feeds)
+ALTER TABLE smart_feeds ADD COLUMN IF NOT EXISTS feed_ids TEXT[] DEFAULT NULL;

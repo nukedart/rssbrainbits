@@ -11,7 +11,7 @@ const COLORS = [
   { id: "green",  bg: "#ECFDF5", text: "#166534", dot: "#22C55E" },
 ];
 
-export default function SmartFeedModal({ feed = null, onSave, onDelete, onClose }) {
+export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDelete, onClose }) {
   const { T } = useTheme();
   const isEdit = !!feed;
 
@@ -19,6 +19,8 @@ export default function SmartFeedModal({ feed = null, onSave, onDelete, onClose 
   const [kwInput,  setKwInput]  = useState("");
   const [keywords, setKeywords] = useState(feed?.keywords || []);
   const [color,    setColor]    = useState(feed?.color   || "teal");
+  const [feedIds,  setFeedIds]  = useState(feed?.feed_ids || null); // null = all feeds
+  const [showFeedPicker, setShowFeedPicker] = useState(false);
   const [error,    setError]    = useState("");
 
   function addKeyword() {
@@ -36,7 +38,7 @@ export default function SmartFeedModal({ feed = null, onSave, onDelete, onClose 
   function handleSave() {
     if (!name.trim())       { setError("Give this bucket a name."); return; }
     if (!keywords.length)   { setError("Add at least one keyword."); return; }
-    onSave({ name: name.trim(), keywords, color });
+    onSave({ name: name.trim(), keywords, color, feed_ids: feedIds?.length ? feedIds : null });
   }
 
   const selectedColor = COLORS.find(c => c.id === color) || COLORS[0];
@@ -48,7 +50,7 @@ export default function SmartFeedModal({ feed = null, onSave, onDelete, onClose 
     }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{
         background: T.card, borderRadius: 18, padding: "26px 26px 22px",
-        width: "100%", maxWidth: 460,
+        width: "100%", maxWidth: "min(460px, 95vw)",
         border: `1px solid ${T.border}`,
         boxShadow: "0 24px 80px rgba(0,0,0,.22)",
         animation: "fadeInScale .18s ease",
@@ -119,6 +121,43 @@ export default function SmartFeedModal({ feed = null, onSave, onDelete, onClose 
 
         {/* Color picker */}
         <div style={{ marginBottom: 20 }}>
+          {/* ── Feed scope picker ── */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", flex: 1 }}>Search scope</label>
+              <button onClick={() => { setFeedIds(null); setShowFeedPicker(false); }} style={{ fontSize: 11, fontWeight: 600, color: !feedIds ? T.accentText : T.textTertiary, background: !feedIds ? T.accentSurface : "transparent", border: `1px solid ${!feedIds ? T.accent : T.border}`, borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontFamily: "inherit", marginRight: 5 }}>All feeds</button>
+              <button onClick={() => setShowFeedPicker(v => !v)} style={{ fontSize: 11, fontWeight: 600, color: feedIds ? T.accentText : T.textSecondary, background: feedIds ? T.accentSurface : T.surface2, border: `1px solid ${feedIds ? T.accent : T.border}`, borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontFamily: "inherit" }}>
+                {feedIds ? `${feedIds.length} feed${feedIds.length !== 1 ? "s" : ""}` : "Pick feeds"}
+              </button>
+            </div>
+            {showFeedPicker && feeds.length > 0 && (
+              <div style={{ background: T.surface2, borderRadius: 10, border: `1px solid ${T.border}`, maxHeight: 160, overflowY: "auto", padding: "6px 0" }}>
+                {feeds.filter(f => f.type === "rss").map(f => {
+                  const checked = feedIds?.includes(f.id) || false;
+                  return (
+                    <label key={f.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 12px", cursor: "pointer" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                    >
+                      <input type="checkbox" checked={checked} onChange={() => {
+                        setFeedIds(prev => {
+                          const cur = prev || [];
+                          return checked ? cur.filter(id => id !== f.id) : [...cur, f.id];
+                        });
+                      }} style={{ accentColor: T.accent, flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name || f.url}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+            {feedIds && feedIds.length > 0 && (
+              <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 5 }}>
+                Only searches: {feeds.filter(f => feedIds.includes(f.id)).map(f => f.name || f.url).join(", ")}
+              </div>
+            )}
+          </div>
+
           <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", display: "block", marginBottom: 8 }}>Color</label>
           <div style={{ display: "flex", gap: 8 }}>
             {COLORS.map(c => (
