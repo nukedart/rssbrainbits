@@ -2,14 +2,17 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem,
-         addReadLater, getReadUrls, markRead, markUnread } from "../lib/supabase";
+         addReadLater, getReadUrls, markRead, markUnread, matchesSmartFeed } from "../lib/supabase";
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl } from "../lib/fetchers";
+import { invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import AddModal from "../components/AddModal";
 import { Button, EmptyState, Spinner } from "../components/UI";
+import SearchBar from "../components/SearchBar";
+import OPMLImport from "../components/OPMLImport";
 
-export default function InboxPage({ filterMode = "all" }) {
+export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount }) {
   const { T } = useTheme();
   const { user } = useAuth();
 
@@ -22,9 +25,15 @@ export default function InboxPage({ filterMode = "all" }) {
   const [openItem, setOpenItem]         = useState(null);
   const [openIdx, setOpenIdx]           = useState(-1);
   const [viewMode, setViewMode]         = useState(() => localStorage.getItem("fb-viewmode") || "list");
+  const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
   const [hideRead, setHideRead]         = useState(false);
   const [toast, setToast]               = useState(null);
+  const [searchResult, setSearchResult]   = useState(null);
+  const [feedErrors, setFeedErrors]         = useState({});   // feedId -> error message
+  const [feedLoading, setFeedLoading]       = useState({});   // feedId -> bool
+  const [lastRefresh, setLastRefresh]       = useState(null); // Date of last refresh
+  const [showOPML, setShowOPML]           = useState(false);
   const listRef = useRef(null);
 
   useEffect(() => {
@@ -35,20 +44,52 @@ export default function InboxPage({ filterMode = "all" }) {
 
   useEffect(() => {
     const rssFeeds = feeds.filter((f) => f.type === "rss");
-    if (!rssFeeds.length) { setAllItems([]); return; }
-    setLoadingItems(true);
-    Promise.allSettled(
-      rssFeeds.map((feed) =>
-        fetchRSSFeed(feed.url).then((data) =>
-          data.items.map((item) => ({ ...item, feedId: feed.id, source: feed.name || data.title, type: "rss" }))
-        )
-      )
-    ).then((results) => {
-      const items = results
-        .filter((r) => r.status === "fulfilled").flatMap((r) => r.value)
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-      setAllItems(items);
-    }).finally(() => setLoadingItems(false));
+    if (!rssFeeds.length) { setAllItems([]); setLoadingItems(false); return; }
+
+    setFeedErrors({});
+
+    // Fetch all feeds — each resolves independently, items merge as they arrive.
+    // fetchRSSFeed handles cache internally (returns cached data instantly when fresh).
+    const fetchAll = async (forceRefresh = false) => {
+      const itemMap = new Map();
+
+      function mergeAndSort(newItems) {
+        newItems.forEach(item => { if (item.url) itemMap.set(item.url, item); });
+        const sorted = [...itemMap.values()].sort((a, b) => new Date(b.date) - new Date(a.date));
+        setAllItems(sorted);
+        setLoadingItems(false);
+      }
+
+      setFeedLoading(Object.fromEntries(rssFeeds.map(f => [f.id, true])));
+      setLoadingItems(true);
+
+      await Promise.allSettled(
+        rssFeeds.map(async (feed) => {
+          try {
+            // fetchRSSFeed returns { title, items } — from cache or network
+            const data = await fetchRSSFeed(feed.url, { forceRefresh });
+            if (!data?.items?.length) throw new Error("No items in feed");
+            const items = data.items.map((item) => ({
+              ...item,
+              feedId: feed.id,
+              source: feed.name || data.title,
+              type:   "rss",
+            }));
+            mergeAndSort(items);
+            setFeedErrors(prev => { const n = { ...prev }; delete n[feed.id]; return n; });
+          } catch (err) {
+            setFeedErrors(prev => ({ ...prev, [feed.id]: err.message || "Failed to load" }));
+          } finally {
+            setFeedLoading(prev => ({ ...prev, [feed.id]: false }));
+          }
+        })
+      );
+
+      setLoadingItems(false);
+      setLastRefresh(new Date());
+    };
+
+    fetchAll();
   }, [feeds]);
 
   // ── Filtered + sorted item list ───────────────────────────────
@@ -58,7 +99,13 @@ export default function InboxPage({ filterMode = "all" }) {
       const yesterday = Date.now() - 86400000;
       items = items.filter((i) => i.date && new Date(i.date) > yesterday);
     }
-    if (hideRead) items = items.filter((i) => !readUrls.has(i.url));
+    if (filterMode === "unread") {
+      items = items.filter((i) => !readUrls.has(i.url));
+    }
+    if (filterMode === "smart" && smartFeedDef) {
+      items = items.filter((i) => matchesSmartFeed(i, smartFeedDef.keywords));
+    }
+    if (filterMode !== "unread" && hideRead) items = items.filter((i) => !readUrls.has(i.url));
     return items;
   })();
 
@@ -134,6 +181,41 @@ export default function InboxPage({ filterMode = "all" }) {
     }
   }, [user]);
 
+  // Force-refresh all feeds, bypassing cache
+  function handleRefreshAll() {
+    invalidateAllFeeds();
+    // Re-trigger feed effect by bumping a counter
+    setFeeds(prev => [...prev]);
+  }
+
+  async function handleOPMLImport(feed) {
+    // Reuse the existing handleAdd logic for each feed
+    const feedData = await fetchRSSFeed(feed.url);
+    const record   = await addFeed(user.id, { url: feed.url, type: "rss", name: feed.name || feedData.title });
+    setFeeds((prev) => [...prev, record]);
+  }
+
+  async function handleRetryFeed(feed) {
+    setFeedErrors(prev => { const n = {...prev}; delete n[feed.id]; return n; });
+    setFeedLoading(prev => ({ ...prev, [feed.id]: true }));
+    try {
+      const { invalidateCachedFeed } = await import("../lib/feedCache");
+      invalidateCachedFeed(feed.url);
+      const data = await fetchRSSFeed(feed.url, { forceRefresh: true });
+      const items = data.items.map(item => ({
+        ...item, feedId: feed.id, source: feed.name || data.title, type: "rss",
+      }));
+      setAllItems(prev => {
+        const filtered = prev.filter(i => i.feedId !== feed.id);
+        return [...filtered, ...items].sort((a,b) => new Date(b.date)-new Date(a.date));
+      });
+    } catch (err) {
+      setFeedErrors(prev => ({ ...prev, [feed.id]: err.message || "Failed to load" }));
+    } finally {
+      setFeedLoading(prev => ({ ...prev, [feed.id]: false }));
+    }
+  }
+
   async function handleDeleteFeed(feedId) {
     await deleteFeed(feedId);
     setFeeds((prev) => prev.filter((f) => f.id !== feedId));
@@ -167,20 +249,33 @@ export default function InboxPage({ filterMode = "all" }) {
 
   function toggleViewMode(mode) { setViewMode(mode); localStorage.setItem("fb-viewmode", mode); }
 
-  const activeFeedName = filterMode === "today" ? "Today"
+  const activeFeedName = filterMode === "today"  ? "Today"
+    : filterMode === "unread" ? "Unread"
+    : filterMode === "smart"  ? (smartFeedDef?.name || "Smart Feed")
     : activeSource === "all" ? "All Items"
     : feeds.find((f) => f.id === activeSource)?.name || "Feed";
 
-  const unreadCount = baseItems.filter((i) => !readUrls.has(i.url)).length;
+  const unreadCount = allItems.filter((i) => !readUrls.has(i.url)).length;
+
+  // Report total unread count to parent (for sidebar badge)
+  useEffect(() => {
+    onUnreadCount?.(unreadCount);
+  }, [unreadCount]);
 
   return (
     <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
 
       {/* ── Source list (only on inbox/today mode) ── */}
-      {filterMode !== "today" && (
+      {filterMode !== "today" && filterMode !== "unread" && filterMode !== "smart" && (
         <div style={{ width: 234, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: T.bg, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div style={{ padding: "13px 12px 10px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
             <span style={{ flex: 1, fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em" }}>Sources</span>
+            <button onClick={() => setShowOPML(true)} title="Import OPML" style={{
+              width: 22, height: 22, borderRadius: 6, background: T.surface2,
+              border: `1px solid ${T.border}`, color: T.textSecondary, fontSize: 11,
+              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+              fontWeight: 700, fontFamily: "inherit",
+            }}>↑</button>
             <button onClick={() => setShowAdd(true)} style={{
               width: 22, height: 22, borderRadius: 6, background: T.accent,
               border: "none", color: "#fff", fontSize: 15, cursor: "pointer",
@@ -208,6 +303,9 @@ export default function InboxPage({ filterMode = "all" }) {
                       active={activeSource === feed.id}
                       onClick={() => setActiveSource(feed.id)}
                       onDelete={() => handleDeleteFeed(feed.id)}
+                      onRetry={() => handleRetryFeed(feed)}
+                      isLoading={feedLoading[feed.id]}
+                      error={feedErrors[feed.id]}
                     />
                   );
                 })
@@ -220,51 +318,96 @@ export default function InboxPage({ filterMode = "all" }) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg }}>
 
         {/* Toolbar */}
-        <div style={{ padding: "11px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 17, fontWeight: 700, color: T.text, letterSpacing: "-.01em", display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ padding: "0 14px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: 52 }}>
+
+          {/* Title + unread badge */}
+          <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: T.text, letterSpacing: "-.01em", whiteSpace: "nowrap" }}>
               {activeFeedName}
-              {unreadCount > 0 && (
-                <span style={{ fontSize: 11, fontWeight: 600, background: T.accent, color: "#fff", padding: "1px 7px", borderRadius: 10 }}>
-                  {unreadCount} unread
-                </span>
-              )}
             </div>
-            {!loadingItems && <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{baseItems.length} articles</div>}
+            {unreadCount > 0 && (
+              <span style={{ fontSize: 10, fontWeight: 700, background: T.accent, color: "#fff", padding: "1px 6px", borderRadius: 10, flexShrink: 0 }}>
+                {unreadCount}
+              </span>
+            )}
+            {/* Error badge */}
+            {Object.keys(feedErrors).length > 0 && (
+              <span title={`${Object.keys(feedErrors).length} feed(s) failed to load`} style={{ fontSize: 10, fontWeight: 700, background: T.danger, color: "#fff", padding: "1px 6px", borderRadius: 10, cursor: "default", flexShrink: 0 }}>
+                {Object.keys(feedErrors).length} error{Object.keys(feedErrors).length > 1 ? "s" : ""}
+              </span>
+            )}
           </div>
+
+          {/* Search — fills remaining space */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <SearchBar onSelectResult={(item) => setSearchResult(item)} onClose={() => {}} />
+          </div>
+
+          {/* Refresh button */}
+          <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} style={{
+            background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7,
+            width: 28, height: 32, cursor: "pointer", flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: T.textSecondary, fontSize: 14, transition: "all .15s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = T.accent; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.textSecondary; e.currentTarget.style.borderColor = T.border; }}
+          >↺</button>
 
           {/* Hide read toggle */}
-          <button onClick={() => setHideRead(v => !v)} title="Hide read articles" style={{
-            background: hideRead ? T.accentSurface : T.surface2,
-            border: `1px solid ${hideRead ? T.accent : T.border}`,
-            borderRadius: 7, padding: "5px 10px", cursor: "pointer",
-            fontSize: 11, fontWeight: 600,
-            color: hideRead ? T.accentText : T.textSecondary,
-            fontFamily: "inherit",
-          }}>
-            {hideRead ? "Showing unread" : "All articles"}
-          </button>
+          {filterMode !== "unread" && (
+            <button onClick={() => setHideRead(v => !v)} title="Toggle read articles" style={{
+              background: hideRead ? T.accentSurface : T.surface2,
+              border: `1px solid ${hideRead ? T.accent : T.border}`,
+              borderRadius: 8, padding: "0 10px", height: 32, cursor: "pointer",
+              fontSize: 11, fontWeight: 600, flexShrink: 0,
+              color: hideRead ? T.accentText : T.textSecondary, fontFamily: "inherit",
+              display: "flex", alignItems: "center",
+            }}>
+              {hideRead ? "Unread only" : "All"}
+            </button>
+          )}
 
-          {/* View toggle */}
-          <div style={{ display: "flex", gap: 2, background: T.surface2, borderRadius: 8, padding: 3 }}>
-            {[{ mode: "list", icon: "≡" }, { mode: "card", icon: "⊞" }].map(({ mode, icon }) => (
-              <button key={mode} onClick={() => toggleViewMode(mode)} style={{
-                width: 28, height: 26, borderRadius: 6, border: "none",
-                background: viewMode === mode ? T.card : "transparent",
-                color: viewMode === mode ? T.text : T.textTertiary,
-                cursor: "pointer", fontSize: 15, fontWeight: 700,
-                boxShadow: viewMode === mode ? "0 1px 3px rgba(0,0,0,.1)" : "none",
-                transition: "all .15s", display: "flex", alignItems: "center", justifyContent: "center",
-              }}>{icon}</button>
-            ))}
+          {/* View + Size toggles */}
+          <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+            <div style={{ display: "flex", gap: 2, background: T.surface2, borderRadius: 8, padding: "3px" }}>
+              {[{ mode: "list", icon: "≡", title: "List" }, { mode: "card", icon: "⊞", title: "Cards" }].map(({ mode, icon, title }) => (
+                <button key={mode} onClick={() => toggleViewMode(mode)} title={title} style={{
+                  width: 28, height: 26, borderRadius: 6, border: "none",
+                  background: viewMode === mode ? T.card : "transparent",
+                  color: viewMode === mode ? T.text : T.textTertiary,
+                  cursor: "pointer", fontSize: 14, fontWeight: 700,
+                  boxShadow: viewMode === mode ? "0 1px 3px rgba(0,0,0,.08)" : "none",
+                  transition: "all .15s", display: "flex", alignItems: "center", justifyContent: "center",
+                }}>{icon}</button>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 2, background: T.surface2, borderRadius: 8, padding: "3px" }}>
+              {[{ size: "sm", label: "S" }, { size: "md", label: "M" }, { size: "lg", label: "L" }].map(({ size, label }) => (
+                <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} title={`${size === "sm" ? "Small" : size === "md" ? "Medium" : "Large"} view`} style={{
+                  width: 24, height: 26, borderRadius: 6, border: "none",
+                  background: cardSize === size ? T.card : "transparent",
+                  color: cardSize === size ? T.text : T.textTertiary,
+                  cursor: "pointer", fontSize: 11, fontWeight: 700,
+                  boxShadow: cardSize === size ? "0 1px 3px rgba(0,0,0,.08)" : "none",
+                  transition: "all .15s", fontFamily: "inherit",
+                }}>{label}</button>
+              ))}
+            </div>
           </div>
 
-          <Button size="sm" onClick={() => setShowAdd(true)}>+ Add</Button>
+          <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: 32, paddingLeft: 12, paddingRight: 12 }}>+ Add</Button>
         </div>
 
         {/* Article list / grid */}
         <div ref={listRef} style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? "14px" : "0" }}>
-          {loadingItems && <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}><Spinner size={28} /></div>}
+          {loadingItems && (
+            <div style={{ padding: "8px 0" }}>
+              {[...Array(8)].map((_, i) => (
+                <SkeletonRow key={i} delay={i * 40} T={T} />
+              ))}
+            </div>
+          )}
 
           {!loadingItems && baseItems.length === 0 && feeds.length === 0 && (
             <EmptyState icon="📡" title="Your inbox is empty"
@@ -281,28 +424,30 @@ export default function InboxPage({ filterMode = "all" }) {
           )}
 
           {viewMode === "card" ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: cardSize === "lg" ? 18 : 14 }}>
               {baseItems.map((item, i) => (
-                <FeedItem key={item.url + i} item={item} viewMode="card"
+                <div key={item.url + i} style={{ animation: `fadeInUp .2s ease both`, animationDelay: `${Math.min(i * 30, 300)}ms` }}>
+                <FeedItem item={item} viewMode="card" cardSize={cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
                   onClick={() => openByIdx(i)}
                   onSave={() => handleSaveItem(item)}
                   onReadLater={() => handleReadLater(item)}
                   onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
-                />
+                /></div>
               ))}
             </div>
           ) : (
             baseItems.map((item, i) => (
-              <FeedItem key={item.url + i} item={item} viewMode="list"
+              <div key={item.url + i} style={{ animation: `fadeInUp .18s ease both`, animationDelay: `${Math.min(i * 20, 240)}ms` }}>
+              <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem?.url === item.url}
                 isRead={readUrls.has(item.url)}
                 onClick={() => openByIdx(i)}
                 onSave={() => handleSaveItem(item)}
                 onReadLater={() => handleReadLater(item)}
                 onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
-              />
+              /></div>
             ))
           )}
         </div>
@@ -321,41 +466,144 @@ export default function InboxPage({ filterMode = "all" }) {
 
       {showAdd  && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} />}
       {openItem && <ContentViewer item={openItem} onClose={() => { setOpenItem(null); setOpenIdx(-1); }} />}
+      {searchResult && <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />}
+      {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
     </div>
   );
 }
 
 // ── Source sidebar item ───────────────────────────────────────
-function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, count }) {
+
+// ── Skeleton loading row ──────────────────────────────────────
+function SkeletonRow({ delay = 0, T }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 12,
+      padding: "10px 16px", borderBottom: `1px solid ${T.border}`,
+      opacity: 0, animation: `fadeIn .3s ease ${delay}ms forwards`,
+    }}>
+      <div style={{ width: 20, height: 20, borderRadius: 4, background: T.surface2, animation: "shimmer 1.4s infinite", flexShrink: 0 }} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ height: 13, borderRadius: 4, background: T.surface2, animation: "shimmer 1.4s infinite", width: `${60 + Math.random() * 30}%` }} />
+        <div style={{ height: 11, borderRadius: 4, background: T.surface2, animation: "shimmer 1.4s infinite", width: `${30 + Math.random() * 20}%` }} />
+      </div>
+    </div>
+  );
+}
+
+// ── Skeleton loader — shown during initial feed fetch ─────────
+function SkeletonList({ count = 8, cardSize = "md", viewMode = "list" }) {
+  const { T } = useTheme();
+  if (viewMode === "card") {
+    return (
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: 14, padding: 14 }}>
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i} style={{ background: T.card, borderRadius: 12, overflow: "hidden", border: `1px solid ${T.border}`, animation: `fadeIn .3s ease both`, animationDelay: `${i * 50}ms` }}>
+            <div className="skeleton" style={{ aspectRatio: "16/9", width: "100%" }} />
+            <div style={{ padding: "12px 14px 14px" }}>
+              <div className="skeleton" style={{ height: 10, width: "40%", marginBottom: 10 }} />
+              <div className="skeleton" style={{ height: 13, width: "90%", marginBottom: 6 }} />
+              <div className="skeleton" style={{ height: 13, width: "75%", marginBottom: 12 }} />
+              <div className="skeleton" style={{ height: 10, width: "55%" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: cardSize === "lg" ? "14px 18px" : "10px 16px", borderBottom: `1px solid ${T.border}`, animation: `fadeIn .25s ease both`, animationDelay: `${i * 40}ms` }}>
+          <div className="skeleton" style={{ width: cardSize === "lg" ? 96 : 60, height: cardSize === "lg" ? 64 : 44, borderRadius: 7, flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="skeleton" style={{ height: 13, width: `${60 + (i % 3) * 15}%`, marginBottom: 7 }} />
+            <div className="skeleton" style={{ height: 10, width: "35%" }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
+function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, onRetry, count, isLoading, error }) {
   const { T } = useTheme();
   const [hovered, setHovered] = useState(false);
+  const [showError, setShowError] = useState(false);
   const favicon = feedUrl ? `https://www.google.com/s2/favicons?domain=${new URL(feedUrl).hostname}&sz=32` : null;
 
   return (
-    <div onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "flex", alignItems: "center", gap: 8, padding: "6px 10px",
-        borderRadius: 8, cursor: "pointer", marginBottom: 1,
-        background: active ? T.accentSurface : hovered ? T.surface2 : "transparent",
-        transition: "background .1s",
-      }}
-    >
-      <div style={{ width: 17, height: 17, borderRadius: 4, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        {favicon
-          ? <img src={favicon} alt="" width={13} height={13} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
-          : <span style={{ fontSize: 9 }}>{icon || "📡"}</span>
-        }
+    <div>
+      <div onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+        style={{
+          display: "flex", alignItems: "center", gap: 7, padding: "6px 8px 6px 10px",
+          borderRadius: 8, cursor: "pointer", marginBottom: 1,
+          background: active ? T.accentSurface : hovered ? T.surface2 : "transparent",
+          transition: "background .12s",
+        }}
+      >
+        {/* Favicon / icon */}
+        <div style={{ width: 16, height: 16, borderRadius: 4, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {favicon
+            ? <img src={favicon} alt="" width={12} height={12} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
+            : <span style={{ fontSize: 9 }}>{icon || "📡"}</span>
+          }
+        </div>
+
+        <span style={{ flex: 1, fontSize: 13, fontWeight: active ? 600 : 400, color: error ? T.warning : active ? T.accentText : T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {label}
+        </span>
+
+        {/* Loading spinner */}
+        {isLoading && (
+          <span style={{ width: 10, height: 10, border: `1.5px solid ${T.border}`, borderTopColor: T.accent, borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
+        )}
+
+        {/* Error — tap to expand */}
+        {error && !isLoading && (
+          <button onClick={e => { e.stopPropagation(); setShowError(v => !v); }}
+            title="Tap to see error"
+            style={{ background: `${T.danger}20`, border: "none", borderRadius: 4, color: T.danger, cursor: "pointer", fontSize: 10, fontWeight: 700, padding: "1px 5px", flexShrink: 0 }}>
+            !</button>
+        )}
+
+        {/* Unread count */}
+        {count > 0 && !error && !isLoading && (
+          <span style={{ fontSize: 10, fontWeight: 700, color: active ? T.accentText : T.textTertiary, flexShrink: 0, minWidth: 14, textAlign: "right" }}>{count}</span>
+        )}
+
+        {/* Hover actions */}
+        {hovered && !isLoading && (
+          <span style={{ display: "flex", gap: 2, flexShrink: 0 }}>
+            {onDelete && (
+              <button onClick={e => { e.stopPropagation(); onDelete(); }}
+                title="Remove feed"
+                style={{ background: "none", border: "none", color: T.textTertiary, cursor: "pointer", fontSize: 13, padding: "0 2px", lineHeight: 1 }}>×</button>
+            )}
+          </span>
+        )}
       </div>
-      <span style={{ flex: 1, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? T.accentText : T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {label}
-      </span>
-      {count > 0 && (
-        <span style={{ fontSize: 10, fontWeight: 700, color: active ? T.accentText : T.textTertiary, flexShrink: 0 }}>{count}</span>
-      )}
-      {onDelete && hovered && (
-        <button onClick={e => { e.stopPropagation(); onDelete(); }} style={{
-          background: "none", border: "none", color: T.textTertiary, cursor: "pointer", fontSize: 13, padding: "0 1px",
-        }}>×</button>
+
+      {/* Error panel — expandable */}
+      {error && showError && (
+        <div style={{ margin: "0 6px 4px", background: `${T.danger}10`, border: `1px solid ${T.danger}30`, borderRadius: 8, padding: "8px 10px" }}>
+          <div style={{ fontSize: 11, color: T.danger, lineHeight: 1.5, marginBottom: 8 }}>
+            {error.includes("Could not fetch") ? "This feed couldn't be reached. The site may block external requests, or the URL may have changed." : error}
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {onRetry && (
+              <button onClick={e => { e.stopPropagation(); setShowError(false); onRetry(); }}
+                style={{ background: T.danger, border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700, color: "#fff", fontFamily: "inherit" }}>
+                Retry
+              </button>
+            )}
+            <button onClick={e => { e.stopPropagation(); setShowError(false); }}
+              style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, color: T.textSecondary, fontFamily: "inherit" }}>
+              Dismiss
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

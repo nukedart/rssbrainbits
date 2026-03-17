@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedbox — Your calm reading space</title>
+<meta name="description" content="Feedbox is a calm RSS reader with AI summaries, smart keyword buckets, and a distraction-free reading experience.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --dark:#2F373B;--darker:#1E2528;--teal:#65D5C4;--teal-dk:#4BBFAF;
+  --gold:#AA8439;--off:#F5F6F7;--white:#fff;--text:#1A2124;
+  --t2:#4A5568;--t3:#8A9099;--bdr:#D1D5D9;--surf:#ECEEF0;
+  --r:14px;--rl:22px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--off);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:68px;padding:0 5vw;
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(245,246,247,.92);backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(209,213,217,.45)}
+.nav-logo{height:22px}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:14px;font-weight:500;color:var(--t2);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.btn-nav{display:inline-flex;align-items:center;gap:7px;background:var(--dark);color:#fff;
+         font-family:inherit;font-size:14px;font-weight:500;padding:9px 22px;border-radius:50px;
+         border:none;text-decoration:none;cursor:pointer;transition:all .15s}
+.btn-nav:hover{background:var(--darker);transform:translateY(-1px)}
+
+/* HERO */
+.hero{min-height:100vh;padding:130px 5vw 100px;display:flex;flex-direction:column;
+      align-items:center;text-align:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(101,213,196,.11) 0%,transparent 65%),
+             radial-gradient(ellipse 40% 40% at 90% 85%,rgba(170,132,57,.07) 0%,transparent 60%)}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(101,213,196,.12);
+       border:1px solid rgba(101,213,196,.35);color:#2A7A72;font-size:12px;font-weight:600;
+       letter-spacing:.06em;text-transform:uppercase;padding:5px 14px;border-radius:50px;
+       margin-bottom:28px;position:relative;z-index:1;animation:fadeUp .55s ease both}
+.bdot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink 2s ease infinite}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(48px,7.5vw,90px);font-weight:700;
+         line-height:1.06;letter-spacing:-.025em;color:var(--dark);max-width:840px;
+         position:relative;z-index:1;animation:fadeUp .6s .08s ease both}
+.hero h1 em{font-style:italic;color:var(--teal-dk)}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:var(--t2);line-height:1.7;max-width:520px;
+          margin:22px 0 38px;position:relative;z-index:1;animation:fadeUp .6s .16s ease both}
+.ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
+      position:relative;z-index:1;animation:fadeUp .6s .24s ease both}
+.btn-p{display:inline-flex;align-items:center;gap:8px;background:var(--dark);color:#fff;
+       font-family:inherit;font-size:15px;font-weight:500;padding:14px 30px;border-radius:50px;
+       border:none;text-decoration:none;transition:all .18s;cursor:pointer}
+.btn-p:hover{background:var(--darker);transform:translateY(-2px);box-shadow:0 10px 30px rgba(47,55,59,.25)}
+.btn-o{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--text);
+       font-family:inherit;font-size:15px;font-weight:500;padding:13px 28px;border-radius:50px;
+       border:1.5px solid var(--bdr);text-decoration:none;transition:all .18s;cursor:pointer}
+.btn-o:hover{border-color:var(--teal-dk);color:var(--teal-dk);transform:translateY(-1px)}
+.hero-note{font-size:12px;color:var(--t3);margin-top:16px;position:relative;z-index:1;animation:fadeUp .6s .32s ease both}
+
+/* MOCKUP */
+.mockup{width:min(940px,90vw);margin:60px auto 0;position:relative;z-index:1;
+        animation:fadeUp .8s .4s ease both;filter:drop-shadow(0 40px 80px rgba(47,55,59,.32))}
+.b-top{background:var(--dark);border-radius:var(--rl) var(--rl) 0 0;padding:11px 16px;
+       display:flex;align-items:center;gap:7px}
+.b-dot{width:11px;height:11px;border-radius:50%}
+.b-bar{flex:1;height:21px;margin:0 14px;background:rgba(255,255,255,.1);border-radius:6px;
+       display:flex;align-items:center;justify-content:center;
+       font-size:10px;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace}
+.app-w{display:flex;height:420px;overflow:hidden;background:#1E2528;
+       border-radius:0 0 var(--rl) var(--rl);border:1px solid rgba(255,255,255,.05);border-top:none}
+
+/* Sidebar mock */
+.ms{width:178px;background:#2F373B;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);
+    padding:16px 10px;display:flex;flex-direction:column}
+.ms-logo{height:17px;margin:0 3px 16px;filter:brightness(10) saturate(0)}
+.mn{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;
+    font-size:11.5px;color:rgba(255,255,255,.42);margin-bottom:1px}
+.mn.on{background:rgba(101,213,196,.12);color:var(--teal)}
+.md{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.ms-sec{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+        color:rgba(255,255,255,.2);padding:14px 9px 6px}
+.ms-sm{display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:7px;
+       font-size:11px;color:rgba(255,255,255,.36);margin-bottom:1px}
+.ms-cd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* Sources mock */
+.msr{width:186px;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);
+     padding:11px 8px;display:flex;flex-direction:column}
+.msr-h{display:flex;align-items:center;padding:0 6px 9px;font-size:9px;font-weight:700;
+       text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.2)}
+.msrc{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;margin-bottom:1px}
+.msrc.on{background:rgba(101,213,196,.08)}
+.msrc-f{width:13px;height:13px;border-radius:3px;flex-shrink:0}
+.msrc-n{font-size:11px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,.42)}
+.msrc.on .msrc-n{color:var(--teal)}
+.msrc-c{font-size:10px;font-weight:700;color:rgba(255,255,255,.2)}
+.msrc.on .msrc-c{color:rgba(101,213,196,.5)}
+
+/* Article list mock */
+.mf{flex:1;display:flex;flex-direction:column}
+.mt{height:45px;padding:0 13px;display:flex;align-items:center;gap:8px;
+    border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
+.mt-n{font-size:12.5px;font-weight:700;color:rgba(255,255,255,.88)}
+.mt-b{font-size:9px;font-weight:700;background:rgba(101,213,196,.18);color:var(--teal);padding:2px 7px;border-radius:9px}
+.mt-s{flex:1;height:24px;background:rgba(255,255,255,.06);border-radius:6px}
+.mt-t{width:44px;height:24px;background:rgba(255,255,255,.05);border-radius:6px}
+.ma{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid rgba(255,255,255,.04)}
+.ma.hl{background:rgba(101,213,196,.05)}
+.ma.read .ma-ti{color:rgba(255,255,255,.28);font-weight:400}
+.ma-u{width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.ma-r{width:5px;height:5px;flex-shrink:0}
+.ma-th{width:50px;height:36px;border-radius:5px;flex-shrink:0;overflow:hidden}
+.ma-ti{font-size:11px;line-height:1.4;color:rgba(255,255,255,.82);font-weight:500}
+.ma-me{font-size:9.5px;color:rgba(255,255,255,.22);margin-top:2px}
+
+/* STATS */
+.stats{background:var(--dark);padding:56px 5vw;display:flex;justify-content:center;gap:60px;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-n{font-family:'Playfair Display',serif;font-size:46px;font-weight:700;color:var(--teal);display:block;line-height:1}
+.stat-l{font-size:13px;color:rgba(255,255,255,.38);margin-top:6px}
+
+/* SECTIONS */
+.sec{padding:96px 5vw}
+.sec-lbl{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-dk);margin-bottom:14px}
+.sec-h{font-family:'Playfair Display',Georgia,serif;font-size:clamp(30px,4.5vw,52px);font-weight:700;
+       line-height:1.1;letter-spacing:-.02em;color:var(--dark);max-width:580px;margin-bottom:14px}
+.sec-s{font-size:17px;color:var(--t2);line-height:1.7;max-width:500px;margin-bottom:52px}
+
+/* FEATURE CARDS */
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:18px;max-width:1100px;margin:0 auto}
+.fc{background:var(--white);border:1px solid var(--bdr);border-radius:var(--rl);padding:26px 24px;
+    transition:all .2s;position:relative;overflow:hidden}
+.fc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+           background:linear-gradient(90deg,var(--teal),transparent);opacity:0;transition:opacity .2s}
+.fc:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(47,55,59,.09);border-color:rgba(101,213,196,.28)}
+.fc:hover::after{opacity:1}
+.fi{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    margin-bottom:16px;font-size:18px}
+.fi-t{background:rgba(101,213,196,.14)} .fi-g{background:rgba(170,132,57,.1)} .fi-d{background:rgba(47,55,59,.07)}
+.fh{font-size:15px;font-weight:600;color:var(--text);margin-bottom:7px}
+.fp{font-size:13.5px;color:var(--t2);line-height:1.65}
+
+/* PROOF */
+.pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;max-width:900px;margin:0 auto}
+.pc{background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);padding:24px}
+.pq{font-size:14.5px;line-height:1.75;color:var(--text);margin-bottom:18px}
+.pq em{font-style:normal;font-weight:600;color:var(--teal-dk)}
+.pb{display:flex;align-items:center;gap:10px}
+.pav{width:34px;height:34px;border-radius:50%;background:var(--dark);color:var(--teal);
+     display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.pn{font-size:13px;font-weight:600;color:var(--text)} .pr{font-size:11px;color:var(--t3)}
+
+/* PRICING */
+.prg{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;max-width:1000px;margin:0 auto}
+.prc{background:var(--white);border:1.5px solid var(--bdr);border-radius:var(--rl);padding:30px 26px;
+     display:flex;flex-direction:column;transition:all .2s}
+.prc.hot{background:var(--dark);color:#fff;border-color:transparent;
+          transform:scale(1.035);box-shadow:0 24px 60px rgba(47,55,59,.28)}
+.prc:hover:not(.hot){transform:translateY(-3px);box-shadow:0 14px 40px rgba(47,55,59,.09)}
+.pr-tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;
+        border-radius:50px;background:rgba(101,213,196,.18);color:var(--teal);align-self:flex-start;margin-bottom:18px}
+.pr-name{font-size:21px;font-weight:700;margin-bottom:4px}
+.hot .pr-name{color:#fff}
+.pr-num{display:flex;align-items:baseline;gap:3px;margin-bottom:4px}
+.pr-amt{font-family:'Playfair Display',serif;font-size:46px;font-weight:700;line-height:1}
+.hot .pr-amt{color:var(--teal)}
+.pr-per{font-size:14px;color:var(--t2)} .hot .pr-per{color:rgba(255,255,255,.42)}
+.pr-desc{font-size:13.5px;color:var(--t2);line-height:1.5;margin-bottom:24px}
+.hot .pr-desc{color:rgba(255,255,255,.48)}
+.pr-feats{list-style:none;display:flex;flex-direction:column;gap:10px;flex:1}
+.pr-feats li{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--t2);line-height:1.4}
+.hot .pr-feats li{color:rgba(255,255,255,.62)}
+.ck{width:17px;height:17px;border-radius:50%;background:rgba(101,213,196,.14);color:var(--teal-dk);
+    display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:1px}
+.hot .ck{background:rgba(101,213,196,.18);color:var(--teal)}
+.pr-btn{display:block;text-align:center;margin-top:26px;padding:13px;border-radius:50px;
+        font-family:inherit;font-size:14px;font-weight:600;text-decoration:none;
+        transition:all .15s;cursor:pointer;border:none}
+.pb-d{background:var(--dark);color:#fff} .pb-d:hover{background:var(--darker);transform:translateY(-1px)}
+.pb-t{background:var(--teal);color:var(--dark)} .pb-t:hover{background:#7ADDD0;transform:translateY(-1px)}
+.pb-g{background:transparent;color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.18)}
+.pb-g:hover{background:rgba(255,255,255,.06)}
+
+/* CTA DARK */
+.cta-d{background:var(--dark);padding:96px 5vw;text-align:center;position:relative;overflow:hidden}
+.cta-d::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 80% at 50% 50%,rgba(101,213,196,.07) 0%,transparent 70%)}
+.cta-d h2{font-family:'Playfair Display',serif;font-size:clamp(30px,5vw,58px);font-weight:700;
+          line-height:1.1;letter-spacing:-.02em;color:#fff;max-width:660px;
+          margin:0 auto 16px;position:relative;z-index:1}
+.cta-d h2 em{font-style:italic;color:var(--teal)}
+.cta-d p{font-size:16px;color:rgba(255,255,255,.48);max-width:420px;margin:0 auto 38px;
+         line-height:1.7;position:relative;z-index:1}
+.btn-t{display:inline-flex;align-items:center;gap:9px;background:var(--teal);color:var(--dark);
+       font-family:inherit;font-size:15px;font-weight:600;padding:15px 34px;border-radius:50px;
+       border:none;text-decoration:none;cursor:pointer;transition:all .18s;position:relative;z-index:1}
+.btn-t:hover{background:#7ADDD0;transform:translateY(-2px);box-shadow:0 10px 30px rgba(101,213,196,.3)}
+
+/* FOOTER */
+footer{background:var(--darker);padding:56px 5vw 30px;border-top:1px solid rgba(255,255,255,.06)}
+.ft-t{display:flex;justify-content:space-between;flex-wrap:wrap;gap:40px;margin-bottom:48px}
+.ft-b img{height:20px;filter:brightness(10) saturate(0);margin-bottom:10px}
+.ft-tg{font-size:13px;color:rgba(255,255,255,.28);max-width:200px;line-height:1.6}
+.ft-c h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.22);margin-bottom:14px}
+.ft-c a{display:block;font-size:13px;color:rgba(255,255,255,.42);text-decoration:none;margin-bottom:9px;transition:color .12s}
+.ft-c a:hover{color:var(--teal)}
+.ft-bot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-top:22px;
+        border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:rgba(255,255,255,.2)}
+.ft-bot a{color:rgba(255,255,255,.26);text-decoration:none}
+
+/* ANIMATION */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){nav{padding:0 20px}.nav-links{display:none}
+  .ms,.msr{display:none}.app-w{height:280px}.sec{padding:64px 5vw}.stats{gap:36px}}
+@media(max-width:480px){.ctas{flex-direction:column;align-items:center}
+  .btn-p,.btn-o{width:100%;max-width:300px;justify-content:center}.prc.hot{transform:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <img src="../public/feedbox-logo.png" alt="Feedbox" class="nav-logo">
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="https://github.com" target="_blank">GitHub</a>
+    <a href="https://rss.brainbits.us" target="_blank" class="btn-nav">Open app →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="badge"><span class="bdot"></span>Now in public beta</div>
+  <h1>Read what matters.<br><em>Beautifully.</em></h1>
+  <p class="hero-sub">Feedbox is a calm RSS reader with AI summaries, smart keyword buckets, and a distraction-free experience for people who read with intention.</p>
+  <div class="ctas">
+    <a href="https://rss.brainbits.us" class="btn-p">Start reading free <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <a href="#features" class="btn-o">See features</a>
+  </div>
+  <p class="hero-note">Free to start · No credit card · Works with any RSS feed</p>
+
+  <div class="mockup">
+    <div class="b-top">
+      <div class="b-dot" style="background:#FF5F57"></div>
+      <div class="b-dot" style="background:#FEBC2E"></div>
+      <div class="b-dot" style="background:#28C840"></div>
+      <div class="b-bar">rss.brainbits.us</div>
+    </div>
+    <div class="app-w">
+      <div class="ms">
+        <img src="../public/feedbox-logo.png" alt="" class="ms-logo">
+        <div class="mn on"><span class="md"></span>Inbox</div>
+        <div class="mn"><span style="width:5px;height:5px;border-radius:50%;border:1.5px solid currentColor;flex-shrink:0"></span>Unread</div>
+        <div class="mn"><span class="md" style="opacity:.22"></span>Today</div>
+        <div class="mn"><span class="md" style="opacity:.22"></span>Read Later</div>
+        <div class="mn"><span class="md" style="opacity:.22"></span>History</div>
+        <div class="ms-sec">Smart Feeds</div>
+        <div class="ms-sm"><span class="ms-cd" style="background:#65D5C4"></span>AI &amp; Tech</div>
+        <div class="ms-sm"><span class="ms-cd" style="background:#AA8439"></span>Climate</div>
+        <div class="ms-sm"><span class="ms-cd" style="background:#8B5CF6"></span>Startups</div>
+      </div>
+      <div class="msr">
+        <div class="msr-h">Sources<span style="flex:1"></span><span style="font-size:13px;color:rgba(255,255,255,.18)">+</span></div>
+        <div class="msrc on"><div class="msrc-f" style="background:#E53E3E"></div><span class="msrc-n">The Verge</span><span class="msrc-c">12</span></div>
+        <div class="msrc"><div class="msrc-f" style="background:#F97316"></div><span class="msrc-n">Hacker News</span><span class="msrc-c">8</span></div>
+        <div class="msrc"><div class="msrc-f" style="background:#3B82F6"></div><span class="msrc-n">MIT Tech Review</span><span class="msrc-c">5</span></div>
+        <div class="msrc"><div class="msrc-f" style="background:#10B981"></div><span class="msrc-n">Ars Technica</span><span class="msrc-c">3</span></div>
+        <div class="msrc"><div class="msrc-f" style="background:#8B5CF6"></div><span class="msrc-n">Benedict Evans</span><span class="msrc-c">2</span></div>
+      </div>
+      <div class="mf">
+        <div class="mt">
+          <span class="mt-n">The Verge</span>
+          <span class="mt-b">12</span>
+          <div class="mt-s"></div>
+          <div class="mt-t"></div>
+        </div>
+        <div>
+          <div class="ma hl"><span class="ma-u"></span><div class="ma-th" style="background:linear-gradient(135deg,#1a3040,#0d1f2d)"></div><div style="flex:1;min-width:0"><div class="ma-ti">Apple's Vision Pro gets its first major software update with new spatial features</div><div class="ma-me">The Verge · 2h ago</div></div></div>
+          <div class="ma"><span class="ma-u"></span><div class="ma-th" style="background:linear-gradient(135deg,#2a1040,#1a0828)"></div><div style="flex:1;min-width:0"><div class="ma-ti">OpenAI announces new model with 200k context window for long documents</div><div class="ma-me">The Verge · 4h ago</div></div></div>
+          <div class="ma"><span class="ma-u"></span><div class="ma-th" style="background:linear-gradient(135deg,#0a2818,#041810)"></div><div style="flex:1;min-width:0"><div class="ma-ti">DeepMind's Gemini Ultra achieves human-expert performance on key benchmarks</div><div class="ma-me">The Verge · 6h ago</div></div></div>
+          <div class="ma read"><span class="ma-r"></span><div class="ma-th" style="background:rgba(255,255,255,.04)"></div><div style="flex:1;min-width:0"><div class="ma-ti">EU regulators approve Microsoft Activision deal after lengthy review</div><div class="ma-me">The Verge · Yesterday</div></div></div>
+          <div class="ma read"><span class="ma-r"></span><div class="ma-th" style="background:rgba(255,255,255,.04)"></div><div style="flex:1;min-width:0"><div class="ma-ti">Tesla's Full Self-Driving version 13 brings improved urban navigation</div><div class="ma-me">The Verge · Yesterday</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat"><span class="stat-n">∞</span><div class="stat-l">RSS feeds supported</div></div>
+  <div class="stat"><span class="stat-n">&lt;1s</span><div class="stat-l">Load time from cache</div></div>
+  <div class="stat"><span class="stat-n">100%</span><div class="stat-l">Your data, your control</div></div>
+  <div class="stat"><span class="stat-n">$0</span><div class="stat-l">To get started</div></div>
+</div>
+
+<section class="sec" id="features">
+  <div style="text-align:center;max-width:580px;margin:0 auto 60px">
+    <div class="sec-lbl">Features</div>
+    <h2 class="sec-h" style="margin:0 auto 14px">Everything a serious reader needs</h2>
+    <p class="sec-s" style="margin:0 auto">Built for people who read intentionally, not algorithmically.</p>
+  </div>
+  <div class="fg">
+    <div class="fc reveal"><div class="fi fi-t">📡</div><div class="fh">Any RSS or Atom feed</div><div class="fp">Subscribe to any publication. Import your library in seconds via OPML from Reeder, NetNewsWire, Feedly, or Inoreader.</div></div>
+    <div class="fc reveal"><div class="fi fi-d">✨</div><div class="fh">AI summaries in one tap</div><div class="fp">Claude reads every article and gives you 3–5 sharp bullet points. Understand the story in 10 seconds before committing to read more.</div></div>
+    <div class="fc reveal"><div class="fi fi-t">🏷</div><div class="fh">Smart keyword buckets</div><div class="fp">Define keywords like "AI", "climate", or your company name — Feedbox auto-collects matching articles into virtual feeds across all sources.</div></div>
+    <div class="fc reveal"><div class="fi fi-g">✍️</div><div class="fh">Highlights and notes</div><div class="fp">Select any passage to highlight in four colors. Add Kindle-style notes. All saved to your personal database, searchable forever.</div></div>
+    <div class="fc reveal"><div class="fi fi-d">🔍</div><div class="fh">Full-text search</div><div class="fp">Search your entire reading history with Postgres full-text search. Find any article you've ever read, instantly.</div></div>
+    <div class="fc reveal"><div class="fi fi-t">📖</div><div class="fh">Auto full-text fetch</div><div class="fp">Automatically fetches the complete article for paywalled or truncated feeds. Clean typography, no ads, no noise. Just the words.</div></div>
+    <div class="fc reveal"><div class="fi fi-g">⏱</div><div class="fh">Read Later queue</div><div class="fp">Save articles with one keystroke (L). Never lose an interesting piece to an overflowing inbox again.</div></div>
+    <div class="fc reveal"><div class="fi fi-d">⌨️</div><div class="fh">Full keyboard control</div><div class="fp">Navigate with J/K, open with O, mark read with R. Power users stay in flow without touching the mouse.</div></div>
+    <div class="fc reveal"><div class="fi fi-t">☀️</div><div class="fh">Light &amp; dark themes</div><div class="fp">A refined dark theme from the brand palette. Easy on the eyes for long sessions. Follows your system preference automatically.</div></div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:0">
+  <div style="text-align:center;margin-bottom:48px">
+    <div class="sec-lbl">What readers say</div>
+    <h2 class="sec-h" style="margin:0 auto">Built for people who care<br><em style="font-style:italic;color:var(--teal-dk)">what they read</em></h2>
+  </div>
+  <div class="pg">
+    <div class="pc reveal"><p class="pq">"The smart keyword buckets are exactly what I needed. I have one for my industry and one for competitors — I never miss a mention across any of my sources."</p><div class="pb"><div class="pav">SP</div><div><div class="pn">Sarah P.</div><div class="pr">Founder, B2B SaaS</div></div></div></div>
+    <div class="pc reveal"><p class="pq">"Finally an RSS reader that doesn't feel like 2009. The AI summaries let me scan 40 articles in the time it used to take to read 10. <em>Game changer.</em>"</p><div class="pb"><div class="pav">MK</div><div><div class="pn">Marcus K.</div><div class="pr">Tech journalist</div></div></div></div>
+    <div class="pc reveal"><p class="pq">"Imported 80+ feeds from NetNewsWire in 30 seconds. The interface respects your attention instead of fighting for it. That's genuinely rare."</p><div class="pb"><div class="pav">AL</div><div><div class="pn">Ava L.</div><div class="pr">Research analyst</div></div></div></div>
+  </div>
+</section>
+
+<section class="sec" style="background:var(--surf)" id="pricing">
+  <div style="text-align:center;max-width:540px;margin:0 auto 52px">
+    <div class="sec-lbl">Pricing</div>
+    <h2 class="sec-h" style="margin:0 auto 12px">Simple, honest pricing</h2>
+    <p class="sec-s" style="margin:0 auto">Start free. Upgrade when you're ready.</p>
+  </div>
+  <div class="prg">
+    <div class="prc reveal">
+      <div class="pr-name">Free</div>
+      <div class="pr-num"><span class="pr-amt">$0</span><span class="pr-per">/month</span></div>
+      <p class="pr-desc">Everything you need to start reading intentionally.</p>
+      <ul class="pr-feats">
+        <li><span class="ck">✓</span>Up to 20 RSS feeds</li>
+        <li><span class="ck">✓</span>Unlimited reading history</li>
+        <li><span class="ck">✓</span>Read later queue</li>
+        <li><span class="ck">✓</span>Highlights &amp; notes</li>
+        <li><span class="ck">✓</span>OPML import/export</li>
+        <li><span class="ck">✓</span>Full-text search</li>
+        <li><span class="ck">✓</span>Bring your own API key</li>
+      </ul>
+      <a href="https://rss.brainbits.us" class="pr-btn pb-d">Get started free</a>
+    </div>
+    <div class="prc hot reveal">
+      <div class="pr-tag">Most popular</div>
+      <div class="pr-name">Pro</div>
+      <div class="pr-num"><span class="pr-amt">$9</span><span class="pr-per">/month</span></div>
+      <p class="pr-desc">For power readers who want everything built in.</p>
+      <ul class="pr-feats">
+        <li><span class="ck">✓</span>Unlimited feeds</li>
+        <li><span class="ck">✓</span>Everything in Free</li>
+        <li><span class="ck">✓</span>AI summaries included</li>
+        <li><span class="ck">✓</span>Unlimited smart buckets</li>
+        <li><span class="ck">✓</span>Auto-refresh every 15 min</li>
+        <li><span class="ck">✓</span>Priority support</li>
+        <li><span class="ck">✓</span>Early feature access</li>
+      </ul>
+      <a href="https://rss.brainbits.us" class="pr-btn pb-t">Start 14-day free trial</a>
+    </div>
+    <div class="prc reveal">
+      <div class="pr-name">Team</div>
+      <div class="pr-num"><span class="pr-amt">$19</span><span class="pr-per">/user/mo</span></div>
+      <p class="pr-desc">Shared feeds and highlights for newsrooms and research teams.</p>
+      <ul class="pr-feats">
+        <li><span class="ck">✓</span>Everything in Pro</li>
+        <li><span class="ck">✓</span>Shared smart buckets</li>
+        <li><span class="ck">✓</span>Team highlight feed</li>
+        <li><span class="ck">✓</span>Admin dashboard</li>
+        <li><span class="ck">✓</span>SSO (coming soon)</li>
+        <li><span class="ck">✓</span>Dedicated support</li>
+      </ul>
+      <a href="mailto:hello@brainbits.us" class="pr-btn pb-d">Contact us</a>
+    </div>
+  </div>
+</section>
+
+<div class="cta-d">
+  <h2>Your inbox is full.<br>Your attention is <em>limited.</em></h2>
+  <p>Read with intention. Stay informed without the noise. Start your calm reading habit today.</p>
+  <a href="https://rss.brainbits.us" class="btn-t">Open Feedbox — it's free <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+
+<footer>
+  <div class="ft-t">
+    <div class="ft-b"><img src="../public/feedbox-logo.png" alt="Feedbox"><p class="ft-tg">A calm reading space for people who take their reading seriously.</p></div>
+    <div class="ft-c"><h4>Product</h4><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="https://rss.brainbits.us">Open app</a></div>
+    <div class="ft-c"><h4>Resources</h4><a href="https://github.com">GitHub</a><a href="#">Changelog</a><a href="#">OPML guide</a></div>
+    <div class="ft-c"><h4>Legal</h4><a href="#">Privacy</a><a href="#">Terms</a></div>
+  </div>
+  <div class="ft-bot">
+    <span>© 2025 Feedbox / brainbits.us</span>
+    <span>Part of <a href="https://brainbits.us">brainbits.us</a></span>
+  </div>
+</footer>
+
+<script>
+const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

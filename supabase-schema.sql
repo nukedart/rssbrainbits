@@ -120,3 +120,42 @@ ALTER TABLE read_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "own read_items select" ON read_items FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "own read_items insert" ON read_items FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "own read_items delete" ON read_items FOR DELETE USING (auth.uid() = user_id);
+
+-- ============================================================
+-- Migration: Full-text search on history
+-- Run this in Supabase SQL Editor
+-- ============================================================
+
+-- Add a generated tsvector column on history for fast full-text search
+ALTER TABLE history ADD COLUMN IF NOT EXISTS search_vector tsvector
+  GENERATED ALWAYS AS (
+    to_tsvector('english', coalesce(title, '') || ' ' || coalesce(source, '') || ' ' || coalesce(url, ''))
+  ) STORED;
+
+CREATE INDEX IF NOT EXISTS history_search_idx ON history USING gin(search_vector);
+
+-- Same for saved items
+ALTER TABLE saved ADD COLUMN IF NOT EXISTS search_vector tsvector
+  GENERATED ALWAYS AS (
+    to_tsvector('english', coalesce(title, '') || ' ' || coalesce(source, '') || ' ' || coalesce(url, ''))
+  ) STORED;
+
+CREATE INDEX IF NOT EXISTS saved_search_idx ON saved USING gin(search_vector);
+
+-- ============================================================
+-- Migration: Smart Keyword Buckets
+-- ============================================================
+CREATE TABLE IF NOT EXISTS smart_feeds (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name       TEXT NOT NULL,
+  keywords   TEXT[] NOT NULL,   -- array of keyword strings
+  color      TEXT DEFAULT 'blue',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE smart_feeds ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own smart_feeds select" ON smart_feeds FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "own smart_feeds insert" ON smart_feeds FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "own smart_feeds update" ON smart_feeds FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "own smart_feeds delete" ON smart_feeds FOR DELETE USING (auth.uid() = user_id);

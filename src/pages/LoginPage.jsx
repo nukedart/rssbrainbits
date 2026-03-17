@@ -2,6 +2,8 @@ import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { Button } from "../components/UI";
 
+const VERSION = "1.1.0";
+
 export default function LoginPage() {
   const { signIn } = useAuth();
   const { T, isDark } = useTheme();
@@ -18,7 +20,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div style={{ marginBottom: 28 }}>
           <img
-            src="feedbox-logo.png"
+            src={`${import.meta.env.BASE_URL}feedbox-logo.png`}
             alt="Feedbox"
             style={{
               height: 36,
@@ -28,11 +30,11 @@ export default function LoginPage() {
           />
         </div>
 
-        <p style={{ fontSize: 15, color: T.textSecondary, margin: "0 0 10px", lineHeight: 1.6 }}>
+        <p style={{ fontSize: 15, color: T.textSecondary, margin: "0 0 8px", lineHeight: 1.6 }}>
           Your calm reading space.
         </p>
         <p style={{ fontSize: 13, color: T.textTertiary, margin: "0 0 36px", lineHeight: 1.6 }}>
-          RSS feeds, articles, YouTube — beautifully organized.
+          RSS feeds, articles, and YouTube — beautifully organized.
         </p>
 
         {/* Feature list */}
@@ -44,7 +46,7 @@ export default function LoginPage() {
             { icon: "📡", text: "Subscribe to any RSS or Atom feed" },
             { icon: "📰", text: "Read articles distraction-free" },
             { icon: "▶️", text: "Watch YouTube with AI summaries" },
-            { icon: "🎧", text: "Listen aloud with word-sync highlighting" },
+            { icon: "✨", text: "AI-powered article summaries" },
             { icon: "✍️", text: "Highlight passages and add notes" },
             { icon: "⏱",  text: "Read later queue + full history" },
             { icon: "🏷",  text: "Tag and organize your reading" },
@@ -68,6 +70,9 @@ export default function LoginPage() {
 
         <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 16 }}>
           Free · No credit card · Your data stays yours
+        </p>
+        <p style={{ fontSize: 10, color: T.textTertiary, marginTop: 8, opacity: 0.6 }}>
+          v{VERSION}
         </p>
       </div>
     </div>

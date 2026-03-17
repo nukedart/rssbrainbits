@@ -3,15 +3,16 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { Button, Spinner } from "./UI";
 import { fetchArticleContent, summarizeContent, parseYouTubeUrl } from "../lib/fetchers";
-import SelectionToolbar, { HIGHLIGHT_COLORS, getHighlightStyle } from "./SelectionToolbar";
+import SelectionToolbar, { HIGHLIGHT_COLORS } from "./SelectionToolbar";
 import NotePanel from "./NotePanel";
 import HighlightsDrawer from "./HighlightsDrawer";
 import TagsInput from "./TagsInput";
-import TTSPlayer, { InlineAudioPlayer } from "./TTSPlayer";
 import {
   saveItem, addHighlight, getHighlights, updateHighlightNote, deleteHighlight,
   getArticleTags, addArticleTag, deleteArticleTag, getAllTags,
 } from "../lib/supabase";
+import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
+import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 
 export default function ContentViewer({ item, onClose }) {
   const { T } = useTheme();
@@ -33,26 +34,43 @@ export default function ContentViewer({ item, onClose }) {
   const [showDrawer, setShowDrawer]   = useState(false);
 
   // Tags
-  const [tags, setTags]       = useState([]);
-  const [allTags, setAllTags] = useState([]);
+  const [tags, setTags]         = useState([]);
+  const [allTags, setAllTags]   = useState([]);
   const [showTags, setShowTags] = useState(false);
 
-  // TTS
-  const [showTTS, setShowTTS]         = useState(false);
-  const [ttsMode, setTtsMode]           = useState("article"); // "article" | "summary"
-  const [audioBlobUrl, setAudioBlobUrl]   = useState(null); // persisted OpenAI audio
-  const [audioBlobVoice, setAudioBlobVoice] = useState("nova");
-  const [activeWordIdx, setActiveWordIdx] = useState(-1);
+  // Reader preferences
+  const [readerPrefs, setReaderPrefsState] = useState(() => getReaderPrefs());
+  const [showReaderControls, setShowReaderControls] = useState(false);
+  const [exportFeedback, setExportFeedback] = useState(null);
 
   const articleRef = useRef(null);
   const yt = item?.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
 
   // ── Fetch article ──────────────────────────────────────────
+  // After the initial fetch, if bodyText is very short (truncated RSS feed),
+  // silently attempt a full-text fetch from the article URL.
   useEffect(() => {
     if (!item || yt.isYouTube) return;
     setLoading(true); setError(null);
     fetchArticleContent(item.url)
-      .then(setContent).catch((e) => setError(e.message)).finally(() => setLoading(false));
+      .then(async (result) => {
+        setContent(result);
+        // Auto-upgrade: if content is truncated (< 300 chars), try fetching full text
+        const TRUNCATION_THRESHOLD = 300;
+        if ((result.bodyText?.length || 0) < TRUNCATION_THRESHOLD && item.url) {
+          try {
+            const full = await fetchArticleContent(item.url);
+            // Only upgrade if we actually got more content
+            if ((full.bodyText?.length || 0) > (result.bodyText?.length || 0)) {
+              setContent(full);
+            }
+          } catch {
+            // Silent fail — truncated content is still shown
+          }
+        }
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }, [item?.url]);
 
   // ── Load highlights + tags ─────────────────────────────────
@@ -63,19 +81,7 @@ export default function ContentViewer({ item, onClose }) {
     getAllTags(user.id).then(setAllTags).catch(console.error);
   }, [user, item?.url]);
 
-  // ── Listen for word boundary events from TTSPlayer ────────
-  useEffect(() => {
-    function onTTSWord(e) {
-      setActiveWordIdx(e.detail.index);
-      // Auto-scroll the active word into view
-      const el = document.getElementById(`word-${e.detail.index}`);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-    window.addEventListener("tts-word", onTTSWord);
-    return () => window.removeEventListener("tts-word", onTTSWord);
-  }, []);
-
-  // ── Highlight handlers ────────────────────────────────────
+  // ── Highlight actions ──────────────────────────────────────
   const handleHighlight = useCallback(async ({ passage, color, position }) => {
     if (!user) return;
     const newH = await addHighlight(user.id, {
@@ -87,7 +93,7 @@ export default function ContentViewer({ item, onClose }) {
 
   async function handleSaveNote(highlightId, note) {
     await updateHighlightNote(highlightId, note);
-    setHighlights((prev) => prev.map((h) => h.id === highlightId ? { ...h, note } : h));
+    setHighlights((prev) => prev.map((h) => (h.id === highlightId ? { ...h, note } : h)));
   }
 
   async function handleDeleteHighlight(highlightId) {
@@ -95,7 +101,7 @@ export default function ContentViewer({ item, onClose }) {
     setHighlights((prev) => prev.filter((h) => h.id !== highlightId));
   }
 
-  // ── Tag handlers ──────────────────────────────────────────
+  // ── Tag actions ────────────────────────────────────────────
   async function handleAddTag(tag) {
     await addArticleTag(user.id, item.url, content?.title || item.title, tag);
     setTags((prev) => [...prev, tag]);
@@ -109,13 +115,31 @@ export default function ContentViewer({ item, onClose }) {
     setTags((prev) => prev.filter((t) => t !== tag));
   }
 
-  // ── Save ──────────────────────────────────────────────────
+  // ── Save ───────────────────────────────────────────────────
   async function handleSave() {
     await saveItem(user.id, { ...item, summary });
     setSaved(true);
   }
 
-  // ── AI summary ────────────────────────────────────────────
+  function updatePref(key, val) {
+    const updated = setReaderPrefs({ [key]: val });
+    setReaderPrefsState({ ...updated });
+  }
+
+  async function handleExportHighlights(asFile = false) {
+    const md = highlightsToMarkdown(highlights, content?.title || item.title, item.url);
+    if (!md) return;
+    if (asFile) {
+      const slug = (content?.title || item.title || "article").slice(0, 40).replace(/[^a-z0-9]/gi, "-").toLowerCase();
+      downloadFile(md, `feedbox-highlights-${slug}.md`);
+    } else {
+      const ok = await copyToClipboard(md);
+      setExportFeedback(ok ? "✓ Copied to clipboard" : "Copy failed");
+      setTimeout(() => setExportFeedback(null), 2200);
+    }
+  }
+
+  // ── AI Summary ─────────────────────────────────────────────
   async function handleSummarize() {
     const text = content?.bodyText || item?.description || "";
     if (!text) return;
@@ -127,18 +151,11 @@ export default function ContentViewer({ item, onClose }) {
 
   if (!item) return null;
 
-  // The clean text fed to TTS — strip markdown artifacts
-  const ttsText = ttsMode === "summary" && summary ? summary : (content?.bodyText || "");
-  const ttsWords = ttsText.match(/\S+/g) || [];
-
   return (
     <div style={{
       position: "fixed", inset: 0, background: T.bg, zIndex: 500,
       borderLeft: `1px solid ${T.border}`,
-      display: "flex", flexDirection: "column",
-      overflowY: "auto",
-      // Extra bottom padding when TTS player is open
-      paddingBottom: showTTS ? 80 : 0,
+      display: "flex", flexDirection: "column", overflowY: "auto",
     }}>
 
       {/* ── Top bar ── */}
@@ -146,12 +163,13 @@ export default function ContentViewer({ item, onClose }) {
         position: "sticky", top: 0, zIndex: 10,
         background: T.card, borderBottom: `1px solid ${T.border}`,
         padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
+        flexShrink: 0,
       }}>
         <button onClick={onClose} style={{
           background: T.surface2, border: "none", borderRadius: 8,
           width: 32, height: 32, cursor: "pointer", display: "flex",
-          alignItems: "center", justifyContent: "center",
-          color: T.textSecondary, fontSize: 18, fontFamily: "inherit",
+          alignItems: "center", justifyContent: "center", color: T.textSecondary,
+          fontSize: 18, fontFamily: "inherit", flexShrink: 0,
         }}>←</button>
 
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -161,40 +179,53 @@ export default function ContentViewer({ item, onClose }) {
         </div>
 
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          {/* TTS button — only for articles */}
-          {!yt.isYouTube && content && (
-            <button onClick={() => setShowTTS((v) => !v)} title="Listen" style={{
-              background: showTTS ? T.accentSurface : T.surface2,
-              border: "none", borderRadius: 8, padding: "6px 10px",
-              cursor: "pointer", fontSize: 14,
-              color: showTTS ? T.accentText : T.textSecondary,
-              fontFamily: "inherit",
-            }}>🎧</button>
-          )}
-
           {/* Tags */}
           <button onClick={() => setShowTags((v) => !v)} style={{
             background: showTags ? T.accentSurface : T.surface2,
             border: "none", borderRadius: 8, padding: "6px 10px",
             cursor: "pointer", fontSize: 12, fontWeight: 600,
-            color: showTags ? T.accentText : T.textSecondary,
-            fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4,
+            color: showTags ? T.accentText : T.textSecondary, fontFamily: "inherit",
+            display: "flex", alignItems: "center", gap: 5,
           }}>
-            🏷 {tags.length > 0 && <span>{tags.length}</span>}
+            <TagIcon size={13} color="currentColor" />
+            {tags.length > 0 && <span>{tags.length}</span>}
           </button>
 
-          {/* Highlights drawer */}
+          {/* Highlights — export MD + drawer button */}
+          {!yt.isYouTube && highlights.length > 0 && (
+            <button onClick={() => handleExportHighlights(false)} title={exportFeedback || "Copy highlights as Markdown"} style={{
+              background: exportFeedback ? T.accentSurface : T.surface2,
+              border: `1px solid ${exportFeedback ? T.accent : T.border}`,
+              borderRadius: 8, padding: "6px 10px",
+              cursor: "pointer", fontSize: 11, fontWeight: 600,
+              color: exportFeedback ? T.accentText : T.textSecondary, fontFamily: "inherit",
+              transition: "all .15s",
+            }}>
+              {exportFeedback || "↓ MD"}
+            </button>
+          )}
           {!yt.isYouTube && (
             <button onClick={() => setShowDrawer(true)} style={{
               background: T.surface2, border: "none", borderRadius: 8,
               padding: "6px 10px", cursor: "pointer",
               fontSize: 12, fontWeight: 600, color: T.textSecondary,
-              fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4,
+              fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5,
             }}>
-              ✍️ {highlights.length > 0 && <span style={{ color: T.accent }}>{highlights.length}</span>}
+              <HighlightIcon size={13} color="currentColor" />
+              {highlights.length > 0 && <span style={{ color: T.accent }}>{highlights.length}</span>}
             </button>
           )}
 
+          {/* Reader controls */}
+          {!yt.isYouTube && content && (
+            <button onClick={() => setShowReaderControls(v => !v)} title="Reading preferences" style={{
+              background: showReaderControls ? T.accentSurface : T.surface2,
+              border: "none", borderRadius: 8, padding: "6px 10px",
+              cursor: "pointer", fontSize: 12, fontWeight: 700,
+              color: showReaderControls ? T.accentText : T.textSecondary,
+              fontFamily: "inherit",
+            }}>Aa</button>
+          )}
           <Button variant="secondary" size="sm" onClick={() => window.open(item.url, "_blank")}>↗</Button>
           <Button size="sm" onClick={handleSave} disabled={saved}>{saved ? "✓" : "Save"}</Button>
         </div>
@@ -202,7 +233,7 @@ export default function ContentViewer({ item, onClose }) {
 
       {/* ── Tags bar ── */}
       {showTags && (
-        <div style={{ background: T.surface, borderBottom: `1px solid ${T.border}`, padding: "10px 16px" }}>
+        <div style={{ background: T.surface, borderBottom: `1px solid ${T.border}`, padding: "10px 16px", flexShrink: 0 }}>
           <div style={{ maxWidth: 680, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, marginBottom: 8 }}>Tags</div>
             <TagsInput tags={tags} onAdd={handleAddTag} onRemove={handleRemoveTag} allTags={allTags} />
@@ -210,8 +241,60 @@ export default function ContentViewer({ item, onClose }) {
         </div>
       )}
 
+      {/* ── Reader controls panel ── */}
+      {showReaderControls && (
+        <div style={{ background: T.surface, borderBottom: `1px solid ${T.border}`, padding: "14px 20px", flexShrink: 0 }}>
+          <div style={{ maxWidth: 680, margin: "0 auto", display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
+            {/* Font size */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 160 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", whiteSpace: "nowrap" }}>Size</span>
+              <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
+                onChange={e => updatePref("fontSize", parseInt(e.target.value))}
+                style={{ flex: 1, accentColor: T.accent }} />
+              <span style={{ fontSize: 11, color: T.textSecondary, minWidth: 28, textAlign: "right" }}>{readerPrefs.fontSize}px</span>
+            </div>
+            {/* Line width */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 4 }}>Width</span>
+              {["narrow","medium","wide"].map(w => (
+                <button key={w} onClick={() => updatePref("lineWidth", w)} style={{
+                  padding: "4px 10px", borderRadius: 7, border: `1px solid ${readerPrefs.lineWidth === w ? T.accent : T.border}`,
+                  background: readerPrefs.lineWidth === w ? T.accentSurface : "transparent",
+                  color: readerPrefs.lineWidth === w ? T.accentText : T.textSecondary,
+                  cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit",
+                  textTransform: "capitalize",
+                }}>{w}</button>
+              ))}
+            </div>
+            {/* Font family */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 4 }}>Font</span>
+              {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
+                <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} style={{
+                  padding: "4px 10px", borderRadius: 7, border: `1px solid ${readerPrefs.fontFamily === f.id ? T.accent : T.border}`,
+                  background: readerPrefs.fontFamily === f.id ? T.accentSurface : "transparent",
+                  color: readerPrefs.fontFamily === f.id ? T.accentText : T.textSecondary,
+                  cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit",
+                }}>{f.label}</button>
+              ))}
+            </div>
+            {/* Bionic reading */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Bionic</span>
+              <button onClick={() => updatePref("bionic", !readerPrefs.bionic)} style={{
+                width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer",
+                background: readerPrefs.bionic ? T.accent : T.border,
+                position: "relative", transition: "background .2s", flexShrink: 0,
+              }}>
+                <span style={{ position: "absolute", top: 2, left: readerPrefs.bionic ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Main content ── */}
-      <div style={{ position: "relative", maxWidth: 680, margin: "0 auto", padding: "28px 20px 60px", width: "100%" }}>
+      <div style={{ position: "relative", maxWidth: 680, margin: "0 auto", padding: "28px 20px 80px", width: "100%" }}>
 
         {/* YouTube */}
         {yt.isYouTube && (
@@ -223,7 +306,7 @@ export default function ContentViewer({ item, onClose }) {
             </div>
             <h1 style={{ fontSize: 22, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3 }}>{item.title}</h1>
             {item.source && <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 20 }}>{item.source}</div>}
-            <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} onPlaySummary={() => { setTtsMode("summary"); setShowTTS(true); }} T={T} />
+            <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} />
           </div>
         )}
 
@@ -245,7 +328,7 @@ export default function ContentViewer({ item, onClose }) {
         {!yt.isYouTube && content && (
           <div>
             {content.image && (
-              <img src={content.image} alt="" style={{ width: "100%", borderRadius: 12, marginBottom: 20, maxHeight: 300, objectFit: "cover" }} />
+              <img src={content.image} alt="" style={{ width: "100%", borderRadius: 12, marginBottom: 20, maxHeight: 320, objectFit: "cover" }} />
             )}
             <h1 style={{ fontSize: 24, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3 }}>
               {content.title || item.title}
@@ -257,11 +340,7 @@ export default function ContentViewer({ item, onClose }) {
               </div>
             )}
 
-            {audioBlobUrl && ttsMode === "article" && (
-              <InlineAudioPlayer blobUrl={audioBlobUrl} voiceLabel={audioBlobVoice} />
-            )}
-
-            <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} onPlaySummary={() => { setTtsMode("summary"); setShowTTS(true); }} T={T} />
+            <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} />
 
             {content.description && (
               <p style={{ fontSize: 16, color: T.textSecondary, lineHeight: 1.7, margin: "0 0 24px", fontStyle: "italic" }}>
@@ -269,36 +348,23 @@ export default function ContentViewer({ item, onClose }) {
               </p>
             )}
 
-            {/* Article body — highlighted text with TTS word sync */}
-            <div ref={articleRef} style={{ fontSize: 15, color: T.text, lineHeight: 1.85, wordBreak: "break-word" }}>
-              <ArticleBody
+            {/* Article body with highlights */}
+            <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.85, wordBreak: "break-word", fontFamily: "var(--reader-font-family)" }}>
+              <HighlightedText
                 text={content.bodyText}
                 highlights={highlights}
                 onClickHighlight={setActiveNote}
-                activeWordIdx={activeWordIdx}
-                ttsActive={showTTS}
-                T={T}
+                bionic={readerPrefs.bionic}
               />
             </div>
           </div>
         )}
 
-        {/* Selection toolbar for highlighting */}
+        {/* Selection toolbar */}
         {!yt.isYouTube && content && (
           <SelectionToolbar containerRef={articleRef} onHighlight={handleHighlight} />
         )}
       </div>
-
-      {/* ── TTS floating player ── */}
-      {showTTS && content && (
-        <TTSPlayer
-          text={ttsText}
-          wordCount={ttsWords.length}
-          label={ttsMode === "summary" ? "Playing AI summary" : "Listen to article"}
-          onAudioReady={(url, voice) => { setAudioBlobUrl(url); setAudioBlobVoice(voice); }}
-          onClose={() => { setShowTTS(false); setActiveWordIdx(-1); setTtsMode("article"); }}
-        />
-      )}
 
       {/* ── Note panel ── */}
       {activeNote && (
@@ -308,6 +374,8 @@ export default function ContentViewer({ item, onClose }) {
       {/* ── Highlights drawer ── */}
       {showDrawer && (
         <HighlightsDrawer highlights={highlights}
+          articleTitle={content?.title || item?.title}
+          articleUrl={item?.url}
           onSelectHighlight={(h) => { setActiveNote(h); setShowDrawer(false); }}
           onClose={() => setShowDrawer(false)} />
       )}
@@ -315,103 +383,72 @@ export default function ContentViewer({ item, onClose }) {
   );
 }
 
-// ── ArticleBody ───────────────────────────────────────────────
-// Renders text as individual word spans (for TTS sync) while also
-// overlaying user highlights. Both systems work simultaneously.
-function ArticleBody({ text, highlights, onClickHighlight, activeWordIdx, ttsActive, T }) {
+// ── HighlightedText — clean version without TTS word spans ───
+function HighlightedText({ text, highlights, onClickHighlight, bionic = false }) {
   if (!text) return null;
 
-  // Build a flat list of characters tagged as highlighted or not
-  // Then group into word spans for TTS, respecting highlight boundaries
+  // Bionic: bold first ~45% of each word
+  function BionicSpan({ word }) {
+    const n = Math.max(1, Math.ceil(word.length * 0.45));
+    return <><strong style={{ fontWeight: 700 }}>{word.slice(0, n)}</strong>{word.slice(n)}</>;
+  }
 
-  // Step 1: mark highlight ranges
-  const charMeta = new Array(text.length).fill(null); // null or { highlight }
+  // Render plain text with optional bionic mode (no highlights)
+  if (!highlights || highlights.length === 0) {
+    if (!bionic) return <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>;
+    const tokens = text.split(/(\s+)/);
+    return (
+      <span style={{ whiteSpace: "pre-wrap" }}>
+        {tokens.map((t, i) => /\S/.test(t) ? <BionicSpan key={i} word={t} /> : t)}
+      </span>
+    );
+  }
+
+  const intervals = [];
   highlights.forEach((h) => {
     const idx = text.indexOf(h.passage);
-    if (idx === -1) return;
-    for (let i = idx; i < idx + h.passage.length; i++) {
-      charMeta[i] = h;
-    }
+    if (idx !== -1) intervals.push({ start: idx, end: idx + h.passage.length, highlight: h });
   });
+  intervals.sort((a, b) => a.start - b.start);
 
-  // Step 2: split into words with their char positions
-  const wordTokens = [];
-  const regex = /(\S+|\s+)/g;
-  let match;
-  let wordCounter = 0;
-  while ((match = regex.exec(text)) !== null) {
-    const isWord = /\S/.test(match[0]);
-    wordTokens.push({
-      text: match[0],
-      start: match.index,
-      end: match.index + match[0].length,
-      isWord,
-      wordIdx: isWord ? wordCounter++ : -1,
-    });
-  }
+  const segments = [];
+  let cursor = 0;
+  intervals.forEach(({ start, end, highlight }) => {
+    if (start < cursor) return;
+    if (start > cursor) segments.push({ type: "text", content: text.slice(cursor, start) });
+    segments.push({ type: "highlight", content: text.slice(start, end), highlight });
+    cursor = end;
+  });
+  if (cursor < text.length) segments.push({ type: "text", content: text.slice(cursor) });
 
   return (
     <span style={{ whiteSpace: "pre-wrap" }}>
-      {wordTokens.map((token, i) => {
-        if (!token.isWord) return <span key={i}>{token.text}</span>;
-
-        const isActiveWord = ttsActive && token.wordIdx === activeWordIdx;
-
-        // Does this word have a highlight? Check first char of word
-        const h = charMeta[token.start];
-        const colorDef = h ? HIGHLIGHT_COLORS.find((c) => c.id === h.color) || HIGHLIGHT_COLORS[0] : null;
-
-        const baseStyle = h ? {
-          backgroundColor: colorDef.bg,
-          borderRadius: 3,
-          padding: "1px 0",
-          cursor: "pointer",
-          borderBottom: h.note ? `2px solid ${colorDef.border}` : "none",
-        } : {};
-
-        const ttsStyle = isActiveWord ? {
-          backgroundColor: "#FCD34D",
-          borderRadius: 3,
-          padding: "1px 2px",
-          outline: "2px solid #F59E0B",
-          outlineOffset: 1,
-        } : {};
-
+      {segments.map((seg, i) => {
+        if (seg.type === "text") return <span key={i}>{seg.content}</span>;
+        const colorDef = HIGHLIGHT_COLORS.find((c) => c.id === seg.highlight.color) || HIGHLIGHT_COLORS[0];
         return (
-          <mark
-            key={i}
-            id={`word-${token.wordIdx}`}
-            onClick={h ? () => onClickHighlight(h) : undefined}
+          <mark key={i}
+            onClick={() => onClickHighlight(seg.highlight)}
+            title={seg.highlight.note ? "Note: " + seg.highlight.note : "Click to add a note"}
             style={{
-              background: "none",      // reset default mark yellow
-              ...baseStyle,
-              ...ttsStyle,             // TTS highlight wins on top
-              transition: "background-color .1s",
+              backgroundColor: colorDef.bg, borderRadius: 3, padding: "1px 0",
+              cursor: "pointer", background: colorDef.bg,
+              borderBottom: seg.highlight.note ? `2px solid ${colorDef.border}` : "none",
             }}
-          >
-            {token.text}
-          </mark>
+          >{seg.content}</mark>
         );
       })}
     </span>
   );
 }
 
-// ── SummaryBlock ──────────────────────────────────────────────
-function SummaryBlock({ summary, summarizing, onSummarize, onPlaySummary, T }) {
+// ── SummaryBlock — no TTS play button ────────────────────────
+function SummaryBlock({ summary, summarizing, onSummarize, T }) {
   if (summary) {
     return (
       <div style={{ background: T.accentSurface, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px", marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-          <div style={{ flex: 1, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.accentText }}>✨ AI Summary</div>
-          <button onClick={onPlaySummary} title="Play summary aloud" style={{
-            display: "flex", alignItems: "center", gap: 5,
-            background: T.accent, border: "none", borderRadius: 20,
-            padding: "4px 10px", cursor: "pointer", color: "#fff",
-            fontSize: 11, fontWeight: 600, fontFamily: "inherit",
-          }}>
-            ▶ Play
-          </button>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.accentText, marginBottom: 10 }}>
+          ✨ AI Summary
         </div>
         <div style={{ fontSize: 14, color: T.text, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{summary}</div>
       </div>
@@ -423,5 +460,24 @@ function SummaryBlock({ summary, summarizing, onSummarize, onPlaySummary, T }) {
         {summarizing ? "Summarizing…" : "✨ Summarize with AI"}
       </Button>
     </div>
+  );
+}
+
+// ── Small inline SVG icons ────────────────────────────────────
+function TagIcon({ size = 14, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 2h5l7 7-5 5-7-7V2z"/>
+      <circle cx="5" cy="5" r="1" fill={color} stroke="none"/>
+    </svg>
+  );
+}
+
+function HighlightIcon({ size = 14, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.5 2.5l3 3-7 7H3.5v-3l7-7z"/>
+      <path d="M2 14h4" strokeWidth="1.5"/>
+    </svg>
   );
 }

@@ -1,12 +1,18 @@
 {
   "name": "feedbox",
-  "version": "1.0.0",
+  "version": "1.5.3",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "bash deploy.sh",
+    "deploy:minor": "bash deploy.sh minor",
+    "deploy:major": "bash deploy.sh major",
+    "deploy:dry": "bash deploy.sh --dry-run",
+    "deploy:local": "bash deploy.sh --local",
+    "sync": "bash sync.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.43.0",

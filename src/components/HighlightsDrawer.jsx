@@ -1,8 +1,25 @@
+import { useState } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { HIGHLIGHT_COLORS } from "./SelectionToolbar";
+import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 
-export default function HighlightsDrawer({ highlights, onSelectHighlight, onClose }) {
+export default function HighlightsDrawer({ highlights, onSelectHighlight, onClose, articleTitle, articleUrl }) {
   const { T } = useTheme();
+  const [feedback, setFeedback] = useState(null);
+
+  async function handleExport(asFile) {
+    const md = highlightsToMarkdown(highlights, articleTitle, articleUrl);
+    if (!md) return;
+    if (asFile) {
+      const slug = (articleTitle || "article").slice(0, 40).replace(/[^a-z0-9]/gi, "-").toLowerCase();
+      downloadFile(md, `feedbox-highlights-${slug}.md`);
+    } else {
+      const ok = await copyToClipboard(md);
+      setFeedback(ok ? "✓ Copied!" : "Failed");
+      setTimeout(() => setFeedback(null), 2000);
+    }
+  }
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 650, background: T.overlay, display: "flex", justifyContent: "flex-end" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -16,6 +33,16 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
             <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Highlights</div>
             <div style={{ fontSize: 11, color: T.textTertiary }}>{highlights.length} {highlights.length === 1 ? "highlight" : "highlights"}</div>
           </div>
+          {highlights.length > 0 && (
+            <div style={{ display: "flex", gap: 6, marginRight: 4 }}>
+              <button onClick={() => handleExport(false)} title="Copy as Markdown" style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 11, fontWeight: 600, color: feedback ? T.accentText : T.textSecondary, fontFamily: "inherit", background: feedback ? T.accentSurface : T.surface2, transition: "all .15s" }}>
+                {feedback || "Copy MD"}
+              </button>
+              <button onClick={() => handleExport(true)} title="Download .md file" style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 11, fontWeight: 600, color: T.textSecondary, fontFamily: "inherit" }}>
+                ↓ .md
+              </button>
+            </div>
+          )}
           <button onClick={onClose} style={{ background: T.surface2, border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: T.textSecondary, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
 

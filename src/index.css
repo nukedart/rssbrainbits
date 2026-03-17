@@ -1,3 +1,10 @@
+
+/* ── Reader preference CSS variables ────────────────────────── */
+:root {
+  --reader-font-size:   17px;
+  --reader-line-width:  660px;
+  --reader-font-family: 'DM Sans', system-ui, sans-serif;
+}
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -48,15 +55,8 @@ body {
   to   { transform: translateX(0);    opacity: 1; }
 }
 
-/* ── TTS word highlight ── */
-mark {
-  background: none; /* reset browser default yellow */
-}
-.tts-active-word {
-  background: rgba(47, 111, 237, 0.18) !important;
-  border-radius: 3px;
-  outline: 1.5px solid rgba(47, 111, 237, 0.35);
-}
+/* mark reset */
+mark { background: none; }
 
 /* ── Scrollbars ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -69,3 +69,97 @@ mark {
 /* ── iOS/mobile helpers ── */
 * { -webkit-text-size-adjust: 100%; }
 img { max-width: 100%; }
+
+/* ── Skeleton shimmer ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--sk-base) 25%, var(--sk-shine) 50%, var(--sk-base) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+/* Light mode skeleton colors */
+:root {
+  --sk-base:  #E8EAEC;
+  --sk-shine: #F4F6F7;
+}
+[data-theme="dark"] {
+  --sk-base:  #2A3035;
+  --sk-shine: #35404A;
+}
+
+/* ── Smooth feed item entrance ── */
+@keyframes itemIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.feed-item-enter {
+  animation: itemIn .18s ease forwards;
+}
+
+/* ── Toolbar icon button base ── */
+.tb-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent; cursor: pointer;
+  color: inherit; transition: background .12s, color .12s, border-color .12s;
+  flex-shrink: 0;
+}
+.tb-btn:hover { border-color: var(--tb-border); background: var(--tb-hover); }
+.tb-btn.active { background: var(--tb-active-bg); color: var(--tb-active-color); border-color: var(--tb-active-border); }
+
+/* ── Staggered list animation ── */
+.feed-list > *:nth-child(1)  { animation-delay: .00s; }
+.feed-list > *:nth-child(2)  { animation-delay: .03s; }
+.feed-list > *:nth-child(3)  { animation-delay: .06s; }
+.feed-list > *:nth-child(4)  { animation-delay: .09s; }
+.feed-list > *:nth-child(5)  { animation-delay: .12s; }
+.feed-list > *:nth-child(n+6){ animation-delay: .15s; }
+
+/* ── Dynamic animations ── */
+@keyframes itemEnter {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Dynamic animations ─────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* Skeleton loading pulse */
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--skeleton-base, #e8e8e8) 25%,
+    var(--skeleton-shine, #f5f5f5) 50%,
+    var(--skeleton-base, #e8e8e8) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+[data-theme="dark"] .skeleton {
+  --skeleton-base: #2a2f32;
+  --skeleton-shine: #343b3f;
+}
+
+/* Smooth transitions on interactive elements */
+button { transition: opacity .12s, background .12s, color .12s, border-color .12s, box-shadow .12s; }

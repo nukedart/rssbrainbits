@@ -190,3 +190,98 @@ export async function markUnread(userId, url) {
     .eq("user_id", userId).eq("url", url);
   if (error) throw error;
 }
+
+// ── Search ────────────────────────────────────────────────────
+// Searches history + saved tables using Postgres full-text search.
+// Falls back to ilike for short queries (< 3 chars).
+export async function searchItems(userId, query) {
+  if (!query?.trim()) return [];
+  const q = query.trim();
+
+  // Use full-text search for longer queries, ilike for short ones
+  const useFullText = q.length >= 3;
+
+  const [historyRes, savedRes] = await Promise.all([
+    useFullText
+      ? supabase.from("history").select("*").eq("user_id", userId)
+          .textSearch("search_vector", q, { type: "websearch" })
+          .order("read_at", { ascending: false }).limit(30)
+      : supabase.from("history").select("*").eq("user_id", userId)
+          .ilike("title", `%${q}%`).order("read_at", { ascending: false }).limit(30),
+
+    useFullText
+      ? supabase.from("saved").select("*").eq("user_id", userId)
+          .textSearch("search_vector", q, { type: "websearch" })
+          .order("saved_at", { ascending: false }).limit(20)
+      : supabase.from("saved").select("*").eq("user_id", userId)
+          .ilike("title", `%${q}%`).order("saved_at", { ascending: false }).limit(20),
+  ]);
+
+  // Merge + deduplicate by URL, history first
+  const seen = new Set();
+  const results = [];
+  for (const item of [...(historyRes.data || []), ...(savedRes.data || [])]) {
+    if (!seen.has(item.url)) {
+      seen.add(item.url);
+      results.push({ ...item, _resultType: "history" });
+    }
+  }
+  return results;
+}
+
+// ── Smart Feeds ───────────────────────────────────────────────
+export async function getSmartFeeds(userId) {
+  const { data, error } = await supabase
+    .from("smart_feeds").select("*").eq("user_id", userId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function addSmartFeed(userId, { name, keywords, color }) {
+  const { data, error } = await supabase
+    .from("smart_feeds")
+    .insert({ user_id: userId, name, keywords, color })
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateSmartFeed(id, { name, keywords, color }) {
+  const { data, error } = await supabase
+    .from("smart_feeds").update({ name, keywords, color }).eq("id", id)
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteSmartFeed(id) {
+  const { error } = await supabase.from("smart_feeds").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// Match articles against smart feed keywords (client-side)
+// Returns true if any keyword matches title, description, or source
+export function matchesSmartFeed(item, keywords) {
+  const haystack = [item.title, item.description, item.source, item.author]
+    .filter(Boolean).join(" ").toLowerCase();
+  return keywords.some(kw => haystack.includes(kw.toLowerCase().trim()));
+}
+
+// ── Notes & Highlights (cross-article) ───────────────────────
+export async function getAllHighlights(userId) {
+  const { data, error } = await supabase
+    .from("highlights").select("*").eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function getAllHighlightsWithNotes(userId) {
+  const { data, error } = await supabase
+    .from("highlights").select("*").eq("user_id", userId)
+    .not("note", "is", null).not("note", "eq", "")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}

@@ -6,7 +6,7 @@ import { getHistory, clearHistory, getReadLater, removeReadLater,
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import { Button, EmptyState, Spinner } from "../components/UI";
-import { getOpenAIKey, setOpenAIKey, getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
+import { getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -97,15 +97,6 @@ export function HistoryPage() {
 export function SettingsPage() {
   const { T, isDark, setIsDark } = useTheme();
   const { user, signOut } = useAuth();
-  const [voices, setVoices] = useState([]);
-
-  useEffect(() => {
-    function load() { setVoices(window.speechSynthesis?.getVoices().filter((v) => v.lang.startsWith("en")) || []); }
-    load();
-    window.speechSynthesis?.addEventListener("voiceschanged", load);
-    return () => window.speechSynthesis?.removeEventListener("voiceschanged", load);
-  }, []);
-
   const shortcuts = [
     { key: "J / ↓",   action: "Next article" },
     { key: "K / ↑",   action: "Previous article" },
@@ -169,22 +160,26 @@ export function SettingsPage() {
           </div>
         </Card>
 
+        {/* Data & Export */}
+        <Card title="Data &amp; Export" T={T}>
+          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7, marginBottom: 14 }}>
+            Export your feed subscriptions as an OPML file, importable into any RSS reader.
+          </div>
+          <button onClick={async () => {
+            const feeds = await getFeeds(user.id);
+            const xml = feedsToOPML(feeds);
+            downloadFile(xml, "feedbox-subscriptions.opml", "text/x-opml");
+          }} style={{
+            background: T.accent, border: "none", borderRadius: 9, padding: "9px 18px",
+            cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#fff", fontFamily: "inherit",
+          }}>↓ Export OPML</button>
+        </Card>
+
         {/* API Keys */}
         <Card title="API Keys" T={T}>
           <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14, lineHeight: 1.6 }}>
             Keys are stored in your browser only — never sent to any server other than the respective API.
           </div>
-
-          <ApiKeyInput
-            label="OpenAI API Key"
-            placeholder="sk-..."
-            hint="Used for TTS (nova voice). Get at platform.openai.com"
-            getValue={getOpenAIKey}
-            setValue={setOpenAIKey}
-            T={T}
-          />
-
-          <div style={{ height: 12 }} />
 
           <ApiKeyInput
             label="Anthropic API Key"
@@ -196,25 +191,14 @@ export function SettingsPage() {
           />
         </Card>
 
-        {/* TTS */}
-        <Card title="Text-to-Speech" T={T}>
-          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7, marginBottom: 8 }}>
-            With an OpenAI key set above, articles are read by <strong>tts-1-hd (nova)</strong> — a natural, high-quality voice. Without a key, your device's built-in voices are used.
-          </div>
-          <div style={{ fontSize: 12, color: T.textTertiary }}>
-            {voices.length > 0 ? `${voices.length} device English voices available.` : "Device voices load on first TTS use."}
-          </div>
-          <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 4 }}>
-            Best iPhone voice: <strong>Settings → Accessibility → Spoken Content → Voices → English → Premium</strong>
-          </div>
-        </Card>
+
 
         {/* About */}
         <Card title="About" T={T}>
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.0.0</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.5.3</div>
         </Card>
       </div>
     </PageShell>

@@ -30,7 +30,7 @@ function faviconUrl(url) {
 }
 
 // ── List view item (Reeder-style compact row) ────────────────
-function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead }) {
+function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead, cardSize = "md" }) {
   const { T } = useTheme();
   const [hovered, setHovered] = useState(false);
   const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
@@ -46,7 +46,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
       onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex", alignItems: "center", gap: 12,
-        padding: "10px 16px",
+        padding: cardSize === "lg" ? "14px 18px" : cardSize === "sm" ? "7px 14px" : "10px 16px",
         borderBottom: `1px solid ${T.border}`,
         cursor: "pointer",
         background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
@@ -61,15 +61,19 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
         }
       </div>
 
-      {/* Thumbnail (small, only if image exists) */}
+      {/* Thumbnail — size adapts to cardSize */}
       {thumb && (
         <img src={thumb} alt="" loading="lazy" onError={e => { e.target.style.display = "none"; }}
-          style={{ width: 48, height: 36, borderRadius: 6, objectFit: "cover", flexShrink: 0, background: T.surface2 }} />
+          style={{
+            width:  cardSize === "lg" ? 96 : cardSize === "sm" ? 36 : 60,
+            height: cardSize === "lg" ? 64 : cardSize === "sm" ? 36 : 44,
+            borderRadius: 7, objectFit: "cover", flexShrink: 0, background: T.surface2,
+          }} />
       )}
 
       {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: isRead ? 400 : 500, color: isRead ? T.textTertiary : T.text, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ fontSize: cardSize === "lg" ? 14 : cardSize === "sm" ? 12 : 13, fontWeight: isRead ? 400 : 500, color: isRead ? T.textTertiary : T.text, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: cardSize === "lg" ? "normal" : "nowrap", WebkitLineClamp: cardSize === "lg" ? 2 : 1, display: cardSize === "lg" ? "-webkit-box" : "block", WebkitBoxOrient: "vertical" }}>
           {item.title}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
@@ -93,7 +97,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
 }
 
 // ── Card view item (Reeder magazine-style) ───────────────────
-function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead }) {
+function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead, cardSize='md' }) {
   const { T } = useTheme();
   const [hovered, setHovered] = useState(false);
   const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
@@ -118,9 +122,10 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
         display: "flex", flexDirection: "column",
       }}
     >
-      {/* Hero image — always shown, placeholder if no image */}
+      {/* Hero image — size adapts to cardSize */}
       <div style={{
-        aspectRatio: "16/9", overflow: "hidden", flexShrink: 0,
+        aspectRatio: cardSize === "lg" ? "16/7" : cardSize === "sm" ? "16/12" : "16/9",
+        overflow: "hidden", flexShrink: 0,
         background: thumb ? T.surface2 : `linear-gradient(135deg, ${T.surface2} 0%, ${T.border} 100%)`,
         position: "relative",
       }}>
@@ -164,19 +169,25 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
 
         {/* Title */}
         <div style={{
-          fontSize: 13, fontWeight: 600, color: T.text, lineHeight: 1.45,
+          fontSize: cardSize === "lg" ? 15 : cardSize === "sm" ? 12 : 13,
+          fontWeight: 600, color: T.text, lineHeight: 1.45,
           flex: 1,
-          display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
+          display: "-webkit-box",
+          WebkitLineClamp: cardSize === "lg" ? 4 : cardSize === "sm" ? 2 : 3,
+          WebkitBoxOrient: "vertical", overflow: "hidden",
           marginBottom: 10,
         }}>
           {item.title}
         </div>
 
-        {/* Description */}
-        {item.description && (
+        {/* Description — hidden on small cards */}
+        {item.description && cardSize !== "sm" && (
           <div style={{
-            fontSize: 12, color: T.textSecondary, lineHeight: 1.5, marginBottom: 10,
-            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+            fontSize: cardSize === "lg" ? 13 : 12,
+            color: T.textSecondary, lineHeight: 1.6, marginBottom: 10,
+            display: "-webkit-box",
+            WebkitLineClamp: cardSize === "lg" ? 4 : 2,
+            WebkitBoxOrient: "vertical", overflow: "hidden",
           }}>
             {item.description}
           </div>
@@ -222,9 +233,9 @@ function ActionBtn({ icon, label, title, onClick, T, small = false }) {
 }
 
 // ── Public export — switches between list/card based on viewMode ──
-export default function FeedItem({ item, onClick, onDelete, onSave, onReadLater, onMarkRead, isSelected = false, isRead = false, viewMode = "list" }) {
+export default function FeedItem({ item, onClick, onDelete, onSave, onReadLater, onMarkRead, isSelected = false, isRead = false, viewMode = "list", cardSize = "md" }) {
   if (viewMode === "card") {
-    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} isSelected={isSelected} isRead={isRead} />;
+    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} isSelected={isSelected} isRead={isRead} cardSize={cardSize} />;
   }
-  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} isSelected={isSelected} isRead={isRead} />;
+  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} isSelected={isSelected} isRead={isRead} cardSize={cardSize} />;
 }
