@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
-import { getFeeds, addFeed, deleteFeed, getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder, addToHistory, saveItem,
+import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem,
          addReadLater, getReadUrls, markRead, markUnread, matchesSmartFeed } from "../lib/supabase";
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl } from "../lib/fetchers";
 import { invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import AddModal from "../components/AddModal";
-import FolderModal from "../components/FolderModal";
 import { Button, EmptyState, Spinner } from "../components/UI";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
@@ -39,13 +38,23 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [newArticleCount, setNewArticleCount] = useState(0);
   const prevItemUrlsRef = useRef(new Set());
   const [showOPML, setShowOPML]           = useState(false);
-  const [editingFolder, setEditingFolder]   = useState(null);
   const [dragFeedId, setDragFeedId]         = useState(null);
+  const [openFolders, setOpenFolders]       = useState(() => new Set()); // folder ids that are expanded
+
+  function toggleFolderOpen(id) {
+    setOpenFolders(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
   const listRef = useRef(null);
 
   useEffect(() => {
     if (!user) return;
     getFeeds(user.id).then(setFeeds).catch(console.error).finally(() => setLoadingFeeds(false));
+    // Open all folders by default when component mounts
+    if (folders.length > 0) setOpenFolders(new Set(folders.map(f => f.id)));
     getReadUrls(user.id).then(setReadUrls).catch(console.error);
   }, [user]);
 
@@ -318,25 +327,34 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             {folders.length > 0 && folders.map(folder => {
               const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
               const folderUnread = folderFeeds.reduce((n, f) => n + allItems.filter(i => i.feedId === f.id && !readUrls.has(i.url)).length, 0);
-              const dotColor = { gray:"#8A9099", teal:"#4BBFAF", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" }[folder.color] || "#8A9099";
-              const [open, setOpen] = useState(true);
+              const FOLDER_COLORS = { gray:"#8A9099", teal:"#4BBFAF", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+              const dotColor = FOLDER_COLORS[folder.color] || "#8A9099";
+              const isOpen = openFolders.has(folder.id);
               return (
                 <div key={folder.id}>
-                  <div style={{ display:"flex", alignItems:"center", padding:"7px 8px 3px", cursor:"pointer" }}
-                    onClick={() => setOpen(v => !v)}>
-                    <span style={{ fontSize:9, color:dotColor, marginRight:5, display:"inline-block", transform: open?"rotate(90deg)":"rotate(0deg)", transition:"transform .15s" }}>▶</span>
+                  {/* Folder header row */}
+                  <div
+                    style={{ display:"flex", alignItems:"center", padding:"7px 8px 3px", cursor:"pointer", borderRadius:6 }}
+                    onClick={() => toggleFolderOpen(folder.id)}
+                    onMouseEnter={e => e.currentTarget.style.background=T.surface2}
+                    onMouseLeave={e => e.currentTarget.style.background="transparent"}
+                  >
+                    <span style={{ fontSize:9, color:dotColor, marginRight:5, display:"inline-block", transform: isOpen?"rotate(90deg)":"rotate(0deg)", transition:"transform .15s" }}>▶</span>
                     <span style={{ width:7, height:7, borderRadius:"50%", background:dotColor, flexShrink:0, marginRight:6 }} />
                     <span style={{ flex:1, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:T.textSecondary }}>{folder.name}</span>
-                    <span style={{ fontSize:9, color:T.textTertiary, marginRight:4 }}>{folderUnread > 0 ? folderUnread : ""}</span>
-                    <span onClick={e => { e.stopPropagation(); onEditFolder?.(folder); }} style={{ fontSize:12, color:T.textTertiary, cursor:"pointer", opacity:0, padding:"0 2px" }}
+                    {folderUnread > 0 && <span style={{ fontSize:9, fontWeight:700, color:T.accent, marginRight:4 }}>{folderUnread}</span>}
+                    <span
+                      onClick={e => { e.stopPropagation(); onEditFolder?.(folder); }}
+                      style={{ fontSize:12, color:T.textTertiary, cursor:"pointer", opacity:0, padding:"0 4px", transition:"opacity .1s" }}
                       onMouseEnter={e => e.currentTarget.style.opacity="1"}
                       onMouseLeave={e => e.currentTarget.style.opacity="0"}
                     >···</span>
                   </div>
-                  {open && folderFeeds.map(feed => {
+                  {/* Feeds inside folder */}
+                  {isOpen && folderFeeds.map(feed => {
                     const feedUnread = allItems.filter(i => i.feedId === feed.id && !readUrls.has(i.url)).length;
                     return (
-                      <div key={feed.id} style={{ paddingLeft: 12 }}>
+                      <div key={feed.id} style={{ paddingLeft: 10 }}>
                         <SourceItem
                           label={feed.name || new URL(feed.url).hostname}
                           feedUrl={feed.url}
@@ -345,12 +363,17 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                           onClick={() => setActiveSource(feed.id)}
                           onDelete={() => handleDeleteFeed(feed.id)}
                           onRetry={() => handleRetryFeed(feed)}
+                          onMoveToFolder={(folderId) => onMoveFeedToFolder?.(feed.id, folderId)}
+                          folders={folders}
                           isLoading={feedLoading[feed.id]}
                           error={feedErrors[feed.id]}
                         />
                       </div>
                     );
                   })}
+                  {isOpen && folderFeeds.length === 0 && (
+                    <div style={{ padding:"4px 8px 4px 28px", fontSize:11, color:T.textTertiary, fontStyle:"italic" }}>No feeds</div>
+                  )}
                 </div>
               );
             })}
@@ -375,6 +398,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                       onClick={() => setActiveSource(feed.id)}
                       onDelete={() => handleDeleteFeed(feed.id)}
                       onRetry={() => handleRetryFeed(feed)}
+                      onMoveToFolder={(folderId) => onMoveFeedToFolder?.(feed.id, folderId)}
+                      folders={folders}
                       isLoading={feedLoading[feed.id]}
                       error={feedErrors[feed.id]}
                     />
@@ -553,7 +578,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       {openItem && <ContentViewer item={openItem} onClose={() => { setOpenItem(null); setOpenIdx(-1); }} />}
       {searchResult && <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />}
       {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
-      {editingFolder && <FolderModal folder={editingFolder === "new" ? null : editingFolder} onSave={async (data) => { editingFolder === "new" ? await onAddFolder?.(data) : await onEditFolder?.(editingFolder, data); setEditingFolder(null); }} onDelete={async (id) => { /* handled in App */ setEditingFolder(null); }} onClose={() => setEditingFolder(null)} />}
+      {/* FolderModal is owned by App.jsx — onAddFolder/onEditFolder props trigger it */}
     </div>
   );
 }
@@ -613,7 +638,7 @@ function SkeletonList({ count = 8, cardSize = "md", viewMode = "list" }) {
 }
 
 
-function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, onRetry, count, isLoading, error }) {
+function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, onRetry, onMoveToFolder, count, isLoading, error, folders = [] }) {
   const { T } = useTheme();
   const [hovered, setHovered] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -662,6 +687,33 @@ function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, onRetry, 
         {/* Hover actions */}
         {hovered && !isLoading && (
           <span style={{ display: "flex", gap: 2, flexShrink: 0 }}>
+            {onMoveToFolder && folders.length > 0 && (
+              <div style={{ position:"relative" }}>
+                <button onClick={e => { e.stopPropagation(); e.currentTarget.nextSibling.style.display = e.currentTarget.nextSibling.style.display === "block" ? "none" : "block"; }}
+                  title="Move to folder"
+                  style={{ background:"none", border:"none", color:T.textTertiary, cursor:"pointer", fontSize:11, padding:"0 2px", lineHeight:1 }}>📁</button>
+                <div style={{ display:"none", position:"absolute", right:0, top:"100%", zIndex:50, background:T.card, border:`1px solid ${T.border}`, borderRadius:9, boxShadow:"0 4px 16px rgba(0,0,0,.15)", minWidth:140, padding:"4px 0" }}>
+                  <div onClick={e => { e.stopPropagation(); onMoveToFolder(null); e.currentTarget.closest("[style*='position:relative']").querySelector("div").style.display="none"; }}
+                    style={{ padding:"6px 12px", fontSize:12, cursor:"pointer", color:T.textSecondary }}
+                    onMouseEnter={e => e.currentTarget.style.background=T.surface2}
+                    onMouseLeave={e => e.currentTarget.style.background="transparent"}
+                  >No folder</div>
+                  {folders.map(f => {
+                    const FCOLS = {gray:"#8A9099",teal:"#4BBFAF",blue:"#2F6FED",amber:"#AA8439",red:"#EF4444",purple:"#8B5CF6",green:"#22C55E"};
+                    return (
+                      <div key={f.id} onClick={e => { e.stopPropagation(); onMoveToFolder(f.id); e.currentTarget.closest("[style*='position:relative']").querySelector("div").style.display="none"; }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 12px", fontSize:12, cursor:"pointer", color:T.text }}
+                        onMouseEnter={e => e.currentTarget.style.background=T.surface2}
+                        onMouseLeave={e => e.currentTarget.style.background="transparent"}
+                      >
+                        <span style={{ width:7, height:7, borderRadius:"50%", background:FCOLS[f.color]||"#8A9099", flexShrink:0 }} />
+                        {f.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {onDelete && (
               <button onClick={e => { e.stopPropagation(); onDelete(); }}
                 title="Remove feed"
