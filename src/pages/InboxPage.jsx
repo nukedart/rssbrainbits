@@ -638,7 +638,7 @@ function SkeletonList({ count = 8, cardSize = "md", viewMode = "list" }) {
 }
 
 
-function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, onRetry, onMoveToFolder, count, isLoading, error, folders = [] }) {
+) {
   const { T } = useTheme();
   const [hovered, setHovered] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -747,3 +747,119 @@ function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, onRetry, 
   );
 }
 
+
+// ── Source item — clean Reeder-style feed row ─────────────────
+function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, onRetry, onMoveToFolder, count, isLoading, error, folders = [] }) {
+  const { T } = useTheme();
+  const [hovered, setHovered] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [showFolderMenu, setShowFolderMenu] = useState(false);
+  const menuRef = useRef(null);
+  const favicon = feedUrl ? `https://www.google.com/s2/favicons?domain=${new URL(feedUrl).hostname}&sz=32` : null;
+  const FCOLS = { gray:"#8A9099", teal:"#4BBFAF", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+
+  useEffect(() => {
+    if (!showFolderMenu) return;
+    const h = e => { if (menuRef.current && !menuRef.current.contains(e.target)) setShowFolderMenu(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [showFolderMenu]);
+
+  return (
+    <div style={{ position: "relative" }}>
+      <div
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "5px 8px 5px 10px", borderRadius: 8,
+          cursor: "pointer", marginBottom: 1,
+          background: active ? T.accentSurface : hovered ? T.surface2 : "transparent",
+          transition: "background .12s",
+        }}
+      >
+        <div style={{ width: 14, height: 14, borderRadius: 3, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: active ? 1 : 0.7 }}>
+          {favicon
+            ? <img src={favicon} alt="" width={12} height={12} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
+            : <span style={{ fontSize: 8 }}>{icon || "•"}</span>}
+        </div>
+
+        <span style={{ flex: 1, fontSize: 13, fontWeight: active ? 600 : 400, color: error ? T.warning : active ? T.accentText : T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", letterSpacing: "-.01em" }}>
+          {label}
+        </span>
+
+        {isLoading && <span style={{ width: 9, height: 9, border: `1.5px solid ${T.border}`, borderTopColor: T.accent, borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />}
+        {error && !isLoading && !hovered && <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.danger, flexShrink: 0 }} />}
+        {count > 0 && !error && !isLoading && !hovered && (
+          <span style={{ fontSize: 11, fontWeight: 600, color: active ? T.accent : T.textTertiary, flexShrink: 0 }}>{count}</span>
+        )}
+
+        {hovered && !isLoading && (
+          <span style={{ display: "flex", gap: 1, flexShrink: 0 }}>
+            {onMoveToFolder && folders.length > 0 && (
+              <button onClick={e => { e.stopPropagation(); setShowFolderMenu(v => !v); }}
+                title="Move to folder"
+                style={{ background: "none", border: "none", color: T.textTertiary, cursor: "pointer", fontSize: 12, padding: "1px 4px", borderRadius: 4, lineHeight: 1, fontFamily: "inherit" }}
+                onMouseEnter={e => e.currentTarget.style.color = T.accent}
+                onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
+              >⤴</button>
+            )}
+            {error && (
+              <button onClick={e => { e.stopPropagation(); setShowError(v => !v); }}
+                style={{ background: `${T.danger}18`, border: "none", borderRadius: 4, color: T.danger, cursor: "pointer", fontSize: 10, fontWeight: 700, padding: "1px 4px", fontFamily: "inherit" }}>!</button>
+            )}
+            {onDelete && (
+              <button onClick={e => { e.stopPropagation(); onDelete(); }}
+                style={{ background: "none", border: "none", color: T.textTertiary, cursor: "pointer", fontSize: 14, padding: "0 3px", lineHeight: 1, fontFamily: "inherit" }}
+                onMouseEnter={e => e.currentTarget.style.color = T.danger}
+                onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
+              >×</button>
+            )}
+          </span>
+        )}
+      </div>
+
+      {/* Folder picker */}
+      {showFolderMenu && (
+        <div ref={menuRef} style={{ position: "absolute", right: 6, top: "100%", zIndex: 100, background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, boxShadow: "0 4px 20px rgba(0,0,0,.14)", minWidth: 152, padding: "4px 0", animation: "fadeInScale .12s ease" }}>
+          <div style={{ padding: "5px 12px 6px", fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", borderBottom: `1px solid ${T.border}`, marginBottom: 3 }}>Move to folder</div>
+          <div onClick={e => { e.stopPropagation(); onMoveToFolder(null); setShowFolderMenu(false); }}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", fontSize: 13, cursor: "pointer", color: T.textSecondary }}
+            onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            <span style={{ width: 7, height: 7, borderRadius: "50%", border: `1px solid ${T.border}`, flexShrink: 0 }} />
+            No folder
+          </div>
+          {folders.map(f => (
+            <div key={f.id}
+              onClick={e => { e.stopPropagation(); onMoveToFolder(f.id); setShowFolderMenu(false); }}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", fontSize: 13, cursor: "pointer", color: T.text }}
+              onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+            >
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: FCOLS[f.color] || "#8A9099", flexShrink: 0 }} />
+              {f.name}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Error panel */}
+      {error && showError && (
+        <div style={{ margin: "0 6px 6px", background: `${T.danger}10`, border: `1px solid ${T.danger}30`, borderRadius: 8, padding: "8px 10px" }}>
+          <div style={{ fontSize: 11, color: T.danger, lineHeight: 1.5, marginBottom: 6 }}>
+            {error.includes("Could not") ? "Feed unreachable. The site may block proxies or the URL changed." : error}
+          </div>
+          {onRetry && (
+            <button onClick={e => { e.stopPropagation(); onRetry(); setShowError(false); }}
+              style={{ background: T.accent, border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#fff", fontFamily: "inherit" }}>
+              Retry
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

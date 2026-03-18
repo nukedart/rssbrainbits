@@ -175,6 +175,9 @@ export function SettingsPage() {
           }}>↓ Export OPML</button>
         </Card>
 
+        {/* Manage Feeds */}
+        <ManageFeedsCard T={T} user={user} />
+
         {/* API Keys */}
         <Card title="API Keys" T={T}>
           <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14, lineHeight: 1.6 }}>
@@ -198,10 +201,98 @@ export function SettingsPage() {
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.8.5</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.9.0</div>
         </Card>
       </div>
     </PageShell>
+  );
+}
+
+
+// ── Manage Feeds card ─────────────────────────────────────────
+function ManageFeedsCard({ T, user }) {
+  const [feeds, setFeeds]     = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving]   = useState(null); // feedId being saved
+  const FCOLS = { gray:"#8A9099", teal:"#4BBFAF", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+
+  useEffect(() => {
+    if (!user) return;
+    Promise.all([
+      getFeeds(user.id),
+      getFolders(user.id),
+    ]).then(([f, fo]) => {
+      setFeeds(f);
+      setFolders(fo);
+    }).catch(console.error)
+    .finally(() => setLoading(false));
+  }, [user]);
+
+  async function handleMove(feedId, folderId) {
+    setSaving(feedId);
+    try {
+      await setFeedFolder(feedId, folderId);
+      setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: folderId } : f));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  if (loading) return null;
+  if (feeds.length === 0) return null;
+
+  return (
+    <Card title="Manage Feeds" T={T}>
+      <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14, lineHeight: 1.6 }}>
+        Assign feeds to folders to organise your sources panel.
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {feeds.map(feed => {
+          const currentFolder = folders.find(f => f.id === feed.folder_id);
+          const isSaving = saving === feed.id;
+          return (
+            <div key={feed.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 9, background: T.surface }}>
+              {/* Favicon */}
+              <div style={{ width: 16, height: 16, borderRadius: 3, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${new URL(feed.url).hostname}&sz=32`}
+                  alt="" width={12} height={12} style={{ display: "block" }}
+                  onError={e => { e.target.style.display = "none"; }}
+                />
+              </div>
+              {/* Feed name */}
+              <span style={{ flex: 1, fontSize: 13, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {feed.name || new URL(feed.url).hostname}
+              </span>
+              {/* Folder select */}
+              {isSaving
+                ? <span style={{ fontSize: 11, color: T.textTertiary }}>saving…</span>
+                : (
+                  <select
+                    value={feed.folder_id || ""}
+                    onChange={e => handleMove(feed.id, e.target.value || null)}
+                    style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 8px", fontSize: 12, color: T.text, fontFamily: "inherit", cursor: "pointer", maxWidth: 130 }}
+                  >
+                    <option value="">No folder</option>
+                    {folders.map(f => (
+                      <option key={f.id} value={f.id}>{f.name}</option>
+                    ))}
+                  </select>
+                )
+              }
+            </div>
+          );
+        })}
+      </div>
+      {folders.length === 0 && (
+        <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 10, fontStyle: "italic" }}>
+          Create a folder first using the + button in the sources panel.
+        </div>
+      )}
+    </Card>
   );
 }
 
