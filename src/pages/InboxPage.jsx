@@ -631,11 +631,13 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
           onTouchEnd={isMobile ? handlePTREnd : undefined}
           style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? "14px" : "0", WebkitOverflowScrolling: "touch" }}>
           {loadingItems && (
-            <div style={{ padding: "8px 0" }}>
-              {[...Array(8)].map((_, i) => (
-                <SkeletonRow key={i} delay={i * 40} T={T} />
-              ))}
-            </div>
+            viewMode === "card"
+              ? <SkeletonList count={8} cardSize={cardSize} viewMode="card" />
+              : <div style={{ padding: "8px 0" }}>
+                  {[...Array(8)].map((_, i) => (
+                    <SkeletonRow key={i} delay={i * 40} T={T} />
+                  ))}
+                </div>
           )}
 
           {!loadingItems && baseItems.length === 0 && feeds.length === 0 && (

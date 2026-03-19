@@ -60,7 +60,7 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
   const [swiped, setSwiped]  = useState(false);
   const touchRef = useRef(null);
 
-  if (!isMobile) return <>{children}</>;
+  if (!isMobile) return <>{typeof children === "function" ? children({ swiped: false, close: () => {} }) : children}</>;
 
   function onTouchStart(e) {
     touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };

@@ -5,6 +5,14 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.13.3] — 2026-03-19
+
+### Fixed
+- **Card view blank / items not rendering (critical)** — `SwipeRow` uses a render-prop pattern: `children` is a function that receives `{ swiped, close }`. On desktop (`isMobile=false`) it was returning `<>{children}</>` — passing the function as JSX rather than calling it, so both `CardItem` and `ListItem` rendered `undefined` on desktop. Fixed: desktop path now calls `children({ swiped: false, close: () => {} })` just like the mobile path does.
+- **Card skeleton shows list rows during load** — when `viewMode` is `"card"`, the loading state was always rendering `SkeletonRow` (list-style rows). Now correctly renders `SkeletonList` with `viewMode="card"` so the card grid skeleton appears while feeds load.
+
+---
+
 ## [1.13.2] — 2026-03-19
 
 ### Fixed
