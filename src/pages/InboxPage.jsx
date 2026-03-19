@@ -635,7 +635,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
               color: hideRead ? T.accentText : T.textSecondary, fontFamily: "inherit",
               display: "flex", alignItems: "center",
             }}>
-              {isMobile ? (hideRead ? "·" : "·") : (hideRead ? "Unread only" : "All")}
+              {isMobile ? (hideRead ? "Unread" : "All") : (hideRead ? "Unread only" : "All articles")}
             </button>
           )}
 
@@ -770,6 +770,23 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       {/* FolderModal is owned by App.jsx — onAddFolder/onEditFolder props trigger it */}
     </div>
   );
+}
+
+// ── Feed error classifier ─────────────────────────────────────
+function classifyFeedError(msg = "") {
+  if (msg.includes("Could not reach") || msg.includes("block external") || msg.includes("blocked"))
+    return "Feed unreachable — site may block proxies, or the URL changed.";
+  if (msg.includes("Invalid RSS") || msg.includes("Invalid XML") || msg.includes("parsererror"))
+    return "Invalid feed format — URL doesn't point to valid RSS/Atom XML.";
+  if (msg.includes("timed out") || msg.includes("abort") || msg.includes("Timeout"))
+    return "Feed timed out — server is too slow or temporarily unavailable.";
+  if (msg.includes("404") || msg.includes("Not Found"))
+    return "Feed not found (404) — the URL may have moved or been deleted.";
+  if (msg.includes("403") || msg.includes("Forbidden") || msg.includes("401"))
+    return "Access denied — this feed may require authentication.";
+  if (msg.includes("No items"))
+    return "Feed is empty — no articles were found.";
+  return msg || "Failed to load feed.";
 }
 
 // ── Source sidebar item ───────────────────────────────────────
@@ -938,7 +955,7 @@ function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, o
       {error && showError && (
         <div style={{ margin: "0 6px 6px", background: `${T.danger}10`, border: `1px solid ${T.danger}30`, borderRadius: 8, padding: "8px 10px" }}>
           <div style={{ fontSize: 11, color: T.danger, lineHeight: 1.5, marginBottom: 6 }}>
-            {error.includes("Could not") ? "Feed unreachable. The site may block proxies or the URL changed." : error}
+            {classifyFeedError(error)}
           </div>
           {onRetry && (
             <button onClick={e => { e.stopPropagation(); onRetry(); setShowError(false); }}

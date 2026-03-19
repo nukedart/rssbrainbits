@@ -45,6 +45,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
   // Reader preferences
   const [readerPrefs, setReaderPrefsState] = useState(() => getReaderPrefs());
   const [showReaderControls, setShowReaderControls] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [exportFeedback, setExportFeedback]   = useState(null);
   const [readProgress, setReadProgress]         = useState(0);
   const [shareFeedback, setShareFeedback]       = useState(null);
@@ -85,9 +86,9 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
           } catch { /* silent fail */ }
         }
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(classifyArticleError(e.message)))
       .finally(() => setLoading(false));
-  }, [item?.url]);
+  }, [item?.url, retryKey]);
 
   // ── Load highlights + tags ─────────────────────────────────
   useEffect(() => {
@@ -328,55 +329,49 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
 
 
 
+      {/* ── Aa reader controls — pinned below header, always visible when open ── */}
+      {showReaderControls && (
+        <div style={{
+          flexShrink: 0, borderBottom: `1px solid ${T.border}`,
+          background: T.card, padding: "10px 16px",
+          display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center",
+          animation: "slideDown .15s ease",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "1 1 140px" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Size</span>
+            <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
+              onChange={e => updatePref("fontSize", parseInt(e.target.value))}
+              style={{ flex: 1, accentColor: T.accent }} />
+            <span style={{ fontSize: 11, color: T.textSecondary, minWidth: 26 }}>{readerPrefs.fontSize}px</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 2 }}>Width</span>
+            {["narrow","medium","wide"].map(w => (
+              <button key={w} onClick={() => updatePref("lineWidth", w)} style={{ padding: "3px 8px", borderRadius: 6, border: `1px solid ${readerPrefs.lineWidth===w?T.accent:T.border}`, background: readerPrefs.lineWidth===w?T.accentSurface:"transparent", color: readerPrefs.lineWidth===w?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit", textTransform: "capitalize" }}>{w}</button>
+            ))}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 2 }}>Font</span>
+            {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
+              <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} style={{ padding: "3px 8px", borderRadius: 6, border: `1px solid ${readerPrefs.fontFamily===f.id?T.accent:T.border}`, background: readerPrefs.fontFamily===f.id?T.accentSurface:"transparent", color: readerPrefs.fontFamily===f.id?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit" }}>{f.label}</button>
+            ))}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Bionic</span>
+            <button onClick={() => updatePref("bionic", !readerPrefs.bionic)} style={{ width: 32, height: 18, borderRadius: 9, border: "none", cursor: "pointer", background: readerPrefs.bionic?T.accent:T.border, position: "relative", transition: "background .2s", flexShrink: 0 }}>
+              <span style={{ position: "absolute", top: 2, left: readerPrefs.bionic?16:2, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .18s", boxShadow: "0 1px 3px rgba(0,0,0,.15)" }} />
+            </button>
+          </div>
+          <button onClick={() => setShowReaderControls(false)} style={{ marginLeft: "auto", background: T.surface2, border: "none", borderRadius: 7, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.textSecondary, fontSize: 16, fontFamily: "inherit" }}>×</button>
+        </div>
+      )}
+
       {/* ── Main content — scroll container ── */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
         style={{ flex: 1, overflowY: "auto", position: "relative" }}
       >
-        {/* Aa floating reader controls — sticky inside scroll area */}
-        {showReaderControls && (
-          <div style={{
-            position: "sticky", top: 12, zIndex: 20,
-            maxWidth: "var(--reader-line-width)", margin: "12px auto 0",
-            padding: "0 20px",
-          }}>
-            <div style={{
-              background: T.card, border: `1px solid ${T.border}`,
-              borderRadius: 14, padding: "12px 16px",
-              boxShadow: "0 4px 20px rgba(0,0,0,.12)",
-              display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "1 1 140px" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Size</span>
-                <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
-                  onChange={e => updatePref("fontSize", parseInt(e.target.value))}
-                  style={{ flex: 1, accentColor: T.accent }} />
-                <span style={{ fontSize: 11, color: T.textSecondary, minWidth: 26 }}>{readerPrefs.fontSize}px</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 2 }}>Width</span>
-                {["narrow","medium","wide"].map(w => (
-                  <button key={w} onClick={() => updatePref("lineWidth", w)} style={{ padding: "3px 8px", borderRadius: 6, border: `1px solid ${readerPrefs.lineWidth===w?T.accent:T.border}`, background: readerPrefs.lineWidth===w?T.accentSurface:"transparent", color: readerPrefs.lineWidth===w?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit", textTransform: "capitalize" }}>{w}</button>
-                ))}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 2 }}>Font</span>
-                {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
-                  <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} style={{ padding: "3px 8px", borderRadius: 6, border: `1px solid ${readerPrefs.fontFamily===f.id?T.accent:T.border}`, background: readerPrefs.fontFamily===f.id?T.accentSurface:"transparent", color: readerPrefs.fontFamily===f.id?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit" }}>{f.label}</button>
-                ))}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Bionic</span>
-                <button onClick={() => updatePref("bionic", !readerPrefs.bionic)} style={{ width: 32, height: 18, borderRadius: 9, border: "none", cursor: "pointer", background: readerPrefs.bionic?T.accent:T.border, position: "relative", transition: "background .2s", flexShrink: 0 }}>
-                  <span style={{ position: "absolute", top: 2, left: readerPrefs.bionic?16:2, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .18s", boxShadow: "0 1px 3px rgba(0,0,0,.15)" }} />
-                </button>
-              </div>
-              <button onClick={() => setShowReaderControls(false)} style={{ marginLeft: "auto", background: T.surface2, border: "none", borderRadius: 7, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.textSecondary, fontSize: 16, fontFamily: "inherit" }}>×</button>
-            </div>
-          </div>
-        )}
-
         <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "40px 32px 120px", width: "100%" }}>
 
         {/* YouTube */}
@@ -400,10 +395,14 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
 
         {/* Article error */}
         {!yt.isYouTube && error && (
-          <div style={{ textAlign: "center", padding: "40px 20px" }}>
+          <div style={{ textAlign: "center", padding: "40px 20px", maxWidth: 360, margin: "0 auto" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
-            <div style={{ fontSize: 14, color: T.danger, marginBottom: 16 }}>Couldn't load article content.</div>
-            <Button variant="secondary" onClick={() => window.open(item.url, "_blank")}>Open in browser ↗</Button>
+            <div style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 6 }}>Couldn't load article</div>
+            <div style={{ fontSize: 13, color: T.textSecondary, marginBottom: 20, lineHeight: 1.6 }}>{error}</div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+              <Button onClick={() => { setRetryKey(k => k + 1); }}>↺ Retry</Button>
+              <Button variant="secondary" onClick={() => window.open(item.url, "_blank")}>Open in browser ↗</Button>
+            </div>
           </div>
         )}
 
@@ -486,6 +485,21 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
       )}
     </div>
   );
+}
+
+// ── Article error classifier ──────────────────────────────────
+function classifyArticleError(msg = "") {
+  if (msg.includes("block") || msg.includes("Could not reach"))
+    return "This site blocks external requests. Try opening it directly in your browser.";
+  if (msg.includes("timed out") || msg.includes("abort") || msg.includes("Timeout"))
+    return "The request timed out. The site may be slow or temporarily unavailable.";
+  if (msg.includes("404") || msg.includes("Not Found"))
+    return "Article not found (404) — the URL may have changed or been deleted.";
+  if (msg.includes("403") || msg.includes("Forbidden") || msg.includes("401"))
+    return "Access denied — this article may require a subscription or login.";
+  if (msg.includes("Invalid") || msg.includes("parse"))
+    return "Couldn't parse the page content.";
+  return msg || "Something went wrong loading this article.";
 }
 
 // ── HighlightedText — clean version without TTS word spans ───

@@ -5,6 +5,17 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.20.0] — 2026-03-19
+
+### Improved
+- **Mobile unread toggle** — the "·" label (same dot for both states, completely ambiguous) is replaced with "Unread" / "All" on mobile and "Unread only" / "All articles" on desktop. State is now always readable at a glance.
+- **Article error screen** — replaced the single "Open in browser" fallback with a two-button row: "↺ Retry" (re-runs the full fetch pipeline) and "Open in browser ↗". The error message now classifies the failure: proxy blocked, timeout, 404, 403/auth required, or parse error — instead of showing raw exception text.
+- **Reader controls always visible** — the Aa font/size panel was rendered with `position: sticky` inside the scroll container, meaning it was only visible if you were near the top of the article. Moved to a pinned row in the fixed layout (between the toolbar and scroll area) so it's always on screen when open, regardless of scroll position. Slides in with a subtle `slideDown` animation.
+- **Feed error messages** — the error tooltip in the sources sidebar now classifies failures instead of showing raw exception text: proxy blocked, invalid XML, timeout, 404 not found, 403 forbidden, or empty feed. Each case gets a plain-English one-liner.
+- **Pro plan price** — `plan.js` internal price corrected from `$5/mo` to `$9/mo` to match all other surfaces.
+
+---
+
 ## [1.19.0] — 2026-03-19
 
 ### Performance

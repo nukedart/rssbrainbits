@@ -22,7 +22,7 @@ export const PLANS = {
   },
   pro: {
     name: "Pro",
-    price: "$5/mo",
+    price: "$9/mo",
     feeds: Infinity,
     smartFeeds: Infinity,
     folders: Infinity,
