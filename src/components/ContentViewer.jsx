@@ -51,6 +51,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
   const scrollContainerRef = useRef(null);
 
   const articleRef = useRef(null);
+  const lastSavedProgressRef = useRef(0);
   const yt = item?.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
 
   // ── Fetch article ──────────────────────────────────────────
@@ -160,8 +161,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
     const pct = Math.round((el.scrollTop / max) * 100);
     setReadProgress(pct);
     // Debounce Supabase write — only save every 5% change
-    if (Math.abs(pct - (handleScroll._last || 0)) >= 5) {
-      handleScroll._last = pct;
+    if (Math.abs(pct - lastSavedProgressRef.current) >= 5) {
+      lastSavedProgressRef.current = pct;
       setReadingProgress(user.id, item.url, pct).catch(console.error);
     }
   }
@@ -546,15 +547,40 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
   );
 }
 
-// ── SummaryBlock — no TTS play button ────────────────────────
+// ── SummaryBlock ──────────────────────────────────────────────
 function SummaryBlock({ summary, summarizing, onSummarize, T }) {
   if (summary) {
+    // Parse bullet points — handles •, -, *, **bold**: prefix, numbered lists
+    const bullets = summary
+      .split("\n")
+      .map(l => l.trim())
+      .filter(l => l.length > 0)
+      .map(l => l
+        .replace(/^[•\-\*]\s*/, "")           // strip leading bullet chars
+        .replace(/^\d+\.\s*/, "")              // strip numbered list prefix
+        .replace(/^\*\*[^*]+\*\*:\s*/, "")     // strip **Bold label**: prefix
+        .replace(/\*\*([^*]+)\*\*/g, "$1")     // strip remaining **bold** markers
+        .trim()
+      )
+      .filter(l => l.length > 10);
+
     return (
       <div style={{ background: T.accentSurface, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px", marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.accentText, marginBottom: 10 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.accentText, marginBottom: 12 }}>
           ✨ AI Summary
         </div>
-        <div style={{ fontSize: 14, color: T.text, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{summary}</div>
+        {bullets.length > 0 ? (
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
+            {bullets.map((point, i) => (
+              <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <span style={{ color: T.accent, fontWeight: 700, fontSize: 16, lineHeight: "1.5", flexShrink: 0, marginTop: 1 }}>•</span>
+                <span style={{ fontSize: 14, color: T.text, lineHeight: 1.65 }}>{point}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div style={{ fontSize: 14, color: T.text, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{summary}</div>
+        )}
       </div>
     );
   }

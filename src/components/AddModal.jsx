@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { Input, Button } from "./UI";
 import { detectInputType, discoverFeed, isPodcastUrl } from "../lib/fetchers";
@@ -19,20 +19,25 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
   const [discovering, setDiscovering] = useState(false);
   const [discovered, setDiscovered]   = useState(null); // { feedUrl, title }
   const [error, setError]             = useState("");
+  const discoverTimerRef = useRef(null);
 
   function handleUrlChange(val) {
     setUrl(val); setError(""); setDiscovered(null);
+    clearTimeout(discoverTimerRef.current);
     try {
       new URL(val.trim());
       const type = detectInputType(val.trim());
       setDetected(type);
-      // Auto-discover RSS for plain websites and try fetching podcast feeds directly
+      // Auto-discover RSS for plain websites — debounced 600ms so we don't
+      // fire a network request on every keystroke while the user is still typing
       if (type === "article" || type === "podcast") {
         setDiscovering(true);
-        discoverFeed(val.trim()).then(result => {
-          setDiscovered(result);
-          if (result) setDetected("rss");
-        }).catch(() => {}).finally(() => setDiscovering(false));
+        discoverTimerRef.current = setTimeout(() => {
+          discoverFeed(val.trim()).then(result => {
+            setDiscovered(result);
+            if (result) setDetected("rss");
+          }).catch(() => {}).finally(() => setDiscovering(false));
+        }, 600);
       }
     } catch { setDetected(null); }
   }

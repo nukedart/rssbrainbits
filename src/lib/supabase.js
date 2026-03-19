@@ -385,20 +385,21 @@ export function matchesSmartFeed(item, defOrKeywords) {
 
 // ── Reading stats ─────────────────────────────────────────────
 export async function getReadingStats(userId) {
-  // Total all time (just a count — always works)
-  const { count, error: e2 } = await supabase
+  // Total all-time count — gracefully ignore schema errors
+  const { count } = await supabase
     .from("read_items").select("url", { count: "exact", head: true })
-    .eq("user_id", userId);
-  if (e2) throw e2;
+    .eq("user_id", userId)
+    .catch(() => ({ count: 0 }));
 
-  // Try to get read_at data — may not exist on older schemas
-  const { data: recentData } = await supabase
+  // Fetch recent reads — 500 items covers ~30 days for most users
+  const { data: recentData = [] } = await supabase
     .from("read_items").select("url, read_at")
     .eq("user_id", userId).order("read_at", { ascending: false }).limit(500)
     .catch(() => ({ data: [] }));
 
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-  const weekData = (recentData || []).filter(r => r.read_at && r.read_at >= weekAgo);
+  const weekAgo  = new Date(Date.now() - 7  * 86400000).toISOString();
+  const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+  const weekData  = (recentData || []).filter(r => r.read_at && r.read_at >= weekAgo);
 
   // Reading streak — count consecutive days with at least one read
   let streak = 0;
@@ -416,18 +417,20 @@ export async function getReadingStats(userId) {
     }
   }
 
-  // Articles per day this week
+  // Articles per day — cover the full 30-day window for the bar chart
   const perDay = {};
-  weekData.forEach(r => {
-    const day = r.read_at?.slice(0, 10);
-    if (day) perDay[day] = (perDay[day] || 0) + 1;
-  });
+  (recentData || [])
+    .filter(r => r.read_at && r.read_at >= monthAgo)
+    .forEach(r => {
+      const day = r.read_at?.slice(0, 10);
+      if (day) perDay[day] = (perDay[day] || 0) + 1;
+    });
 
   return {
     thisWeek: weekData.length,
-    allTime: count || 0,
+    allTime:  count || 0,
     streak,
-    perDay,
+    perDay,  // now covers the full 30 days shown in the chart
   };
 }
 

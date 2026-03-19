@@ -34,6 +34,7 @@ function AppShell() {
   const [sidebarOpen, setSidebarOpen]       = useState(true);
   const [podcastItem, setPodcastItem]       = useState(null); // currently playing podcast
   const [feeds, setFeeds]             = useState([]); // for SmartFeedModal feed picker
+  const [feedsLoaded, setFeedsLoaded] = useState(false); // don't show onboarding until feeds are confirmed empty
   const [onboardingDone, setOnboardingDone] = useState(() => !!localStorage.getItem("fb-onboarded"));
 
   // Load smart feeds once user is known
@@ -46,8 +47,8 @@ function AppShell() {
       .then(setFolders)
       .catch(err => { console.error("getFolders:", err); setFolders([]); });
     getFeeds(user.id)
-      .then(data => { setFeeds(data); if (data.length === 0 && !localStorage.getItem("fb-onboarded")) setOnboardingDone(false); })
-      .catch(err => { console.error("getFeeds:", err); setFeeds([]); });
+      .then(data => { setFeeds(data); setFeedsLoaded(true); if (data.length === 0 && !localStorage.getItem("fb-onboarded")) setOnboardingDone(false); })
+      .catch(err => { console.error("getFeeds:", err); setFeeds([]); setFeedsLoaded(true); });
   }, [user]);
 
   // ── Smart feed handlers ────────────────────────────────────
@@ -199,7 +200,7 @@ function AppShell() {
         <PodcastPlayer item={podcastItem} onClose={() => setPodcastItem(null)} />
       )}
 
-      {!onboardingDone && feeds.length === 0 && (
+      {!onboardingDone && feeds.length === 0 && feedsLoaded && (
         <Onboarding
           onAdd={handleOnboardingAdd}
           onDismiss={() => { setOnboardingDone(true); localStorage.setItem("fb-onboarded", "1"); }}

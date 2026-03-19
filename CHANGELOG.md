@@ -5,6 +5,26 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.18.0] — 2026-03-19
+
+### Fixed
+- **Bug fixes from v1.17.0 audit** — six issues resolved:
+  - **Reading progress debounce broken** — `handleScroll._last` was stored on a function object that gets recreated each render, resetting the counter and causing excessive Supabase writes. Replaced with `useRef` (`lastSavedProgressRef`) so the 5% threshold persists correctly across re-renders.
+  - **Feed auto-discovery on every keystroke** — `AddModal` triggered `discoverFeed()` network requests without debouncing, firing on each character typed in a valid URL. Added 600ms debounce via `discoverTimerRef`.
+  - **Fuse.js index rebuilt per keystroke** — `SearchBar` created a new `Fuse` instance inside the search effect, rebuilding the index on every keystroke. Moved to `useMemo` keyed on `allItems` — index now builds once per item list change.
+  - **Toast overlaps BottomNav on mobile** — fixed `bottom: 80` hardcoded offset. Now `bottom: isMobile ? 72 : 24` so the toast clears the navigation bar on all screen sizes.
+  - **Onboarding flash on new device** — returning users signing in on a fresh browser saw a brief flash of the onboarding overlay before their feeds loaded. Added `feedsLoaded` flag to `App.jsx`; onboarding now only renders after `getFeeds()` confirms feeds are truly empty.
+  - **Stats 30-day chart always empty** — `getReadingStats` computed `perDay` from only the last 7 days of data, so the 30-day bar chart showed zeros for all older days. `perDay` now covers the full 30-day window.
+
+### Improved
+- **AI summaries** — new prompt instructs Claude to write in plain text only (no asterisks, no markdown bold). `SummaryBlock` in `ContentViewer` now parses bullet points and renders each as a styled list item with a teal `•` accent. Handles raw `**bold**` markers and `**Label**: text` patterns from older cached summaries gracefully. All three summary backends updated (Cloudflare Worker, Supabase Edge Function, direct browser fallback).
+- **Reading Stats page** — added error state with a helpful migration hint when the `read_at` column is missing from `read_items`. `getReadingStats` no longer throws on schema errors — gracefully returns zeros and catches all Supabase failures.
+
+### Changed
+- **Pro subscription price** — updated from $5/month to **$9/month** across the Settings upgrade button and Edge Function setup comment. Landing page was already correct at $9.
+
+---
+
 ## [1.17.0] — 2026-03-19
 
 ### Added

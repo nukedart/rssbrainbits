@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from "react";
 import Fuse from "fuse.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
@@ -41,17 +41,22 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // Memoize Fuse index — only rebuild when the item list changes, not on every keystroke
+  const fuse = useMemo(() => {
+    if (!allItems.length) return null;
+    return new Fuse(allItems, {
+      keys: [{ name: "title", weight: 0.6 }, { name: "description", weight: 0.25 }, { name: "source", weight: 0.1 }, { name: "author", weight: 0.05 }],
+      threshold: 0.35, includeScore: true, minMatchCharLength: 2,
+    });
+  }, [allItems]);
+
   // Debounced search — fuzzy local first, then Supabase full-text
   useEffect(() => {
     clearTimeout(timerRef.current);
     if (!query.trim()) { setResults([]); return; }
 
     // Instant local fuzzy search across in-memory feed items
-    if (allItems.length > 0) {
-      const fuse = new Fuse(allItems, {
-        keys: [{ name: "title", weight: 0.6 }, { name: "description", weight: 0.25 }, { name: "source", weight: 0.1 }, { name: "author", weight: 0.05 }],
-        threshold: 0.35, includeScore: true, minMatchCharLength: 2,
-      });
+    if (fuse) {
       const localHits = fuse.search(query).slice(0, 12).map(r => ({ ...r.item, _score: r.score }));
       setResults(localHits);
     }
@@ -74,7 +79,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
       }
     }, 350);
     return () => clearTimeout(timerRef.current);
-  }, [query, user, allItems]);
+  }, [query, user, fuse]);
 
   function formatDate(dateStr) {
     if (!dateStr) return "";

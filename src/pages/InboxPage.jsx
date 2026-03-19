@@ -736,7 +736,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       {/* Toast */}
       {toast && (
         <div style={{
-          position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)",
+          position: "fixed", bottom: isMobile ? 72 : 24, left: "50%", transform: "translateX(-50%)",
           background: T.text, color: T.bg, borderRadius: 20,
           padding: "8px 18px", fontSize: 13, fontWeight: 600,
           boxShadow: "0 4px 16px rgba(0,0,0,.2)", zIndex: 1100,

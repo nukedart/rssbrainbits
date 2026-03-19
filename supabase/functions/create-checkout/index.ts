@@ -6,7 +6,7 @@
  *
  * SETUP:
  * 1. Create a Product + Price in Stripe Dashboard:
- *    Products → Add Product → "Feedbox Pro" → $5/month recurring
+ *    Products → Add Product → "Feedbox Pro" → $9/month recurring
  *    Copy the Price ID (looks like price_1ABC...)
  * 2. supabase secrets set STRIPE_SECRET_KEY=sk_live_...
  * 3. supabase secrets set STRIPE_PRO_PRICE_ID=price_1ABC...

@@ -166,10 +166,14 @@ export function StatsPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    getReadingStats(user.id).then(setStats).catch(console.error).finally(() => setLoading(false));
+    getReadingStats(user.id)
+      .then(setStats)
+      .catch(err => { console.error("StatsPage:", err); setError(true); })
+      .finally(() => setLoading(false));
   }, [user]);
 
   const planName = getPlanName(user);
@@ -189,7 +193,17 @@ export function StatsPage() {
   return (
     <PageShell title="Reading Stats" subtitle="Your reading activity">
       {loading && <div style={{ display:"flex", justifyContent:"center", paddingTop:80 }}><Spinner size={28} /></div>}
-      {!loading && stats && (
+      {!loading && error && (
+        <div style={{ padding:"40px 24px", textAlign:"center", color:T.textTertiary, maxWidth:400, margin:"0 auto" }}>
+          <div style={{ fontSize:28, marginBottom:12 }}>📊</div>
+          <div style={{ fontSize:14, fontWeight:600, color:T.text, marginBottom:6 }}>Stats unavailable</div>
+          <div style={{ fontSize:13, lineHeight:1.6 }}>
+            Reading stats require the <code style={{ background:T.surface2, padding:"1px 5px", borderRadius:4, fontSize:12 }}>read_at</code> column on <code style={{ background:T.surface2, padding:"1px 5px", borderRadius:4, fontSize:12 }}>read_items</code>.
+            Run the database migration in Settings → About to enable this.
+          </div>
+        </div>
+      )}
+      {!loading && !error && stats && (
         <div style={{ padding:"16px 16px 32px", maxWidth:680, margin:"0 auto", display:"flex", flexDirection:"column", gap:16 }}>
 
           {/* Plan badge */}
@@ -382,7 +396,7 @@ function PlanCard({ T, user, feedCount, planName }) {
           fontFamily:"inherit", transition:"all .2s",
           display:"flex", alignItems:"center", justifyContent:"center", gap:8,
         }}>
-          {loading ? "Redirecting to checkout…" : "⚡ Upgrade to Pro — $5/month"}
+          {loading ? "Redirecting to checkout…" : "⚡ Upgrade to Pro — $9/month"}
         </button>
       )}
       {!isPro && (

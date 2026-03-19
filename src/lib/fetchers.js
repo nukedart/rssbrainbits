@@ -506,7 +506,7 @@ export async function summarizeContent(text, title) {
         max_tokens: 1000,
         messages: [{
           role: "user",
-          content: `Summarize this article in 3-5 concise bullet points. Be direct and insightful.\n\nTitle: "${title}"\n\nContent:\n${text.slice(0, 6000)}`,
+          content: `You are a reading assistant. Summarize the following article in 3–5 clear bullet points. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 6000)}`,
         }],
       }),
     });
