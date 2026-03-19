@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { Input, Button } from "./UI";
-import { detectInputType, discoverFeed } from "../lib/fetchers";
+import { detectInputType, discoverFeed, isPodcastUrl } from "../lib/fetchers";
 
 const TYPE_INFO = {
   rss:     { icon: "📡", label: "RSS Feed",      desc: "All articles from this feed will appear in your inbox" },
+  podcast: { icon: "🎙️", label: "Podcast Feed",   desc: "Episodes will appear in your inbox with a play button" },
   youtube: { icon: "▶️", label: "YouTube Video", desc: "Watch the video with an AI-generated summary" },
   article: { icon: "📰", label: "Article",        desc: "Read this article in a clean, focused view" },
 };
@@ -25,8 +26,8 @@ export default function AddModal({ onAdd, onClose }) {
       new URL(val.trim());
       const type = detectInputType(val.trim());
       setDetected(type);
-      // Auto-discover RSS if it looks like a plain website
-      if (type === "article") {
+      // Auto-discover RSS for plain websites and try fetching podcast feeds directly
+      if (type === "article" || type === "podcast") {
         setDiscovering(true);
         discoverFeed(val.trim()).then(result => {
           setDiscovered(result);
@@ -40,10 +41,11 @@ export default function AddModal({ onAdd, onClose }) {
     if (!url.trim()) return;
     setLoading(true); setError("");
     try {
-      // Use the discovered feed URL if auto-discovery found one
       const finalUrl  = discovered?.feedUrl || url.trim();
       const finalName = feedName.trim() || discovered?.title || null;
-      await onAdd({ url: finalUrl, type: detected || "article", name: finalName });
+      // Treat podcast as rss type for storage — isPodcast flag comes from enclosure tags
+      const finalType = (detected === "podcast") ? "rss" : (detected || "article");
+      await onAdd({ url: finalUrl, type: finalType, name: finalName });
       onClose();
     } catch (err) {
       setError(err.message || "Something went wrong. Check the URL and try again.");
@@ -75,7 +77,7 @@ export default function AddModal({ onAdd, onClose }) {
           <div style={{ width: 34, height: 34, borderRadius: 9, background: T.accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, marginRight: 12 }}>+</div>
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: T.text, margin: 0 }}>Add to Feedbox</h2>
-            <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>RSS feed, article URL, or YouTube link</div>
+            <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>RSS feed, podcast, article URL, or YouTube link</div>
           </div>
           <button onClick={onClose} style={{
             marginLeft: "auto", background: T.surface2, border: "none",
@@ -88,7 +90,7 @@ export default function AddModal({ onAdd, onClose }) {
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, display: "block", marginBottom: 7, textTransform: "uppercase", letterSpacing: ".06em" }}>URL</label>
           <Input value={url} onChange={handleUrlChange}
-            placeholder="https://example.com/feed or article URL…"
+            placeholder="https://example.com/feed, podcast URL, or article…"
             autoFocus onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }} />
         </div>
 
@@ -107,7 +109,7 @@ export default function AddModal({ onAdd, onClose }) {
         )}
 
         {/* Optional nickname for RSS */}
-        {detected === "rss" && (
+        {(detected === "rss" || detected === "podcast") && (
           <div style={{ marginBottom: 14 }}>
             <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, display: "block", marginBottom: 7, textTransform: "uppercase", letterSpacing: ".06em" }}>Nickname (optional)</label>
             <Input value={feedName} onChange={setFeedName} placeholder="e.g. Hacker News, The Verge…" />

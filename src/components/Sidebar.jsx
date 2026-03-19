@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-const APP_VERSION = "1.13.1"; // keep in sync with package.json
+const APP_VERSION = "1.13.2"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -83,6 +83,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
   // All hooks before any conditional return
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
+  const [sidebarDragOver, setSidebarDragOver] = useState(null); // folderId being dragged over in sidebar
   const shortcutsRef = useRef(null);
 
   useEffect(() => {
@@ -254,9 +255,17 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
             return (
               <div key={folder.id} style={{ marginBottom:1 }}>
                 {/* Folder header row */}
-                <div style={{ display:"flex", alignItems:"center", gap:4, borderRadius:9, transition:"background .12s" }}
-                  onMouseEnter={e => { if (!collapsed) e.currentTarget.style.background=T.surface2; }}
-                  onMouseLeave={e => { e.currentTarget.style.background="transparent"; }}
+                <div style={{ display:"flex", alignItems:"center", gap:4, borderRadius:9, transition:"background .12s", background: sidebarDragOver===folder.id ? T.accentSurface : "transparent", outline: sidebarDragOver===folder.id ? `1.5px solid ${T.accent}` : "none" }}
+                  onMouseEnter={e => { if (!collapsed && sidebarDragOver!==folder.id) e.currentTarget.style.background=T.surface2; }}
+                  onMouseLeave={e => { if (sidebarDragOver!==folder.id) e.currentTarget.style.background="transparent"; }}
+                  onDragOver={e => { e.preventDefault(); setSidebarDragOver(folder.id); }}
+                  onDragLeave={() => setSidebarDragOver(null)}
+                  onDrop={async e => {
+                    e.preventDefault();
+                    const feedId = e.dataTransfer.getData("feedId");
+                    if (feedId && onMoveFeedToFolder) await onMoveFeedToFolder(feedId, folder.id);
+                    setSidebarDragOver(null);
+                  }}
                 >
                   <button onClick={() => !collapsed && toggleFolder(folder.id)}
                     title={collapsed ? folder.name : undefined}
@@ -288,8 +297,15 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
                 </div>
                 {/* Feeds inside folder */}
                 {!collapsed && isExpanded && folderFeeds.map(f => (
-                  <div key={f.id} style={{ padding:"3px 10px 3px 26px", fontSize:12, color:T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                    {f.name || (() => { try { return new URL(f.url).hostname; } catch { return f.url; } })()}
+                  <div key={f.id}
+                    draggable
+                    onDragStart={e => { e.dataTransfer.setData("feedId", f.id); e.dataTransfer.effectAllowed = "move"; }}
+                    style={{ padding:"3px 10px 3px 26px", fontSize:12, color:T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", cursor:"grab", borderRadius:6 }}
+                    onMouseEnter={e => e.currentTarget.style.background=T.surface2}
+                    onMouseLeave={e => e.currentTarget.style.background="transparent"}
+                    title="Drag to move to another folder"
+                  >
+                    ⠿ {f.name || (() => { try { return new URL(f.url).hostname; } catch { return f.url; } })()}
                   </div>
                 ))}
               </div>

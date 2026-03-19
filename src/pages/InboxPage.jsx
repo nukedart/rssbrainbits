@@ -71,7 +71,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   }, [user]);
 
   useEffect(() => {
-    const rssFeeds = feeds.filter((f) => f.type === "rss");
+    const rssFeeds = feeds.filter((f) => f.type === "rss" || f.type === "podcast");
     if (!rssFeeds.length) { setAllItems([]); setLoadingItems(false); return; }
 
     setFeedErrors({});
@@ -797,19 +797,27 @@ function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, o
   return (
     <div style={{ position: "relative" }}>
       <div
-        draggable={!!feedId}
-        onDragStart={e => { if (feedId) { e.dataTransfer.setData("feedId", feedId); e.dataTransfer.effectAllowed = "move"; }}}
         onClick={onClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "5px 8px 5px 10px", borderRadius: 8,
-          cursor: feedId ? "grab" : "pointer", marginBottom: 1,
+          cursor: "pointer", marginBottom: 1,
           background: active ? T.accentSurface : hovered ? T.surface2 : "transparent",
           transition: "background .12s",
         }}
       >
+        {/* Drag handle — separate from click area */}
+        {feedId && hovered && (
+          <span
+            draggable
+            onDragStart={e => { e.stopPropagation(); e.dataTransfer.setData("feedId", feedId); e.dataTransfer.effectAllowed = "move"; }}
+            onClick={e => e.stopPropagation()}
+            title="Drag to folder"
+            style={{ cursor:"grab", color:T.textTertiary, fontSize:10, flexShrink:0, userSelect:"none", marginLeft:-4, marginRight:-4 }}
+          >⠿</span>
+        )}
         <div style={{ width: 14, height: 14, borderRadius: 3, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: active ? 1 : 0.7 }}>
           {favicon
             ? <img src={favicon} alt="" width={12} height={12} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />

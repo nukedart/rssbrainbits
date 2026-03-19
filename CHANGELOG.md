@@ -5,6 +5,20 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.13.2] — 2026-03-19
+
+### Fixed
+- **Left panel feed click doing nothing** — `SourceItem` had `draggable={!!feedId}` on the entire row div. On most browsers, making an element draggable suppresses click events since the browser assumes you might be starting a drag. Fixed by removing `draggable` from the row div entirely and replacing it with a dedicated drag handle (⠿ grip icon) that appears on hover, keeping click and drag completely separate.
+- **Sidebar drag-drop missing** — folder rows in the sidebar nav were not wired as drag targets, and feed names inside expanded folders were not draggable. Both now support drag-to-folder: feed names get a drag handle on hover, and folder header rows highlight when a feed is dragged over them.
+- **Podcast feeds excluded from feed list** — feeds saved with `type: "podcast"` were filtered out by `feeds.filter(f => f.type === "rss")`. Fixed to include both `"rss"` and `"podcast"` types.
+
+### Added
+- **Podcast URL detection** — new `isPodcastUrl()` in fetchers detects podcast-specific domains (Buzzsprout, Transistor, Anchor, Libsyn, Megaphone, Art19, Apple Podcasts, etc). `detectInputType()` now returns `"podcast"` for these URLs.
+- **Podcast type in Add modal** — URLs detected as podcasts show a 🎙️ "Podcast Feed" type pill with "Episodes will appear in your inbox with a play button" description. Saved as `type: "rss"` internally since podcast feeds are RSS with audio enclosures. Nickname field shown for podcast URLs same as RSS.
+
+---
+
+
 ## [1.13.1] — 2026-03-19
 
 ### Fixed

@@ -347,6 +347,16 @@ export function parseYouTubeUrl(url) {
   } catch { return { isYouTube: false }; }
 }
 
+export function isPodcastUrl(url) {
+  const u = url.toLowerCase();
+  return u.includes("podcast") || u.includes("itunes.apple.com/") ||
+    u.includes("feeds.buzzsprout") || u.includes("feeds.transistor") ||
+    u.includes("feeds.captivate") || u.includes("anchor.fm/") ||
+    u.includes("feeds.simplecast") || u.includes("feeds.soundcloud") ||
+    u.includes("feeds.libsyn") || u.includes("rss.art19") ||
+    u.includes("feeds.megaphone") || u.includes("omnycontent.com/");
+}
+
 export function isRSSUrl(url) {
   return url.includes("/feed") || url.includes("/rss") || url.includes(".xml") ||
     url.includes("atom") || url.endsWith("/feed/") || url.includes("feedburner");
@@ -354,6 +364,7 @@ export function isRSSUrl(url) {
 
 export function detectInputType(url) {
   if (parseYouTubeUrl(url).isYouTube) return "youtube";
+  if (isPodcastUrl(url)) return "podcast";
   if (isRSSUrl(url)) return "rss";
   return "article";
 }
