@@ -5,6 +5,33 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.14.0] — 2026-03-19
+
+### Added
+- **Save article URLs for Read Later** — two entry points: (1) `AddModal` now shows a "⏱ Save for Later" button alongside "Open" when an article URL is detected; fetches title/meta before saving so the queue shows real titles. (2) `ReadLaterPage` has a persistent "+ Save an article URL for later…" bar at the top — paste any URL, hit Save or Enter. Both paths call `fetchArticleContent` for metadata then upsert to Supabase `saved`.
+- **Read time on cards** — card view now shows estimated reading time (e.g. "3 min read") below the description. Podcast cards show duration instead. Uses the existing `readingTime()` helper.
+- **Fuse.js fuzzy search** — `SearchBar` now runs an instant client-side fuzzy search over all in-memory feed articles (title × 0.6, description × 0.25, source × 0.1, author × 0.05, threshold 0.35) as you type. Results appear immediately with no network round-trip. Supabase history/saved results are still fetched in parallel and merged in, deduped by URL, capped at 20 total.
+- **`F` keyboard shortcut** — press `F` from anywhere in the inbox to focus and select-all the search bar. Uses `forwardRef` + `useImperativeHandle` on `SearchBar` to expose `focusInput()`. Added to shortcuts popover.
+- **Unread count persistence** — read URLs are now cached to `localStorage` under `fb-readurls-{userId}` and seeded immediately on mount so the unread badge survives a hard reload. Supabase is still the truth — its response merges in and overwrites the cache. `handleMarkRead` / `handleMarkUnread` keep the cache in sync on every toggle.
+- **Feed Health dashboard upgrade** — `FeedHealthCard` in Settings now shows a 5-stat summary row (Total feeds, Fresh, Stale, Uncached, Articles), per-feed cache age ("2m ago", "Just now", "Not loaded"), item count from cache, and a ↺ per-feed force-refresh button that invalidates cache and re-fetches.
+
+### Fixed
+- **Duplicate style keys** — `NotesPage.jsx` had `borderRadius` and `borderLeft` declared twice in one object literal; `HighlightsDrawer.jsx` had `background` declared twice. Both cleaned up — last value was winning silently, now the intended value is kept.
+
+### Changed
+- **Version text** — sidebar version stamp reduced from 11px / 0.7 opacity to 9px / 0.45 opacity. More subtle, less visual noise.
+
+---
+
+## [1.13.3] — 2026-03-19
+
+### Fixed
+- **Card view items not showing** — hero image container used `aspectRatio` CSS which collapses to 0px height inside a flex/grid container when no image is present or the image hasn't loaded yet, causing cards to render with no visible height. Replaced with the reliable `position: relative` + `padding-bottom` percentage trick (56.25% for 16/9, 43.75% for 16/7, 75% for 16/12) with the `<img>` absolutely positioned inside. Cards now always have correct height regardless of image state.
+- **Pull-to-refresh crash (mobile)** — `handlePTREnd` called `fetchAll(true)` but `fetchAll` is defined inside the `useEffect` closure, making it out of scope at the component level — a `ReferenceError` on every mobile pull-to-refresh. Added `fetchAllRef = useRef(null)` and assigned `fetchAllRef.current = fetchAll` inside the effect. PTR now calls `fetchAllRef.current?.(true)` safely.
+- **Initial skeleton never shows** — `loadingItems` was initialised to `false`, so on first render before the fetch effect ran, the skeleton was hidden and the "Fetching articles…" empty state flashed immediately. Changed initial state to `true` so the skeleton shows from the very first render, disappearing only once real items arrive.
+
+---
+
 ## [1.13.3] — 2026-03-19
 
 ### Fixed

@@ -176,13 +176,9 @@ export default function NotesPage({ onOpenArticle }) {
                   const colorDef = HIGHLIGHT_COLORS.find(c => c.id === h.color) || HIGHLIGHT_COLORS[0];
                   return (
                     <div key={h.id} style={{
-                      borderLeft: `3px solid ${colorDef.border}`,
-                      paddingLeft: 14, paddingTop: 4, paddingBottom: 4,
-                      borderRadius: "0 8px 8px 0",
                       background: T.card, border: `1px solid ${T.border}`,
-                      borderLeftColor: colorDef.border,
-                      borderRadius: 9, padding: "12px 14px 12px 16px",
                       borderLeft: `3px solid ${colorDef.border}`,
+                      borderRadius: 9, padding: "12px 14px 12px 16px",
                     }}>
                       {/* Passage */}
                       <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.7, fontStyle: "italic", margin: "0 0 8px" }}>

@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-const APP_VERSION = "1.13.2"; // keep in sync with package.json
+const APP_VERSION = "1.14.0"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -33,7 +33,7 @@ const NAV = [
 
 const SHORTCUTS = [
   ["J / K","Navigate"],["O","Open"],["R","Read/unread"],
-  ["L","Read later"],["S","Save"],["A","Add feed"],["Esc","Close"],
+  ["L","Read later"],["S","Save"],["A","Add feed"],["F","Focus search"],["Esc","Close"],
 ];
 
 // ── Single nav row — works in both expanded and collapsed state ──
@@ -358,7 +358,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
 
         {/* Version — only when expanded */}
         {!collapsed && (
-          <div style={{ textAlign:"center", padding:"4px 10px 2px", fontSize:11, color:T.textTertiary, opacity:0.7, letterSpacing:".02em" }}>
+          <div style={{ textAlign:"center", padding:"3px 10px 1px", fontSize:9, color:T.textTertiary, opacity:0.45, letterSpacing:".04em" }}>
             v{APP_VERSION}
           </div>
         )}

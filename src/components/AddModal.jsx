@@ -10,7 +10,7 @@ const TYPE_INFO = {
   article: { icon: "📰", label: "Article",        desc: "Read this article in a clean, focused view" },
 };
 
-export default function AddModal({ onAdd, onClose }) {
+export default function AddModal({ onAdd, onClose, onSaveForLater }) {
   const { T } = useTheme();
   const [url, setUrl]           = useState("");
   const [feedName, setFeedName] = useState("");
@@ -122,6 +122,16 @@ export default function AddModal({ onAdd, onClose }) {
 
         <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
           <Button variant="secondary" onClick={onClose} style={{ flex: 1, justifyContent: "center" }}>Cancel</Button>
+          {detected === "article" && onSaveForLater && (
+            <Button variant="secondary" onClick={async () => {
+              setLoading(true); setError("");
+              try { await onSaveForLater({ url: url.trim(), type: "article" }); onClose(); }
+              catch (err) { setError(err.message || "Failed to save."); }
+              finally { setLoading(false); }
+            }} disabled={!url.trim() || loading} style={{ flex: 2, justifyContent: "center" }}>
+              {loading ? "Saving…" : "⏱ Save for Later"}
+            </Button>
+          )}
           <Button onClick={handleSubmit} disabled={!url.trim() || loading} style={{ flex: 2, justifyContent: "center" }}>
             {loading ? "Loading…" : detected === "rss" ? "Subscribe to Feed" : "Open"}
           </Button>

@@ -23,7 +23,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [allItems, setAllItems]         = useState([]);
   const [activeSource, setActiveSource] = useState("all");
   const [loadingFeeds, setLoadingFeeds] = useState(true);
-  const [loadingItems, setLoadingItems] = useState(false);
+  const [loadingItems, setLoadingItems] = useState(true);
   const [showAdd, setShowAdd]           = useState(false);
   const [openItem, setOpenItem]         = useState(null);
   const [openIdx, setOpenIdx]           = useState(-1);
@@ -50,7 +50,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [isPulling, setIsPulling]   = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const pullRef = useRef(null);
-  const pullStartY = useRef(null); // folder id being dragged over
+  const pullStartY = useRef(null); // touch start Y for pull-to-refresh
+  const fetchAllRef = useRef(null); // stable ref to fetchAll — accessible from PTR handlers
   const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
 
   function toggleFolderOpen(id) {
@@ -61,13 +62,24 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     });
   }
   const listRef = useRef(null);
+  const searchBarRef = useRef(null); // for f-key focus
 
   useEffect(() => {
     if (!user) return;
     getFeeds(user.id).then(setFeeds).catch(console.error).finally(() => setLoadingFeeds(false));
     // Open all folders by default when component mounts
     if (folders.length > 0) setOpenFolders(new Set(folders.map(f => f.id)));
-    getReadUrls(user.id).then(setReadUrls).catch(console.error);
+    // Load read URLs — seed from localStorage cache first for instant unread counts,
+    // then merge with Supabase truth so the badge is never wrong after reload
+    const cacheKey = `fb-readurls-${user.id}`;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) setReadUrls(new Set(JSON.parse(cached)));
+    } catch {}
+    getReadUrls(user.id).then(urls => {
+      setReadUrls(urls);
+      try { localStorage.setItem(cacheKey, JSON.stringify([...urls])); } catch {}
+    }).catch(console.error);
   }, [user]);
 
   useEffect(() => {
@@ -136,6 +148,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       setAllItems(prev => { prevItemUrlsRef.current = new Set(prev.map(i => i.url)); return prev; });
     };
 
+    fetchAllRef.current = fetchAll;
     fetchAll();
 
     // ── Auto-refresh every 30 minutes ────────────────────────
@@ -327,17 +340,37 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
   async function handleMarkRead(url) {
     await markRead(user.id, url);
-    setReadUrls((prev) => new Set([...prev, url]));
+    setReadUrls((prev) => {
+      const next = new Set([...prev, url]);
+      try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
+      return next;
+    });
   }
 
   async function handleMarkUnread(url) {
     await markUnread(user.id, url);
-    setReadUrls((prev) => { const n = new Set(prev); n.delete(url); return n; });
+    setReadUrls((prev) => {
+      const next = new Set(prev); next.delete(url);
+      try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
+      return next;
+    });
   }
 
   async function handleSaveItem(item) {
     await saveItem(user.id, { ...item });
     showToast("✓ Saved");
+  }
+
+  async function handleSaveForLater({ url, type }) {
+    // Fetch article metadata then save as read-later
+    let item = { url, type: "article", title: url, source: new URL(url).hostname };
+    try {
+      const { fetchArticleContent } = await import("../lib/fetchers");
+      const content = await fetchArticleContent(url);
+      item = { url, type: "article", title: content.title || url, source: new URL(url).hostname, description: content.description, image: content.image };
+    } catch { /* use fallback */ }
+    await addReadLater(user.id, item);
+    showToast("⏱ Saved for later");
   }
 
   async function handleReadLater(item) {
@@ -407,7 +440,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     if (pullY > 55) {
       setRefreshing(true);
       setPullY(44); // snap to loading position
-      await fetchAll(true);
+      await fetchAllRef.current?.(true);
       setRefreshing(false);
     }
     setPullY(0);
@@ -564,7 +597,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
           {/* Search — fills remaining space */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <SearchBar onSelectResult={(item) => setSearchResult(item)} onLiveSearch={setLiveSearch} onClose={() => { setLiveSearch(""); }} />
+            <SearchBar ref={searchBarRef} onSelectResult={(item) => setSearchResult(item)} onLiveSearch={setLiveSearch} onClose={() => { setLiveSearch(""); }} allItems={allItems} />
           </div>
 
           {/* Refresh button */}
@@ -697,7 +730,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
         }}>{toast}</div>
       )}
 
-      {showAdd  && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} />}
+      {showAdd && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} onSaveForLater={handleSaveForLater} />}
       {openItem && <ContentViewer
         item={openItem}
         onClose={() => { setOpenItem(null); setOpenIdx(-1); }}

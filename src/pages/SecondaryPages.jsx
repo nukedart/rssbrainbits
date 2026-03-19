@@ -10,6 +10,7 @@ import ContentViewer from "../components/ContentViewer";
 import { Button, EmptyState, Spinner } from "../components/UI";
 import { getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
 import { feedsToOPML, downloadFile } from "../lib/exportUtils";
+import { getCachedFeed, cacheAge, invalidateCachedFeed } from "../lib/feedCache";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -35,6 +36,10 @@ export function ReadLaterPage() {
   const [items, setItems]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [openItem, setOpenItem] = useState(null);
+  const [showAdd, setShowAdd]   = useState(false);
+  const [addUrl, setAddUrl]     = useState("");
+  const [addLoading, setAddLoading] = useState(false);
+  const [addError, setAddError]   = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -46,11 +51,66 @@ export function ReadLaterPage() {
     setItems((prev) => prev.filter((s) => s.url !== url));
   }
 
+  async function handleAddUrl() {
+    if (!addUrl.trim()) return;
+    setAddLoading(true); setAddError("");
+    try {
+      const url = addUrl.trim();
+      let item = { url, type: "article", title: url, source: (() => { try { return new URL(url).hostname; } catch { return url; } })() };
+      try {
+        const { fetchArticleContent } = await import("../lib/fetchers");
+        const content = await fetchArticleContent(url);
+        item = { url, type: "article", title: content.title || url, source: new URL(url).hostname, description: content.description, image: content.image };
+      } catch {}
+      await addReadLater(user.id, item);
+      setItems(prev => [{ ...item, saved_at: new Date().toISOString(), is_read_later: true }, ...prev]);
+      setAddUrl(""); setShowAdd(false);
+    } catch (err) {
+      setAddError(err.message || "Failed to save article.");
+    } finally {
+      setAddLoading(false);
+    }
+  }
+
   return (
-    <PageShell title="Read Later" subtitle={`${items.length} articles saved`}>
+    <PageShell title="Read Later" subtitle={`${items.length} article${items.length !== 1 ? "s" : ""} queued`}>
+      {/* Add URL bar */}
+      <div style={{ padding: "12px 16px 0" }}>
+        {!showAdd ? (
+          <button onClick={() => setShowAdd(true)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 14px", borderRadius: 10, border: `1.5px dashed ${T.border}`, background: "transparent", cursor: "pointer", color: T.textTertiary, fontSize: 13, fontFamily: "inherit", transition: "all .15s" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.accentSurface; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textTertiary; e.currentTarget.style.background = "transparent"; }}
+          >
+            <span style={{ fontSize: 16 }}>+</span> Save an article URL for later…
+          </button>
+        ) : (
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexDirection: "column" }}>
+            <div style={{ display: "flex", gap: 8, width: "100%" }}>
+              <input
+                autoFocus
+                value={addUrl}
+                onChange={e => { setAddUrl(e.target.value); setAddError(""); }}
+                onKeyDown={e => { if (e.key === "Enter") handleAddUrl(); if (e.key === "Escape") { setShowAdd(false); setAddUrl(""); setAddError(""); } }}
+                placeholder="Paste an article URL…"
+                style={{ flex: 1, background: T.surface, border: `1.5px solid ${T.accent}`, borderRadius: 9, padding: "9px 13px", fontSize: 13, color: T.text, fontFamily: "inherit", outline: "none" }}
+              />
+              <button onClick={handleAddUrl} disabled={!addUrl.trim() || addLoading}
+                style={{ background: T.accent, border: "none", borderRadius: 9, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#fff", fontFamily: "inherit", flexShrink: 0, opacity: (!addUrl.trim() || addLoading) ? 0.5 : 1 }}>
+                {addLoading ? "Saving…" : "Save"}
+              </button>
+              <button onClick={() => { setShowAdd(false); setAddUrl(""); setAddError(""); }}
+                style={{ background: T.surface2, border: "none", borderRadius: 9, padding: "9px 12px", cursor: "pointer", fontSize: 13, color: T.textSecondary, fontFamily: "inherit", flexShrink: 0 }}>
+                Cancel
+              </button>
+            </div>
+            {addError && <div style={{ fontSize: 12, color: T.danger, padding: "6px 12px", background: `${T.danger}15`, borderRadius: 7, width: "100%", boxSizing: "border-box" }}>{addError}</div>}
+          </div>
+        )}
+      </div>
+
       {loading && <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}><Spinner size={28} /></div>}
       {!loading && items.length === 0 && (
-        <EmptyState icon="⏱" title="Nothing queued" subtitle="Press L while reading any article to save it here for later." />
+        <EmptyState icon="⏱" title="Nothing queued" subtitle="Paste any article URL above, or press L while reading to save for later." />
       )}
       {items.map((item) => (
         <FeedItem key={item.url} item={{ ...item, date: item.saved_at }}
@@ -252,7 +312,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.13.2</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.14.0</div>
         </Card>
       </div>
     </PageShell>
@@ -441,28 +501,90 @@ function ReadingStatsCard({ T, user }) {
 
 // ── Feed Health Dashboard ─────────────────────────────────────
 function FeedHealthCard({ T, user, feeds = [] }) {
+  const [refreshing, setRefreshing] = useState({});
+  const [, forceUpdate] = useState(0);
   if (feeds.length === 0) return null;
+
+  async function handleRefreshFeed(feed) {
+    setRefreshing(prev => ({ ...prev, [feed.id]: true }));
+    invalidateCachedFeed(feed.url);
+    try {
+      const { fetchRSSFeed } = await import("../lib/fetchers");
+      await fetchRSSFeed(feed.url, { forceRefresh: true });
+    } catch {}
+    setRefreshing(prev => ({ ...prev, [feed.id]: false }));
+    forceUpdate(n => n + 1);
+  }
+
+  const totalItems = feeds.reduce((sum, feed) => {
+    const cached = getCachedFeed(feed.url);
+    return sum + (cached?.data?.items?.length || 0);
+  }, 0);
+  const freshCount = feeds.filter(f => {
+    const age = cacheAge(f.url);
+    return age !== null && age < 30;
+  }).length;
+  const staleCount = feeds.filter(f => {
+    const age = cacheAge(f.url);
+    return age !== null && age >= 30;
+  }).length;
+  const uncachedCount = feeds.filter(f => cacheAge(f.url) === null).length;
 
   return (
     <Card title="Feed Health" T={T}>
-      <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 12, lineHeight: 1.6 }}>
-        Overview of your {feeds.length} subscribed feeds.
+      {/* Summary row */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        {[
+          { label: "Total feeds", value: feeds.length, color: T.text },
+          { label: "Fresh", value: freshCount, color: T.success },
+          { label: "Stale", value: staleCount, color: T.warning },
+          { label: "Uncached", value: uncachedCount, color: T.textTertiary },
+          { label: "Articles", value: totalItems, color: T.accent },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{ flex: 1, background: T.surface, borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color }}>{value}</div>
+            <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 2 }}>{label}</div>
+          </div>
+        ))}
       </div>
+
+      {/* Per-feed rows */}
       <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
         {feeds.map(feed => {
           const host = (() => { try { return new URL(feed.url).hostname.replace("www.", ""); } catch { return feed.url; } })();
+          const age = cacheAge(feed.url);
+          const cached = getCachedFeed(feed.url);
+          const itemCount = cached?.data?.items?.length || 0;
+          const isFresh = age !== null && age < 30;
+          const isStale = age !== null && age >= 30;
+          const statusColor = isFresh ? T.success : isStale ? T.warning : T.textTertiary;
+          const statusLabel = age === null ? "Not loaded" : age < 1 ? "Just now" : age < 60 ? `${age}m ago` : `${Math.round(age/60)}h ago`;
           return (
-            <div key={feed.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 8, background: T.surface }}>
+            <div key={feed.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, background: T.surface }}
+              onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+              onMouseLeave={e => e.currentTarget.style.background = T.surface}
+            >
               <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=32`} alt="" width={14} height={14} style={{ borderRadius: 2, flexShrink: 0 }} onError={e => e.target.style.display="none"} />
               <span style={{ flex: 1, fontSize: 13, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {feed.name || host}
               </span>
               {feed.fetch_full_content && (
-                <span style={{ fontSize: 10, background: T.accentSurface, color: T.accentText, padding: "2px 6px", borderRadius: 5, fontWeight: 600, flexShrink: 0 }}>Full</span>
+                <span style={{ fontSize: 9, background: T.accentSurface, color: T.accentText, padding: "1px 5px", borderRadius: 4, fontWeight: 600, flexShrink: 0 }}>Full</span>
               )}
-              <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>
-                {feed.type === "rss" ? "RSS" : feed.type?.toUpperCase()}
-              </span>
+              {itemCount > 0 && (
+                <span style={{ fontSize: 10, color: T.textTertiary, flexShrink: 0 }}>{itemCount} items</span>
+              )}
+              <span style={{ fontSize: 10, color: statusColor, flexShrink: 0, minWidth: 56, textAlign: "right" }}>{statusLabel}</span>
+              <button
+                onClick={() => handleRefreshFeed(feed)}
+                disabled={refreshing[feed.id]}
+                title="Force refresh"
+                style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 5, width: 22, height: 22, cursor: "pointer", color: T.textTertiary, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textTertiary; }}
+              >
+                {refreshing[feed.id] ? <span style={{ display: "inline-block", animation: "spin .7s linear infinite" }}>↺</span> : "↺"}
+              </button>
             </div>
           );
         })}

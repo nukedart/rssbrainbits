@@ -216,14 +216,13 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
         >
           {/* Hero image */}
           <div style={{
-            aspectRatio: cardSize === "lg" ? "16/7" : cardSize === "sm" ? "16/12" : "16/9",
-            overflow: "hidden", flexShrink: 0,
+            position: "relative", flexShrink: 0, overflow: "hidden",
+            paddingBottom: cardSize === "lg" ? "43.75%" : cardSize === "sm" ? "75%" : "56.25%", // 16/7, 16/12, 16/9
             background: thumb ? T.surface2 : `linear-gradient(135deg, ${T.surface2} 0%, ${T.border} 100%)`,
-            position: "relative",
           }}>
             {thumb && (
               <img src={thumb} alt="" loading="lazy"
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 onError={e => { e.target.style.display = "none"; }}
               />
             )}
@@ -271,6 +270,19 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
                 {item.description}
               </div>
             )}
+
+            {/* Reading time + date row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: cardSize !== "sm" ? 6 : 0, marginBottom: 8 }}>
+              {item.description && (
+                <span style={{ fontSize: 10, color: T.textTertiary }}>
+                  {readingTime(item.description)}
+                </span>
+              )}
+              {item.date && item.description && <span style={{ fontSize: 10, color: T.textTertiary }}>·</span>}
+              {item.isPodcast && item.audioDuration && (
+                <span style={{ fontSize: 10, color: T.accent }}>▶ {item.audioDuration}</span>
+              )}
+            </div>
 
             {/* Actions */}
             <div style={{ display: "flex", gap: 6, marginTop: "auto" }} onClick={e => e.stopPropagation()}>

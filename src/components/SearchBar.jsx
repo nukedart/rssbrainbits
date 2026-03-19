@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import Fuse from "fuse.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { searchItems } from "../lib/supabase";
@@ -14,7 +15,7 @@ function SearchIcon({ size = 14, color = "currentColor" }) {
   );
 }
 
-export default function SearchBar({ onSelectResult, onClose, onLiveSearch }) {
+const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiveSearch, allItems = [] }, ref) {
   const { T } = useTheme();
   const { user } = useAuth();
 
@@ -26,6 +27,10 @@ export default function SearchBar({ onSelectResult, onClose, onLiveSearch }) {
   const timerRef  = useRef(null);
   const panelRef  = useRef(null);
 
+  useImperativeHandle(ref, () => ({
+    focusInput: () => { inputRef.current?.focus(); inputRef.current?.select(); }
+  }));
+
   // Auto-focus when mounted
   useEffect(() => { inputRef.current?.focus(); }, []);
 
@@ -36,23 +41,40 @@ export default function SearchBar({ onSelectResult, onClose, onLiveSearch }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Debounced search
+  // Debounced search — fuzzy local first, then Supabase full-text
   useEffect(() => {
     clearTimeout(timerRef.current);
     if (!query.trim()) { setResults([]); return; }
+
+    // Instant local fuzzy search across in-memory feed items
+    if (allItems.length > 0) {
+      const fuse = new Fuse(allItems, {
+        keys: [{ name: "title", weight: 0.6 }, { name: "description", weight: 0.25 }, { name: "source", weight: 0.1 }, { name: "author", weight: 0.05 }],
+        threshold: 0.35, includeScore: true, minMatchCharLength: 2,
+      });
+      const localHits = fuse.search(query).slice(0, 12).map(r => ({ ...r.item, _score: r.score }));
+      setResults(localHits);
+    }
+
+    // Also query Supabase history/saved (debounced)
     timerRef.current = setTimeout(async () => {
       setLoading(true);
       try {
         const r = await searchItems(user.id, query);
-        setResults(r);
+        // Merge: prefer local hits but append Supabase-only results
+        setResults(prev => {
+          const localUrls = new Set(prev.map(i => i.url));
+          const merged = [...prev, ...r.filter(i => !localUrls.has(i.url))];
+          return merged.slice(0, 20);
+        });
       } catch (e) {
         console.error("Search error:", e);
       } finally {
         setLoading(false);
       }
-    }, 280);
+    }, 350);
     return () => clearTimeout(timerRef.current);
-  }, [query, user]);
+  }, [query, user, allItems]);
 
   function formatDate(dateStr) {
     if (!dateStr) return "";
@@ -168,7 +190,9 @@ export default function SearchBar({ onSelectResult, onClose, onLiveSearch }) {
       )}
     </div>
   );
-}
+});
+
+export default SearchBar;
 
 // Highlight matching text in results
 function highlightMatch(text, query, T) {
