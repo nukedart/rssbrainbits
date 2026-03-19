@@ -93,7 +93,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       }
 
       function mergeAndSort(newItems) {
-        newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item, url: normaliseUrl(item.url) }); });
+        newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item }); }); // keep original url, dedup by normalised key
         const sorted = [...itemMap.values()].sort((a, b) => new Date(b.date) - new Date(a.date));
         // Count genuinely new articles (not seen in previous fetch)
         if (prevItemUrlsRef.current.size > 0) {
@@ -654,7 +654,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                 <FeedItem item={item} viewMode="card" cardSize={isMobile ? "md" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
-                  onClick={() => { if (item.isPodcast && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}
+                  onClick={() => { if (item.isPodcast && item.audioUrl && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}
                   onSave={() => handleSaveItem(item)}
                   onReadLater={() => handleReadLater(item)}
                   onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
@@ -668,7 +668,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
               <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem ? openItem?.url === item.url : cursorIdx === i}
                 isRead={readUrls.has(item.url)}
-                onClick={() => { if (item.isPodcast && onPlayPodcast) { onPlayPodcast(item); } else { setCursorIdx(i); openByIdx(i); } }}
+                onClick={() => { setCursorIdx(i); if (item.isPodcast && item.audioUrl && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}
                 onSave={() => handleSaveItem(item)}
                 onReadLater={() => handleReadLater(item)}
                 onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}

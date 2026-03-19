@@ -5,6 +5,23 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.13.0] — 2026-03-19
+
+### Fixed
+- **Feeds not showing (v1.12.0 regression)** — two causes: (1) `normaliseUrl` was overwriting `item.url` with the normalised version, breaking `readUrls` Set matching since it stores original URLs. Fixed to use normalised URL only as the dedup Map key, keeping the original on the item. (2) Podcast `onClick` handler checked `item.isPodcast` without also checking `item.audioUrl`, so non-podcast articles that had a truthy `isPodcast` from a parse edge case wouldn't open the reader. Fixed to require both `isPodcast && item.audioUrl`.
+
+### Added
+- **Sidebar Smart Feeds revamp** — text left, colour dot right, pencil ✎ edit icon appears on hover. Cleaner and more consistent with macOS/iOS sidebar conventions.
+- **Sidebar Folders revamp** — same layout: folder name + count left, colour square right, pencil ✎ edit icon on hover. Chevron ▶ for expand/collapse stays at far left. Feed names shown indented when folder is open.
+- **Extra spacing** between the logo/toggle row and the main nav items. Breathing room makes the sidebar feel less dense.
+- **Edit icon** added to `Icons` object in Sidebar (SVG pencil, 11px).
+
+### Changed
+- Smart feed and folder items no longer rely on invisible `···` overflow menus — the edit icon is always reachable on hover, more discoverable.
+
+---
+
+
 ## [1.12.0] — 2026-03-19
 
 ### Added
