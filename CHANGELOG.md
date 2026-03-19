@@ -5,6 +5,22 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.21.0] — 2026-03-19
+
+### Fixed
+- **PlanGate upgrade** — replaced `mailto:` link with real Stripe checkout call. Every in-app limit prompt now routes directly to the payment flow.
+- **StatsPage upgrade link** — same fix; the "Upgrade to Pro →" text in the Reading Stats plan badge now triggers Stripe checkout instead of opening an email client.
+- **Free plan feed count** — landing page said "20 feeds" but `plan.js` caps at 10. Corrected to match.
+- **Free trial duration** — landing page said "14-day free trial"; Stripe is configured for 7 days. Updated to "7-day free trial" throughout.
+- **Copyright year** — updated from 2025 to 2026.
+
+### Improved
+- **Landing page — full rewrite** — new hero copy, "How it works" 3-step section, reader panel added to the app mockup, star ratings on testimonials, trial sub-note under Pro pricing card, OG/Twitter meta tags, improved footer with How it works link, and cleaner visual hierarchy throughout.
+- **Landing page — mobile nav** — nav links were hidden on mobile with no fallback. Added hamburger button and a slide-down mobile menu with outside-click-to-dismiss.
+- **Landing page — footer links** — Privacy and Terms now point to `/privacy.html` and `/terms.html`. Placeholder GitHub link removed.
+
+---
+
 ## [1.20.0] — 2026-03-19
 
 ### Improved

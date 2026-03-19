@@ -167,6 +167,7 @@ export function StatsPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -175,6 +176,20 @@ export function StatsPage() {
       .catch(err => { console.error("StatsPage:", err); setError(true); })
       .finally(() => setLoading(false));
   }, [user]);
+
+  async function handleUpgrade() {
+    setUpgrading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+        { method: "POST", headers: { "Authorization": `Bearer ${session?.access_token}`, "Content-Type": "application/json" } }
+      );
+      const json = await res.json();
+      if (json.url) { window.location.href = json.url; return; }
+    } catch {}
+    setUpgrading(false);
+  }
 
   const planName = getPlanName(user);
 
@@ -212,7 +227,7 @@ export function StatsPage() {
               {planName.toUpperCase()}
             </span>
             {planName !== "pro" && (
-              <a href="mailto:hello@brainbits.us?subject=Feedbox Pro" style={{ fontSize:12, color:T.accent, textDecoration:"none", fontWeight:600 }}>Upgrade to Pro →</a>
+              <button onClick={handleUpgrade} disabled={upgrading} style={{ fontSize:12, color:T.accent, background:"none", border:"none", cursor:"pointer", fontWeight:600, padding:0, fontFamily:"inherit" }}>{upgrading ? "Opening…" : "Upgrade to Pro →"}</button>
             )}
           </div>
 
