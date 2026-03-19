@@ -1,13 +1,13 @@
 // ── Runtime API key management ────────────────────────────────
-// Vite env vars are baked in at build time. To let users set
-// keys via the Settings UI without rebuilding, we check
-// localStorage first, then fall back to the build-time value.
+// Keys are stored in localStorage only (set via Settings UI).
+// Never use VITE_ env vars for API keys — Vite bakes them into
+// the JS bundle, exposing them to anyone who views source.
+// Server-side summarization uses the Cloudflare Worker secret instead.
 
 const LS_PREFIX = "fb-apikey-";
 
 export function getAnthropicKey() {
-  return localStorage.getItem(LS_PREFIX + "anthropic") ||
-         import.meta.env.VITE_ANTHROPIC_API_KEY || "";
+  return localStorage.getItem(LS_PREFIX + "anthropic") || "";
 }
 
 export function setAnthropicKey(key) {
