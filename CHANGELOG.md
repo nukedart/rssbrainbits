@@ -5,6 +5,25 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.23.0] — 2026-03-19
+
+### Added
+- **Admin panel** (`admin/index.html`) — standalone single-file dashboard. No build step. Authenticates via Supabase, checks `is_admin`, then calls the new `admin-stats` Edge Function. Five sections:
+  - **Overview** — total users, MRR, DAU, new signups KPIs + DAU chart + upgrade funnel + recent signups table
+  - **Users** — full user list with plan badge, signup date, last seen
+  - **Subscriptions** — upgrade/cancellation counts (30d), net change, full event log
+  - **Analytics** — MAU/WAU/DAU, top events ranked, events-per-day chart
+  - **Activity** — live feed of recent analytics events with email + relative timestamp
+- **`admin-stats` Edge Function** (`supabase/functions/admin-stats/index.ts`) — admin-gated endpoint using service role to query `auth.users`, `subscription_events`, and `analytics_events`. Returns all dashboard data in a single call.
+- **`subscription_events_admin_policy.sql`** — RLS policy allowing admin reads on `subscription_events`.
+
+### Setup required
+1. Deploy the edge function: `supabase functions deploy admin-stats`
+2. Run `supabase/migrations/subscription_events_admin_policy.sql` in the Supabase SQL editor
+3. Open `admin/index.html` in a browser (or serve it statically alongside the landing page)
+
+---
+
 ## [1.22.0] — 2026-03-19
 
 ### Added
