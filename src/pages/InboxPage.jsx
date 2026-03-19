@@ -510,19 +510,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                 })
             }
 
-            {/* ── New folder button ── */}
-            <button onClick={() => onAddFolder?.()} style={{
-              display: "flex", alignItems: "center", gap: 6,
-              width: "100%", background: "none", border: "none", cursor: "pointer",
-              padding: "8px 10px 4px", fontSize: 12, color: T.textTertiary,
-              fontFamily: "inherit", textAlign: "left", marginTop: 4,
-              borderTop: `1px solid ${T.border}`,
-            }}
-              onMouseEnter={e => e.currentTarget.style.color=T.accent}
-              onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-            >
-              <span style={{ fontSize: 14, lineHeight: 1 }}>+</span> New folder
-            </button>
+
           </div>
         </div>
       )}

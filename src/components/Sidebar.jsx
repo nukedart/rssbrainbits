@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import pkg from "../../package.json";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
@@ -203,19 +204,39 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
         )}
       </div>
 
+      {/* ── New folder — shown even when no folders exist ── */}
+      {folders.length === 0 && !collapsed && (
+        <div style={{ padding:"4px 8px 0" }}>
+          <button onClick={onAddFolder}
+            style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"4px 10px", borderRadius:8, background:"none", border:"none", cursor:"pointer", color:T.textTertiary, fontFamily:"inherit", fontSize:12, transition:"color .1s" }}
+            onMouseEnter={e => e.currentTarget.style.color=T.accent}
+            onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+          ><Icons.Plus /><span>New folder</span></button>
+        </div>
+      )}
+
       {/* ── Folders ── */}
       {folders.length > 0 && (
         <div style={{ padding: collapsed?"4px 6px":"8px 8px 4px", flexShrink:0 }}>
-          {!collapsed && (
-            <div style={{ display:"flex", alignItems:"center", padding:"0 10px 5px" }}>
-              <span style={{ flex:1, fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:".07em", color:T.textTertiary }}>Folders</span>
+          {!collapsed
+            ? (
+              <div style={{ display:"flex", alignItems:"center", padding:"0 10px 5px" }}>
+                <span style={{ flex:1, fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:".07em", color:T.textTertiary }}>Folders</span>
+                <button onClick={onAddFolder} title="New folder"
+                  style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:2, borderRadius:4, transition:"color .1s" }}
+                  onMouseEnter={e => e.currentTarget.style.color=T.accent}
+                  onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+                ><Icons.Plus /></button>
+              </div>
+            )
+            : (
               <button onClick={onAddFolder} title="New folder"
-                style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:2, borderRadius:4 }}
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"100%", padding:"6px 0", background:"none", border:"none", cursor:"pointer", color:T.textTertiary, transition:"color .1s" }}
                 onMouseEnter={e => e.currentTarget.style.color=T.accent}
                 onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
               ><Icons.Plus /></button>
-            </div>
-          )}
+            )
+          }
           {folders.map(folder => {
             const dot = FCOLS[folder.color] || "#8A9099";
             const isExpanded = expandedFolders.has(folder.id);
@@ -288,11 +309,20 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
           )}
         </button>
 
+        {/* Version — only when expanded */}
+        {!collapsed && (
+          <div style={{ textAlign:"center", padding:"4px 10px 2px", fontSize:10, color:T.textTertiary, opacity:0.5, letterSpacing:".02em" }}>
+            v{pkg.version}
+          </div>
+        )}
+
         {/* Shortcuts — only when expanded */}
         {!collapsed && (
           <div ref={shortcutsRef} style={{ position:"relative", marginTop:4 }}>
             <button onClick={() => setShortcutsOpen(v => !v)}
-              style={{ width:"100%", padding:"5px 10px", borderRadius:8, border:`1px solid ${shortcutsOpen?T.accent:T.border}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontWeight:600, fontFamily:"inherit", transition:"all .12s", gap:5 }}
+              style={{ width:"100%", padding:"4px 10px", borderRadius:8, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontWeight:500, fontFamily:"inherit", transition:"color .12s", gap:4, opacity:0.7 }}
+              onMouseEnter={e => { e.currentTarget.style.opacity="1"; e.currentTarget.style.color=T.accent; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity=shortcutsOpen?"1":"0.7"; e.currentTarget.style.color=shortcutsOpen?T.accent:T.textTertiary; }}
             ><span style={{ fontSize:10 }}>⌘</span> Shortcuts</button>
             {shortcutsOpen && (
               <div style={{ position:"fixed", bottom:120, left:16, width:210, background:T.card, border:`1px solid ${T.borderStrong}`, borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.18)", zIndex:2000, overflow:"hidden", animation:"slideUp .15s ease" }}>
