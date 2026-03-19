@@ -1,7 +1,7 @@
 
 /* ── Reader preference CSS variables ────────────────────────── */
 :root {
-  --reader-font-size:   17px;
+  --reader-font-size:   18px;
   --reader-line-width:  660px;
   --reader-font-family: 'DM Sans', system-ui, sans-serif;
 }

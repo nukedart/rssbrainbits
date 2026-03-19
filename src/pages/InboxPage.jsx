@@ -39,7 +39,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const prevItemUrlsRef = useRef(new Set());
   const [showOPML, setShowOPML]           = useState(false);
   const [dragFeedId, setDragFeedId]         = useState(null);
-  const [openFolders, setOpenFolders]       = useState(() => new Set()); // folder ids that are expanded
+  const [openFolders, setOpenFolders]       = useState(() => new Set());
+  const [dragOverFolder, setDragOverFolder] = useState(null); // folder id being dragged over
+  const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
 
   function toggleFolderOpen(id) {
     setOpenFolders(prev => {
@@ -306,17 +308,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
         <div style={{ width: 234, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: T.bg, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div style={{ padding: "13px 12px 10px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
             <span style={{ flex: 1, fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em" }}>Sources</span>
-            <button onClick={() => setShowOPML(true)} title="Import OPML" style={{
-              width: 22, height: 22, borderRadius: 6, background: T.surface2,
-              border: `1px solid ${T.border}`, color: T.textSecondary, fontSize: 11,
-              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 700, fontFamily: "inherit",
-            }}>↑</button>
-            <button onClick={() => setShowAdd(true)} style={{
-              width: 22, height: 22, borderRadius: 6, background: T.accent,
-              border: "none", color: "#fff", fontSize: 15, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }} title="Add (A)">+</button>
           </div>
 
           <div style={{ flex: 1, overflowY: "auto", padding: "6px 6px" }}>
@@ -332,12 +323,25 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
               const isOpen = openFolders.has(folder.id);
               return (
                 <div key={folder.id}>
-                  {/* Folder header row */}
+                  {/* Folder header row — drag target */}
                   <div
-                    style={{ display:"flex", alignItems:"center", padding:"7px 8px 3px", cursor:"pointer", borderRadius:6 }}
+                    style={{ display:"flex", alignItems:"center", padding:"7px 8px 3px", cursor:"pointer", borderRadius:6, background: dragOverFolder===folder.id ? T.accentSurface : "transparent", border: `1px solid ${dragOverFolder===folder.id ? T.accent : "transparent"}`, transition:"all .1s" }}
                     onClick={() => toggleFolderOpen(folder.id)}
-                    onMouseEnter={e => e.currentTarget.style.background=T.surface2}
-                    onMouseLeave={e => e.currentTarget.style.background="transparent"}
+                    onMouseEnter={e => { if (dragOverFolder !== folder.id) e.currentTarget.style.background=T.surface2; }}
+                    onMouseLeave={e => { if (dragOverFolder !== folder.id) e.currentTarget.style.background="transparent"; }}
+                    onDragOver={e => { e.preventDefault(); setDragOverFolder(folder.id); }}
+                    onDragLeave={() => setDragOverFolder(null)}
+                    onDrop={async e => {
+                      e.preventDefault();
+                      const feedId = e.dataTransfer.getData("feedId");
+                      if (feedId && onMoveFeedToFolder) {
+                        // Update local feeds state immediately so sources panel re-renders
+                        setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: folder.id } : f));
+                        await onMoveFeedToFolder(feedId, folder.id);
+                      }
+                      setDragOverFolder(null);
+                      setDraggingFeed(null);
+                    }}
                   >
                     <span style={{ fontSize:9, color:dotColor, marginRight:5, display:"inline-block", transform: isOpen?"rotate(90deg)":"rotate(0deg)", transition:"transform .15s" }}>▶</span>
                     <span style={{ width:7, height:7, borderRadius:"50%", background:dotColor, flexShrink:0, marginRight:6 }} />
@@ -358,12 +362,16 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                         <SourceItem
                           label={feed.name || new URL(feed.url).hostname}
                           feedUrl={feed.url}
+                          feedId={feed.id}
                           count={feedUnread}
                           active={activeSource === feed.id}
                           onClick={() => setActiveSource(feed.id)}
                           onDelete={() => handleDeleteFeed(feed.id)}
                           onRetry={() => handleRetryFeed(feed)}
-                          onMoveToFolder={(folderId) => onMoveFeedToFolder?.(feed.id, folderId)}
+                          onMoveToFolder={async (folderId) => {
+                setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, folder_id: folderId } : f));
+                await onMoveFeedToFolder?.(feed.id, folderId);
+              }}
                           folders={folders}
                           isLoading={feedLoading[feed.id]}
                           error={feedErrors[feed.id]}
@@ -393,12 +401,16 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                     <SourceItem key={feed.id}
                       label={feed.name || new URL(feed.url).hostname}
                       feedUrl={feed.url}
+                      feedId={feed.id}
                       count={feedUnread}
                       active={activeSource === feed.id}
                       onClick={() => setActiveSource(feed.id)}
                       onDelete={() => handleDeleteFeed(feed.id)}
                       onRetry={() => handleRetryFeed(feed)}
-                      onMoveToFolder={(folderId) => onMoveFeedToFolder?.(feed.id, folderId)}
+                      onMoveToFolder={async (folderId) => {
+                setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, folder_id: folderId } : f));
+                await onMoveFeedToFolder?.(feed.id, folderId);
+              }}
                       folders={folders}
                       isLoading={feedLoading[feed.id]}
                       error={feedErrors[feed.id]}
@@ -637,119 +649,8 @@ function SkeletonList({ count = 8, cardSize = "md", viewMode = "list" }) {
   );
 }
 
-
-) {
-  const { T } = useTheme();
-  const [hovered, setHovered] = useState(false);
-  const [showError, setShowError] = useState(false);
-  const favicon = feedUrl ? `https://www.google.com/s2/favicons?domain=${new URL(feedUrl).hostname}&sz=32` : null;
-
-  return (
-    <div>
-      <div onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-        style={{
-          display: "flex", alignItems: "center", gap: 7, padding: "6px 8px 6px 10px",
-          borderRadius: 8, cursor: "pointer", marginBottom: 1,
-          background: active ? T.accentSurface : hovered ? T.surface2 : "transparent",
-          transition: "background .12s",
-        }}
-      >
-        {/* Favicon / icon */}
-        <div style={{ width: 16, height: 16, borderRadius: 4, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {favicon
-            ? <img src={favicon} alt="" width={12} height={12} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
-            : <span style={{ fontSize: 9 }}>{icon || "📡"}</span>
-          }
-        </div>
-
-        <span style={{ flex: 1, fontSize: 13, fontWeight: active ? 600 : 400, color: error ? T.warning : active ? T.accentText : T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {label}
-        </span>
-
-        {/* Loading spinner */}
-        {isLoading && (
-          <span style={{ width: 10, height: 10, border: `1.5px solid ${T.border}`, borderTopColor: T.accent, borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
-        )}
-
-        {/* Error — tap to expand */}
-        {error && !isLoading && (
-          <button onClick={e => { e.stopPropagation(); setShowError(v => !v); }}
-            title="Tap to see error"
-            style={{ background: `${T.danger}20`, border: "none", borderRadius: 4, color: T.danger, cursor: "pointer", fontSize: 10, fontWeight: 700, padding: "1px 5px", flexShrink: 0 }}>
-            !</button>
-        )}
-
-        {/* Unread count */}
-        {count > 0 && !error && !isLoading && (
-          <span style={{ fontSize: 10, fontWeight: 700, color: active ? T.accentText : T.textTertiary, flexShrink: 0, minWidth: 14, textAlign: "right" }}>{count}</span>
-        )}
-
-        {/* Hover actions */}
-        {hovered && !isLoading && (
-          <span style={{ display: "flex", gap: 2, flexShrink: 0 }}>
-            {onMoveToFolder && folders.length > 0 && (
-              <div style={{ position:"relative" }}>
-                <button onClick={e => { e.stopPropagation(); e.currentTarget.nextSibling.style.display = e.currentTarget.nextSibling.style.display === "block" ? "none" : "block"; }}
-                  title="Move to folder"
-                  style={{ background:"none", border:"none", color:T.textTertiary, cursor:"pointer", fontSize:11, padding:"0 2px", lineHeight:1 }}>📁</button>
-                <div style={{ display:"none", position:"absolute", right:0, top:"100%", zIndex:50, background:T.card, border:`1px solid ${T.border}`, borderRadius:9, boxShadow:"0 4px 16px rgba(0,0,0,.15)", minWidth:140, padding:"4px 0" }}>
-                  <div onClick={e => { e.stopPropagation(); onMoveToFolder(null); e.currentTarget.closest("[style*='position:relative']").querySelector("div").style.display="none"; }}
-                    style={{ padding:"6px 12px", fontSize:12, cursor:"pointer", color:T.textSecondary }}
-                    onMouseEnter={e => e.currentTarget.style.background=T.surface2}
-                    onMouseLeave={e => e.currentTarget.style.background="transparent"}
-                  >No folder</div>
-                  {folders.map(f => {
-                    const FCOLS = {gray:"#8A9099",teal:"#4BBFAF",blue:"#2F6FED",amber:"#AA8439",red:"#EF4444",purple:"#8B5CF6",green:"#22C55E"};
-                    return (
-                      <div key={f.id} onClick={e => { e.stopPropagation(); onMoveToFolder(f.id); e.currentTarget.closest("[style*='position:relative']").querySelector("div").style.display="none"; }}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 12px", fontSize:12, cursor:"pointer", color:T.text }}
-                        onMouseEnter={e => e.currentTarget.style.background=T.surface2}
-                        onMouseLeave={e => e.currentTarget.style.background="transparent"}
-                      >
-                        <span style={{ width:7, height:7, borderRadius:"50%", background:FCOLS[f.color]||"#8A9099", flexShrink:0 }} />
-                        {f.name}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            {onDelete && (
-              <button onClick={e => { e.stopPropagation(); onDelete(); }}
-                title="Remove feed"
-                style={{ background: "none", border: "none", color: T.textTertiary, cursor: "pointer", fontSize: 13, padding: "0 2px", lineHeight: 1 }}>×</button>
-            )}
-          </span>
-        )}
-      </div>
-
-      {/* Error panel — expandable */}
-      {error && showError && (
-        <div style={{ margin: "0 6px 4px", background: `${T.danger}10`, border: `1px solid ${T.danger}30`, borderRadius: 8, padding: "8px 10px" }}>
-          <div style={{ fontSize: 11, color: T.danger, lineHeight: 1.5, marginBottom: 8 }}>
-            {error.includes("Could not fetch") ? "This feed couldn't be reached. The site may block external requests, or the URL may have changed." : error}
-          </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            {onRetry && (
-              <button onClick={e => { e.stopPropagation(); setShowError(false); onRetry(); }}
-                style={{ background: T.danger, border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700, color: "#fff", fontFamily: "inherit" }}>
-                Retry
-              </button>
-            )}
-            <button onClick={e => { e.stopPropagation(); setShowError(false); }}
-              style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, color: T.textSecondary, fontFamily: "inherit" }}>
-              Dismiss
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
 // ── Source item — clean Reeder-style feed row ─────────────────
-function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, onRetry, onMoveToFolder, count, isLoading, error, folders = [] }) {
+function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, onRetry, onMoveToFolder, count, isLoading, error, folders = [] }) {
   const { T } = useTheme();
   const [hovered, setHovered] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -768,13 +669,15 @@ function SourceItem({ label, icon, feedUrl, active, onClick, onDelete, onRetry, 
   return (
     <div style={{ position: "relative" }}>
       <div
+        draggable={!!feedId}
+        onDragStart={e => { if (feedId) { e.dataTransfer.setData("feedId", feedId); e.dataTransfer.effectAllowed = "move"; }}}
         onClick={onClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "5px 8px 5px 10px", borderRadius: 8,
-          cursor: "pointer", marginBottom: 1,
+          cursor: feedId ? "grab" : "pointer", marginBottom: 1,
           background: active ? T.accentSurface : hovered ? T.surface2 : "transparent",
           transition: "background .12s",
         }}

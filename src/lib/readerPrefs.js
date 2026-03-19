@@ -2,7 +2,7 @@
 // All stored in localStorage, applied via CSS custom properties on <body>.
 
 const DEFAULTS = {
-  fontSize:  17,          // px  — range 14–22
+  fontSize:  18,          // px  — range 14–22
   lineWidth: "medium",    // "narrow" | "medium" | "wide"
   fontFamily:"sans",      // "sans" | "serif"
   bionic:    false,       // bionic reading mode

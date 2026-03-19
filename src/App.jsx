@@ -26,7 +26,8 @@ function AppShell() {
   const [smartFeeds, setSmartFeeds]   = useState([]);
   const [editingSF, setEditingSF]     = useState(null);
   const [folders, setFolders]         = useState([]);
-  const [editingFolder, setEditingFolder] = useState(null); // null | "new" | {folder}
+  const [editingFolder, setEditingFolder] = useState(null);
+  const [sidebarOpen, setSidebarOpen]       = useState(true);
   const [feeds, setFeeds]             = useState([]); // for SmartFeedModal feed picker
 
   // Load smart feeds once user is known
@@ -63,6 +64,18 @@ function AppShell() {
   }
 
   // ── Folder handlers ───────────────────────────────────────
+  async function handleMoveFeedToFolder(feedId, folderId) {
+    // Optimistically update local state first so UI responds immediately
+    setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: folderId } : f));
+    try {
+      await setFeedFolder(feedId, folderId);
+    } catch (err) {
+      console.error("setFeedFolder failed:", err);
+      // Revert on failure
+      setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: undefined } : f));
+    }
+  }
+
   async function handleSaveFolder({ name, color }) {
     if (editingFolder && editingFolder !== "new") {
       const updated = await updateFolder(editingFolder.id, { name, color });
@@ -79,6 +92,8 @@ function AppShell() {
     setFolders(prev => prev.filter(f => f.id !== id));
     setEditingFolder(null);
   }
+
+
 
   // ── Early returns AFTER all hooks ─────────────────────────
   if (user === undefined) {
@@ -99,19 +114,19 @@ function AppShell() {
       // Guard: if smartFeeds hasn't loaded yet, sfDef may be undefined —
       // fall back to inbox while it loads rather than passing undefined
       if (!sfDef) {
-        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
+        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
       }
-      return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
+      return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
     }
     switch (page) {
-      case "inbox":     return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
-      case "unread":    return <InboxPage filterMode="unread" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
-      case "today":     return <InboxPage filterMode="today"  onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
+      case "inbox":     return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
+      case "unread":    return <InboxPage filterMode="unread" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
+      case "today":     return <InboxPage filterMode="today"  onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
       case "readlater": return <ReadLaterPage />;
       case "history":   return <HistoryPage />;
       case "notes":     return <NotesPage />;
       case "settings":  return <SettingsPage />;
-      default:          return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={setFeedFolder} />;
+      default:          return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
     }
   }
 
@@ -133,7 +148,9 @@ function AppShell() {
         feeds={feeds}
         onAddFolder={() => setEditingFolder("new")}
         onEditFolder={(f) => setEditingFolder(f)}
-        onMoveFeedToFolder={setFeedFolder}
+        onMoveFeedToFolder={handleMoveFeedToFolder}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(v => !v)}
       />
       <div style={{ flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column" }}>
         <div style={{ flex: 1, overflow: "hidden", paddingBottom: isMobile ? 62 : 0, display: "flex", flexDirection: "column" }}>

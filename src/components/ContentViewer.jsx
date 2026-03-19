@@ -241,65 +241,41 @@ export default function ContentViewer({ item, onClose }) {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          {/* Tags */}
-          <button onClick={() => setShowTags((v) => !v)} style={{
-            background: showTags ? T.accentSurface : T.surface2,
-            border: "none", borderRadius: 8, padding: "6px 10px",
-            cursor: "pointer", fontSize: 12, fontWeight: 600,
-            color: showTags ? T.accentText : T.textSecondary, fontFamily: "inherit",
-            display: "flex", alignItems: "center", gap: 5,
-          }}>
-            <TagIcon size={13} color="currentColor" />
-            {tags.length > 0 && <span>{tags.length}</span>}
-          </button>
-
-          {/* Highlights — export MD + drawer button */}
-          {!yt.isYouTube && highlights.length > 0 && (
-            <button onClick={() => handleExportHighlights(false)} title={exportFeedback || "Copy highlights as Markdown"} style={{
-              background: exportFeedback ? T.accentSurface : T.surface2,
-              border: `1px solid ${exportFeedback ? T.accent : T.border}`,
-              borderRadius: 8, padding: "6px 10px",
-              cursor: "pointer", fontSize: 11, fontWeight: 600,
-              color: exportFeedback ? T.accentText : T.textSecondary, fontFamily: "inherit",
-              transition: "all .15s",
-            }}>
-              {exportFeedback || "↓ MD"}
-            </button>
-          )}
-          {!yt.isYouTube && (
-            <button onClick={() => setShowDrawer(true)} style={{
-              background: T.surface2, border: "none", borderRadius: 8,
-              padding: "6px 10px", cursor: "pointer",
-              fontSize: 12, fontWeight: 600, color: T.textSecondary,
-              fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5,
-            }}>
-              <HighlightIcon size={13} color="currentColor" />
-              {highlights.length > 0 && <span style={{ color: T.accent }}>{highlights.length}</span>}
-            </button>
-          )}
-
-          {/* Reader controls */}
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+          {/* Aa — font controls */}
           {!yt.isYouTube && content && (
-            <button onClick={() => setShowReaderControls(v => !v)} title="Reading preferences" style={{
-              background: showReaderControls ? T.accentSurface : T.surface2,
-              border: "none", borderRadius: 8, padding: "6px 10px",
-              cursor: "pointer", fontSize: 12, fontWeight: 700,
-              color: showReaderControls ? T.accentText : T.textSecondary,
-              fontFamily: "inherit", flexShrink: 0,
-            }}>Aa</button>
+            <button onClick={() => setShowReaderControls(v => !v)} title="Reading preferences"
+              style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "all .12s" }}
+              onMouseEnter={e => { if (!showReaderControls) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
+              onMouseLeave={e => { if (!showReaderControls) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
+            >Aa</button>
           )}
-          <button onClick={handleShare} title={shareFeedback || "Share article"} style={{
-            background: shareFeedback ? T.accentSurface : T.surface2,
-            border: "none", borderRadius: 8, padding: "6px 10px",
-            cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0,
-            color: shareFeedback ? T.accentText : T.textSecondary,
-            fontFamily: "inherit", transition: "all .15s",
-          }}>
-            {shareFeedback || "Share"}
-          </button>
-          <Button variant="secondary" size="sm" onClick={() => window.open(item.url, "_blank")}>↗</Button>
-          <Button size="sm" onClick={handleSave} disabled={saved}>{saved ? "✓" : "Save"}</Button>
+
+          {/* Save */}
+          <button onClick={handleSave} disabled={saved}
+            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: saved ? "default" : "pointer", fontSize: 12, fontWeight: 600, color: saved ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "all .12s", flexShrink: 0 }}
+            onMouseEnter={e => { if (!saved) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
+            onMouseLeave={e => { if (!saved) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
+          >{saved ? "✓ Saved" : "Save"}</button>
+
+          {/* ··· overflow menu */}
+          <OverflowMenu
+            T={T}
+            item={item}
+            content={content}
+            yt={yt}
+            saved={saved}
+            highlights={highlights}
+            tags={tags}
+            showTags={showTags}
+            setShowTags={setShowTags}
+            showDrawer={showDrawer}
+            setShowDrawer={setShowDrawer}
+            handleShare={handleShare}
+            shareFeedback={shareFeedback}
+            handleExportHighlights={handleExportHighlights}
+            exportFeedback={exportFeedback}
+          />
         </div>
       </div>
 
@@ -364,7 +340,7 @@ export default function ContentViewer({ item, onClose }) {
           </div>
         )}
 
-        <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "20px 16px 100px" : "28px 20px 100px", width: "100%" }}>
+        <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "24px 20px 120px" : "40px 32px 120px", width: "100%" }}>
 
         {/* YouTube */}
         {yt.isYouTube && (
@@ -400,10 +376,10 @@ export default function ContentViewer({ item, onClose }) {
             {content.image && (
               <img src={content.image} alt="" style={{ width: "100%", borderRadius: 12, marginBottom: 20, maxHeight: 320, objectFit: "cover" }} />
             )}
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 600, color: T.text, margin: "0 0 10px", lineHeight: 1.25, letterSpacing: "-.02em" }}>
               {content.title || item.title}
             </h1>
-            {item.source && <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 4 }}>{item.source}</div>}
+            {item.source && <div style={{ fontSize: 12, fontWeight: 500, color: T.accent, marginBottom: 4, letterSpacing: ".01em" }}>{item.source}</div>}
             {item.date && (
               <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 20 }}>
                 {new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
@@ -419,7 +395,7 @@ export default function ContentViewer({ item, onClose }) {
             )}
 
             {/* Article body with highlights */}
-            <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.85, wordBreak: "break-word", fontFamily: "var(--reader-font-family)" }}>
+            <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em" }}>
               <HighlightedText
                 text={content.bodyText}
                 highlights={highlights}
@@ -551,6 +527,51 @@ function SummaryBlock({ summary, summarizing, onSummarize, T }) {
       <Button variant="secondary" onClick={onSummarize} disabled={summarizing}>
         {summarizing ? "Summarizing…" : "✨ Summarize with AI"}
       </Button>
+    </div>
+  );
+}
+
+
+// ── Overflow menu — secondary article actions ─────────────────
+function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setShowTags, showDrawer, setShowDrawer, handleShare, shareFeedback, handleExportHighlights, exportFeedback }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+
+  const menuItem = (label, action, accent = false) => (
+    <button
+      key={label}
+      onClick={() => { action(); setOpen(false); }}
+      style={{ display:"flex", alignItems:"center", width:"100%", padding:"8px 16px", background:"none", border:"none", cursor:"pointer", fontSize:13, color: accent ? T.accent : T.text, fontFamily:"inherit", textAlign:"left", gap:8, transition:"background .1s" }}
+      onMouseEnter={e => e.currentTarget.style.background=T.surface2}
+      onMouseLeave={e => e.currentTarget.style.background="transparent"}
+    >{label}</button>
+  );
+
+  return (
+    <div ref={ref} style={{ position:"relative", flexShrink:0 }}>
+      <button onClick={() => setOpen(v => !v)}
+        style={{ background: open ? T.surface2 : "transparent", border:"none", borderRadius:8, padding:"6px 8px", cursor:"pointer", fontSize:16, color: open ? T.textSecondary : T.textTertiary, fontFamily:"inherit", lineHeight:1, display:"flex", alignItems:"center", justifyContent:"center", width:34, height:32, transition:"all .12s" }}
+        onMouseEnter={e => { if (!open) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
+      >···</button>
+      {open && (
+        <div style={{ position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:200, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, boxShadow:"0 4px 24px rgba(0,0,0,.14)", minWidth:180, padding:"4px 0", animation:"fadeInScale .12s ease" }}>
+          {menuItem(shareFeedback || "Share…", handleShare)}
+          {item?.url && menuItem("Open in browser ↗", () => window.open(item.url, "_blank"))}
+          <div style={{ height:1, background:T.border, margin:"4px 0" }} />
+          {menuItem(showTags ? "Hide tags" : `Tags${tags.length > 0 ? ` (${tags.length})` : ""}`, () => setShowTags(v => !v))}
+          {!yt?.isYouTube && menuItem(`Highlights${highlights.length > 0 ? ` (${highlights.length})` : ""}`, () => setShowDrawer(true))}
+          {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback || "Copy highlights as MD", () => handleExportHighlights(false), true)}
+          {!yt?.isYouTube && highlights.length > 0 && menuItem("Download highlights .md", () => handleExportHighlights(true))}
+        </div>
+      )}
     </div>
   );
 }
