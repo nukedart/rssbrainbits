@@ -5,6 +5,15 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.19.0] — 2026-03-19
+
+### Performance
+- **Animation cap** — list and card view now only animate the first 20 items. Previously every item in a 100+ article list had a CSS animation applied, scheduling up to 100 simultaneous `fadeInUp` animations on every render. Items beyond index 20 render instantly with no animation overhead.
+- **Faster proxy fallback** — the own Cloudflare Worker timeout was reduced from 10s to 4s. When the Worker is configured but unreachable, the public-proxy race now starts within 4s instead of waiting the full 10s. If the Worker is healthy, response time is unchanged.
+- **Parallel feed auto-discovery** — the common feed path fallback (`/feed`, `/rss`, `/atom.xml`, etc.) previously probed each path sequentially; one slow or unresponsive path could stall discovery for several seconds. All 6 paths now race in parallel via `Promise.any` and the first valid feed wins immediately.
+
+---
+
 ## [1.18.0] — 2026-03-19
 
 ### Fixed

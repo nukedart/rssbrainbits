@@ -704,7 +704,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
           {viewMode === "card" ? (
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: cardSize === "lg" ? 18 : 14 }}>
               {baseItems.map((item, i) => (
-                <div key={item.url + i} style={{ animation: `fadeInUp .2s ease both`, animationDelay: `${Math.min(i * 30, 300)}ms` }}>
+                <div key={item.url + i} style={i < 20 ? { animation: `fadeInUp .2s ease both`, animationDelay: `${i * 30}ms` } : {}}>
                 <FeedItem item={item} viewMode="card" cardSize={isMobile ? "md" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
@@ -718,7 +718,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             </div>
           ) : (
             baseItems.map((item, i) => (
-              <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={{ animation: `fadeInUp .18s ease both`, animationDelay: `${Math.min(i * 20, 240)}ms` }}>
+              <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={i < 20 ? { animation: `fadeInUp .18s ease both`, animationDelay: `${i * 20}ms` } : {}}>
               <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem ? openItem?.url === item.url : cursorIdx === i}
                 isRead={readUrls.has(item.url)}

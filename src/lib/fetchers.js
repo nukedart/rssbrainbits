@@ -30,9 +30,11 @@ async function proxiedFetch(targetUrl) {
   const enc = encodeURIComponent(targetUrl);
 
   // ── Own Cloudflare Worker — try first if configured ──────
+  // Use a shorter 4s timeout so a downed Worker fails fast and the
+  // public-proxy race below starts without a 10s delay.
   if (OWN_PROXY) {
     try {
-      const res = await fetchWithTimeout(OWN_PROXY + enc, TIMEOUT_MS);
+      const res = await fetchWithTimeout(OWN_PROXY + enc, 4000);
       if (res.ok) {
         const text = await res.text();
         if (text?.trim()) return text;
@@ -419,22 +421,22 @@ export async function discoverFeed(pageUrl) {
       }
     }
 
-    // Fallback: try common feed paths if no <link> tag found
+    // Fallback: probe common feed paths in parallel — first valid feed wins
     const base = new URL(pageUrl).origin;
     const COMMON_PATHS = ["/feed", "/feed.xml", "/rss", "/rss.xml", "/atom.xml", "/feeds/posts/default"];
-    for (const path of COMMON_PATHS) {
-      try {
+    const found = await Promise.any(
+      COMMON_PATHS.map(async path => {
         const candidate = base + path;
         const text = await proxiedFetch(candidate);
         if (text.includes("<rss") || text.includes("<feed") || text.includes("<rdf:RDF")) {
           const titleMatch = text.match(/<title[^>]*>([^<]+)<\/title>/i);
-          const title = titleMatch?.[1]?.trim() || new URL(pageUrl).hostname;
-          return { feedUrl: candidate, title };
+          return { feedUrl: candidate, title: titleMatch?.[1]?.trim() || new URL(pageUrl).hostname };
         }
-      } catch { continue; }
-    }
+        throw new Error("not a feed");
+      })
+    ).catch(() => null);
 
-    return null;
+    return found;
   } catch {
     return null;
   }
