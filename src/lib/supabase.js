@@ -317,31 +317,122 @@ export async function deleteSmartFeed(id) {
 }
 
 // Match articles against a smart feed definition (client-side).
+//
+// Keyword syntax:
+//   apple          — simple substring match (case-insensitive)
+//   "apple watch"  — exact phrase match
+//   -android       — exclusion: article must NOT contain this
+//   AI OR ML       — OR logic between two terms
+//
 // Accepts either the full smartFeedDef object { keywords, feed_ids }
 // or a plain keywords array for backwards compatibility.
 export function matchesSmartFeed(item, defOrKeywords) {
   if (!defOrKeywords) return false;
 
-  // Normalise — accept both a plain array and a feed def object
-  const keywords = Array.isArray(defOrKeywords)
-    ? defOrKeywords
-    : defOrKeywords.keywords;
-
-  const feedIds = Array.isArray(defOrKeywords)
-    ? null
-    : defOrKeywords.feed_ids;
+  const keywords = Array.isArray(defOrKeywords) ? defOrKeywords : defOrKeywords.keywords;
+  const feedIds  = Array.isArray(defOrKeywords) ? null : defOrKeywords.feed_ids;
 
   if (!keywords?.length) return false;
 
-  // If scoped to specific feeds, skip articles from other feeds
-  if (feedIds?.length && item.feedId && !feedIds.includes(item.feedId)) {
-    return false;
-  }
+  // Feed scope check
+  if (feedIds?.length && item.feedId && !feedIds.includes(item.feedId)) return false;
 
   const haystack = [item.title, item.description, item.source, item.author]
     .filter(Boolean).join(" ").toLowerCase();
 
-  return keywords.some(kw => kw && haystack.includes(kw.toLowerCase().trim()));
+  function termMatches(term) {
+    const t = term.trim();
+    if (!t) return false;
+
+    // Exclusion: starts with -
+    if (t.startsWith("-")) {
+      const neg = t.slice(1).trim();
+      if (!neg) return true;
+      // Exact phrase exclusion: -"phrase"
+      if (neg.startsWith('"') && neg.endsWith('"')) {
+        return !haystack.includes(neg.slice(1,-1).toLowerCase());
+      }
+      return !haystack.includes(neg.toLowerCase());
+    }
+
+    // OR logic: "term1 OR term2"
+    if (t.includes(" or ") || t.toUpperCase().includes(" OR ")) {
+      return t.split(/\s+or\s+/i).some(part => termMatches(part.trim()));
+    }
+
+    // Exact phrase: "quoted phrase"
+    if (t.startsWith('"') && t.endsWith('"')) {
+      return haystack.includes(t.slice(1,-1).toLowerCase());
+    }
+
+    // Default: substring
+    return haystack.includes(t.toLowerCase());
+  }
+
+  // All non-exclusion keywords must match (AND logic between positive terms)
+  // Exclusion keywords are applied independently
+  const positives  = keywords.filter(kw => !kw.trim().startsWith("-"));
+  const exclusions = keywords.filter(kw => kw.trim().startsWith("-"));
+
+  // At least one positive keyword must match
+  const posMatch = positives.length === 0 || positives.some(kw => termMatches(kw));
+  // No exclusion must match
+  const excMatch = exclusions.every(kw => termMatches(kw));
+
+  return posMatch && excMatch;
+}
+
+
+// ── Reading stats ─────────────────────────────────────────────
+export async function getReadingStats(userId) {
+  // Total read this week
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const { data: weekData, error: e1 } = await supabase
+    .from("read_items").select("url, feed_id, read_at")
+    .eq("user_id", userId).gte("read_at", weekAgo);
+  if (e1) throw e1;
+
+  // Total all time
+  const { count, error: e2 } = await supabase
+    .from("read_items").select("url", { count: "exact", head: true })
+    .eq("user_id", userId);
+  if (e2) throw e2;
+
+  // Reading streak — count consecutive days with at least one read
+  const { data: recentData, error: e3 } = await supabase
+    .from("read_items").select("read_at")
+    .eq("user_id", userId).order("read_at", { ascending: false }).limit(500);
+  if (e3) throw e3;
+
+  // Build streak from recentData
+  let streak = 0;
+  if (recentData?.length) {
+    const days = new Set(recentData.map(r => r.read_at?.slice(0, 10)));
+    const today = new Date().toISOString().slice(0, 10);
+    let check = today;
+    for (let i = 0; i < 365; i++) {
+      if (days.has(check)) {
+        streak++;
+        const d = new Date(check);
+        d.setDate(d.getDate() - 1);
+        check = d.toISOString().slice(0, 10);
+      } else break;
+    }
+  }
+
+  // Articles per day this week (for mini chart)
+  const perDay = {};
+  weekData?.forEach(r => {
+    const day = r.read_at?.slice(0, 10);
+    if (day) perDay[day] = (perDay[day] || 0) + 1;
+  });
+
+  return {
+    thisWeek: weekData?.length || 0,
+    allTime: count || 0,
+    streak,
+    perDay,
+  };
 }
 
 // ── Notes & Highlights (cross-article) ───────────────────────

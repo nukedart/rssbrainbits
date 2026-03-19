@@ -143,6 +143,21 @@ export function SettingsPage() {
           </div>
         </Card>
 
+        {/* Reading preferences */}
+        <Card title="Reading" T={T}>
+          <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+            <input type="checkbox"
+              defaultChecked={localStorage.getItem("fb-automark") === "true"}
+              onChange={e => localStorage.setItem("fb-automark", e.target.checked)}
+              style={{ accentColor: T.accent, width: 16, height: 16 }}
+            />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: T.text }}>Auto-mark-read on scroll</div>
+              <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Articles are marked read when scrolled past in the list</div>
+            </div>
+          </label>
+        </Card>
+
         {/* Keyboard shortcuts */}
         <Card title="Keyboard Shortcuts" T={T}>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -175,6 +190,12 @@ export function SettingsPage() {
           }}>↓ Export OPML</button>
         </Card>
 
+        {/* Reading Stats */}
+        <ReadingStatsCard T={T} user={user} />
+
+        {/* Feed Health */}
+        <FeedHealthCard T={T} user={user} />
+
         {/* Manage Feeds */}
         <ManageFeedsCard T={T} user={user} />
 
@@ -201,7 +222,7 @@ export function SettingsPage() {
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.10.0</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.11.0</div>
         </Card>
       </div>
     </PageShell>
@@ -334,6 +355,97 @@ function ManageFeedsCard({ T, user }) {
           Create a folder first using the + button in the sources panel.
         </div>
       )}
+    </Card>
+  );
+}
+
+
+// ── Reading Stats card ────────────────────────────────────────
+function ReadingStatsCard({ T, user }) {
+  const [stats, setStats] = useState(null);
+  useEffect(() => {
+    if (!user) return;
+    getReadingStats(user.id).then(setStats).catch(console.error);
+  }, [user]);
+  if (!stats) return null;
+
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+  const max = Math.max(1, ...days.map(d => stats.perDay[d] || 0));
+
+  return (
+    <Card title="Reading Stats" T={T}>
+      <div style={{ display: "flex", gap: 20, marginBottom: 18 }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: T.accent, lineHeight: 1 }}>{stats.thisWeek}</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 3 }}>This week</div>
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: T.text, lineHeight: 1 }}>{stats.allTime}</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 3 }}>All time</div>
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: stats.streak > 0 ? T.warning : T.textTertiary, lineHeight: 1 }}>
+            {stats.streak > 0 ? "🔥" : "—"} {stats.streak}
+          </div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 3 }}>Day streak</div>
+        </div>
+      </div>
+      {/* Mini bar chart — last 7 days */}
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 40 }}>
+        {days.map(day => {
+          const count = stats.perDay[day] || 0;
+          const h = max > 0 ? Math.max(3, (count / max) * 36) : 3;
+          const isToday = day === new Date().toISOString().slice(0, 10);
+          return (
+            <div key={day} title={`${day}: ${count} articles`} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <div style={{ width: "100%", height: h, borderRadius: 3, background: isToday ? T.accent : T.surface2, transition: "height .3s" }} />
+              <span style={{ fontSize: 9, color: T.textTertiary }}>{new Date(day + "T12:00:00").toLocaleDateString("en-US", { weekday: "narrow" })}</span>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+// ── Feed Health Dashboard ─────────────────────────────────────
+function FeedHealthCard({ T, user }) {
+  const [feeds, setFeeds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!user) return;
+    getFeeds(user.id).then(setFeeds).catch(console.error).finally(() => setLoading(false));
+  }, [user]);
+  if (loading || feeds.length === 0) return null;
+
+  return (
+    <Card title="Feed Health" T={T}>
+      <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 12, lineHeight: 1.6 }}>
+        Overview of your {feeds.length} subscribed feeds.
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        {feeds.map(feed => {
+          const host = (() => { try { return new URL(feed.url).hostname.replace("www.", ""); } catch { return feed.url; } })();
+          return (
+            <div key={feed.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 8, background: T.surface }}>
+              <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=32`} alt="" width={14} height={14} style={{ borderRadius: 2, flexShrink: 0 }} onError={e => e.target.style.display="none"} />
+              <span style={{ flex: 1, fontSize: 13, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {feed.name || host}
+              </span>
+              {feed.fetch_full_content && (
+                <span style={{ fontSize: 10, background: T.accentSurface, color: T.accentText, padding: "2px 6px", borderRadius: 5, fontWeight: 600, flexShrink: 0 }}>Full</span>
+              )}
+              <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>
+                {feed.type === "rss" ? "RSS" : feed.type?.toUpperCase()}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </Card>
   );
 }

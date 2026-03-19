@@ -114,8 +114,11 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
               Add
             </button>
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 6 }}>
-            Matches are checked against article title, description, and source. Case-insensitive.
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8, lineHeight: 1.7 }}>
+            <span style={{ color: T.accent, fontWeight: 600 }}>apple</span> — contains &nbsp;·&nbsp;
+            <span style={{ color: T.accent, fontWeight: 600 }}>"apple watch"</span> — exact phrase &nbsp;·&nbsp;
+            <span style={{ color: T.accent, fontWeight: 600 }}>-android</span> — exclude &nbsp;·&nbsp;
+            <span style={{ color: T.accent, fontWeight: 600 }}>AI OR ML</span> — either
           </div>
         </div>
 

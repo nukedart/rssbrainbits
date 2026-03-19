@@ -27,10 +27,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [showAdd, setShowAdd]           = useState(false);
   const [openItem, setOpenItem]         = useState(null);
   const [openIdx, setOpenIdx]           = useState(-1);
+  const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
   const [viewMode, setViewMode]         = useState(() => localStorage.getItem("fb-viewmode") || "list");
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
   const [hideRead, setHideRead]         = useState(false);
+  const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
   const [toast, setToast]               = useState(null);
   const [searchResult, setSearchResult]   = useState(null);
   const [feedErrors, setFeedErrors]         = useState({});   // feedId -> error message
@@ -77,8 +79,19 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     const fetchAll = async (forceRefresh = false) => {
       const itemMap = new Map();
 
+      function normaliseUrl(url) {
+        try {
+          const u = new URL(url);
+          u.protocol = "https:";
+          u.hash = "";
+          // remove common tracking params
+          ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","ref","source"].forEach(p => u.searchParams.delete(p));
+          return u.toString().replace(/\/$/, "");
+        } catch { return url; }
+      }
+
       function mergeAndSort(newItems) {
-        newItems.forEach(item => { if (item.url) itemMap.set(item.url, item); });
+        newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item, url: normaliseUrl(item.url) }); });
         const sorted = [...itemMap.values()].sort((a, b) => new Date(b.date) - new Date(a.date));
         // Count genuinely new articles (not seen in previous fetch)
         if (prevItemUrlsRef.current.size > 0) {
@@ -173,14 +186,36 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       switch (e.key) {
         case "j": case "ArrowDown":
           e.preventDefault();
-          openByIdx(openIdx < baseItems.length - 1 ? openIdx + 1 : openIdx);
+          if (openItem) {
+            openByIdx(openIdx < baseItems.length - 1 ? openIdx + 1 : openIdx);
+          } else {
+            setCursorIdx(prev => Math.min(prev + 1, baseItems.length - 1));
+          }
           break;
         case "k": case "ArrowUp":
           e.preventDefault();
-          openByIdx(openIdx > 0 ? openIdx - 1 : 0);
+          if (openItem) {
+            openByIdx(openIdx > 0 ? openIdx - 1 : 0);
+          } else {
+            setCursorIdx(prev => Math.max(prev - 1, 0));
+          }
           break;
         case "o": case "Enter":
-          if (openIdx >= 0) openByIdx(openIdx);
+          if (openItem) break;
+          if (cursorIdx >= 0) openByIdx(cursorIdx);
+          break;
+        case " ":
+          if (!openItem && cursorIdx >= 0 && baseItems[cursorIdx]) {
+            e.preventDefault();
+            const cur = baseItems[cursorIdx];
+            readUrls.has(cur.url) ? handleMarkUnread(cur.url) : handleMarkRead(cur.url);
+          }
+          break;
+        case "m":
+          if (!openItem && cursorIdx >= 0 && baseItems[cursorIdx]) {
+            const cur = baseItems[cursorIdx];
+            readUrls.has(cur.url) ? handleMarkUnread(cur.url) : handleMarkRead(cur.url);
+          }
           break;
         case "r":
           if (openItem) {
@@ -306,6 +341,26 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   useEffect(() => {
     onUnreadCount?.(unreadCount);
   }, [unreadCount]);
+
+  // ── Auto-mark-read on scroll ─────────────────────────────
+  const observerRef = useRef(null);
+  useEffect(() => {
+    if (!autoMarkRead) {
+      observerRef.current?.disconnect();
+      return;
+    }
+    observerRef.current = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.9) {
+          const url = entry.target.dataset.url;
+          if (url && !readUrls.has(url)) {
+            handleMarkRead(url);
+          }
+        }
+      });
+    }, { threshold: 0.9, rootMargin: "0px" });
+    return () => observerRef.current?.disconnect();
+  }, [autoMarkRead, readUrls]);
 
   // ── Pull-to-refresh (mobile) ─────────────────────────────
   function handlePTRStart(e) {
@@ -597,11 +652,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             </div>
           ) : (
             baseItems.map((item, i) => (
-              <div key={item.url + i} style={{ animation: `fadeInUp .18s ease both`, animationDelay: `${Math.min(i * 20, 240)}ms` }}>
+              <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={{ animation: `fadeInUp .18s ease both`, animationDelay: `${Math.min(i * 20, 240)}ms` }}>
               <FeedItem item={item} viewMode="list" cardSize={cardSize}
-                isSelected={openItem?.url === item.url}
+                isSelected={openItem ? openItem?.url === item.url : cursorIdx === i}
                 isRead={readUrls.has(item.url)}
-                onClick={() => openByIdx(i)}
+                onClick={() => { setCursorIdx(i); openByIdx(i); }}
                 onSave={() => handleSaveItem(item)}
                 onReadLater={() => handleReadLater(item)}
                 onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}

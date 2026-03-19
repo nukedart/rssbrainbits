@@ -14,8 +14,6 @@ function formatDate(dateStr) {
   } catch { return ""; }
 }
 
-// Returns a favicon URL for a given article URL using Google's service
-
 function readingTime(text) {
   if (!text) return null;
   const words = text.trim().split(/\s+/).length;
@@ -30,300 +28,264 @@ function faviconUrl(url) {
   } catch { return null; }
 }
 
-// ── List view item (Reeder-style compact row) ────────────────
-function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead, cardSize = "md" }) {
-  const { T } = useTheme();
-  const { isMobile } = useBreakpoint();
-  const [hovered, setHovered] = useState(false);
-  const [swipeX, setSwipeX] = useState(0);       // current swipe offset
-  const [swiped, setSwiped]  = useState(false);  // actions visible
-  const touchStart = useRef(null);
-  const ACTION_WIDTH = 140; // width of action buttons revealed
-
-  function onTouchStart(e) {
-    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  }
-  function onTouchMove(e) {
-    if (!touchStart.current) return;
-    const dx = e.touches[0].clientX - touchStart.current.x;
-    const dy = e.touches[0].clientY - touchStart.current.y;
-    if (Math.abs(dy) > Math.abs(dx) + 8) { touchStart.current = null; return; }
-    if (dx < 0) {
-      e.preventDefault();
-      setSwipeX(Math.max(dx, -ACTION_WIDTH));
-    } else if (swiped && dx > 0) {
-      e.preventDefault();
-      setSwipeX(Math.min(0, -ACTION_WIDTH + dx));
-    }
-  }
-  function onTouchEnd() {
-    touchStart.current = null;
-    if (swipeX < -ACTION_WIDTH / 2) {
-      setSwipeX(-ACTION_WIDTH);
-      setSwiped(true);
-    } else {
-      setSwipeX(0);
-      setSwiped(false);
-    }
-  }
-  function closeSwipe() { setSwipeX(0); setSwiped(false); }
-  const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
-  const favicon = faviconUrl(item.url);
-  const thumb = yt.isYouTube
-    ? `https://img.youtube.com/vi/${yt.videoId}/mqdefault.jpg`
-    : item.image || null;
-
-  return (
-    <div style={{ position:"relative", overflow:"hidden" }}>
-      {/* Swipe action buttons — revealed on swipe left */}
-      {isMobile && (
-        <div style={{ position:"absolute", right:0, top:0, bottom:0, width:ACTION_WIDTH, display:"flex", zIndex:0 }}>
-          <button onClick={e => { e.stopPropagation(); onMarkRead?.(); closeSwipe(); }}
-            style={{ flex:1, border:"none", background: isRead?"#8A9099":"#2F6FED", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
-            <span style={{ fontSize:16 }}>{isRead ? "○" : "●"}</span>
-            {isRead ? "Unread" : "Read"}
-          </button>
-          <button onClick={e => { e.stopPropagation(); onReadLater?.(); closeSwipe(); }}
-            style={{ flex:1, border:"none", background:"#AA8439", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
-            <span style={{ fontSize:16 }}>⏱</span>
-            Later
-          </button>
-          <button onClick={e => { e.stopPropagation(); onSave?.(); closeSwipe(); }}
-            style={{ flex:1, border:"none", background:"#4BBFAF", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
-            <span style={{ fontSize:16 }}>🔖</span>
-            Save
-          </button>
-        </div>
-      )}
-      {/* Swipeable row */}
-      <div
-        onTouchStart={isMobile ? onTouchStart : undefined}
-        onTouchMove={isMobile ? onTouchMove : undefined}
-        onTouchEnd={isMobile ? onTouchEnd : undefined}
-        style={{ transform: `translateX(${swipeX}px)`, transition: touchStart.current ? "none" : "transform .25s cubic-bezier(.25,.46,.45,.94)", position:"relative", zIndex:1, background:T.bg }}
-      >
-      <div
-        onClick={swiped ? closeSwipe : onClick}
-        onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "flex", alignItems: "center", gap: 12,
-        padding: cardSize === "lg" ? "14px 18px" : cardSize === "sm" ? "7px 14px" : "10px 16px",
-        borderBottom: `1px solid ${T.border}`,
-        cursor: "pointer",
-        background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
-        transition: "background .1s",
-      }}
-    >
-      {/* Favicon */}
-      <div style={{ width: 20, height: 20, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {favicon
-          ? <img src={favicon} alt="" width={16} height={16} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
-          : <span style={{ fontSize: 10 }}>📰</span>
-        }
-      </div>
-
-      {/* Thumbnail — size adapts to cardSize */}
-      {thumb && (
-        <img src={thumb} alt="" loading="lazy" onError={e => { e.target.style.display = "none"; }}
-          style={{
-            width:  cardSize === "lg" ? 96 : cardSize === "sm" ? 36 : 60,
-            height: cardSize === "lg" ? 64 : cardSize === "sm" ? 36 : 44,
-            borderRadius: 7, objectFit: "cover", flexShrink: 0, background: T.surface2,
-          }} />
-      )}
-
-      {/* Text */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: cardSize === "lg" ? 14 : cardSize === "sm" ? 12 : 13, fontWeight: isRead ? 400 : 500, color: isRead ? T.textTertiary : T.text, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: cardSize === "lg" ? "normal" : "nowrap", WebkitLineClamp: cardSize === "lg" ? 2 : 1, display: cardSize === "lg" ? "-webkit-box" : "block", WebkitBoxOrient: "vertical" }}>
-          {item.title}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-          <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</span>
-          {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
-          {item.description && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTime(item.description)}</span>}
-        </div>
-      </div>
-
-      {/* Hover actions */}
-      {hovered && (
-        <div style={{ display: "flex", gap: 4, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-          <ActionBtn icon={isRead ? "○" : "●"} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
-          <ActionBtn icon="🔖" title="Save" onClick={onSave} T={T} />
-          <ActionBtn icon="⏱" title="Read later" onClick={onReadLater} T={T} />
-          <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Card view item (Reeder magazine-style) ───────────────────
-function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead, cardSize='md' }) {
-  const { T } = useTheme();
-  const [hovered, setHovered] = useState(false);
-  const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
-  const favicon = faviconUrl(item.url);
-  const thumb = yt.isYouTube
-    ? `https://img.youtube.com/vi/${yt.videoId}/mqdefault.jpg`
-    : item.image || null;
-
-  return (
-    <div style={{ position:"relative", overflow:"hidden" }}>
-      {/* Swipe action buttons — revealed on swipe left */}
-      {isMobile && (
-        <div style={{ position:"absolute", right:0, top:0, bottom:0, width:ACTION_WIDTH, display:"flex", zIndex:0 }}>
-          <button onClick={e => { e.stopPropagation(); onMarkRead?.(); closeSwipe(); }}
-            style={{ flex:1, border:"none", background: isRead?"#8A9099":"#2F6FED", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
-            <span style={{ fontSize:16 }}>{isRead ? "○" : "●"}</span>
-            {isRead ? "Unread" : "Read"}
-          </button>
-          <button onClick={e => { e.stopPropagation(); onReadLater?.(); closeSwipe(); }}
-            style={{ flex:1, border:"none", background:"#AA8439", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
-            <span style={{ fontSize:16 }}>⏱</span>
-            Later
-          </button>
-          <button onClick={e => { e.stopPropagation(); onSave?.(); closeSwipe(); }}
-            style={{ flex:1, border:"none", background:"#4BBFAF", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
-            <span style={{ fontSize:16 }}>🔖</span>
-            Save
-          </button>
-        </div>
-      )}
-      {/* Swipeable row */}
-      <div
-        onTouchStart={isMobile ? onTouchStart : undefined}
-        onTouchMove={isMobile ? onTouchMove : undefined}
-        onTouchEnd={isMobile ? onTouchEnd : undefined}
-        style={{ transform: `translateX(${swipeX}px)`, transition: touchStart.current ? "none" : "transform .25s cubic-bezier(.25,.46,.45,.94)", position:"relative", zIndex:1, background:T.bg }}
-      >
-      <div
-        onClick={swiped ? closeSwipe : onClick}
-        onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: isSelected ? T.accentSurface : T.card,
-        border: `1px solid ${isSelected ? T.accent : hovered ? T.borderStrong : T.border}`,
-        borderRadius: 12,
-        overflow: "hidden",
-        cursor: "pointer",
-        transition: "border-color .12s, box-shadow .12s",
-        boxShadow: hovered ? "0 4px 16px rgba(0,0,0,.08)" : "0 1px 3px rgba(0,0,0,.04)",
-        display: "flex", flexDirection: "column",
-      }}
-    >
-      {/* Hero image — size adapts to cardSize */}
-      <div style={{
-        aspectRatio: cardSize === "lg" ? "16/7" : cardSize === "sm" ? "16/12" : "16/9",
-        overflow: "hidden", flexShrink: 0,
-        background: thumb ? T.surface2 : `linear-gradient(135deg, ${T.surface2} 0%, ${T.border} 100%)`,
-        position: "relative",
-      }}>
-        {thumb ? (
-          <img src={thumb} alt="" loading="lazy"
-            onError={e => {
-              e.target.style.display = "none";
-              e.target.parentElement.style.background = `linear-gradient(135deg, ${T.surface2} 0%, ${T.border} 100%)`;
-            }}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform .4s ease" }}
-            onMouseEnter={e => { e.target.style.transform = "scale(1.04)"; }}
-            onMouseLeave={e => { e.target.style.transform = "scale(1)"; }}
-          />
-        ) : (
-          <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            {favicon
-              ? <img src={favicon} alt="" style={{ width: 28, height: 28, borderRadius: 6, opacity: 0.5 }} />
-              : <span style={{ fontSize: 28, opacity: 0.3 }}>📰</span>
-            }
-            <span style={{ fontSize: 10, color: T.textTertiary, opacity: 0.6, maxWidth: "80%", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {item.source}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div style={{ padding: "12px 14px 10px", flex: 1, display: "flex", flexDirection: "column" }}>
-        {/* Source row with favicon */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-          <div style={{ width: 16, height: 16, borderRadius: 3, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            {favicon
-              ? <img src={favicon} alt="" width={14} height={14} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
-              : <span style={{ fontSize: 9 }}>📰</span>
-            }
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {item.source}
-          </span>
-          {item.date && <span style={{ fontSize: 10, color: T.textTertiary, flexShrink: 0 }}>{formatDate(item.date)}</span>}
-        </div>
-
-        {/* Title */}
-        <div style={{
-          fontSize: cardSize === "lg" ? 15 : cardSize === "sm" ? 12 : 13,
-          fontWeight: 600, color: T.text, lineHeight: 1.45,
-          flex: 1,
-          display: "-webkit-box",
-          WebkitLineClamp: cardSize === "lg" ? 4 : cardSize === "sm" ? 2 : 3,
-          WebkitBoxOrient: "vertical", overflow: "hidden",
-          marginBottom: 10,
-        }}>
-          {item.title}
-        </div>
-
-        {/* Description — hidden on small cards */}
-        {item.description && cardSize !== "sm" && (
-          <div style={{
-            fontSize: cardSize === "lg" ? 13 : 12,
-            color: T.textSecondary, lineHeight: 1.6, marginBottom: 10,
-            display: "-webkit-box",
-            WebkitLineClamp: cardSize === "lg" ? 4 : 2,
-            WebkitBoxOrient: "vertical", overflow: "hidden",
-          }}>
-            {item.description}
-          </div>
-        )}
-
-        {/* Action row */}
-        <div style={{ display: "flex", gap: 6, marginTop: "auto" }} onClick={e => e.stopPropagation()}>
-          <ActionBtn icon="📖" label="Read" onClick={onClick} T={T} small />
-          <ActionBtn icon="🔖" label="Save" onClick={onSave} T={T} small />
-          <ActionBtn icon="⏱" label="Later" onClick={onReadLater} T={T} small />
-          <div style={{ flex: 1 }} />
-          <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Shared action button ──────────────────────────────────────
+// ── Action button (hover controls) ───────────────────────────
 function ActionBtn({ icon, label, title, onClick, T, small = false }) {
-  const [flash, setFlash] = useState(false);
   function handleClick(e) {
     e.stopPropagation();
-    setFlash(true);
-    setTimeout(() => setFlash(false), 600);
     onClick?.(e);
   }
   return (
     <button onClick={handleClick} title={title || label} style={{
+      background: T.surface2, border: "none", borderRadius: 7,
+      padding: small ? "4px 8px" : "5px 9px",
+      cursor: "pointer", fontSize: small ? 11 : 12,
+      color: T.textSecondary, fontFamily: "inherit",
       display: "flex", alignItems: "center", gap: 4,
-      background: flash ? T.accentSurface : T.surface,
-      border: `1px solid ${flash ? T.accent : T.border}`,
-      borderRadius: 7, padding: small ? "4px 8px" : "4px 7px",
-      cursor: "pointer", fontSize: 11, fontWeight: 600,
-      color: flash ? T.accentText : T.textSecondary,
-      fontFamily: "inherit", transition: "all .15s",
-      whiteSpace: "nowrap",
-    }}>
-      <span style={{ fontSize: 12 }}>{icon}</span>
-      {label && <span>{label}</span>}
+      transition: "background .1s",
+    }}
+      onMouseEnter={e => e.currentTarget.style.background = T.surface}
+      onMouseLeave={e => e.currentTarget.style.background = T.surface2}
+    >
+      <span>{icon}</span>
+      {label && <span style={{ fontWeight: 500 }}>{label}</span>}
     </button>
   );
 }
 
-// ── Public export — switches between list/card based on viewMode ──
-export default function FeedItem({ item, onClick, onDelete, onSave, onReadLater, onMarkRead, isSelected = false, isRead = false, viewMode = "list", cardSize = "md" }) {
+// ── Swipe wrapper — only active on mobile ─────────────────────
+// Wraps a row and exposes 3 action buttons on swipe-left
+function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobile }) {
+  const ACTION_W = 140;
+  const [swipeX, setSwipeX] = useState(0);
+  const [swiped, setSwiped]  = useState(false);
+  const touchRef = useRef(null);
+
+  if (!isMobile) return <>{children}</>;
+
+  function onTouchStart(e) {
+    touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+  function onTouchMove(e) {
+    if (!touchRef.current) return;
+    const dx = e.touches[0].clientX - touchRef.current.x;
+    const dy = e.touches[0].clientY - touchRef.current.y;
+    if (Math.abs(dy) > Math.abs(dx) + 8) { touchRef.current = null; return; }
+    if (dx < 0) {
+      e.preventDefault();
+      setSwipeX(Math.max(dx, -ACTION_W));
+    } else if (swiped && dx > 0) {
+      e.preventDefault();
+      setSwipeX(Math.min(0, -ACTION_W + dx));
+    }
+  }
+  function onTouchEnd() {
+    touchRef.current = null;
+    if (swipeX < -ACTION_W / 2) { setSwipeX(-ACTION_W); setSwiped(true); }
+    else { setSwipeX(0); setSwiped(false); }
+  }
+  function close() { setSwipeX(0); setSwiped(false); }
+
+  return (
+    <div style={{ position: "relative", overflow: "hidden" }}>
+      {/* Revealed action buttons */}
+      <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: ACTION_W, display: "flex" }}>
+        <button onClick={e => { e.stopPropagation(); onMarkRead?.(); close(); }}
+          style={{ flex: 1, border: "none", background: isRead ? "#8A9099" : "#2F6FED", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
+          <span style={{ fontSize: 16 }}>{isRead ? "○" : "●"}</span>
+          {isRead ? "Unread" : "Read"}
+        </button>
+        <button onClick={e => { e.stopPropagation(); onReadLater?.(); close(); }}
+          style={{ flex: 1, border: "none", background: "#AA8439", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
+          <span style={{ fontSize: 16 }}>⏱</span>
+          Later
+        </button>
+        <button onClick={e => { e.stopPropagation(); onSave?.(); close(); }}
+          style={{ flex: 1, border: "none", background: "#4BBFAF", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
+          <span style={{ fontSize: 16 }}>🔖</span>
+          Save
+        </button>
+      </div>
+      {/* Sliding row */}
+      <div
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{ transform: `translateX(${swipeX}px)`, transition: touchRef.current ? "none" : "transform .25s cubic-bezier(.25,.46,.45,.94)", position: "relative", zIndex: 1 }}
+      >
+        {typeof children === "function" ? children({ swiped, close }) : children}
+      </div>
+    </div>
+  );
+}
+
+// ── List view item ────────────────────────────────────────────
+function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead, cardSize = "md" }) {
+  const { T } = useTheme();
+  const { isMobile } = useBreakpoint();
+  const [hovered, setHovered] = useState(false);
+  const favicon = faviconUrl(item.url);
+
+  return (
+    <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
+      {({ swiped, close } = {}) => (
+        <div
+          onClick={swiped ? close : onClick}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: cardSize === "lg" ? "14px 18px" : cardSize === "sm" ? "7px 14px" : "10px 16px",
+            borderBottom: `1px solid ${T.border}`,
+            cursor: "pointer",
+            background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
+            transition: "background .1s",
+          }}
+        >
+          {/* Favicon */}
+          <div style={{ width: 20, height: 20, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {favicon
+              ? <img src={favicon} alt="" width={16} height={16} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
+              : <span style={{ fontSize: 10 }}>📰</span>
+            }
+          </div>
+
+          {/* Thumbnail */}
+          {item.image && (
+            <img src={item.image} alt="" loading="lazy"
+              style={{ width: cardSize === "lg" ? 96 : cardSize === "sm" ? 36 : 60, height: cardSize === "lg" ? 64 : cardSize === "sm" ? 36 : 44, borderRadius: 7, objectFit: "cover", flexShrink: 0, background: T.surface2 }}
+              onError={e => { e.target.style.display = "none"; }} />
+          )}
+
+          {/* Text */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: cardSize === "lg" ? 14 : cardSize === "sm" ? 12 : 13, fontWeight: isRead ? 400 : 500, color: isRead ? T.textTertiary : T.text, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: cardSize === "lg" ? "normal" : "nowrap" }}>
+              {item.title}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+              <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</span>
+              {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
+              {item.description && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTime(item.description)}</span>}
+            </div>
+          </div>
+
+          {/* Hover actions — desktop only */}
+          {hovered && !isMobile && (
+            <div style={{ display: "flex", gap: 4, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+              <ActionBtn icon={isRead ? "○" : "●"} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
+              <ActionBtn icon="🔖" title="Save" onClick={onSave} T={T} />
+              <ActionBtn icon="⏱" title="Read later" onClick={onReadLater} T={T} />
+              <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
+            </div>
+          )}
+        </div>
+      )}
+    </SwipeRow>
+  );
+}
+
+// ── Card view item ────────────────────────────────────────────
+function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead, cardSize = "md" }) {
+  const { T } = useTheme();
+  const { isMobile } = useBreakpoint();
+  const [hovered, setHovered] = useState(false);
+  const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
+  const favicon = faviconUrl(item.url);
+  const thumb = yt.isYouTube
+    ? `https://img.youtube.com/vi/${yt.videoId}/mqdefault.jpg`
+    : item.image || null;
+
+  return (
+    <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
+      {({ swiped, close } = {}) => (
+        <div
+          onClick={swiped ? close : onClick}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{
+            background: isSelected ? T.accentSurface : T.card,
+            border: `1px solid ${isSelected ? T.accent : hovered ? T.borderStrong : T.border}`,
+            borderRadius: 12, overflow: "hidden", cursor: "pointer",
+            transition: "border-color .12s, box-shadow .12s",
+            boxShadow: hovered ? "0 4px 16px rgba(0,0,0,.08)" : "0 1px 3px rgba(0,0,0,.04)",
+            display: "flex", flexDirection: "column",
+          }}
+        >
+          {/* Hero image */}
+          <div style={{
+            aspectRatio: cardSize === "lg" ? "16/7" : cardSize === "sm" ? "16/12" : "16/9",
+            overflow: "hidden", flexShrink: 0,
+            background: thumb ? T.surface2 : `linear-gradient(135deg, ${T.surface2} 0%, ${T.border} 100%)`,
+            position: "relative",
+          }}>
+            {thumb && (
+              <img src={thumb} alt="" loading="lazy"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                onError={e => { e.target.style.display = "none"; }}
+              />
+            )}
+            {yt.isYouTube && (
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(0,0,0,.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 14, marginLeft: 2 }}>▶</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Content */}
+          <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", flex: 1 }}>
+            {/* Source + date */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+              {favicon && (
+                <img src={favicon} alt="" width={12} height={12} style={{ borderRadius: 2, opacity: 0.7 }} onError={e => { e.target.style.display = "none"; }} />
+              )}
+              <span style={{ fontSize: 11, fontWeight: 600, color: T.accent, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {item.source}
+              </span>
+              {item.date && (
+                <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: "auto", flexShrink: 0 }}>{formatDate(item.date)}</span>
+              )}
+            </div>
+
+            {/* Title */}
+            <div style={{
+              fontSize: cardSize === "lg" ? 15 : cardSize === "sm" ? 12 : 13,
+              fontWeight: isRead ? 400 : 600,
+              color: isRead ? T.textTertiary : T.text,
+              lineHeight: 1.4, marginBottom: 6,
+              overflow: "hidden", display: "-webkit-box",
+              WebkitLineClamp: cardSize === "lg" ? 3 : 2,
+              WebkitBoxOrient: "vertical",
+              letterSpacing: "-.01em",
+            }}>
+              {item.title}
+            </div>
+
+            {/* Description */}
+            {cardSize !== "sm" && item.description && (
+              <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", marginBottom: 10, flex: 1 }}>
+                {item.description}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ display: "flex", gap: 6, marginTop: "auto" }} onClick={e => e.stopPropagation()}>
+              <ActionBtn icon="📖" label="Read" onClick={onClick} T={T} small />
+              <ActionBtn icon="🔖" label="Save" onClick={onSave} T={T} small />
+              <ActionBtn icon="⏱" label="Later" onClick={onReadLater} T={T} small />
+              <div style={{ marginLeft: "auto" }}>
+                <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} small />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </SwipeRow>
+  );
+}
+
+// ── Public export ─────────────────────────────────────────────
+export default function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, isSelected = false, isRead = false }) {
   if (viewMode === "card") {
     return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} isSelected={isSelected} isRead={isRead} cardSize={cardSize} />;
   }
