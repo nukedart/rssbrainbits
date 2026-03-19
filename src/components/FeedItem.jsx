@@ -119,7 +119,7 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
 }
 
 // ── List view item ────────────────────────────────────────────
-function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead, cardSize = "md" }) {
+function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, cardSize = "md" }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -164,13 +164,17 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
               <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</span>
               {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
-              {item.description && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTime(item.description)}</span>}
+              {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent }}>· ▶ {item.audioDuration}</span>}
+              {!item.isPodcast && item.description && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTime(item.description)}</span>}
             </div>
           </div>
 
           {/* Hover actions — desktop only */}
           {hovered && !isMobile && (
             <div style={{ display: "flex", gap: 4, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+              {item.isPodcast && onPlayPodcast && (
+                <ActionBtn icon="▶" title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
+              )}
               <ActionBtn icon={isRead ? "○" : "●"} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
               <ActionBtn icon="🔖" title="Save" onClick={onSave} T={T} />
               <ActionBtn icon="⏱" title="Read later" onClick={onReadLater} T={T} />
@@ -285,9 +289,9 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
 }
 
 // ── Public export ─────────────────────────────────────────────
-export default function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, isSelected = false, isRead = false }) {
+export default function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false }) {
   if (viewMode === "card") {
-    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} isSelected={isSelected} isRead={isRead} cardSize={cardSize} />;
+    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} cardSize={cardSize} />;
   }
-  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} isSelected={isSelected} isRead={isRead} cardSize={cardSize} />;
+  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} cardSize={cardSize} />;
 }

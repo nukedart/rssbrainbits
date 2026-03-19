@@ -14,7 +14,7 @@ function SearchIcon({ size = 14, color = "currentColor" }) {
   );
 }
 
-export default function SearchBar({ onSelectResult, onClose }) {
+export default function SearchBar({ onSelectResult, onClose, onLiveSearch }) {
   const { T } = useTheme();
   const { user } = useAuth();
 
@@ -31,7 +31,7 @@ export default function SearchBar({ onSelectResult, onClose }) {
 
   // Close on Escape
   useEffect(() => {
-    function onKey(e) { if (e.key === "Escape") onClose?.(); }
+    function onKey(e) { if (e.key === "Escape") onClose?.(); onLiveSearch?.(""); }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
@@ -82,7 +82,7 @@ export default function SearchBar({ onSelectResult, onClose }) {
         <input
           ref={inputRef}
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={e => { setQuery(e.target.value); onLiveSearch?.(e.target.value); }}
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => setFocused(false), 200)}
           placeholder="Search history, saved, tags…"

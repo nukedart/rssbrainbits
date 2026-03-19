@@ -5,6 +5,22 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.12.0] — 2026-03-19
+
+### Added
+- **Podcast mini-player** — sticky audio bar at the bottom of the screen. Podcast episodes detected via RSS `<enclosure>` audio tags get a ▶ play button in the feed list. Player has play/pause, -15s / +30s skip, playback speed (1×/1.25×/1.5×/2×), scrubbing progress bar, episode art, title, source, and elapsed/total time. Player persists across page navigation. Clicking a podcast item in the list opens the player instead of the article reader.
+- **Duration badge** — podcast episodes show their duration (e.g. ▶ 45:32) in the article list row instead of reading time.
+- **Client-side live search across unread** — typing in the search bar now instantly filters the in-memory article list (title, description, source, author) as you type, with no DB round-trip. Works across all filterModes including unread and today. Results update in real time.
+- **Podcast fields in parser** — `audioUrl`, `audioDuration`, `isPodcast` now populated on all RSS items with audio enclosures (from v1.11.4, now surfaced in UI).
+
+### Changed
+- **Sidebar nav icons** — increased from 15px to 17px. More legible at all sizes.
+- **Folder/Smart Feed rows left-aligned** — previously centred the dot icon in the 56px collapsed rail, making it visually disconnected from the nav icons above. Now left-aligned with consistent padding, matching the main nav visual rhythm.
+- **Settings page centered** — content is now centred in the right pane (max-width 520px, margin auto). Previously left-aligned which looked unbalanced on wide screens.
+
+---
+
+
 ## [1.11.4] — 2026-03-19
 
 ### Added

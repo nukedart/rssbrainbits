@@ -23,7 +23,7 @@ function PageShell({ title, subtitle, action, children }) {
         </div>
         {action}
       </div>
-      <div style={{ flex: 1, overflowY: "auto" }}>{children}</div>
+      <div style={{ flex: 1, overflowY: "auto", display:"flex", flexDirection:"column", alignItems:"center" }}>{children}</div>
     </div>
   );
 }
@@ -113,7 +113,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
 
   return (
     <PageShell title="Settings">
-      <div style={{ maxWidth: 520, padding: "24px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ maxWidth: 520, width: "100%", padding: "24px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
 
         {/* Account */}
         <Card title="Account" T={T}>
@@ -252,7 +252,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.11.4</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.12.0</div>
         </Card>
       </div>
     </PageShell>

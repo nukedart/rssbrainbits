@@ -14,7 +14,7 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
 
-export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount, folders = [], onAddFolder, onEditFolder, onMoveFeedToFolder }) {
+export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount, folders = [], onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast }) {
   const { T } = useTheme();
   const { user } = useAuth();
   const { isMobile, isTablet } = useBreakpoint();
@@ -35,6 +35,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
   const [toast, setToast]               = useState(null);
   const [searchResult, setSearchResult]   = useState(null);
+  const [liveSearch, setLiveSearch]       = useState(""); // client-side search across unread
   const [feedErrors, setFeedErrors]         = useState({});   // feedId -> error message
   const [feedLoading, setFeedLoading]       = useState({});   // feedId -> bool
   const [lastRefresh, setLastRefresh]       = useState(null);
@@ -165,6 +166,16 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       items = items.filter((i) => matchesSmartFeed(i, smartFeedDef));
     }
     if (filterMode !== "unread" && hideRead) items = items.filter((i) => !readUrls.has(i.url));
+    // Client-side live search across in-memory items
+    if (liveSearch.trim().length > 1) {
+      const q = liveSearch.toLowerCase();
+      items = items.filter(i =>
+        (i.title||"").toLowerCase().includes(q) ||
+        (i.description||"").toLowerCase().includes(q) ||
+        (i.source||"").toLowerCase().includes(q) ||
+        (i.author||"").toLowerCase().includes(q)
+      );
+    }
     return items;
   })();
 
@@ -553,7 +564,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
           {/* Search — fills remaining space */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <SearchBar onSelectResult={(item) => setSearchResult(item)} onClose={() => {}} />
+            <SearchBar onSelectResult={(item) => setSearchResult(item)} onLiveSearch={setLiveSearch} onClose={() => { setLiveSearch(""); }} />
           </div>
 
           {/* Refresh button */}
@@ -643,10 +654,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                 <FeedItem item={item} viewMode="card" cardSize={isMobile ? "md" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
-                  onClick={() => openByIdx(i)}
+                  onClick={() => { if (item.isPodcast && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}
                   onSave={() => handleSaveItem(item)}
                   onReadLater={() => handleReadLater(item)}
                   onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
+                  onPlayPodcast={onPlayPodcast}
                 /></div>
               ))}
             </div>
@@ -656,10 +668,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
               <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem ? openItem?.url === item.url : cursorIdx === i}
                 isRead={readUrls.has(item.url)}
-                onClick={() => { setCursorIdx(i); openByIdx(i); }}
+                onClick={() => { if (item.isPodcast && onPlayPodcast) { onPlayPodcast(item); } else { setCursorIdx(i); openByIdx(i); } }}
                 onSave={() => handleSaveItem(item)}
                 onReadLater={() => handleReadLater(item)}
                 onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
+                onPlayPodcast={onPlayPodcast}
               /></div>
             ))
           )}

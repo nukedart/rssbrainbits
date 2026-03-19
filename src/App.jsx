@@ -14,6 +14,7 @@ import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
          getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder,
          getFeeds } from "./lib/supabase";
 import FolderModal from "./components/FolderModal";
+import PodcastPlayer from "./components/PodcastPlayer";
 
 function AppShell() {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ function AppShell() {
   const [folders, setFolders]         = useState([]);
   const [editingFolder, setEditingFolder] = useState(null);
   const [sidebarOpen, setSidebarOpen]       = useState(true);
+  const [podcastItem, setPodcastItem]       = useState(null); // currently playing podcast
   const [feeds, setFeeds]             = useState([]); // for SmartFeedModal feed picker
 
   // Load smart feeds once user is known
@@ -114,19 +116,19 @@ function AppShell() {
       // Guard: if smartFeeds hasn't loaded yet, sfDef may be undefined —
       // fall back to inbox while it loads rather than passing undefined
       if (!sfDef) {
-        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
+        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
       }
-      return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
+      return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
     }
     switch (page) {
-      case "inbox":     return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
-      case "unread":    return <InboxPage filterMode="unread" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
-      case "today":     return <InboxPage filterMode="today"  onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
+      case "inbox":     return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
+      case "unread":    return <InboxPage filterMode="unread" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
+      case "today":     return <InboxPage filterMode="today"  onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
       case "readlater": return <ReadLaterPage />;
       case "history":   return <HistoryPage />;
       case "notes":     return <NotesPage />;
       case "settings":  return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} />;
-      default:          return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
+      default:          return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
     }
   }
 
@@ -169,6 +171,11 @@ function AppShell() {
           onClose={() => setEditingSF(null)}
         />
       )}
+      {/* ── Podcast mini-player — persists across navigation ── */}
+      {podcastItem && (
+        <PodcastPlayer item={podcastItem} onClose={() => setPodcastItem(null)} />
+      )}
+
       {editingFolder && (
         <FolderModal
           folder={editingFolder === "new" ? null : editingFolder}
