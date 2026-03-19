@@ -389,7 +389,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   function handlePTRStart(e) {
     if (!isMobile) return;
     const el = pullRef.current;
-    if (!el || el.scrollTop > 0) return;
+    if (!el || (el.scrollTop || 0) > 0) return;
     pullStartY.current = e.touches[0].clientY;
     setIsPulling(true);
   }
@@ -545,8 +545,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
         <div style={{ padding: "0 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 6 : 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 52 }}>
 
           {/* Title + unread badge */}
-          <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: T.text, letterSpacing: "-.01em", whiteSpace: "nowrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: T.text, letterSpacing: "-.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {activeFeedName}
             </div>
             {unreadCount > 0 && (
@@ -624,7 +624,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
         </div>
 
         {/* Article list / grid */}
-        <div ref={listRef} style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? "14px" : "0" }}>
+        <div
+          ref={el => { listRef.current = el; pullRef.current = el; }}
+          onTouchStart={isMobile ? handlePTRStart : undefined}
+          onTouchMove={isMobile ? handlePTRMove : undefined}
+          onTouchEnd={isMobile ? handlePTREnd : undefined}
+          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? "14px" : "0", WebkitOverflowScrolling: "touch" }}>
           {loadingItems && (
             <div style={{ padding: "8px 0" }}>
               {[...Array(8)].map((_, i) => (

@@ -5,6 +5,20 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.13.1] — 2026-03-19
+
+### Fixed
+- **Feeds not showing on desktop (v1.12.0 regression)** — `pullRef` (used by pull-to-refresh) was declared but never attached to a DOM element, so `pullRef.current` was always `null`. `handlePTRStart` called `el.scrollTop` on null, throwing a TypeError that crashed the article list render on desktop. Fixed by attaching both `listRef` and `pullRef` to the article list scroll container via a combined callback ref, and guarding `scrollTop` with `|| 0`.
+- **Mobile toolbar buttons squishing feed title** — the title area had `flexShrink:0` which prevented it from yielding space to the action buttons. Changed to `flexShrink:1` with `minWidth:0` and `overflow:hidden` so the title truncates gracefully instead of pushing buttons off-screen.
+
+### Changed
+- **Feed item title** — list view title increased from 13px to 15px, weight 500→600 for unread. More legible at a glance, makes unread items stand out clearly.
+- **Sidebar width** — expanded state reduced from 220px to 200px. Slightly more compact, gives the article list more room.
+- **Smart feed text indent** — feed names in the Smart Feeds section now have 4px left padding, creating a subtle visual indent relative to the "Smart Feeds" section heading above.
+
+---
+
+
 ## [1.13.0] — 2026-03-19
 
 ### Fixed

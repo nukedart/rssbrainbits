@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-const APP_VERSION = "1.13.0"; // keep in sync with package.json
+const APP_VERSION = "1.13.1"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -100,7 +100,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
 
   // collapsed = icons only (56px), expanded = icons + labels (220px)
   const collapsed = isTablet || !isOpen;
-  const W = collapsed ? 56 : 220;
+  const W = collapsed ? 56 : 200;
 
   return (
     <aside style={{
@@ -181,7 +181,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
                 style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0 }}
               >
                 {!collapsed && (
-                  <span style={{ flex:1, fontSize:13, fontWeight:isActive?600:400, color:isActive?T.accentText:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>{sf.name}</span>
+                  <span style={{ flex:1, fontSize:13, fontWeight:isActive?600:400, color:isActive?T.accentText:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em", paddingLeft:4 }}>{sf.name}</span>
                 )}
                 {/* Color dot — right side */}
                 <span style={{ width:8, height:8, borderRadius:"50%", background:dot, flexShrink:0 }} />
