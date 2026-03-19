@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
 import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem,
          addReadLater, getReadUrls, markRead, markUnread, matchesSmartFeed } from "../lib/supabase";
@@ -40,7 +41,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [showOPML, setShowOPML]           = useState(false);
   const [dragFeedId, setDragFeedId]         = useState(null);
   const [openFolders, setOpenFolders]       = useState(() => new Set());
-  const [dragOverFolder, setDragOverFolder] = useState(null); // folder id being dragged over
+  const [dragOverFolder, setDragOverFolder] = useState(null);
+  const [pullY, setPullY]           = useState(0);
+  const [isPulling, setIsPulling]   = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const pullRef = useRef(null);
+  const pullStartY = useRef(null); // folder id being dragged over
   const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
 
   function toggleFolderOpen(id) {
@@ -96,6 +102,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
               ...item,
               feedId: feed.id,
               source: feed.name || data.title,
+              fetchFullContent: !!feed.fetch_full_content,
               type:   "rss",
             }));
             mergeAndSort(items);
@@ -299,6 +306,35 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   useEffect(() => {
     onUnreadCount?.(unreadCount);
   }, [unreadCount]);
+
+  // ── Pull-to-refresh (mobile) ─────────────────────────────
+  function handlePTRStart(e) {
+    if (!isMobile) return;
+    const el = pullRef.current;
+    if (!el || el.scrollTop > 0) return;
+    pullStartY.current = e.touches[0].clientY;
+    setIsPulling(true);
+  }
+  function handlePTRMove(e) {
+    if (!isMobile || pullStartY.current === null) return;
+    const dy = e.touches[0].clientY - pullStartY.current;
+    if (dy > 0) {
+      e.preventDefault();
+      setPullY(Math.min(dy * 0.4, 72)); // dampen pull
+    }
+  }
+  async function handlePTREnd() {
+    if (!isMobile) return;
+    setIsPulling(false);
+    if (pullY > 55) {
+      setRefreshing(true);
+      setPullY(44); // snap to loading position
+      await fetchAll(true);
+      setRefreshing(false);
+    }
+    setPullY(0);
+    pullStartY.current = null;
+  }
 
   return (
     <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
@@ -587,7 +623,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       )}
 
       {showAdd  && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} />}
-      {openItem && <ContentViewer item={openItem} onClose={() => { setOpenItem(null); setOpenIdx(-1); }} />}
+      {openItem && <ContentViewer
+        item={openItem}
+        onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+        onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+        onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+      />}
       {searchResult && <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />}
       {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
       {/* FolderModal is owned by App.jsx — onAddFolder/onEditFolder props trigger it */}

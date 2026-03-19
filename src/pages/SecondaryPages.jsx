@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { getHistory, clearHistory, getReadLater, removeReadLater,
@@ -201,13 +201,46 @@ export function SettingsPage() {
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.9.4</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.10.0</div>
         </Card>
       </div>
     </PageShell>
   );
 }
 
+
+
+// ── Inline feed name editor ───────────────────────────────────
+function FeedNameEditor({ feed, T, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(feed.name || "");
+  const inputRef = useRef(null);
+
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  function commit() {
+    const trimmed = val.trim();
+    if (trimmed && trimmed !== feed.name) onSave(trimmed);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <input ref={inputRef} value={val} onChange={e => setVal(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setVal(feed.name||""); setEditing(false); }}}
+        style={{ flex:1, background:T.surface2, border:`1.5px solid ${T.accent}`, borderRadius:7, padding:"3px 8px", fontSize:13, color:T.text, fontFamily:"inherit", outline:"none" }}
+      />
+    );
+  }
+  return (
+    <span onClick={() => setEditing(true)} title="Click to rename"
+      style={{ flex:1, fontSize:13, color:T.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", cursor:"text", padding:"3px 0" }}>
+      {feed.name || new URL(feed.url).hostname}
+      <span style={{ fontSize:10, color:T.textTertiary, marginLeft:5 }}>✎</span>
+    </span>
+  );
+}
 
 // ── Manage Feeds card ─────────────────────────────────────────
 function ManageFeedsCard({ T, user }) {
@@ -254,35 +287,44 @@ function ManageFeedsCard({ T, user }) {
           const currentFolder = folders.find(f => f.id === feed.folder_id);
           const isSaving = saving === feed.id;
           return (
-            <div key={feed.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 9, background: T.surface }}>
-              {/* Favicon */}
-              <div style={{ width: 16, height: 16, borderRadius: 3, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <img
-                  src={`https://www.google.com/s2/favicons?domain=${new URL(feed.url).hostname}&sz=32`}
-                  alt="" width={12} height={12} style={{ display: "block" }}
-                  onError={e => { e.target.style.display = "none"; }}
-                />
+            <div key={feed.id} style={{ background: T.surface, borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {/* Favicon */}
+                <div style={{ width: 16, height: 16, borderRadius: 3, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <img src={`https://www.google.com/s2/favicons?domain=${new URL(feed.url).hostname}&sz=32`}
+                    alt="" width={12} height={12} style={{ display: "block" }}
+                    onError={e => { e.target.style.display = "none"; }} />
+                </div>
+                {/* Editable name */}
+                <FeedNameEditor feed={feed} T={T} onSave={async (name) => {
+                  setSaving(feed.id);
+                  try {
+                    await updateFeedSettings(feed.id, { name });
+                    setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, name } : f));
+                  } finally { setSaving(null); }
+                }} />
+                {isSaving && <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>saving…</span>}
               </div>
-              {/* Feed name */}
-              <span style={{ flex: 1, fontSize: 13, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {feed.name || new URL(feed.url).hostname}
-              </span>
-              {/* Folder select */}
-              {isSaving
-                ? <span style={{ fontSize: 11, color: T.textTertiary }}>saving…</span>
-                : (
-                  <select
-                    value={feed.folder_id || ""}
-                    onChange={e => handleMove(feed.id, e.target.value || null)}
-                    style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 8px", fontSize: 12, color: T.text, fontFamily: "inherit", cursor: "pointer", maxWidth: 130 }}
-                  >
-                    <option value="">No folder</option>
-                    {folders.map(f => (
-                      <option key={f.id} value={f.id}>{f.name}</option>
-                    ))}
-                  </select>
-                )
-              }
+              <div style={{ display: "flex", alignItems: "center", gap: 10, paddingLeft: 26 }}>
+                {/* Folder select */}
+                <select value={feed.folder_id || ""} onChange={e => handleMove(feed.id, e.target.value || null)}
+                  style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 8px", fontSize: 12, color: T.text, fontFamily: "inherit", cursor: "pointer", flex: 1 }}>
+                  <option value="">No folder</option>
+                  {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+                </select>
+                {/* Fetch full content toggle */}
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.textSecondary, cursor: "pointer", flexShrink: 0 }}>
+                  <input type="checkbox" checked={!!feed.fetch_full_content} onChange={async e => {
+                    const val = e.target.checked;
+                    setSaving(feed.id);
+                    try {
+                      await updateFeedSettings(feed.id, { fetch_full_content: val });
+                      setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, fetch_full_content: val } : f));
+                    } finally { setSaving(null); }
+                  }} style={{ accentColor: T.accent }} />
+                  Always fetch full content
+                </label>
+              </div>
             </div>
           );
         })}

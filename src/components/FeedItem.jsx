@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { parseYouTubeUrl } from "../lib/fetchers";
 
 function formatDate(dateStr) {
@@ -32,7 +33,40 @@ function faviconUrl(url) {
 // ── List view item (Reeder-style compact row) ────────────────
 function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead, cardSize = "md" }) {
   const { T } = useTheme();
+  const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
+  const [swipeX, setSwipeX] = useState(0);       // current swipe offset
+  const [swiped, setSwiped]  = useState(false);  // actions visible
+  const touchStart = useRef(null);
+  const ACTION_WIDTH = 140; // width of action buttons revealed
+
+  function onTouchStart(e) {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+  function onTouchMove(e) {
+    if (!touchStart.current) return;
+    const dx = e.touches[0].clientX - touchStart.current.x;
+    const dy = e.touches[0].clientY - touchStart.current.y;
+    if (Math.abs(dy) > Math.abs(dx) + 8) { touchStart.current = null; return; }
+    if (dx < 0) {
+      e.preventDefault();
+      setSwipeX(Math.max(dx, -ACTION_WIDTH));
+    } else if (swiped && dx > 0) {
+      e.preventDefault();
+      setSwipeX(Math.min(0, -ACTION_WIDTH + dx));
+    }
+  }
+  function onTouchEnd() {
+    touchStart.current = null;
+    if (swipeX < -ACTION_WIDTH / 2) {
+      setSwipeX(-ACTION_WIDTH);
+      setSwiped(true);
+    } else {
+      setSwipeX(0);
+      setSwiped(false);
+    }
+  }
+  function closeSwipe() { setSwipeX(0); setSwiped(false); }
   const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
   const favicon = faviconUrl(item.url);
   const thumb = yt.isYouTube
@@ -40,9 +74,37 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
     : item.image || null;
 
   return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
+    <div style={{ position:"relative", overflow:"hidden" }}>
+      {/* Swipe action buttons — revealed on swipe left */}
+      {isMobile && (
+        <div style={{ position:"absolute", right:0, top:0, bottom:0, width:ACTION_WIDTH, display:"flex", zIndex:0 }}>
+          <button onClick={e => { e.stopPropagation(); onMarkRead?.(); closeSwipe(); }}
+            style={{ flex:1, border:"none", background: isRead?"#8A9099":"#2F6FED", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
+            <span style={{ fontSize:16 }}>{isRead ? "○" : "●"}</span>
+            {isRead ? "Unread" : "Read"}
+          </button>
+          <button onClick={e => { e.stopPropagation(); onReadLater?.(); closeSwipe(); }}
+            style={{ flex:1, border:"none", background:"#AA8439", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
+            <span style={{ fontSize:16 }}>⏱</span>
+            Later
+          </button>
+          <button onClick={e => { e.stopPropagation(); onSave?.(); closeSwipe(); }}
+            style={{ flex:1, border:"none", background:"#4BBFAF", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
+            <span style={{ fontSize:16 }}>🔖</span>
+            Save
+          </button>
+        </div>
+      )}
+      {/* Swipeable row */}
+      <div
+        onTouchStart={isMobile ? onTouchStart : undefined}
+        onTouchMove={isMobile ? onTouchMove : undefined}
+        onTouchEnd={isMobile ? onTouchEnd : undefined}
+        style={{ transform: `translateX(${swipeX}px)`, transition: touchStart.current ? "none" : "transform .25s cubic-bezier(.25,.46,.45,.94)", position:"relative", zIndex:1, background:T.bg }}
+      >
+      <div
+        onClick={swiped ? closeSwipe : onClick}
+        onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex", alignItems: "center", gap: 12,
@@ -107,9 +169,37 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
     : item.image || null;
 
   return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
+    <div style={{ position:"relative", overflow:"hidden" }}>
+      {/* Swipe action buttons — revealed on swipe left */}
+      {isMobile && (
+        <div style={{ position:"absolute", right:0, top:0, bottom:0, width:ACTION_WIDTH, display:"flex", zIndex:0 }}>
+          <button onClick={e => { e.stopPropagation(); onMarkRead?.(); closeSwipe(); }}
+            style={{ flex:1, border:"none", background: isRead?"#8A9099":"#2F6FED", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
+            <span style={{ fontSize:16 }}>{isRead ? "○" : "●"}</span>
+            {isRead ? "Unread" : "Read"}
+          </button>
+          <button onClick={e => { e.stopPropagation(); onReadLater?.(); closeSwipe(); }}
+            style={{ flex:1, border:"none", background:"#AA8439", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
+            <span style={{ fontSize:16 }}>⏱</span>
+            Later
+          </button>
+          <button onClick={e => { e.stopPropagation(); onSave?.(); closeSwipe(); }}
+            style={{ flex:1, border:"none", background:"#4BBFAF", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 }}>
+            <span style={{ fontSize:16 }}>🔖</span>
+            Save
+          </button>
+        </div>
+      )}
+      {/* Swipeable row */}
+      <div
+        onTouchStart={isMobile ? onTouchStart : undefined}
+        onTouchMove={isMobile ? onTouchMove : undefined}
+        onTouchEnd={isMobile ? onTouchEnd : undefined}
+        style={{ transform: `translateX(${swipeX}px)`, transition: touchStart.current ? "none" : "transform .25s cubic-bezier(.25,.46,.45,.94)", position:"relative", zIndex:1, background:T.bg }}
+      >
+      <div
+        onClick={swiped ? closeSwipe : onClick}
+        onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         background: isSelected ? T.accentSurface : T.card,

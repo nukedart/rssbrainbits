@@ -174,10 +174,23 @@ button { transition: opacity .12s, background .12s, color .12s, border-color .12
   button, a { touch-action: manipulation; }
 
   /* Larger touch targets */
-  button { min-height: 36px; }
+  button { min-height: 44px; }
+
+  /* Hide scrollbars on mobile — use momentum scroll */
+  * { scrollbar-width: none; }
+  *::-webkit-scrollbar { display: none; }
+
+  /* Smooth momentum scrolling on all scroll containers */
+  [style*="overflow"] { -webkit-overflow-scrolling: touch; }
 
   /* Bottom nav safe area */
   .bottom-nav-spacer { height: env(safe-area-inset-bottom, 0px); }
+
+  /* Content viewer swipe feel */
+  .cv-scroll { scroll-snap-type: none; }
+
+  /* Prevent rubber-band bounce on fixed overlays */
+  .fixed-overlay { overscroll-behavior: none; }
 }
 
 /* Tablet adjustments */

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSwipe } from "../hooks/useSwipe.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { Button, Spinner } from "./UI";
@@ -16,7 +17,7 @@ import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 
-export default function ContentViewer({ item, onClose }) {
+export default function ContentViewer({ item, onClose, onNext, onPrev }) {
   const { T } = useTheme();
   const { user } = useAuth();
   const { isMobile } = useBreakpoint();
@@ -53,26 +54,34 @@ export default function ContentViewer({ item, onClose }) {
   const yt = item?.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
 
   // ── Fetch article ──────────────────────────────────────────
-  // After the initial fetch, if bodyText is very short (truncated RSS feed),
-  // silently attempt a full-text fetch from the article URL.
   useEffect(() => {
     if (!item || yt.isYouTube) return;
+
+    // Short-circuit: if feed has fetch_full_content and RSS provided fullText, use it
+    if (item.fetchFullContent && item.fullText && item.fullText.length > 200) {
+      setContent({
+        title: item.title,
+        description: item.description || "",
+        bodyText: item.fullText,
+        image: item.image || null,
+        url: item.url,
+      });
+      setLoading(false);
+      return;
+    }
+
     setLoading(true); setError(null);
     fetchArticleContent(item.url)
       .then(async (result) => {
         setContent(result);
-        // Auto-upgrade: if content is truncated (< 300 chars), try fetching full text
-        const TRUNCATION_THRESHOLD = 300;
-        if ((result.bodyText?.length || 0) < TRUNCATION_THRESHOLD && item.url) {
+        // Auto-upgrade: if content is truncated (< 300 chars), silently retry
+        if ((result.bodyText?.length || 0) < 300 && item.url) {
           try {
             const full = await fetchArticleContent(item.url);
-            // Only upgrade if we actually got more content
             if ((full.bodyText?.length || 0) > (result.bodyText?.length || 0)) {
               setContent(full);
             }
-          } catch {
-            // Silent fail — truncated content is still shown
-          }
+          } catch { /* silent fail */ }
         }
       })
       .catch((e) => setError(e.message))
@@ -201,14 +210,28 @@ export default function ContentViewer({ item, onClose }) {
     setSummarizing(false);
   }
 
+  // ── Swipe gestures (mobile) ──────────────────────────────
+  const swipeHandlers = useSwipe({
+    // Swipe right from left edge = go back (close)
+    onSwipeRight: () => { if (isMobile) onClose(); },
+    edgeOnly: true,
+    edgePx: 40,
+    threshold: 50,
+    // Swipe left = next article
+    onSwipeLeft: () => { if (isMobile && onNext) onNext(); },
+  });
+
   if (!item) return null;
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: T.bg, zIndex: 500,
-      borderLeft: `1px solid ${T.border}`,
-      display: "flex", flexDirection: "column", overflow: "hidden",
-    }}>
+    <div
+      {...(isMobile ? swipeHandlers : {})}
+      style={{
+        position: "fixed", inset: 0, background: T.bg, zIndex: 500,
+        borderLeft: `1px solid ${T.border}`,
+        display: "flex", flexDirection: "column", overflow: "hidden",
+      }}
+    >
 
       {/* ── Reading progress bar — always visible track ── */}
       <div style={{ height: 3, background: T.surface2, flexShrink: 0, position: "relative" }}>

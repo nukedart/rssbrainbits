@@ -80,28 +80,66 @@ function parseRSS(xmlText, sourceUrl) {
 
   return {
     title: feedTitle,
-    items: items.slice(0, 40).map((item) => parseRSSItem(item, isAtom)),
+    items: items.slice(0, 80).map((item) => parseRSSItem(item, isAtom)),
   };
+}
+
+// Normalise any date string to ISO 8601. Returns "" if unparseable.
+function normaliseDate(raw) {
+  if (!raw) return "";
+  try {
+    const d = new Date(raw);
+    if (!isNaN(d.getTime())) return d.toISOString();
+    // Handle RFC 2822 variants with missing timezone — assume UTC
+    const cleaned = raw.replace(/([+-]\d{2})(\d{2})$/, "$1:$2").trim();
+    const d2 = new Date(cleaned);
+    if (!isNaN(d2.getTime())) return d2.toISOString();
+  } catch {}
+  return "";
 }
 
 function parseRSSItem(item, isAtom) {
   const image = extractItemImage(item);
+
   if (isAtom) {
+    // Prefer content over summary for full-text Atom feeds
+    const contentEl  = item.querySelector("content");
+    const summaryEl  = item.querySelector("summary");
+    const bodyRaw    = contentEl?.textContent || summaryEl?.textContent || "";
     return {
       title:       item.querySelector("title")?.textContent?.trim() || "Untitled",
-      url:         item.querySelector("link")?.getAttribute("href") || item.querySelector("link")?.textContent?.trim() || "",
-      description: stripHtml(item.querySelector("summary, content")?.textContent || ""),
-      date:        item.querySelector("updated, published")?.textContent || "",
+      url:         item.querySelector("link[rel=alternate]")?.getAttribute("href")
+                   || item.querySelector("link:not([rel])")?.getAttribute("href")
+                   || item.querySelector("link")?.textContent?.trim() || "",
+      description: stripHtml(bodyRaw).slice(0, 400),
+      fullText:    bodyRaw,
+      date:        normaliseDate(item.querySelector("updated, published")?.textContent),
       author:      item.querySelector("author name")?.textContent?.trim() || "",
       image,
     };
   }
+
+  // RSS 2.0 — prefer content:encoded (WordPress full post) over description (excerpt)
+  const contentEncoded = item.querySelector("encoded")?.textContent   // namespace-stripped
+    || (() => {
+      // Try with namespace prefix preserved in XML
+      const all = Array.from(item.querySelectorAll("*"));
+      return all.find(el => el.nodeName === "content:encoded" || el.localName === "encoded")?.textContent;
+    })();
+  const descRaw = item.querySelector("description")?.textContent || "";
+  const bodyRaw = contentEncoded || descRaw;
+
   return {
     title:       item.querySelector("title")?.textContent?.trim() || "Untitled",
     url:         item.querySelector("link")?.textContent?.trim() || "",
-    description: stripHtml(item.querySelector("description")?.textContent || ""),
-    date:        item.querySelector("pubDate")?.textContent || "",
-    author:      item.querySelector("author, dc\\:creator")?.textContent?.trim() || "",
+    description: stripHtml(descRaw).slice(0, 400),
+    fullText:    bodyRaw,
+    date:        normaliseDate(item.querySelector("pubDate, date")?.textContent),
+    author:      item.querySelector("author, creator")?.textContent?.trim()
+                 || (() => {
+                   const all = Array.from(item.querySelectorAll("*"));
+                   return all.find(el => el.localName === "creator" || el.localName === "author")?.textContent?.trim();
+                 })() || "",
     image,
   };
 }
