@@ -205,7 +205,7 @@ export default function LoginPage() {
         </div>
 
         <p style={{ textAlign:"center", fontSize:11, color:T.textTertiary, marginTop:14 }}>
-          Free · No credit card · Your data stays yours · <a href='/privacy.html' style={{color:T.textTertiary}} target='_blank'>Privacy</a>
+          Free · No credit card · <a href='/terms.html' style={{color:T.textTertiary}} target='_blank'>Terms</a> · <a href='/privacy.html' style={{color:T.textTertiary}} target='_blank'>Privacy</a>
         </p>
       </div>
     </div>

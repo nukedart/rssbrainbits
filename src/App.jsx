@@ -16,6 +16,7 @@ import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
 import FolderModal from "./components/FolderModal";
 import { checkLimit } from "./lib/plan";
 import Onboarding from "./components/Onboarding";
+import PWAInstallBanner from "./components/PWAInstallBanner";
 import PodcastPlayer from "./components/PodcastPlayer";
 
 function AppShell() {
@@ -204,6 +205,7 @@ function AppShell() {
           onDismiss={() => { setOnboardingDone(true); localStorage.setItem("fb-onboarded", "1"); }}
         />
       )}
+      <PWAInstallBanner />
       {editingFolder && (
         <FolderModal
           folder={editingFolder === "new" ? null : editingFolder}

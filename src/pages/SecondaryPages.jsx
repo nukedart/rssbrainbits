@@ -279,6 +279,128 @@ export function StatsPage() {
   );
 }
 
+
+// ── Plan / Billing card ───────────────────────────────────────
+function PlanCard({ T, user, feedCount, planName }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+
+  // Check for redirect back from Stripe
+  const params = new URLSearchParams(window.location.search);
+  const upgradeStatus = params.get("upgrade");
+
+  async function handleUpgrade() {
+    setLoading(true); setError("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${session?.access_token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const json = await res.json();
+      if (json.url) {
+        window.location.href = json.url; // redirect to Stripe Checkout
+      } else {
+        setError(json.error || "Failed to start checkout. Please try again.");
+      }
+    } catch (e) {
+      setError("Network error — please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const isPro = planName === "pro";
+
+  return (
+    <Card title="Plan & Billing" T={T}>
+      {upgradeStatus === "success" && (
+        <div style={{ background: T.accentSurface, border:`1px solid ${T.accent}`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:13, color:T.accentText, fontWeight:600 }}>
+          🎉 Welcome to Pro! Your account has been upgraded.
+        </div>
+      )}
+      {upgradeStatus === "cancelled" && (
+        <div style={{ background:`${T.warning}18`, border:`1px solid ${T.warning}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:13, color:T.warning }}>
+          Checkout cancelled — no charge made. You're still on the Free plan.
+        </div>
+      )}
+
+      {/* Current plan */}
+      <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:T.surface, borderRadius:10, marginBottom:14 }}>
+        <div style={{ width:36, height:36, borderRadius:9, background: isPro ? T.accent : T.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>
+          {isPro ? "⚡" : "🆓"}
+        </div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:14, fontWeight:700, color:T.text }}>{isPro ? "Feedbox Pro" : "Feedbox Free"}</div>
+          <div style={{ fontSize:12, color:T.textTertiary, marginTop:1 }}>
+            {isPro ? "Unlimited feeds · Unlimited AI summaries · Priority support" : `${feedCount}/10 feeds · 5 AI summaries/day · 3 smart feeds`}
+          </div>
+        </div>
+        {isPro && <span style={{ fontSize:11, fontWeight:700, background:T.accent, color:"#fff", padding:"2px 10px", borderRadius:20 }}>ACTIVE</span>}
+      </div>
+
+      {/* Feature comparison */}
+      {!isPro && (
+        <div style={{ marginBottom:14 }}>
+          {[
+            ["Feeds",         `${feedCount}/10`,    "Unlimited"],
+            ["Smart Feeds",   "3",                  "Unlimited"],
+            ["Folders",       "2",                  "Unlimited"],
+            ["AI Summaries",  "5/day",              "Unlimited"],
+            ["Full-text fetch","—",                 "✓"],
+            ["Reading stats", "—",                  "✓"],
+            ["Priority support","—",                "✓"],
+          ].map(([feat, free, pro]) => (
+            <div key={feat} style={{ display:"flex", alignItems:"center", padding:"6px 0", borderBottom:`1px solid ${T.border}` }}>
+              <span style={{ flex:1, fontSize:12, color:T.textSecondary }}>{feat}</span>
+              <span style={{ fontSize:12, color:T.textTertiary, minWidth:70, textAlign:"center" }}>{free}</span>
+              <span style={{ fontSize:12, color:T.accentText, fontWeight:600, minWidth:70, textAlign:"center" }}>{pro}</span>
+            </div>
+          ))}
+          <div style={{ display:"flex", fontSize:11, color:T.textTertiary, paddingTop:4 }}>
+            <span style={{ flex:1 }}></span>
+            <span style={{ minWidth:70, textAlign:"center" }}>Free</span>
+            <span style={{ minWidth:70, textAlign:"center", color:T.accentText, fontWeight:700 }}>Pro</span>
+          </div>
+        </div>
+      )}
+
+      {error && <div style={{ fontSize:12, color:T.danger, marginBottom:10, padding:"7px 12px", background:`${T.danger}15`, borderRadius:8 }}>{error}</div>}
+
+      {!isPro && (
+        <button onClick={handleUpgrade} disabled={loading} style={{
+          width:"100%", padding:"12px 0", borderRadius:12, border:"none",
+          background: loading ? T.surface2 : T.accent,
+          color: loading ? T.textTertiary : "#fff",
+          fontSize:14, fontWeight:700, cursor: loading ? "wait" : "pointer",
+          fontFamily:"inherit", transition:"all .2s",
+          display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+        }}>
+          {loading ? "Redirecting to checkout…" : "⚡ Upgrade to Pro — $5/month"}
+        </button>
+      )}
+      {!isPro && (
+        <p style={{ fontSize:11, color:T.textTertiary, textAlign:"center", margin:"8px 0 0", lineHeight:1.5 }}>
+          7-day free trial · Cancel anytime · Secure checkout via Stripe
+        </p>
+      )}
+      {isPro && (
+        <a href="https://billing.stripe.com/p/login/your_portal_link" target="_blank"
+          style={{ display:"block", textAlign:"center", fontSize:13, color:T.textSecondary, textDecoration:"none", padding:"8px 0" }}
+          onMouseEnter={e => e.currentTarget.style.color=T.accent}
+          onMouseLeave={e => e.currentTarget.style.color=T.textSecondary}
+        >Manage billing & cancel subscription ↗</a>
+      )}
+    </Card>
+  );
+}
+
 export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate }) {
   const { T, isDark, setIsDark } = useTheme();
   const { user, signOut } = useAuth();
@@ -377,20 +499,8 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         </Card>
 
         {/* Reading Stats */}
-        {/* Plan badge */}
-        <div style={{ background: planName==="pro" ? `linear-gradient(135deg, ${T.accentSurface}, ${T.surface2})` : T.card, border:`1px solid ${planName==="pro" ? T.accent : T.border}`, borderRadius:14, padding:"14px 18px", display:"flex", alignItems:"center", gap:12 }}>
-          <div style={{ flex:1 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <span style={{ fontSize:13, fontWeight:800, color: planName==="pro" ? T.accentText : T.textSecondary, textTransform:"uppercase", letterSpacing:".08em" }}>{planName === "pro" ? "⚡ Pro" : "Free"}</span>
-              {planName !== "pro" && <span style={{ fontSize:11, color:T.textTertiary }}>· {appFeeds.length}/10 feeds used</span>}
-            </div>
-            {planName !== "pro" && <div style={{ fontSize:12, color:T.textTertiary, marginTop:3 }}>Upgrade for unlimited feeds, AI summaries, and more.</div>}
-            {planName === "pro" && <div style={{ fontSize:12, color:T.textSecondary, marginTop:3 }}>You have unlimited feeds, smart feeds, and full AI access.</div>}
-          </div>
-          {planName !== "pro" && (
-            <a href="mailto:hello@brainbits.us?subject=Feedbox Pro" style={{ background:T.accent, color:"#fff", borderRadius:9, padding:"8px 16px", fontSize:13, fontWeight:700, textDecoration:"none", flexShrink:0, whiteSpace:"nowrap" }}>Upgrade →</a>
-          )}
-        </div>
+        {/* Plan / Billing card */}
+        <PlanCard T={T} user={user} feedCount={appFeeds.length} planName={planName} />
         <ReadingStatsCard T={T} user={user} />
 
         {/* Feed Health */}
@@ -450,7 +560,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.15.0</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.16.0</div>
         </Card>
       </div>
     </PageShell>
@@ -781,7 +891,7 @@ function DataPrivacyCard({ T, user }) {
     <Card title="Data & Privacy" T={T}>
       <div style={{ fontSize:12, color:T.textTertiary, marginBottom:14, lineHeight:1.6 }}>
         Your data is yours. Export everything or permanently delete your account.{" "}
-        <a href="/privacy.html" target="_blank" style={{ color:T.accent, textDecoration:"none" }}>Privacy Policy ↗</a>
+        <a href="/privacy.html" target="_blank" style={{ color:T.accent, textDecoration:"none" }}>Privacy Policy ↗</a>{" · "}<a href="/terms.html" target="_blank" style={{ color:T.accent, textDecoration:"none" }}>Terms ↗</a>
       </div>
 
       {/* Export */}

@@ -5,6 +5,33 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.16.0] — 2026-03-19
+
+### Added
+- **Cloudflare Worker CORS proxy** — `cloudflare-worker/worker.js` is your own free proxy that replaces the dependency on `corsproxy.io`, `allorigins.win`, and `codetabs.com`. Includes SSRF protection (blocks private IPs), browser-like User-Agent header so feeds don't block it, 5-minute edge caching, and proper CORS headers locked to your domain. Free tier: 100,000 req/day — enough for ~5,000 daily active users. Set `VITE_PROXY_URL` in GitHub secrets and `.env.local` after deploying. Full setup guide in `cloudflare-worker/SETUP.md`. Public proxies remain as automatic fallback if the env var is not set.
+- **Stripe billing** — two Supabase Edge Functions handle the full payment flow: `create-checkout` generates a Stripe Checkout session (called when user clicks Upgrade), `stripe-webhook` listens for `checkout.session.completed`, `customer.subscription.deleted`, and `customer.subscription.updated` and automatically sets `user.user_metadata.plan` to `"pro"` or `"free"`. Includes 7-day free trial, Stripe Customer Portal link for self-service cancellation, and a `subscription_events` audit log. Setup instructions in each function file.
+- **PlanCard in Settings** — replaces the plain plan badge with a full card: current plan display, feature comparison table (feeds, smart feeds, folders, AI summaries, full-text fetch, stats, support), Stripe Checkout redirect button, 7-day trial callout, and success/cancelled banners on return from Stripe.
+- **Service Worker** (`public/sw.js`) — enables PWA installability. Caches app shell for offline support, handles navigation fallback to `index.html`, and includes push notification scaffolding for future use. Registered in `main.jsx` on `load`.
+- **PWA Install Banner** (`PWAInstallBanner.jsx`) — appears on mobile after 3 seconds (once, dismissible). On Android/Chrome uses the native `beforeinstallprompt` event for one-tap install. On iOS Safari shows manual Share → Add to Home Screen instructions. Skips if already installed as PWA. Stores dismissal in `localStorage`.
+- **Terms of Service** (`public/terms.html`) — full terms covering acceptance, acceptable use, Pro billing (7-day trial, monthly $5, Stripe, refund policy within 7 days), user content ownership, third-party content, IP, disclaimers, liability cap, termination, and governing law (South Carolina). Linked from login footer and Settings.
+- **Terms links** — Login page footer now shows Terms · Privacy. DataPrivacyCard in Settings links both.
+
+### Changed
+- **Proxy priority** — `fetchers.js` now tries `VITE_PROXY_URL` (your Cloudflare Worker) first. If it fails or is not configured, falls through to the public proxy race as before. Zero behaviour change until you set the env var.
+- **GitHub Actions** — `deploy.yml` now passes `VITE_PROXY_URL` and `VITE_STRIPE_PUBLISHABLE_KEY` from repo secrets at build time.
+- **`.env.example`** — documents `VITE_PROXY_URL` and `VITE_STRIPE_PUBLISHABLE_KEY` with setup notes.
+
+### Infrastructure added
+- `cloudflare-worker/worker.js` — deploy to Cloudflare Workers (free)
+- `cloudflare-worker/wrangler.toml` — Wrangler config
+- `cloudflare-worker/SETUP.md` — 5-minute deploy guide (Dashboard or CLI)
+- `supabase/functions/create-checkout/index.ts` — Edge Function: creates Stripe Checkout session
+- `supabase/functions/stripe-webhook/index.ts` — Edge Function: handles Stripe events
+- `public/sw.js` — Service Worker
+- `public/terms.html` — Terms of Service
+
+---
+
 ## [1.15.0] — 2026-03-19
 
 ### Fixed

@@ -2,6 +2,12 @@
 import { getCachedFeed, setCachedFeed } from "./feedCache.js";
 import { getAnthropicKey } from "./apiKeys.js";
 
+// Own Cloudflare Worker proxy — fast, free, private, no rate limits.
+// Set VITE_PROXY_URL in .env.local and GitHub secrets after deploying.
+// Falls back to public proxies if not set (for local dev / pre-deploy).
+const OWN_PROXY      = import.meta.env.VITE_PROXY_URL
+  ? `${import.meta.env.VITE_PROXY_URL}?url=`
+  : null;
 const PROXY_PRIMARY  = "https://corsproxy.io/?";
 const PROXY_FALLBACK = "https://api.allorigins.win/get?url=";
 const PROXY_THIRD    = "https://api.codetabs.com/v1/proxy?quest=";
@@ -21,9 +27,22 @@ async function fetchWithTimeout(url, ms = TIMEOUT_MS) {
 }
 
 async function proxiedFetch(targetUrl) {
-  // Race ALL THREE proxies — fastest non-empty response wins.
   const enc = encodeURIComponent(targetUrl);
 
+  // ── Own Cloudflare Worker — try first if configured ──────
+  if (OWN_PROXY) {
+    try {
+      const res = await fetchWithTimeout(OWN_PROXY + enc, TIMEOUT_MS);
+      if (res.ok) {
+        const text = await res.text();
+        if (text?.trim()) return text;
+      }
+    } catch {
+      // Worker unreachable — fall through to public proxies
+    }
+  }
+
+  // ── Public proxies — race all three as fallback ───────────
   const p1 = fetchWithTimeout(PROXY_PRIMARY + enc, TIMEOUT_MS)
     .then(async res => {
       if (!res.ok) throw new Error(`corsproxy ${res.status}`);
