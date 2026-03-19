@@ -253,16 +253,29 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
       }}>
         <button onClick={onClose} style={{
           background: T.surface2, border: "none", borderRadius: 8,
-          width: 32, height: 32, cursor: "pointer", display: "flex",
+          width: isMobile ? 38 : 32, height: isMobile ? 38 : 32,
+          cursor: "pointer", display: "flex",
           alignItems: "center", justifyContent: "center", color: T.textSecondary,
-          fontSize: 18, fontFamily: "inherit", flexShrink: 0,
+          fontSize: isMobile ? 20 : 18, fontFamily: "inherit", flexShrink: 0,
+          WebkitTapHighlightColor: "transparent",
         }}>←</button>
 
+        {/* Mobile prev/next arrows */}
+        {isMobile && onPrev && (
+          <button onClick={onPrev} title="Previous article"
+            style={{ background: T.surface2, border: "none", borderRadius: 8, width: 38, height: 38, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textSecondary, fontSize: 16, flexShrink: 0, WebkitTapHighlightColor: "transparent" }}>‹</button>
+        )}
+
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <div style={{ fontSize: isMobile ? 14 : 13, fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {item.source || "Feedbox"}
           </div>
         </div>
+
+        {isMobile && onNext && (
+          <button onClick={onNext} title="Next article"
+            style={{ background: T.surface2, border: "none", borderRadius: 8, width: 38, height: 38, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textSecondary, fontSize: 16, flexShrink: 0, WebkitTapHighlightColor: "transparent" }}>›</button>
+        )}
 
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
           {/* Aa — font controls */}
@@ -363,7 +376,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
           </div>
         )}
 
-        <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "24px 20px 120px" : "40px 32px 120px", width: "100%" }}>
+        <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "40px 32px 120px", width: "100%" }}>
 
         {/* YouTube */}
         {yt.isYouTube && (

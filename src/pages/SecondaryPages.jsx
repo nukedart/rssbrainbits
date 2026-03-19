@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
+import { supabase } from "../lib/supabase";
 import { getHistory, clearHistory, getReadLater, removeReadLater,
          getSaved, unsaveItem, saveItem,
          getFeeds, getFolders, setFeedFolder, updateFeedSettings,
@@ -11,6 +12,7 @@ import { Button, EmptyState, Spinner } from "../components/UI";
 import { getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
 import { feedsToOPML, downloadFile } from "../lib/exportUtils";
 import { getCachedFeed, cacheAge, invalidateCachedFeed } from "../lib/feedCache";
+import { getPlan, getPlanName, PLANS } from "../lib/plan";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -157,9 +159,130 @@ export function HistoryPage() {
 }
 
 // ── Settings page ─────────────────────────────────────────────
+
+// ── Reading Stats Page ────────────────────────────────────────
+export function StatsPage() {
+  const { T } = useTheme();
+  const { user } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    getReadingStats(user.id).then(setStats).catch(console.error).finally(() => setLoading(false));
+  }, [user]);
+
+  const planName = getPlanName(user);
+
+  // Build last 30 days
+  const days30 = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days30.push(d.toISOString().slice(0, 10));
+  }
+  const max30 = stats ? Math.max(1, ...days30.map(d => stats.perDay[d] || 0)) : 1;
+
+  // Top sources from perDay keys — we don't have per-source data in stats yet, show placeholder
+  const weekTotal = stats?.thisWeek || 0;
+  const dailyAvg  = stats ? Math.round((stats.thisWeek || 0) / 7 * 10) / 10 : 0;
+
+  return (
+    <PageShell title="Reading Stats" subtitle="Your reading activity">
+      {loading && <div style={{ display:"flex", justifyContent:"center", paddingTop:80 }}><Spinner size={28} /></div>}
+      {!loading && stats && (
+        <div style={{ padding:"16px 16px 32px", maxWidth:680, margin:"0 auto", display:"flex", flexDirection:"column", gap:16 }}>
+
+          {/* Plan badge */}
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <span style={{ fontSize:11, fontWeight:700, background: planName==="pro" ? T.accent : T.surface2, color: planName==="pro" ? "#fff" : T.textTertiary, padding:"2px 10px", borderRadius:20, letterSpacing:".05em" }}>
+              {planName.toUpperCase()}
+            </span>
+            {planName !== "pro" && (
+              <a href="mailto:hello@brainbits.us?subject=Feedbox Pro" style={{ fontSize:12, color:T.accent, textDecoration:"none", fontWeight:600 }}>Upgrade to Pro →</a>
+            )}
+          </div>
+
+          {/* Big stats row */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:10 }}>
+            {[
+              { label:"This week",  value:weekTotal,         unit:"articles", color:T.accent },
+              { label:"All time",   value:stats.allTime,     unit:"total",    color:T.text },
+              { label:"Day streak", value:`${stats.streak > 0 ? "🔥 " : ""}${stats.streak}`, unit:"days", color: stats.streak > 0 ? T.warning : T.textTertiary },
+            ].map(({ label, value, unit, color }) => (
+              <div key={label} style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:"16px 14px", textAlign:"center" }}>
+                <div style={{ fontSize:30, fontWeight:800, color, lineHeight:1.1, letterSpacing:"-.02em" }}>{value}</div>
+                <div style={{ fontSize:10, fontWeight:700, color:T.textTertiary, marginTop:4, textTransform:"uppercase", letterSpacing:".06em" }}>{unit}</div>
+                <div style={{ fontSize:11, color:T.textSecondary, marginTop:2 }}>{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Daily avg */}
+          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:"12px 16px", display:"flex", alignItems:"center", gap:12 }}>
+            <span style={{ fontSize:22 }}>📈</span>
+            <div>
+              <div style={{ fontSize:13, fontWeight:600, color:T.text }}>{dailyAvg} articles/day average this week</div>
+              <div style={{ fontSize:12, color:T.textTertiary, marginTop:1 }}>Keep it up — consistency beats volume</div>
+            </div>
+          </div>
+
+          {/* 30-day bar chart */}
+          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:"16px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:T.textSecondary, marginBottom:12, textTransform:"uppercase", letterSpacing:".06em" }}>Last 30 days</div>
+            <div style={{ display:"flex", alignItems:"flex-end", gap:2, height:64 }}>
+              {days30.map((day, i) => {
+                const count = stats.perDay[day] || 0;
+                const h = Math.max(count > 0 ? 4 : 1, (count / max30) * 60);
+                const isToday = i === 29;
+                const isWeekend = [0,6].includes(new Date(day+"T12:00:00").getDay());
+                return (
+                  <div key={day} title={`${new Date(day+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}: ${count} article${count!==1?"s":""}`}
+                    style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2, cursor:"default" }}>
+                    <div style={{ width:"100%", height:h, borderRadius:2, transition:"height .4s ease",
+                      background: isToday ? T.accent : count > 0 ? (isWeekend ? T.accentSurface : T.surface2) : T.border,
+                      border: isToday ? "none" : count > 0 ? `1px solid ${T.borderStrong}` : "none",
+                      opacity: count > 0 ? 1 : 0.4,
+                    }} />
+                    {(i === 0 || i === 9 || i === 19 || i === 29) && (
+                      <span style={{ fontSize:8, color:T.textTertiary, whiteSpace:"nowrap" }}>
+                        {new Date(day+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Streak motivation */}
+          {stats.streak === 0 && (
+            <div style={{ background:`${T.warning}15`, border:`1px solid ${T.warning}40`, borderRadius:14, padding:"14px 16px", display:"flex", gap:10, alignItems:"center" }}>
+              <span style={{ fontSize:20 }}>💪</span>
+              <div>
+                <div style={{ fontSize:13, fontWeight:600, color:T.text }}>Start your streak today</div>
+                <div style={{ fontSize:12, color:T.textTertiary, marginTop:2 }}>Read one article to kick off your daily streak.</div>
+              </div>
+            </div>
+          )}
+          {stats.streak >= 7 && (
+            <div style={{ background:`${T.accent}15`, border:`1px solid ${T.accent}40`, borderRadius:14, padding:"14px 16px", display:"flex", gap:10, alignItems:"center" }}>
+              <span style={{ fontSize:20 }}>🏆</span>
+              <div>
+                <div style={{ fontSize:13, fontWeight:600, color:T.accentText }}>{stats.streak}-day streak!</div>
+                <div style={{ fontSize:12, color:T.textTertiary, marginTop:2 }}>Outstanding consistency. Keep it going.</div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </PageShell>
+  );
+}
+
 export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate }) {
   const { T, isDark, setIsDark } = useTheme();
   const { user, signOut } = useAuth();
+  const planName = getPlanName(user);
   const shortcuts = [
     { key: "J / ↓",   action: "Next article" },
     { key: "K / ↑",   action: "Previous article" },
@@ -254,10 +377,25 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         </Card>
 
         {/* Reading Stats */}
+        {/* Plan badge */}
+        <div style={{ background: planName==="pro" ? `linear-gradient(135deg, ${T.accentSurface}, ${T.surface2})` : T.card, border:`1px solid ${planName==="pro" ? T.accent : T.border}`, borderRadius:14, padding:"14px 18px", display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ flex:1 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ fontSize:13, fontWeight:800, color: planName==="pro" ? T.accentText : T.textSecondary, textTransform:"uppercase", letterSpacing:".08em" }}>{planName === "pro" ? "⚡ Pro" : "Free"}</span>
+              {planName !== "pro" && <span style={{ fontSize:11, color:T.textTertiary }}>· {appFeeds.length}/10 feeds used</span>}
+            </div>
+            {planName !== "pro" && <div style={{ fontSize:12, color:T.textTertiary, marginTop:3 }}>Upgrade for unlimited feeds, AI summaries, and more.</div>}
+            {planName === "pro" && <div style={{ fontSize:12, color:T.textSecondary, marginTop:3 }}>You have unlimited feeds, smart feeds, and full AI access.</div>}
+          </div>
+          {planName !== "pro" && (
+            <a href="mailto:hello@brainbits.us?subject=Feedbox Pro" style={{ background:T.accent, color:"#fff", borderRadius:9, padding:"8px 16px", fontSize:13, fontWeight:700, textDecoration:"none", flexShrink:0, whiteSpace:"nowrap" }}>Upgrade →</a>
+          )}
+        </div>
         <ReadingStatsCard T={T} user={user} />
 
         {/* Feed Health */}
         <FeedHealthCard T={T} user={user} feeds={appFeeds} />
+        <DataPrivacyCard T={T} user={user} />
 
         {/* Manage Feeds */}
         <ManageFeedsCard T={T} user={user} initialFeeds={appFeeds} initialFolders={appFolders} onFeedUpdate={onFeedUpdate} />
@@ -312,7 +450,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.14.0</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.15.0</div>
         </Card>
       </div>
     </PageShell>
@@ -588,6 +726,90 @@ function FeedHealthCard({ T, user, feeds = [] }) {
             </div>
           );
         })}
+      </div>
+    </Card>
+  );
+}
+
+
+// ── Data Privacy & Account ────────────────────────────────────
+function DataPrivacyCard({ T, user }) {
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting]   = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [msg, setMsg] = useState("");
+
+  async function handleExportAll() {
+    setExporting(true); setMsg("");
+    try {
+      const [history, saved, highlights, tags, feeds] = await Promise.all([
+        supabase.from("history").select("*").eq("user_id", user.id).then(r => r.data || []),
+        supabase.from("saved").select("*").eq("user_id", user.id).then(r => r.data || []),
+        supabase.from("highlights").select("*").eq("user_id", user.id).then(r => r.data || []),
+        supabase.from("article_tags").select("*").eq("user_id", user.id).then(r => r.data || []),
+        supabase.from("feeds").select("*").eq("user_id", user.id).then(r => r.data || []),
+      ]);
+      const blob = new Blob([JSON.stringify({ exported_at: new Date().toISOString(), user_id: user.id, history, saved, highlights, tags, feeds }, null, 2)], { type: "application/json" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+      a.download = `feedbox-export-${new Date().toISOString().slice(0,10)}.json`; a.click();
+      setMsg("✓ Export downloaded");
+    } catch (e) { setMsg("Export failed: " + e.message); }
+    finally { setExporting(false); }
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteConfirm.toLowerCase() !== "delete my account") return;
+    setDeleting(true);
+    try {
+      // Delete all user data first (RLS cascade handles most, but explicit for safety)
+      await Promise.all([
+        supabase.from("history").delete().eq("user_id", user.id),
+        supabase.from("saved").delete().eq("user_id", user.id),
+        supabase.from("highlights").delete().eq("user_id", user.id),
+        supabase.from("article_tags").delete().eq("user_id", user.id),
+        supabase.from("read_items").delete().eq("user_id", user.id),
+        supabase.from("feeds").delete().eq("user_id", user.id),
+        supabase.from("smart_feeds").delete().eq("user_id", user.id),
+        supabase.from("feed_folders").delete().eq("user_id", user.id),
+      ]);
+      await supabase.auth.signOut();
+      window.location.reload();
+    } catch (e) { setMsg("Deletion failed: " + e.message); setDeleting(false); }
+  }
+
+  return (
+    <Card title="Data & Privacy" T={T}>
+      <div style={{ fontSize:12, color:T.textTertiary, marginBottom:14, lineHeight:1.6 }}>
+        Your data is yours. Export everything or permanently delete your account.{" "}
+        <a href="/privacy.html" target="_blank" style={{ color:T.accent, textDecoration:"none" }}>Privacy Policy ↗</a>
+      </div>
+
+      {/* Export */}
+      <div style={{ marginBottom:16 }}>
+        <div style={{ fontSize:11, fontWeight:700, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".06em", marginBottom:8 }}>Export your data</div>
+        <p style={{ fontSize:12, color:T.textSecondary, margin:"0 0 10px", lineHeight:1.5 }}>Downloads a JSON file with all your history, saved articles, highlights, tags, and feed list.</p>
+        <button onClick={handleExportAll} disabled={exporting} style={{ background:T.accent, border:"none", borderRadius:9, padding:"9px 18px", cursor:"pointer", fontSize:13, fontWeight:600, color:"#fff", fontFamily:"inherit", opacity:exporting?0.6:1 }}>
+          {exporting ? "Exporting…" : "⬇ Download all data"}
+        </button>
+      </div>
+
+      {msg && <div style={{ fontSize:12, color:msg.startsWith("✓") ? T.success : T.danger, marginBottom:12, padding:"7px 12px", background:msg.startsWith("✓")?`${T.success}15`:`${T.danger}15`, borderRadius:8 }}>{msg}</div>}
+
+      {/* Delete account */}
+      <div style={{ borderTop:`1px solid ${T.border}`, paddingTop:14 }}>
+        <div style={{ fontSize:11, fontWeight:700, color:T.danger, textTransform:"uppercase", letterSpacing:".06em", marginBottom:8 }}>Delete account</div>
+        <p style={{ fontSize:12, color:T.textSecondary, margin:"0 0 10px", lineHeight:1.5 }}>This permanently deletes all your data and cannot be undone. Type <strong style={{color:T.text}}>delete my account</strong> to confirm.</p>
+        <div style={{ display:"flex", gap:8 }}>
+          <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder="delete my account"
+            style={{ flex:1, background:T.surface, border:`1.5px solid ${T.border}`, borderRadius:9, padding:"8px 12px", fontSize:13, color:T.text, fontFamily:"inherit", outline:"none" }}
+            onFocus={e => e.target.style.borderColor=T.danger}
+            onBlur={e => e.target.style.borderColor=T.border}
+          />
+          <button onClick={handleDeleteAccount} disabled={deleteConfirm.toLowerCase() !== "delete my account" || deleting}
+            style={{ background: deleteConfirm.toLowerCase()==="delete my account" ? T.danger : T.surface2, border:"none", borderRadius:9, padding:"8px 16px", cursor:"pointer", fontSize:13, fontWeight:600, color: deleteConfirm.toLowerCase()==="delete my account" ? "#fff" : T.textTertiary, fontFamily:"inherit", transition:"all .2s", flexShrink:0 }}>
+            {deleting ? "Deleting…" : "Delete"}
+          </button>
+        </div>
       </div>
     </Card>
   );

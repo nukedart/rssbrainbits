@@ -5,6 +5,32 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.15.0] — 2026-03-19
+
+### Fixed
+- **Folders not persisting feeds** — root cause was a schema ordering bug: `ALTER TABLE feeds ADD COLUMN folder_id UUID REFERENCES feed_folders(id)` ran before `feed_folders` was created, so the FK silently failed and the column was never added. Fixed in `supabase-schema.sql` — `feed_folders` table is now created first, then the `ALTER TABLE feeds` runs. Additionally, InboxPage's local `feeds` state has been lifted to App.jsx (`propFeeds` pattern) so folder assignments are never lost across page navigations — there is now a single source of truth.
+- **Sidebar Stats icon parse error** — botched icon injection left a duplicate `Stats` key and a malformed `ReadLater:2` entry, causing a build-time esbuild error. Cleaned up Icons object.
+
+### Added
+- **Reading Stats page** — full standalone page (Sidebar + BottomNav "Stats" tab). Shows: 3-stat summary row (this week / all time / day streak), daily average, 30-day bar chart with today highlighted in teal, streak motivation card. Accessible from sidebar nav and mobile bottom nav.
+- **Free / Pro tier system** — `src/lib/plan.js` defines `PLANS.free` (10 feeds, 3 smart feeds, 2 folders, 25 read-later, 5 AI summaries/day) and `PLANS.pro` (all unlimited). Plan is read from `user.user_metadata.plan` (set via Supabase dashboard). `PlanGate` component renders an upgrade prompt instead of the gated action. Feed add, smart feed create, and folder create are all gated. Settings shows a plan badge with feed usage count.
+- **Article URLs → Read Later automatically** — pasting any article URL into Add modal now fetches the page metadata (title, source, description, image) and saves directly to Read Later instead of opening the reader. YouTube links still open inline. Toast confirms save.
+- **Data export** — Settings → Data & Privacy → "Download all data" exports a JSON file containing history, saved, highlights, tags, and feeds. Works client-side, no server round-trip.
+- **Account deletion** — Settings → Data & Privacy → type "delete my account" → confirms and permanently deletes all rows across all tables, then signs out. Irreversible.
+- **Privacy Policy** — `public/privacy.html` — full policy covering data collected, third-party services (Supabase, Anthropic, CORS proxies, Google Favicons), retention, user rights (access, erasure, portability), cookies/localStorage, security, children, and contact. Linked from Settings and Login page footer.
+- **Onboarding flow** — first-run overlay shown to new users with zero feeds. 16 curated feed suggestions across Tech, Science, News, Business, Design, Reads, Sports. Category filter pills, checkbox selection, "Subscribe to N feeds" bulk-adds. Dismissed permanently via localStorage `fb-onboarded`. Skippable.
+- **Stats in Sidebar nav** — bar-chart SVG icon added to sidebar navigation between Notes and the bottom section.
+- **Read Later in BottomNav** — mobile bottom nav now shows Inbox / Unread / Later / Stats / Settings. History moved to sidebar-only on mobile.
+- **Mobile ContentViewer improvements** — ‹ › prev/next article buttons appear in the top bar on mobile (previously swipe-only). Back button enlarged to 38px touch target. Article body padding tightened for phone screens.
+- **Upgrade CTA** — plan badge in Settings shows feed usage (`N/10 feeds used`) with mailto upgrade link. `PlanGate` inline upgrade prompt appears when limits are hit.
+- **Schema: subscriptions audit table** — `subscription_events` table added to `supabase-schema.sql` for tracking plan changes.
+
+### Changed
+- **Article routing** — non-RSS, non-YouTube URLs added via AddModal now go to Read Later instead of opening the reader. This makes the Add flow more intentional: RSS = subscribe, article = save, YouTube = watch now.
+- **Version text** — 9px / 0.45 opacity (carried from v1.14.0).
+
+---
+
 ## [1.14.0] — 2026-03-19
 
 ### Added

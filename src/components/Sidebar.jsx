@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-const APP_VERSION = "1.14.0"; // keep in sync with package.json
+const APP_VERSION = "1.15.0"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -17,6 +17,7 @@ const Icons = {
   Moon:     () => (<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M13.5 10.5A6 6 0 0 1 5.5 2.5a6 6 0 1 0 8 8z"/></svg>),
   Plus:     () => (<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>),
   Edit:     () => (<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M11 2.5l2.5 2.5L5 13.5H2.5V11L11 2.5z"/></svg>),
+  Stats:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6" y="5" width="3" height="10" rx="1"/><rect x="11" y="1" width="3" height="14" rx="1"/></svg>),
 };
 
 const SMART_COLORS = { blue:"#2F6FED", teal:"#4BBFAF", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -29,6 +30,7 @@ const NAV = [
   { id:"readlater", Icon:Icons.ReadLater, label:"Read Later"},
   { id:"history",   Icon:Icons.History,   label:"History"   },
   { id:"notes",     Icon:Icons.Notes,     label:"Notes"     },
+  { id:"stats",     Icon:Icons.Stats,     label:"Stats"     },
 ];
 
 const SHORTCUTS = [

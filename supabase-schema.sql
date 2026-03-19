@@ -174,9 +174,7 @@ CREATE POLICY "Users manage own progress" ON reading_progress
   FOR ALL USING (auth.uid() = user_id);
 
 -- ── Feed folders ──────────────────────────────────────────────
--- Add folder_id to feeds (nullable — feeds without a folder are ungrouped)
-ALTER TABLE feeds ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES feed_folders(id) ON DELETE SET NULL;
-
+-- IMPORTANT: Create feed_folders FIRST, then add the FK to feeds
 CREATE TABLE IF NOT EXISTS feed_folders (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -188,5 +186,29 @@ CREATE TABLE IF NOT EXISTS feed_folders (
 ALTER TABLE feed_folders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "own folders" ON feed_folders FOR ALL USING (auth.uid() = user_id);
 
+-- Add folder_id to feeds (nullable — feeds without a folder are ungrouped)
+ALTER TABLE feeds ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES feed_folders(id) ON DELETE SET NULL;
+
 -- Add feed_ids to smart_feeds for scoped matching (null = all feeds)
 ALTER TABLE smart_feeds ADD COLUMN IF NOT EXISTS feed_ids TEXT[] DEFAULT NULL;
+
+-- ============================================================
+-- Subscriptions / Plan tier
+-- Set plan via Supabase dashboard: Auth → Users → Edit → Raw meta
+--   raw_user_meta_data: {"plan": "pro"}
+-- Or via SQL:
+--   UPDATE auth.users
+--   SET raw_user_meta_data = raw_user_meta_data || '{"plan":"pro"}'
+--   WHERE email = 'user@example.com';
+-- ============================================================
+
+-- Optional: track subscription events for auditing
+CREATE TABLE IF NOT EXISTS subscription_events (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  event      TEXT NOT NULL,  -- 'upgraded', 'downgraded', 'cancelled'
+  plan       TEXT NOT NULL,  -- 'free', 'pro'
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE subscription_events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own sub events" ON subscription_events FOR SELECT USING (auth.uid() = user_id);

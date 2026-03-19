@@ -10,16 +10,24 @@ import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import AddModal from "../components/AddModal";
 import { Button, EmptyState, Spinner } from "../components/UI";
+import PlanGate from "../components/PlanGate";
+import { checkLimit } from "../lib/plan";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
 
-export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount, folders = [], onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast }) {
+export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null }) {
   const { T } = useTheme();
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+  const user = propUser || authUser;
   const { isMobile, isTablet } = useBreakpoint();
 
-  const [feeds, setFeeds]               = useState([]);
+  const [_localFeeds, _setLocalFeeds]   = useState([]);
+  // Use lifted feeds from App.jsx if provided — eliminates folder_id drift
+  const feeds    = propFeeds !== null ? propFeeds : _localFeeds;
+  const setFeeds = propFeeds !== null
+    ? (updater) => {} // no-op: App.jsx owns state; use callbacks instead
+    : _setLocalFeeds;
   const [allItems, setAllItems]         = useState([]);
   const [activeSource, setActiveSource] = useState("all");
   const [loadingFeeds, setLoadingFeeds] = useState(true);
@@ -66,7 +74,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
   useEffect(() => {
     if (!user) return;
-    getFeeds(user.id).then(setFeeds).catch(console.error).finally(() => setLoadingFeeds(false));
+    // If feeds are lifted from App.jsx, don't re-fetch
+    if (propFeeds !== null) { setLoadingFeeds(false); return; }
+    getFeeds(user.id).then(_setLocalFeeds).catch(console.error).finally(() => setLoadingFeeds(false));
     // Open all folders by default when component mounts
     if (folders.length > 0) setOpenFolders(new Set(folders.map(f => f.id)));
     // Load read URLs — seed from localStorage cache first for instant unread counts,
@@ -269,9 +279,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   // ── Action handlers ───────────────────────────────────────────
   const handleAdd = useCallback(async ({ url, type, name }) => {
     if (type === "rss") {
+      const limit = checkLimit(user, "feeds", feeds.length);
+      if (!limit.allowed) { throw new Error(limit.reason); }
       const feedData = await fetchRSSFeed(url);
       const record   = await addFeed(user.id, { url, type: "rss", name: name || feedData.title });
-      setFeeds((prev) => [...prev, record]);
+      if (onFeedAdded) onFeedAdded(record);
+      else setFeeds((prev) => [...prev, record]);
     } else {
       const yt = parseYouTubeUrl(url);
       let item;
@@ -334,7 +347,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
   async function handleDeleteFeed(feedId) {
     await deleteFeed(feedId);
-    setFeeds((prev) => prev.filter((f) => f.id !== feedId));
+    if (onFeedDeleted) onFeedDeleted(feedId);
+    else setFeeds((prev) => prev.filter((f) => f.id !== feedId));
     if (activeSource === feedId) setActiveSource("all");
   }
 
