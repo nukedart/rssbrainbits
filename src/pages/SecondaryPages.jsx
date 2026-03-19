@@ -391,11 +391,41 @@ function PlanCard({ T, user, feedCount, planName }) {
         </p>
       )}
       {isPro && (
-        <a href="https://billing.stripe.com/p/login/your_portal_link" target="_blank"
-          style={{ display:"block", textAlign:"center", fontSize:13, color:T.textSecondary, textDecoration:"none", padding:"8px 0" }}
-          onMouseEnter={e => e.currentTarget.style.color=T.accent}
-          onMouseLeave={e => e.currentTarget.style.color=T.textSecondary}
-        >Manage billing & cancel subscription ↗</a>
+        <button onClick={async () => {
+          setLoading(true); setError("");
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const res = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-portal-session`,
+              {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${session?.access_token}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+            const json = await res.json();
+            if (json.url) {
+              window.location.href = json.url;
+            } else {
+              setError(json.error || "Could not open billing portal.");
+            }
+          } catch {
+            setError("Network error — please try again.");
+          } finally {
+            setLoading(false);
+          }
+        }} disabled={loading} style={{
+          width:"100%", padding:"11px 0", borderRadius:10, border:`1px solid ${T.border}`,
+          background:"transparent", color:T.textSecondary, fontSize:13, fontWeight:600,
+          cursor: loading ? "wait" : "pointer", fontFamily:"inherit", transition:"all .2s",
+        }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accent; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.textSecondary; }}
+        >
+          {loading ? "Opening portal…" : "Manage billing & subscription →"}
+        </button>
       )}
     </Card>
   );
@@ -560,7 +590,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.16.0</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.17.0</div>
         </Card>
       </div>
     </PageShell>

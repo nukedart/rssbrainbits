@@ -5,6 +5,24 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.17.0] — 2026-03-19
+
+### Added
+- **PWA icons** — generated 192×192, 512×512, and 180×180 (apple-touch-icon) PNGs from the existing favicon SVG. Manifest now includes a maskable icon variant for Android adaptive icons. Icons are cached by the service worker.
+- **React Error Boundary** — `ErrorBoundary.jsx` wraps the entire app in `main.jsx`. Render crashes now show a styled recovery card ("Something went wrong" + Reload button + expandable error details) instead of a white screen. Uses hardcoded dark-theme styles so it works even if CSS fails to load.
+- **Server-side AI summarization** — Cloudflare Worker now has a `POST /summarize` endpoint that calls Claude Haiku with the API key stored as a Worker secret (never exposed to the browser). Added matching Supabase Edge Function (`supabase/functions/summarize/index.ts`) as authenticated fallback. The front-end (`fetchers.js`) tries: Worker → Edge Function → direct browser call (dev only). This closes the security gap where the Anthropic API key was previously visible in client-side code.
+- **Stripe Customer Portal** — new Supabase Edge Function (`create-portal-session/index.ts`) creates a Stripe Billing Portal session so Pro users can manage subscriptions, update payment methods, and cancel. PlanCard now has a "Manage billing & subscription" button that calls this function instead of linking to a hardcoded placeholder URL.
+
+### Changed
+- **Service Worker cache version** bumped from `feedbox-v1.15` to `feedbox-v1.17`. Icon files added to the app shell cache list.
+- **Worker CORS headers** now allow `POST` method (needed for `/summarize`).
+- **SETUP.md** rewritten with instructions for the new `/summarize` endpoint and `ANTHROPIC_API_KEY` secret setup.
+
+### Security
+- Anthropic API key is no longer required in browser-side Settings once the Cloudflare Worker is deployed with the `ANTHROPIC_API_KEY` secret. The `anthropic-dangerous-direct-browser-access` header is only used as a last-resort fallback for local development.
+
+---
+
 ## [1.16.0] — 2026-03-19
 
 ### Added

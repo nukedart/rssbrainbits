@@ -5,8 +5,11 @@
  * Caches the app shell for offline support.
  */
 
-const CACHE = "feedbox-v1.15";
-const SHELL = ["/", "/index.html", "/feedbox-logo.png", "/favicon.svg", "/manifest.json"];
+const CACHE = "feedbox-v1.17";
+const SHELL = [
+  "/", "/index.html", "/feedbox-logo.png", "/favicon.svg", "/manifest.json",
+  "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png",
+];
 
 // Install — cache app shell
 self.addEventListener("install", (e) => {

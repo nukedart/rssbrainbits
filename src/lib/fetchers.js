@@ -441,9 +441,57 @@ export async function discoverFeed(pageUrl) {
 }
 
 // ── AI Summarization ──────────────────────────────────────────
+// ── AI Summary — tiered: Worker → Edge Function → direct (dev only) ──
+const WORKER_BASE = import.meta.env.VITE_PROXY_URL || null;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || null;
+
 export async function summarizeContent(text, title) {
+  const payload = { text: text.slice(0, 6000), title: title || "Untitled" };
+
+  // ── Tier 1: Cloudflare Worker (API key stored as Worker secret) ──
+  if (WORKER_BASE) {
+    try {
+      const res = await fetch(`${WORKER_BASE}/summarize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.summary) return data.summary;
+      }
+    } catch {
+      // Worker unreachable — fall through
+    }
+  }
+
+  // ── Tier 2: Supabase Edge Function (authenticated) ──────────────
+  if (SUPABASE_URL) {
+    try {
+      const { supabase } = await import("./supabase.js");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/summarize`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.summary) return data.summary;
+        }
+      }
+    } catch {
+      // Edge function unreachable — fall through
+    }
+  }
+
+  // ── Tier 3: Direct browser call (dev/fallback only) ─────────────
   const key = getAnthropicKey();
-  if (!key) return "No Anthropic API key set. Add one in Settings → API Keys.";
+  if (!key) return "No AI summary backend configured. Deploy the Cloudflare Worker or set an API key in Settings.";
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
