@@ -13,6 +13,7 @@ import { getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
 import { feedsToOPML, downloadFile } from "../lib/exportUtils";
 import { getCachedFeed, cacheAge, invalidateCachedFeed } from "../lib/feedCache";
 import { getPlan, getPlanName, PLANS } from "../lib/plan";
+import { track } from "../lib/analytics";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -179,6 +180,7 @@ export function StatsPage() {
 
   async function handleUpgrade() {
     setUpgrading(true);
+    track("upgrade_initiated", { surface: "stats" });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(
@@ -320,6 +322,7 @@ function PlanCard({ T, user, feedCount, planName }) {
 
   async function handleUpgrade() {
     setLoading(true); setError("");
+    track("upgrade_initiated", { surface: "settings" });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(

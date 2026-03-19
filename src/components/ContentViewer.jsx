@@ -16,6 +16,7 @@ import {
 import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
+import { track } from "../lib/analytics";
 
 export default function ContentViewer({ item, onClose, onNext, onPrev }) {
   const { T } = useTheme();
@@ -117,6 +118,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
       passage, color, position,
     });
     setHighlights((prev) => [...prev, newH]);
+    track("article_highlighted", { color, passage_length: passage.length, source: item.source });
   }, [user, item, content]);
 
   async function handleSaveNote(highlightId, note) {
@@ -192,6 +194,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
   async function handleExportHighlights(asFile = false) {
     const md = highlightsToMarkdown(highlights, content?.title || item.title, item.url);
     if (!md) return;
+    track("highlights_exported", { format: asFile ? "file" : "clipboard", count: highlights.length });
     if (asFile) {
       const slug = (content?.title || item.title || "article").slice(0, 40).replace(/[^a-z0-9]/gi, "-").toLowerCase();
       downloadFile(md, `feedbox-highlights-${slug}.md`);
@@ -207,6 +210,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
     const text = content?.bodyText || item?.description || "";
     if (!text) return;
     setSummarizing(true);
+    track("ai_summary_triggered", { source: item?.source });
     const result = await summarizeContent(text, content?.title || item?.title);
     setSummary(result);
     setSummarizing(false);

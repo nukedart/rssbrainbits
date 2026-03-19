@@ -5,6 +5,26 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.22.0] — 2026-03-19
+
+### Added
+- **Custom analytics system** — self-hosted event tracking backed by Supabase. No third-party analytics service. Events are stored in a new `analytics_events` table with per-row RLS (users can only write their own events; only admins can read all).
+- **Analytics dashboard** (`AnalyticsPage`) — admin-only page (gated by `is_admin` in user_metadata) showing MAU/WAU/DAU KPIs, 30-day DAU and event bar charts, upgrade funnel, and top-events table.
+- **Analytics sidebar link** — appears in the sidebar only for admin users. Navigate to it from the sidebar to view the dashboard.
+- **15 tracked events**: `article_opened`, `ai_summary_triggered`, `article_highlighted`, `highlights_exported`, `article_saved_for_later`, `feed_added`, `feed_deleted`, `opml_imported`, `smart_feed_created`, `folder_created`, `search_performed`, `page_navigated`, `upgrade_initiated` (with surface tag: settings / stats / limit_gate), `plan_limit_hit`.
+
+### Security
+- **Removed `VITE_ANTHROPIC_API_KEY` from bundle** — `getAnthropicKey()` no longer falls back to a Vite env var, which was baking the key into the compiled JS at build time. The key is now only read from `localStorage` (user-provided via Settings). Pro users are served by the Cloudflare Worker and Supabase Edge Function, both holding the key server-side.
+
+### Setup required
+Run `supabase/migrations/analytics_events.sql` in your Supabase SQL editor, then set `is_admin: true` on your account:
+```sql
+UPDATE auth.users SET raw_user_meta_data = raw_user_meta_data || '{"is_admin":true}'
+WHERE email = 'your@email.com';
+```
+
+---
+
 ## [1.21.0] — 2026-03-19
 
 ### Fixed

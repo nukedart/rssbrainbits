@@ -3,6 +3,7 @@ import Fuse from "fuse.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { searchItems } from "../lib/supabase";
+import { track } from "../lib/analytics";
 
 // ── SearchIcon SVG ────────────────────────────────────────────
 function SearchIcon({ size = 14, color = "currentColor" }) {
@@ -158,7 +159,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
             return (
               <div
                 key={item.url}
-                onClick={() => { onSelectResult(item); setQuery(""); setResults([]); }}
+                onClick={() => { track("search_performed", { query_length: query.length, results: results.length }); onSelectResult(item); setQuery(""); setResults([]); }}
                 style={{
                   display: "flex", alignItems: "flex-start", gap: 10,
                   padding: "10px 14px", cursor: "pointer",

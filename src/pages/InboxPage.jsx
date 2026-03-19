@@ -15,6 +15,7 @@ import { checkLimit } from "../lib/plan";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
+import { track } from "../lib/analytics";
 
 export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null }) {
   const { T } = useTheme();
@@ -210,6 +211,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     setOpenIdx(idx);
     addToHistory(user.id, item).catch(console.error);
     handleMarkRead(item.url);
+    track("article_opened", { source: item.source, filter: filterMode, type: item.type || "rss" });
   }
 
   // ── Keyboard shortcuts ────────────────────────────────────────
@@ -280,11 +282,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const handleAdd = useCallback(async ({ url, type, name }) => {
     if (type === "rss") {
       const limit = checkLimit(user, "feeds", feeds.length);
-      if (!limit.allowed) { throw new Error(limit.reason); }
+      if (!limit.allowed) { track("plan_limit_hit", { resource: "feeds", count: feeds.length }); throw new Error(limit.reason); }
       const feedData = await fetchRSSFeed(url);
       const record   = await addFeed(user.id, { url, type: "rss", name: name || feedData.title });
       if (onFeedAdded) onFeedAdded(record);
       else setFeeds((prev) => [...prev, record]);
+      track("feed_added", { type: "rss" });
     } else {
       const yt = parseYouTubeUrl(url);
       let item;
@@ -310,18 +313,21 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     // Accept a single feed OR an array (bulk OPML import)
     const list = Array.isArray(feedOrList) ? feedOrList : [feedOrList];
     setOpmlProgress({ done: 0, total: list.length });
+    let imported = 0;
     for (let i = 0; i < list.length; i++) {
       const feed = list[i];
       try {
         const feedData = await fetchRSSFeed(feed.url).catch(() => ({ title: feed.name || feed.url, items: [] }));
         const record   = await addFeed(user.id, { url: feed.url, type: "rss", name: feed.name || feedData.title });
         setFeeds(prev => [...prev, record]);
+        imported++;
       } catch (err) {
         console.error("OPML import error:", feed.url, err);
       }
       setOpmlProgress({ done: i + 1, total: list.length });
     }
     setOpmlProgress(null);
+    track("opml_imported", { total: list.length, imported });
   }
 
   async function handleRetryFeed(feed) {
@@ -350,6 +356,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     if (onFeedDeleted) onFeedDeleted(feedId);
     else setFeeds((prev) => prev.filter((f) => f.id !== feedId));
     if (activeSource === feedId) setActiveSource("all");
+    track("feed_deleted");
   }
 
   async function handleMarkRead(url) {
@@ -390,6 +397,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   async function handleReadLater(item) {
     await addReadLater(user.id, { ...item });
     showToast("⏱ Added to Read Later");
+    track("article_saved_for_later", { source: item.source });
   }
 
   function showToast(msg) {

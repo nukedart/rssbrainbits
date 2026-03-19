@@ -18,6 +18,8 @@ import { checkLimit } from "./lib/plan";
 import Onboarding from "./components/Onboarding";
 import PWAInstallBanner from "./components/PWAInstallBanner";
 import PodcastPlayer from "./components/PodcastPlayer";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import { identify, track } from "./lib/analytics";
 
 function AppShell() {
   const { user } = useAuth();
@@ -37,6 +39,9 @@ function AppShell() {
   const [feedsLoaded, setFeedsLoaded] = useState(false); // don't show onboarding until feeds are confirmed empty
   const [onboardingDone, setOnboardingDone] = useState(() => !!localStorage.getItem("fb-onboarded"));
 
+  // Identify user for analytics once resolved
+  useEffect(() => { identify(user); }, [user]);
+
   // Load smart feeds once user is known
   useEffect(() => {
     if (!user) return;
@@ -51,6 +56,12 @@ function AppShell() {
       .catch(err => { console.error("getFeeds:", err); setFeeds([]); setFeedsLoaded(true); });
   }, [user]);
 
+  // ── Navigation with tracking ──────────────────────────────
+  function navigateTo(p) {
+    track("page_navigated", { page: p });
+    setPage(p);
+  }
+
   // ── Smart feed handlers ────────────────────────────────────
   async function handleSaveSmartFeed({ name, keywords, color }) {
     if (editingSF && editingSF !== "new") {
@@ -58,9 +69,10 @@ function AppShell() {
       setSmartFeeds(prev => prev.map(sf => sf.id === updated.id ? updated : sf));
     } else {
       const { allowed, reason } = checkLimit(user, "smartFeeds", smartFeeds.length);
-      if (!allowed) { alert(reason); return; }
+      if (!allowed) { track("plan_limit_hit", { resource: "smartFeeds", count: smartFeeds.length }); alert(reason); return; }
       const created = await addSmartFeed(user.id, { name, keywords, color });
       setSmartFeeds(prev => [...prev, created]);
+      track("smart_feed_created", { keywords_count: keywords.length });
     }
     setEditingSF(null);
   }
@@ -105,9 +117,10 @@ function AppShell() {
       setFolders(prev => prev.map(f => f.id === updated.id ? updated : f));
     } else {
       const { allowed, reason } = checkLimit(user, "folders", folders.length);
-      if (!allowed) { alert(reason); return; }
+      if (!allowed) { track("plan_limit_hit", { resource: "folders", count: folders.length }); alert(reason); return; }
       const created = await addFolder(user.id, { name, color });
       setFolders(prev => [...prev, created]);
+      track("folder_created");
     }
     setEditingFolder(null);
   }
@@ -151,6 +164,7 @@ function AppShell() {
       case "history":   return <HistoryPage />;
       case "stats":     return <StatsPage />;
       case "notes":     return <NotesPage />;
+      case "analytics": return <AnalyticsPage />;
       case "settings":  return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} />;
       default:          return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
     }
@@ -165,7 +179,7 @@ function AppShell() {
     }}>
       <Sidebar
         active={page}
-        onNavigate={setPage}
+        onNavigate={navigateTo}
         unreadCount={unreadCount}
         smartFeeds={smartFeeds}
         onAddSmartFeed={() => setEditingSF("new")}
@@ -184,7 +198,7 @@ function AppShell() {
             {renderPage()}
           </ErrorBoundary>
         </div>
-        {isMobile && <BottomNav active={page} onNavigate={setPage} unreadCount={unreadCount} />}
+        {isMobile && <BottomNav active={page} onNavigate={navigateTo} unreadCount={unreadCount} />}
       </div>
       {editingSF && (
         <SmartFeedModal

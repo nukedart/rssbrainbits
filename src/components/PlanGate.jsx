@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { checkLimit, PLANS } from "../lib/plan";
 import { supabase } from "../lib/supabase";
+import { track } from "../lib/analytics";
 
 export default function PlanGate({ user, resource, currentCount, children }) {
   const { T } = useTheme();
@@ -16,6 +17,7 @@ export default function PlanGate({ user, resource, currentCount, children }) {
 
   async function handleUpgrade() {
     setLoading(true); setError("");
+    track("upgrade_initiated", { surface: "limit_gate", resource });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(
