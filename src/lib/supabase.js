@@ -385,29 +385,25 @@ export function matchesSmartFeed(item, defOrKeywords) {
 
 // ── Reading stats ─────────────────────────────────────────────
 export async function getReadingStats(userId) {
-  // Total read this week
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-  const { data: weekData, error: e1 } = await supabase
-    .from("read_items").select("url, feed_id, read_at")
-    .eq("user_id", userId).gte("read_at", weekAgo);
-  if (e1) throw e1;
-
-  // Total all time
+  // Total all time (just a count — always works)
   const { count, error: e2 } = await supabase
     .from("read_items").select("url", { count: "exact", head: true })
     .eq("user_id", userId);
   if (e2) throw e2;
 
-  // Reading streak — count consecutive days with at least one read
-  const { data: recentData, error: e3 } = await supabase
-    .from("read_items").select("read_at")
-    .eq("user_id", userId).order("read_at", { ascending: false }).limit(500);
-  if (e3) throw e3;
+  // Try to get read_at data — may not exist on older schemas
+  const { data: recentData } = await supabase
+    .from("read_items").select("url, read_at")
+    .eq("user_id", userId).order("read_at", { ascending: false }).limit(500)
+    .catch(() => ({ data: [] }));
 
-  // Build streak from recentData
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const weekData = (recentData || []).filter(r => r.read_at && r.read_at >= weekAgo);
+
+  // Reading streak — count consecutive days with at least one read
   let streak = 0;
-  if (recentData?.length) {
-    const days = new Set(recentData.map(r => r.read_at?.slice(0, 10)));
+  if (recentData?.length && recentData[0]?.read_at) {
+    const days = new Set(recentData.map(r => r.read_at?.slice(0, 10)).filter(Boolean));
     const today = new Date().toISOString().slice(0, 10);
     let check = today;
     for (let i = 0; i < 365; i++) {
@@ -420,22 +416,21 @@ export async function getReadingStats(userId) {
     }
   }
 
-  // Articles per day this week (for mini chart)
+  // Articles per day this week
   const perDay = {};
-  weekData?.forEach(r => {
+  weekData.forEach(r => {
     const day = r.read_at?.slice(0, 10);
     if (day) perDay[day] = (perDay[day] || 0) + 1;
   });
 
   return {
-    thisWeek: weekData?.length || 0,
+    thisWeek: weekData.length,
     allTime: count || 0,
     streak,
     perDay,
   };
 }
 
-// ── Notes & Highlights (cross-article) ───────────────────────
 export async function getAllHighlights(userId) {
   const { data, error } = await supabase
     .from("highlights").select("*").eq("user_id", userId)

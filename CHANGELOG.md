@@ -5,6 +5,22 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.11.3] — 2026-03-19
+
+### Fixed
+- **Sidebar collapse toggle** — was positioned `right:-10` on an `overflow:hidden` container, causing it to be clipped mid-render. Moved into the logo row as an inline 22×22 button. No longer floats outside the sidebar bounds.
+- **Settings / all secondary tabs blank** — `getReadingStats` crashed when the `read_items` table had no `read_at` column (older schema), which propagated and blanked the entire SettingsPage. Added per-card error guards (`failed` state) so one card failure never crashes the rest. `getReadingStats` now falls back gracefully when `read_at` is missing.
+- **Nav completely dead (v1.11.1 regression)** — `import pkg from "../../package.json"` failed in production Vite builds; fixed in v1.11.2. Now uses hardcoded `APP_VERSION` constant.
+- **Settings blank (v1.11.1/v1.11.2 regression)** — missing supabase imports (`getFeeds`, `getFolders`, `getReadingStats`, etc.) in SecondaryPages.jsx caused ReferenceError on mount; all imports now present.
+
+### Changed
+- **Shortcuts button** — moved back next to the user/settings avatar as a compact `⌘` symbol button (26×26px). Removed the full-width "⌘ Shortcuts" text button.
+- **Version number** — increased from 10px/0.5 opacity to 11px/0.7 opacity. More legible.
+- **Theme toggle buttons** — reduced height from 30px to 24px. Less visually heavy in the bottom bar.
+
+---
+
+
 ## [1.8.0] — 2025-03-17
 
 ### Added

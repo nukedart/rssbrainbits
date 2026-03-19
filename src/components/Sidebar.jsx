@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import pkg from "../../package.json";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
+
+const APP_VERSION = "1.11.3"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -111,35 +112,34 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
       overflow:"hidden",
       position:"relative",
       transition:"width .2s ease",
+      clipPath:"none",
     }}>
 
-      {/* ── Collapse/expand toggle — desktop only ── */}
-      {!isTablet && (
-        <button
-          onClick={onToggle}
-          title={isOpen ? "Collapse" : "Expand"}
-          style={{
-            position:"absolute", right:-10, top:22,
-            width:20, height:20, borderRadius:"50%",
-            background:T.card, border:`1px solid ${T.border}`,
-            cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
-            color:T.textTertiary, fontSize:11, zIndex:100,
-            boxShadow:"0 1px 4px rgba(0,0,0,.1)",
-            transition:"all .15s", fontFamily:"inherit", lineHeight:1,
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color=T.accent; e.currentTarget.style.borderColor=T.accent; }}
-          onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.borderColor=T.border; }}
-        >{isOpen ? "‹" : "›"}</button>
-      )}
-
-      {/* ── Logo ── */}
-      <div style={{ padding: collapsed ? "16px 0 10px" : "16px 14px 10px", display:"flex", alignItems:"center", justifyContent: collapsed?"center":"flex-start", flexShrink:0 }}>
-        <img
-          src={`${import.meta.env.BASE_URL}feedbox-logo.png`}
-          alt="Feedbox"
-          style={{ height:20, filter: isDark?"brightness(10) saturate(0)":"brightness(0) saturate(100%) invert(55%) sepia(50%) saturate(500%) hue-rotate(130deg) brightness(85%)" }}
-          onError={e => { e.target.style.display="none"; }}
-        />
+      {/* ── Logo + collapse toggle row ── */}
+      <div style={{ padding: collapsed ? "12px 6px 10px" : "12px 8px 10px", display:"flex", alignItems:"center", justifyContent: collapsed?"center":"flex-start", flexShrink:0, gap:6 }}>
+        {!collapsed && (
+          <img
+            src={`${import.meta.env.BASE_URL}feedbox-logo.png`}
+            alt="Feedbox"
+            style={{ height:20, flex:1, filter: isDark?"brightness(10) saturate(0)":"brightness(0) saturate(100%) invert(55%) sepia(50%) saturate(500%) hue-rotate(130deg) brightness(85%)" }}
+            onError={e => { e.target.style.display="none"; }}
+          />
+        )}
+        {!isTablet && (
+          <button
+            onClick={onToggle}
+            title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+            style={{
+              width:22, height:22, borderRadius:6, flexShrink:0,
+              background:"transparent", border:`1px solid ${T.border}`,
+              cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
+              color:T.textTertiary, fontSize:12, fontFamily:"inherit",
+              transition:"all .15s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color=T.accent; e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.background=T.accentSurface; }}
+            onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background="transparent"; }}
+          >{isOpen ? "‹" : "›"}</button>
+        )}
       </div>
 
       {/* ── Main nav ── */}
@@ -285,45 +285,50 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
         <div style={{ display:"flex", gap:3, marginBottom:8, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"0":"0 2px" }}>
           {[{Icon:Icons.Sun,dark:false,label:"Light"},{Icon:Icons.Moon,dark:true,label:"Dark"}].map(({Icon,dark,label}) => (
             <button key={label} onClick={() => setIsDark(dark)} title={label}
-              style={{ flex: collapsed?undefined:1, width: collapsed?32:undefined, height:30, padding:"4px 0", borderRadius:7, border:`1px solid ${isDark===dark?T.accent:T.border}`, background:isDark===dark?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isDark===dark?T.accent:T.textTertiary, transition:"all .15s" }}
+              style={{ flex: collapsed?undefined:1, width: collapsed?26:undefined, height:24, padding:"2px 0", borderRadius:6, border:`1px solid ${isDark===dark?T.accent:T.border}`, background:isDark===dark?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isDark===dark?T.accent:T.textTertiary, transition:"all .15s" }}
             ><Icon /></button>
           ))}
         </div>
 
         {/* User / settings row */}
-        <button onClick={() => onNavigate("settings")}
-          title={collapsed ? "Settings" : undefined}
-          style={{ display:"flex", alignItems:"center", gap: collapsed?0:9, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"6px 10px", borderRadius:9, border:"none", background:active==="settings"?T.accentSurface:"transparent", cursor:"pointer", width:"100%", fontFamily:"inherit", transition:"background .12s" }}
-          onMouseEnter={e => { if (active!=="settings") e.currentTarget.style.background=T.surface2; }}
-          onMouseLeave={e => { if (active!=="settings") e.currentTarget.style.background="transparent"; }}
-        >
-          {user?.user_metadata?.avatar_url
-            ? <img src={user.user_metadata.avatar_url} alt="" style={{ width:24, height:24, borderRadius:"50%", flexShrink:0 }} />
-            : <span style={{ color:active==="settings"?T.accent:T.textTertiary, display:"flex", flexShrink:0 }}><Icons.Settings /></span>
-          }
+        <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+          <button onClick={() => onNavigate("settings")}
+            title={collapsed ? "Settings" : undefined}
+            style={{ display:"flex", alignItems:"center", gap: collapsed?0:9, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"6px 8px", borderRadius:9, border:"none", background:active==="settings"?T.accentSurface:"transparent", cursor:"pointer", flex:1, fontFamily:"inherit", transition:"background .12s", minWidth:0 }}
+            onMouseEnter={e => { if (active!=="settings") e.currentTarget.style.background=T.surface2; }}
+            onMouseLeave={e => { if (active!=="settings") e.currentTarget.style.background="transparent"; }}
+          >
+            {user?.user_metadata?.avatar_url
+              ? <img src={user.user_metadata.avatar_url} alt="" style={{ width:24, height:24, borderRadius:"50%", flexShrink:0 }} />
+              : <span style={{ color:active==="settings"?T.accent:T.textTertiary, display:"flex", flexShrink:0 }}><Icons.Settings /></span>
+            }
+            {!collapsed && (
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:12, fontWeight:500, color:T.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.user_metadata?.user_name || "Settings"}</div>
+                <div style={{ fontSize:10, color:T.textTertiary }}>Settings</div>
+              </div>
+            )}
+          </button>
           {!collapsed && (
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:12, fontWeight:500, color:T.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.user_metadata?.user_name || "Settings"}</div>
-              <div style={{ fontSize:10, color:T.textTertiary }}>Settings</div>
-            </div>
+            <button onClick={() => setShortcutsOpen(v => !v)} title="Keyboard shortcuts"
+              style={{ width:26, height:26, borderRadius:7, border:`1px solid ${shortcutsOpen?T.accent:T.border}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:13, fontFamily:"inherit", flexShrink:0, transition:"all .12s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accent; e.currentTarget.style.background=T.accentSurface; }}
+              onMouseLeave={e => { if (!shortcutsOpen) { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.background="transparent"; }}}
+            >⌘</button>
           )}
-        </button>
+        </div>
 
         {/* Version — only when expanded */}
         {!collapsed && (
-          <div style={{ textAlign:"center", padding:"4px 10px 2px", fontSize:10, color:T.textTertiary, opacity:0.5, letterSpacing:".02em" }}>
-            v{pkg.version}
+          <div style={{ textAlign:"center", padding:"4px 10px 2px", fontSize:11, color:T.textTertiary, opacity:0.7, letterSpacing:".02em" }}>
+            v{APP_VERSION}
           </div>
         )}
 
-        {/* Shortcuts — only when expanded */}
+        {/* Shortcuts — symbol button next to user row, only when expanded */}
         {!collapsed && (
-          <div ref={shortcutsRef} style={{ position:"relative", marginTop:4 }}>
-            <button onClick={() => setShortcutsOpen(v => !v)}
-              style={{ width:"100%", padding:"4px 10px", borderRadius:8, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontWeight:500, fontFamily:"inherit", transition:"color .12s", gap:4, opacity:0.7 }}
-              onMouseEnter={e => { e.currentTarget.style.opacity="1"; e.currentTarget.style.color=T.accent; }}
-              onMouseLeave={e => { e.currentTarget.style.opacity=shortcutsOpen?"1":"0.7"; e.currentTarget.style.color=shortcutsOpen?T.accent:T.textTertiary; }}
-            ><span style={{ fontSize:10 }}>⌘</span> Shortcuts</button>
+          <div ref={shortcutsRef} style={{ position:"relative", marginTop:0 }}>
+            <div style={{ display:"none" }}>{/* anchor for popup */}</div>
             {shortcutsOpen && (
               <div style={{ position:"fixed", bottom:120, left:16, width:210, background:T.card, border:`1px solid ${T.borderStrong}`, borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.18)", zIndex:2000, overflow:"hidden", animation:"slideUp .15s ease" }}>
                 <div style={{ padding:"10px 14px 7px", borderBottom:`1px solid ${T.border}` }}>

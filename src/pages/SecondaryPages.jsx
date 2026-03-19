@@ -2,11 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { getHistory, clearHistory, getReadLater, removeReadLater,
-         getSaved, unsaveItem, saveItem } from "../lib/supabase";
+         getSaved, unsaveItem, saveItem,
+         getFeeds, getFolders, setFeedFolder, updateFeedSettings,
+         getReadingStats } from "../lib/supabase";
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import { Button, EmptyState, Spinner } from "../components/UI";
 import { getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
+import { feedsToOPML, downloadFile } from "../lib/exportUtils";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -222,7 +225,7 @@ export function SettingsPage() {
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.11.1</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.11.3</div>
         </Card>
       </div>
     </PageShell>
@@ -279,8 +282,7 @@ function ManageFeedsCard({ T, user }) {
     ]).then(([f, fo]) => {
       setFeeds(f);
       setFolders(fo);
-    }).catch(console.error)
-    .finally(() => setLoading(false));
+    }).catch(err => { console.error("ManageFeeds:", err); setLoading(false); });
   }, [user]);
 
   async function handleMove(feedId, folderId) {
@@ -363,11 +365,14 @@ function ManageFeedsCard({ T, user }) {
 // ── Reading Stats card ────────────────────────────────────────
 function ReadingStatsCard({ T, user }) {
   const [stats, setStats] = useState(null);
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
     if (!user) return;
-    getReadingStats(user.id).then(setStats).catch(console.error);
+    getReadingStats(user.id)
+      .then(setStats)
+      .catch(err => { console.error("ReadingStats:", err); setFailed(true); });
   }, [user]);
-  if (!stats) return null;
+  if (failed || !stats) return null;
 
   const days = [];
   for (let i = 6; i >= 0; i--) {
@@ -418,7 +423,10 @@ function FeedHealthCard({ T, user }) {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!user) return;
-    getFeeds(user.id).then(setFeeds).catch(console.error).finally(() => setLoading(false));
+    getFeeds(user.id)
+      .then(setFeeds)
+      .catch(err => { console.error("FeedHealth:", err); })
+      .finally(() => setLoading(false));
   }, [user]);
   if (loading || feeds.length === 0) return null;
 
