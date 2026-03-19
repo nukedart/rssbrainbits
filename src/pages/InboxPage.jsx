@@ -41,6 +41,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [newArticleCount, setNewArticleCount] = useState(0);
   const prevItemUrlsRef = useRef(new Set());
   const [showOPML, setShowOPML]           = useState(false);
+  const [opmlProgress, setOpmlProgress]   = useState(null); // null | { done, total }
   const [dragFeedId, setDragFeedId]         = useState(null);
   const [openFolders, setOpenFolders]       = useState(() => new Set());
   const [dragOverFolder, setDragOverFolder] = useState(null);
@@ -268,11 +269,22 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     setFeeds(prev => [...prev]);
   }
 
-  async function handleOPMLImport(feed) {
-    // Reuse the existing handleAdd logic for each feed
-    const feedData = await fetchRSSFeed(feed.url);
-    const record   = await addFeed(user.id, { url: feed.url, type: "rss", name: feed.name || feedData.title });
-    setFeeds((prev) => [...prev, record]);
+  async function handleOPMLImport(feedOrList) {
+    // Accept a single feed OR an array (bulk OPML import)
+    const list = Array.isArray(feedOrList) ? feedOrList : [feedOrList];
+    setOpmlProgress({ done: 0, total: list.length });
+    for (let i = 0; i < list.length; i++) {
+      const feed = list[i];
+      try {
+        const feedData = await fetchRSSFeed(feed.url).catch(() => ({ title: feed.name || feed.url, items: [] }));
+        const record   = await addFeed(user.id, { url: feed.url, type: "rss", name: feed.name || feedData.title });
+        setFeeds(prev => [...prev, record]);
+      } catch (err) {
+        console.error("OPML import error:", feed.url, err);
+      }
+      setOpmlProgress({ done: i + 1, total: list.length });
+    }
+    setOpmlProgress(null);
   }
 
   async function handleRetryFeed(feed) {
@@ -674,6 +686,20 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       />}
       {searchResult && <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />}
       {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
+      {opmlProgress && (
+        <div style={{ position:"fixed", bottom: isMobile?80:24, left:"50%", transform:"translateX(-50%)", zIndex:2000, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, padding:"12px 20px", boxShadow:"0 4px 24px rgba(0,0,0,.15)", display:"flex", alignItems:"center", gap:12, minWidth:220 }}>
+          <div style={{ width:10, height:10, border:`2px solid ${T.accent}`, borderTopColor:"transparent", borderRadius:"50%", animation:"spin .7s linear infinite", flexShrink:0 }} />
+          <div>
+            <div style={{ fontSize:13, fontWeight:600, color:T.text }}>Importing feeds…</div>
+            <div style={{ fontSize:11, color:T.textTertiary, marginTop:2 }}>{opmlProgress.done} of {opmlProgress.total} done</div>
+          </div>
+          <div style={{ marginLeft:"auto" }}>
+            <div style={{ width:80, height:4, background:T.surface2, borderRadius:2 }}>
+              <div style={{ width:`${(opmlProgress.done/opmlProgress.total)*100}%`, height:"100%", background:T.accent, borderRadius:2, transition:"width .3s" }} />
+            </div>
+          </div>
+        </div>
+      )}
       {/* FolderModal is owned by App.jsx — onAddFolder/onEditFolder props trigger it */}
     </div>
   );

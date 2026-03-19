@@ -97,7 +97,7 @@ export function HistoryPage() {
 }
 
 // ── Settings page ─────────────────────────────────────────────
-export function SettingsPage() {
+export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate }) {
   const { T, isDark, setIsDark } = useTheme();
   const { user, signOut } = useAuth();
   const shortcuts = [
@@ -197,10 +197,10 @@ export function SettingsPage() {
         <ReadingStatsCard T={T} user={user} />
 
         {/* Feed Health */}
-        <FeedHealthCard T={T} user={user} />
+        <FeedHealthCard T={T} user={user} feeds={appFeeds} />
 
         {/* Manage Feeds */}
-        <ManageFeedsCard T={T} user={user} />
+        <ManageFeedsCard T={T} user={user} initialFeeds={appFeeds} initialFolders={appFolders} onFeedUpdate={onFeedUpdate} />
 
         {/* API Keys */}
         <Card title="API Keys" T={T}>
@@ -220,12 +220,39 @@ export function SettingsPage() {
 
 
 
+        {/* Database migrations */}
+        <Card title="Database Migrations" T={T}>
+          <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 12, lineHeight: 1.6 }}>
+            Run these SQL statements in <strong style={{ color: T.textSecondary }}>Supabase → SQL Editor</strong> if any features are missing.
+          </div>
+          {[
+            { label: "Read timestamps (reading stats)", sql: "ALTER TABLE read_items ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ DEFAULT NOW();" },
+            { label: "Feed folders table", sql: "CREATE TABLE IF NOT EXISTS feed_folders (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, name TEXT NOT NULL, color TEXT DEFAULT 'gray', position INTEGER DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW()); ALTER TABLE feed_folders ENABLE ROW LEVEL SECURITY; CREATE POLICY \"own folders\" ON feed_folders FOR ALL USING (auth.uid() = user_id);" },
+            { label: "Folder column on feeds", sql: "ALTER TABLE feeds ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES feed_folders(id) ON DELETE SET NULL;" },
+            { label: "Full content flag on feeds", sql: "ALTER TABLE feeds ADD COLUMN IF NOT EXISTS fetch_full_content BOOLEAN DEFAULT FALSE;" },
+            { label: "Smart feed scoping", sql: "ALTER TABLE smart_feeds ADD COLUMN IF NOT EXISTS feed_ids TEXT[] DEFAULT NULL;" },
+          ].map(({ label, sql }) => (
+            <div key={label} style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: T.text, marginBottom: 4 }}>{label}</div>
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <code style={{ flex: 1, fontSize: 10, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "6px 10px", color: T.textSecondary, lineHeight: 1.5, wordBreak: "break-all", display: "block" }}>
+                  {sql}
+                </code>
+                <button onClick={() => { navigator.clipboard?.writeText(sql); }}
+                  style={{ flexShrink: 0, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", fontSize: 11, color: T.textSecondary, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                  Copy
+                </button>
+              </div>
+            </div>
+          ))}
+        </Card>
+
         {/* About */}
         <Card title="About" T={T}>
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.11.3</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.11.4</div>
         </Card>
       </div>
     </PageShell>
@@ -267,29 +294,23 @@ function FeedNameEditor({ feed, T, onSave }) {
 }
 
 // ── Manage Feeds card ─────────────────────────────────────────
-function ManageFeedsCard({ T, user }) {
-  const [feeds, setFeeds]     = useState([]);
-  const [folders, setFolders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving]   = useState(null); // feedId being saved
+function ManageFeedsCard({ T, user, initialFeeds = [], initialFolders = [], onFeedUpdate }) {
+  const [feeds, setFeeds]     = useState(initialFeeds);
+  const [folders, setFolders] = useState(initialFolders);
+  const [saving, setSaving]   = useState(null);
   const FCOLS = { gray:"#8A9099", teal:"#4BBFAF", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      getFeeds(user.id),
-      getFolders(user.id),
-    ]).then(([f, fo]) => {
-      setFeeds(f);
-      setFolders(fo);
-    }).catch(err => { console.error("ManageFeeds:", err); setLoading(false); });
-  }, [user]);
+  // Sync if parent feeds change
+  useEffect(() => { if (initialFeeds.length > 0) setFeeds(initialFeeds); }, [initialFeeds]);
+  useEffect(() => { if (initialFolders.length > 0) setFolders(initialFolders); }, [initialFolders]);
 
   async function handleMove(feedId, folderId) {
     setSaving(feedId);
     try {
       await setFeedFolder(feedId, folderId);
-      setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: folderId } : f));
+      const updated = feeds.map(f => f.id === feedId ? { ...f, folder_id: folderId } : f);
+      setFeeds(updated);
+      onFeedUpdate?.(feedId, { folder_id: folderId });
     } catch (err) {
       console.error(err);
     } finally {
@@ -297,7 +318,6 @@ function ManageFeedsCard({ T, user }) {
     }
   }
 
-  if (loading) return null;
   if (feeds.length === 0) return null;
 
   return (
@@ -324,6 +344,7 @@ function ManageFeedsCard({ T, user }) {
                   try {
                     await updateFeedSettings(feed.id, { name });
                     setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, name } : f));
+                    onFeedUpdate?.(feed.id, { name });
                   } finally { setSaving(null); }
                 }} />
                 {isSaving && <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>saving…</span>}
@@ -343,6 +364,7 @@ function ManageFeedsCard({ T, user }) {
                     try {
                       await updateFeedSettings(feed.id, { fetch_full_content: val });
                       setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, fetch_full_content: val } : f));
+                      onFeedUpdate?.(feed.id, { fetch_full_content: val });
                     } finally { setSaving(null); }
                   }} style={{ accentColor: T.accent }} />
                   Always fetch full content
@@ -418,17 +440,8 @@ function ReadingStatsCard({ T, user }) {
 }
 
 // ── Feed Health Dashboard ─────────────────────────────────────
-function FeedHealthCard({ T, user }) {
-  const [feeds, setFeeds] = useState([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    if (!user) return;
-    getFeeds(user.id)
-      .then(setFeeds)
-      .catch(err => { console.error("FeedHealth:", err); })
-      .finally(() => setLoading(false));
-  }, [user]);
-  if (loading || feeds.length === 0) return null;
+function FeedHealthCard({ T, user, feeds = [] }) {
+  if (feeds.length === 0) return null;
 
   return (
     <Card title="Feed Health" T={T}>

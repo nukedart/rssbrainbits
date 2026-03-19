@@ -7,7 +7,7 @@ import { HistoryPage, ReadLaterPage, SettingsPage } from "./pages/SecondaryPages
 import NotesPage from "./components/NotesPage";
 import SmartFeedModal from "./components/SmartFeedModal";
 import Sidebar from "./components/Sidebar";
-import { Spinner } from "./components/UI";
+import { Spinner, ErrorBoundary } from "./components/UI";
 import BottomNav from "./components/BottomNav";
 import { useBreakpoint } from "./hooks/useBreakpoint.js";
 import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
@@ -125,7 +125,7 @@ function AppShell() {
       case "readlater": return <ReadLaterPage />;
       case "history":   return <HistoryPage />;
       case "notes":     return <NotesPage />;
-      case "settings":  return <SettingsPage />;
+      case "settings":  return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} />;
       default:          return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} />;
     }
   }
@@ -154,7 +154,9 @@ function AppShell() {
       />
       <div style={{ flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column" }}>
         <div style={{ flex: 1, overflow: "hidden", paddingBottom: isMobile ? 62 : 0, display: "flex", flexDirection: "column" }}>
-          {renderPage()}
+          <ErrorBoundary>
+            {renderPage()}
+          </ErrorBoundary>
         </div>
         {isMobile && <BottomNav active={page} onNavigate={setPage} unreadCount={unreadCount} />}
       </div>

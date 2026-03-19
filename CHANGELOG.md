@@ -5,6 +5,24 @@ Format: `## [version] — YYYY-MM-DD`
 
 ---
 
+## [1.11.4] — 2026-03-19
+
+### Added
+- **Global ErrorBoundary** — wraps all page content in `App.jsx`. Any uncaught render error now shows a recovery screen ("Something went wrong / Reload app") instead of a blank white page. Individual card failures in Settings are also guarded independently.
+- **Database migrations helper** — new card in Settings → Database Migrations. Lists every required `ALTER TABLE` / `CREATE TABLE` statement with a one-click Copy button. Solves the problem of features silently not working because an older schema is missing a column.
+- **OPML import progress** — bulk feed import now shows an animated toast at the bottom of the screen: spinner + "Importing feeds… X of Y done" + a progress bar. Dismissed automatically when complete.
+- **Podcast fields in RSS parser** — `parseRSSItem` now detects audio enclosures and populates `audioUrl`, `audioDuration`, and `isPodcast: true` on each item. No UI yet (v1.12.0), but the data is ready.
+
+### Fixed
+- **Settings page redundant fetches** — `ManageFeedsCard` and `FeedHealthCard` were independently fetching `feeds` and `folders` from Supabase every time Settings was opened, even though App.jsx already has them in state. Both components now accept `feeds`/`folders` as props from `SettingsPage`, which receives them from `App.jsx`. Zero extra network requests on Settings open.
+- **`onFeedUpdate` propagation** — renaming a feed or toggling "Always fetch full content" in Manage Feeds now propagates the change back up to `App.feeds` state via `onFeedUpdate` callback, so the sources panel and sidebar update immediately without a reload.
+
+### Changed
+- OPML import handler now accepts both a single feed object and an array (for bulk imports from OPMLImport component).
+
+---
+
+
 ## [1.11.3] — 2026-03-19
 
 ### Fixed

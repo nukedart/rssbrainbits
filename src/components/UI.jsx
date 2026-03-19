@@ -1,3 +1,4 @@
+import { Component } from "react";
 import { useTheme } from "../hooks/useTheme";
 
 export function Card({ children, style = {}, onClick }) {
@@ -88,4 +89,53 @@ export function EmptyState({ icon, title, subtitle, action }) {
       {action}
     </div>
   );
+}
+
+// ── Error Boundary ────────────────────────────────────────────
+// Catches any uncaught render error and shows a recovery screen.
+// Usage: wrap any subtree in <ErrorBoundary>...</ErrorBoundary>
+export class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("[ErrorBoundary]", error, info.componentStack);
+  }
+
+  render() {
+    if (!this.state.hasError) return this.props.children;
+    const reload = () => { this.setState({ hasError: false, error: null }); window.location.reload(); };
+    return (
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+        justifyContent: "center", padding: 32, textAlign: "center",
+        background: "var(--bg, #F5F6F7)", minHeight: "100dvh",
+      }}>
+        <div style={{ fontSize: 36, marginBottom: 16 }}>⚠️</div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: "#1A2124", marginBottom: 8 }}>
+          Something went wrong
+        </div>
+        <div style={{ fontSize: 13, color: "#666", maxWidth: 320, lineHeight: 1.6, marginBottom: 24 }}>
+          {this.state.error?.message || "An unexpected error occurred."}
+        </div>
+        <button onClick={reload} style={{
+          background: "#4BBFAF", color: "#fff", border: "none", borderRadius: 10,
+          padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer",
+          fontFamily: "inherit",
+        }}>Reload app</button>
+        {this.props.onReset && (
+          <button onClick={this.props.onReset} style={{
+            background: "transparent", color: "#666", border: "none",
+            fontSize: 12, cursor: "pointer", marginTop: 10, fontFamily: "inherit",
+          }}>Try without reloading</button>
+        )}
+      </div>
+    );
+  }
 }

@@ -129,6 +129,16 @@ function parseRSSItem(item, isAtom) {
   const descRaw = item.querySelector("description")?.textContent || "";
   const bodyRaw = contentEncoded || descRaw;
 
+  // Detect podcast audio enclosure
+  const enclosure = item.querySelector("enclosure");
+  const audioUrl = enclosure?.getAttribute("type")?.startsWith("audio")
+    ? enclosure.getAttribute("url") : null;
+
+  // iTunes duration
+  const allEls = Array.from(item.querySelectorAll("*"));
+  const durationEl = allEls.find(el => el.localName === "duration");
+  const audioDuration = durationEl?.textContent?.trim() || null;
+
   return {
     title:       item.querySelector("title")?.textContent?.trim() || "Untitled",
     url:         item.querySelector("link")?.textContent?.trim() || "",
@@ -136,11 +146,12 @@ function parseRSSItem(item, isAtom) {
     fullText:    bodyRaw,
     date:        normaliseDate(item.querySelector("pubDate, date")?.textContent),
     author:      item.querySelector("author, creator")?.textContent?.trim()
-                 || (() => {
-                   const all = Array.from(item.querySelectorAll("*"));
-                   return all.find(el => el.localName === "creator" || el.localName === "author")?.textContent?.trim();
-                 })() || "",
+                 || allEls.find(el => el.localName === "creator" || el.localName === "author")?.textContent?.trim() || "",
     image,
+    // Podcast fields — null for regular articles
+    audioUrl,
+    audioDuration,
+    isPodcast: !!audioUrl,
   };
 }
 
