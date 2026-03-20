@@ -3,9 +3,21 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.24.8] — 2026-03-20
+
+### Changes since v1.24.7
+
+---
+
 ## [1.24.7] — 2026-03-20
 
-### Changes since v1.24.6
+### Fixed
+- **Admin panel 401 "Invalid JWT"** — edge function was creating an `anonClient` to validate the session token, which failed with the new `sb_publishable_` key format. Now uses `adminClient.auth.getUser(token)` directly, which works with any key format.
+- **Refresh button did nothing** — was calling `setFeeds(prev => [...prev])` to re-trigger the feed effect, but that's a no-op when feed state is lifted to App.jsx. Now calls `fetchAllRef.current(true)` directly.
+- **OPML import feeds silently dropped** — imported feeds were appended via `setFeeds()` (no-op with lifted state) instead of `onFeedAdded()`. Feeds now appear immediately after bulk import.
+- **Mark All Read was N network requests** — replaced `Promise.all(N × markRead())` with a single batch upsert (`markAllRead()`), reducing API calls from N to 1.
+- **Retry feed had redundant dynamic import** — `invalidateCachedFeed` was dynamically re-imported inside `handleRetryFeed` despite already being statically imported at the top of the file.
+- **Version stuck at v1.24.1** — `Sidebar.jsx` had a hardcoded version constant that wasn't updated by `deploy.sh`. Now shows correct version.
 
 ---
 
