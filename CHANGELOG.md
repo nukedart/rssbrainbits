@@ -5,29 +5,60 @@ Format: `## [version] — YYYY-MM-DD`
 
 ## [1.24.3] — 2026-03-19
 
-### Changes since v1.24.2
+### Added
+- **Onboarding flow** — New users with no feeds see a rich welcome screen instead of a blank inbox. Includes a 3-step how-it-works grid, a primary "Add your first feed" CTA, and 6 one-tap popular feed suggestions (Hacker News, The Verge, Wired, NASA, BBC News, TechCrunch).
+- **Mark all read** — "✓ All" button appears in the article toolbar whenever there are unread items. Shows "✓" on mobile, "✓ All" on desktop. Marks everything in the current view in one action.
+- **Share button** — "↑ Share" is now a visible button in the reader top bar, no longer buried in the ··· overflow menu. Uses the native share sheet on iOS/Android, falls back to clipboard copy on desktop.
+
+### Fixed
+- **Feed error retry on mobile** — The red error badge in the toolbar was a static label with no action. It is now a clickable "↺ N errors" button that retries all failed feeds immediately.
+- **Mobile feed list** — Thumbnails hidden in list view (were consuming ~60px of title width on every row), article titles now wrap to 2 lines, rows taller for easier tap targets, article list has bottom padding so BottomNav no longer covers the last item.
+- **Mobile toolbar** — View mode (List/Cards) and size (S/M/L) toggles hidden on mobile — toolbar now fits comfortably.
+- **Sidebar version label** — Corrected from hardcoded v1.17.0 to current version.
 
 ---
 
-## [1.24.2] — 2026-03-19
+## [1.24.0] — 2026-03-19
 
-### Changes since v1.24.1
+### Added
+- **Subscription badge in Settings** — Account card now shows an ⚡ PRO or FREE pill badge next to the user's display name.
+- **App version in Settings** — About card displays the current version, kept in sync with `package.json`.
 
 ---
 
-## [1.24.1] — 2026-03-19
+## [1.23.0] — 2026-03-19
 
-### Changes
-- chore: rename migrations to timestamped format, run against remote db
-- feat: standalone admin panel + admin-stats edge function — v1.23.0
-- feat: self-hosted analytics — events, dashboard, upgrade funnel — v1.22.0
-- security: remove VITE_ANTHROPIC_API_KEY from bundle
-- chore: ignore dist/assets/ to prevent bundled secrets from being committed
-- feat: landing page rewrite, fix Stripe upgrade paths, mobile nav — v1.21.0
-- polish: readable toggles, retry button, sticky reader controls, better errors — v1.20.0
-- perf: cap animations, faster proxy fallback, parallel feed discovery — v1.19.0
-- feat: polish AI summaries, fix stats, $9 Pro, bug fixes — v1.18.0
-- v1.17.0
+### Added
+- **Admin panel** (`admin/index.html`) — Standalone single-file dashboard. No build step. Authenticates via Supabase, checks `is_admin`, then calls the new `admin-stats` Edge Function. Five sections: Overview, Users, Subscriptions, Analytics, Activity.
+- **`admin-stats` Edge Function** — Admin-gated endpoint using service role to query `auth.users`, `subscription_events`, and `analytics_events`. Returns all dashboard data in a single call.
+- **RLS policy** — Admin read access added to `subscription_events`.
+
+---
+
+## [1.22.0] — 2026-03-19
+
+### Added
+- **Custom analytics system** — Self-hosted event tracking backed by Supabase `analytics_events` table. No third-party services. Fire-and-forget `track()` helper used throughout the app.
+- **Analytics dashboard** (`AnalyticsPage`) — Admin-only in-app dashboard showing MAU/WAU/DAU, 30-day charts, top events, and upgrade funnel.
+- **Tracked events** — `article_opened`, `feed_added`, `feed_deleted`, `article_saved_for_later`, `opml_imported`, `ai_summary_triggered`, `article_highlighted`, `highlights_exported`, `search_performed`, `upgrade_initiated`, `plan_limit_hit`, `page_navigated`, `mark_all_read`.
+
+---
+
+## [1.21.0] — 2026-03-19
+
+### Added
+- Landing page full rewrite — new hero copy, 3-step How it Works section, star ratings on testimonials, OG/Twitter meta tags, mobile hamburger nav.
+- Fixed all Stripe upgrade paths (PlanGate, Stats, Settings) — replaced mailto: links with real Stripe checkout.
+- Security: removed `VITE_ANTHROPIC_API_KEY` from client bundle; key now stored only in localStorage.
+
+---
+
+## [1.20.0] and earlier
+
+- polish: readable toggles, retry button, sticky reader controls, better errors
+- perf: cap animations, faster proxy fallback, parallel feed discovery
+- feat: polish AI summaries, fix stats, $9 Pro, bug fixes
+- feat: Cloudflare proxy, Stripe billing, PWA install, Terms of Service
 
 ---
 
