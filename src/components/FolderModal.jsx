@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 
 const FOLDER_COLORS = [
   { id:"gray",   hex:"#8A9099" },
-  { id:"teal",   hex:"#4BBFAF" },
+  { id:"teal",   hex:"#accfae" },
   { id:"blue",   hex:"#2F6FED" },
   { id:"amber",  hex:"#AA8439" },
   { id:"red",    hex:"#EF4444" },

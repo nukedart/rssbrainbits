@@ -174,7 +174,7 @@ function AppShell() {
     <div style={{
       height: "100dvh", display: "flex", flexDirection: "row",
       background: T.bg, color: T.text,
-      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontFamily: "'Inter', system-ui, sans-serif",
       WebkitFontSmoothing: "antialiased", overflow: "hidden",
     }}>
       <Sidebar

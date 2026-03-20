@@ -2,9 +2,9 @@
 // All stored in localStorage, applied via CSS custom properties on <body>.
 
 const DEFAULTS = {
-  fontSize:  18,          // px  — range 14–22
+  fontSize:  19,          // px  — range 14–22
   lineWidth: "medium",    // "narrow" | "medium" | "wide"
-  fontFamily:"sans",      // "sans" | "serif"
+  fontFamily:"serif",     // "sans" | "serif" — default to editorial serif
   bionic:    false,       // bionic reading mode
 };
 
@@ -33,9 +33,9 @@ export function applyReaderPrefs(prefs) {
     p.lineWidth === "narrow" ? "520px" : p.lineWidth === "wide" ? "780px" : "660px"
   );
   root.style.setProperty("--reader-font-family",
-    p.fontFamily === "serif"
-      ? "'Playfair Display', 'Georgia', serif"
-      : "'DM Sans', system-ui, sans-serif"
+    p.fontFamily === "sans"
+      ? "'Inter', system-ui, sans-serif"
+      : "'Noto Serif', Georgia, serif"
   );
 }
 

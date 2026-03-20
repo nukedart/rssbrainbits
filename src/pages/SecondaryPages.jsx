@@ -677,7 +677,7 @@ function ManageFeedsCard({ T, user, initialFeeds = [], initialFolders = [], onFe
   const [feeds, setFeeds]     = useState(initialFeeds);
   const [folders, setFolders] = useState(initialFolders);
   const [saving, setSaving]   = useState(null);
-  const FCOLS = { gray:"#8A9099", teal:"#4BBFAF", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+  const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 
   // Sync if parent feeds change
   useEffect(() => { if (initialFeeds.length > 0) setFeeds(initialFeeds); }, [initialFeeds]);

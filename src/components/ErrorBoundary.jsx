@@ -33,21 +33,21 @@ export default class ErrorBoundary extends Component {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#2F373B",
+        background: "#121416",
         padding: 24,
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontFamily: "'Inter', system-ui, sans-serif",
       }}>
         <div style={{
           maxWidth: 400,
           width: "100%",
-          background: "#3A444A",
+          background: "#1a1c1e",
           borderRadius: 16,
           padding: "36px 28px",
           textAlign: "center",
         }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>😵‍💫</div>
           <h2 style={{
-            color: "#E8EAEC",
+            color: "#f1f1f1",
             fontSize: 18,
             fontWeight: 700,
             margin: "0 0 10px",
@@ -55,7 +55,7 @@ export default class ErrorBoundary extends Component {
             Something went wrong
           </h2>
           <p style={{
-            color: "#9AA3A9",
+            color: "#c2c8bf",
             fontSize: 13,
             lineHeight: 1.6,
             margin: "0 0 24px",
@@ -66,10 +66,10 @@ export default class ErrorBoundary extends Component {
           <button
             onClick={this.handleReload}
             style={{
-              background: "#65D5C4",
-              color: "#1A2B28",
+              background: "#accfae",
+              color: "#03210b",
               border: "none",
-              borderRadius: 10,
+              borderRadius: 6,
               padding: "12px 28px",
               fontSize: 14,
               fontWeight: 700,
@@ -83,13 +83,13 @@ export default class ErrorBoundary extends Component {
 
           {this.state.error && (
             <details style={{ textAlign: "left", marginTop: 12 }}>
-              <summary style={{ color: "#6B757B", fontSize: 11, cursor: "pointer" }}>
+              <summary style={{ color: "#737971", fontSize: 11, cursor: "pointer" }}>
                 Error details
               </summary>
               <pre style={{
-                color: "#9AA3A9",
+                color: "#c2c8bf",
                 fontSize: 10,
-                background: "#2F373B",
+                background: "#121416",
                 borderRadius: 8,
                 padding: 10,
                 marginTop: 8,

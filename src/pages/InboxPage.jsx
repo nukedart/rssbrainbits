@@ -502,7 +502,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             {folders.length > 0 && folders.map(folder => {
               const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
               const folderUnread = folderFeeds.reduce((n, f) => n + allItems.filter(i => i.feedId === f.id && !readUrls.has(i.url)).length, 0);
-              const FOLDER_COLORS = { gray:"#8A9099", teal:"#4BBFAF", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+              const FOLDER_COLORS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
               const dotColor = FOLDER_COLORS[folder.color] || "#8A9099";
               const isOpen = openFolders.has(folder.id);
               return (
@@ -960,7 +960,7 @@ function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, o
   const [showFolderMenu, setShowFolderMenu] = useState(false);
   const menuRef = useRef(null);
   const favicon = feedUrl ? `https://www.google.com/s2/favicons?domain=${new URL(feedUrl).hostname}&sz=32` : null;
-  const FCOLS = { gray:"#8A9099", teal:"#4BBFAF", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+  const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 
   useEffect(() => {
     if (!showFolderMenu) return;

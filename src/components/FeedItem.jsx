@@ -112,7 +112,7 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
           Later
         </button>
         <button onClick={e => { e.stopPropagation(); onSave?.(); close(); }}
-          style={{ flex: 1, border: "none", background: "#4BBFAF", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
+          style={{ flex: 1, border: "none", background: "#accfae", color: "#03210b", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
           <span style={{ fontSize: 16 }}>🔖</span>
           Save
         </button>

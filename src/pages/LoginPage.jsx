@@ -87,7 +87,7 @@ export default function LoginPage() {
 
   return (
     <div style={{
-      minHeight:"100dvh", background: isDark?"#1E2528":"#F5F6F7",
+      minHeight:"100dvh", background: isDark?"#121416":"#f4f2ee",
       display:"flex", alignItems:"center", justifyContent:"center", padding:20,
     }}>
       <div style={{ maxWidth:400, width:"100%" }}>

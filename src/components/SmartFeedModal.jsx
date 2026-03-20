@@ -4,7 +4,7 @@ import { Button } from "./UI";
 
 const COLORS = [
   { id: "blue",   bg: "#EBF1FD", text: "#1A4FB8", dot: "#2F6FED" },
-  { id: "teal",   bg: "#E8F8F6", text: "#2A7A72", dot: "#4BBFAF" },
+  { id: "teal",   bg: "rgba(172,207,174,0.12)", text: "#accfae", dot: "#accfae" },
   { id: "amber",  bg: "#FDF3E3", text: "#7A5E26", dot: "#AA8439" },
   { id: "red",    bg: "#FEF2F2", text: "#991B1B", dot: "#EF4444" },
   { id: "purple", bg: "#F0EEF8", text: "#5B4FA0", dot: "#8B5CF6" },
