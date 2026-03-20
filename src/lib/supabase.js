@@ -238,6 +238,16 @@ export async function markRead(userId, url, feedId = null) {
   if (error) throw error;
 }
 
+export async function markAllRead(userId, urls) {
+  if (!urls?.length) return;
+  const now = new Date().toISOString();
+  const { error } = await supabase.from("read_items").upsert(
+    urls.map(url => ({ user_id: userId, url, read_at: now })),
+    { onConflict: "user_id,url" }
+  );
+  if (error) throw error;
+}
+
 export async function markUnread(userId, url) {
   const { error } = await supabase.from("read_items").delete()
     .eq("user_id", userId).eq("url", url);

@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
 import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem,
-         addReadLater, getReadUrls, markRead, markUnread, matchesSmartFeed } from "../lib/supabase";
+         addReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed } from "../lib/supabase";
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl } from "../lib/fetchers";
 import { invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem from "../components/FeedItem";
@@ -164,13 +164,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
     // ── Auto-refresh every 30 minutes ────────────────────────
     const REFRESH_INTERVAL = 30 * 60 * 1000;
-    const timer = setInterval(() => {
-      // Silent background refresh — compare new items against known URLs
-      const prevUrls = prevItemUrlsRef.current;
-      fetchAll(false).then(() => {
-        // newArticleCount updated inside fetchAll via setAllItems
-      });
-    }, REFRESH_INTERVAL);
+    const timer = setInterval(() => fetchAll(false), REFRESH_INTERVAL);
 
     return () => clearInterval(timer);
   }, [feeds]);
@@ -305,8 +299,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   // Force-refresh all feeds, bypassing cache
   function handleRefreshAll() {
     invalidateAllFeeds();
-    // Re-trigger feed effect by bumping a counter
-    setFeeds(prev => [...prev]);
+    fetchAllRef.current?.(true);
   }
 
   async function handleOPMLImport(feedOrList) {
@@ -319,7 +312,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       try {
         const feedData = await fetchRSSFeed(feed.url).catch(() => ({ title: feed.name || feed.url, items: [] }));
         const record   = await addFeed(user.id, { url: feed.url, type: "rss", name: feed.name || feedData.title });
-        setFeeds(prev => [...prev, record]);
+        if (onFeedAdded) onFeedAdded(record);
+        else setFeeds(prev => [...prev, record]);
         imported++;
       } catch (err) {
         console.error("OPML import error:", feed.url, err);
@@ -334,7 +328,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     setFeedErrors(prev => { const n = {...prev}; delete n[feed.id]; return n; });
     setFeedLoading(prev => ({ ...prev, [feed.id]: true }));
     try {
-      const { invalidateCachedFeed } = await import("../lib/feedCache");
       invalidateCachedFeed(feed.url);
       const data = await fetchRSSFeed(feed.url, { forceRefresh: true });
       const items = data.items.map(item => ({
@@ -380,7 +373,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   async function handleMarkAllRead() {
     const urlsToMark = baseItems.map(i => i.url).filter(u => !readUrls.has(u));
     if (urlsToMark.length === 0) return;
-    await Promise.all(urlsToMark.map(url => markRead(user.id, url)));
+    await markAllRead(user.id, urlsToMark);
     setReadUrls(prev => {
       const next = new Set([...prev, ...urlsToMark]);
       try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
