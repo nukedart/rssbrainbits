@@ -377,6 +377,28 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     });
   }
 
+  async function handleMarkAllRead() {
+    const urlsToMark = baseItems.map(i => i.url).filter(u => !readUrls.has(u));
+    if (urlsToMark.length === 0) return;
+    await Promise.all(urlsToMark.map(url => markRead(user.id, url)));
+    setReadUrls(prev => {
+      const next = new Set([...prev, ...urlsToMark]);
+      try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+    showToast(`✓ Marked ${urlsToMark.length} as read`);
+    track("mark_all_read", { count: urlsToMark.length });
+  }
+
+  async function handleQuickAddFeed(url, name) {
+    try {
+      await handleAdd({ url, type: "rss", name });
+      showToast(`✓ Added ${name}`);
+    } catch (err) {
+      showToast(`Failed: ${err.message}`);
+    }
+  }
+
   async function handleSaveItem(item) {
     await saveItem(user.id, { ...item });
     showToast("✓ Saved");
@@ -611,9 +633,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             )}
             {/* Error badge */}
             {Object.keys(feedErrors).length > 0 && (
-              <span title={`${Object.keys(feedErrors).length} feed(s) failed to load`} style={{ fontSize: 10, fontWeight: 700, background: T.danger, color: "#fff", padding: "1px 6px", borderRadius: 10, cursor: "default", flexShrink: 0 }}>
-                {Object.keys(feedErrors).length} error{Object.keys(feedErrors).length > 1 ? "s" : ""}
-              </span>
+              <button onClick={() => feeds.filter(f => feedErrors[f.id]).forEach(f => handleRetryFeed(f))}
+                title="Click to retry failed feeds"
+                style={{ fontSize: 10, fontWeight: 700, background: T.danger, color: "#fff", padding: "1px 8px", borderRadius: 10, cursor: "pointer", flexShrink: 0, border: "none", fontFamily: "inherit" }}>
+                ↺ {Object.keys(feedErrors).length} error{Object.keys(feedErrors).length > 1 ? "s" : ""}
+              </button>
             )}
           </div>
 
@@ -632,6 +656,19 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = T.accent; }}
             onMouseLeave={e => { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.textSecondary; e.currentTarget.style.borderColor = T.border; }}
           >↺</button>
+
+          {/* Mark all read */}
+          {unreadCount > 0 && (
+            <button onClick={handleMarkAllRead} title="Mark all as read"
+              style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7,
+                height: 32, padding: "0 10px", cursor: "pointer", fontSize: 11, fontWeight: 600,
+                flexShrink: 0, color: T.textSecondary, fontFamily: "inherit",
+                display: "flex", alignItems: "center", transition: "all .15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background=T.accent; e.currentTarget.style.color="#fff"; e.currentTarget.style.borderColor=T.accent; }}
+              onMouseLeave={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; e.currentTarget.style.borderColor=T.border; }}
+            >{isMobile ? "✓" : "✓ All"}</button>
+          )}
 
           {/* Hide read toggle */}
           {filterMode !== "unread" && (
@@ -695,10 +732,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                 </div>
           )}
 
-          {!loadingItems && baseItems.length === 0 && feeds.length === 0 && (
-            <EmptyState icon="📡" title="Your inbox is empty"
-              subtitle="Add an RSS feed, paste an article URL, or drop in a YouTube link."
-              action={<Button onClick={() => setShowAdd(true)}>+ Add your first source</Button>}
+          {!loadingItems && feeds.length === 0 && (
+            <OnboardingCard
+              onAddFeed={() => setShowAdd(true)}
+              onQuickAdd={handleQuickAddFeed}
+              T={T}
             />
           )}
 
@@ -776,6 +814,76 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
         </div>
       )}
       {/* FolderModal is owned by App.jsx — onAddFolder/onEditFolder props trigger it */}
+    </div>
+  );
+}
+
+// ── Onboarding card — shown to new users with no feeds ────────
+function OnboardingCard({ onAddFeed, onQuickAdd, T }) {
+  const SUGGESTIONS = [
+    { name: "Hacker News", url: "https://news.ycombinator.com/rss", emoji: "🟠" },
+    { name: "The Verge",   url: "https://www.theverge.com/rss/index.xml", emoji: "⚡" },
+    { name: "Wired",       url: "https://www.wired.com/feed/rss", emoji: "🔵" },
+    { name: "NASA",        url: "https://www.nasa.gov/rss/dyn/breaking_news.rss", emoji: "🚀" },
+    { name: "BBC News",    url: "https://feeds.bbci.co.uk/news/rss.xml", emoji: "🌍" },
+    { name: "TechCrunch",  url: "https://techcrunch.com/feed/", emoji: "🟢" },
+  ];
+  const STEPS = [
+    { icon: "📡", title: "Add a feed", desc: "Paste any RSS URL, YouTube channel, or article link" },
+    { icon: "📖", title: "Read calmly", desc: "Clean reader view, swipe between articles, no noise" },
+    { icon: "🔖", title: "Save what matters", desc: "Highlight, tag, and export to Markdown" },
+  ];
+  return (
+    <div style={{ maxWidth: 560, margin: "40px auto 0", padding: "0 20px 80px" }}>
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <div style={{ fontSize: 36, marginBottom: 12 }}>📬</div>
+        <div style={{ fontSize: 22, fontWeight: 800, color: T.text, letterSpacing: "-.02em", marginBottom: 8 }}>
+          Welcome to Feedbox
+        </div>
+        <div style={{ fontSize: 14, color: T.textSecondary, lineHeight: 1.6, maxWidth: 380, margin: "0 auto" }}>
+          A calm reading space for RSS, YouTube, and articles — no algorithm, no noise.
+        </div>
+      </div>
+
+      {/* Steps */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 28 }}>
+        {STEPS.map((step, i) => (
+          <div key={i} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 14px", textAlign: "center" }}>
+            <div style={{ fontSize: 24, marginBottom: 8 }}>{step.icon}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 4 }}>{step.title}</div>
+            <div style={{ fontSize: 11, color: T.textTertiary, lineHeight: 1.5 }}>{step.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <button onClick={onAddFeed} style={{
+        display: "block", width: "100%", padding: "13px 0", background: T.accent, color: "#fff",
+        border: "none", borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: "pointer",
+        fontFamily: "inherit", letterSpacing: "-.01em", marginBottom: 24,
+        boxShadow: "0 2px 12px rgba(47,111,237,.25)", transition: "opacity .15s",
+      }}
+        onMouseEnter={e => e.currentTarget.style.opacity=".88"}
+        onMouseLeave={e => e.currentTarget.style.opacity="1"}
+      >+ Add your first feed</button>
+
+      {/* Suggestions */}
+      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, marginBottom: 10 }}>
+        Or start with a popular feed
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {SUGGESTIONS.map(s => (
+          <button key={s.url} onClick={() => onQuickAdd(s.url, s.name)}
+            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, cursor: "pointer", fontFamily: "inherit", textAlign: "left", transition: "border-color .12s" }}
+            onMouseEnter={e => e.currentTarget.style.borderColor=T.accent}
+            onMouseLeave={e => e.currentTarget.style.borderColor=T.border}
+          >
+            <span style={{ fontSize: 18 }}>{s.emoji}</span>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: T.text }}>{s.name}</span>
+            <span style={{ fontSize: 11, color: T.accent, fontWeight: 600 }}>Add →</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

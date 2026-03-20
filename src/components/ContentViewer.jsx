@@ -300,6 +300,13 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
             onMouseLeave={e => { if (!saved) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
           >{saved ? "✓ Saved" : "Save"}</button>
 
+          {/* Share — visible button (not buried in overflow) */}
+          <button onClick={handleShare} title={shareFeedback || "Share"}
+            style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: shareFeedback ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "all .12s", flexShrink: 0, whiteSpace: "nowrap" }}
+            onMouseEnter={e => { if (!shareFeedback) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
+            onMouseLeave={e => { if (!shareFeedback) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
+          >{shareFeedback || "↑ Share"}</button>
+
           {/* ··· overflow menu */}
           <OverflowMenu
             T={T}
@@ -643,7 +650,6 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
       >···</button>
       {open && (
         <div style={{ position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:200, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, boxShadow:"0 4px 24px rgba(0,0,0,.14)", minWidth:180, padding:"4px 0", animation:"fadeInScale .12s ease" }}>
-          {menuItem(shareFeedback || "Share…", handleShare)}
           {item?.url && menuItem("Open in browser ↗", () => window.open(item.url, "_blank"))}
           <div style={{ height:1, background:T.border, margin:"4px 0" }} />
           {menuItem(showTags ? "Hide tags" : `Tags${tags.length > 0 ? ` (${tags.length})` : ""}`, () => setShowTags(v => !v))}
