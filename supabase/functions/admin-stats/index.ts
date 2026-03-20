@@ -123,6 +123,14 @@ Deno.serve(async (req) => {
   }
   const dauChart = days30.map(day => ({ day, count: dauByDay[day]?.size || 0 }));
 
+  // Events per day (total event volume, not unique users)
+  const eventsByDay: Record<string, number> = {};
+  for (const r of analyticsRows) {
+    const day = r.created_at.slice(0, 10);
+    eventsByDay[day] = (eventsByDay[day] || 0) + 1;
+  }
+  const eventsChart = days30.map(day => ({ day, count: eventsByDay[day] || 0 }));
+
   // Event counts
   const eventCounts: Record<string, number> = {};
   for (const r of analyticsRows) {
@@ -159,7 +167,7 @@ Deno.serve(async (req) => {
     analytics: {
       totalEvents: analyticsRows.length,
       uniqueUsers30d, uniqueUsers7d, uniqueUsersToday,
-      dauChart, topEvents,
+      dauChart, eventsChart, topEvents,
       funnel: { limitHits, upgradeClicked, upgrades: upgrades30d },
     },
     recentActivity,
