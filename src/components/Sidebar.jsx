@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-const APP_VERSION = "1.24.7"; // keep in sync with package.json
+const APP_VERSION = "1.25.2"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -23,9 +23,17 @@ const Icons = {
 const SMART_COLORS = { blue:"#2F6FED", teal:"#accfae", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 const FCOLS        = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 
+// Home icon — sun rays
+const HomeIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <circle cx="8" cy="8" r="2.8"/>
+    <path d="M8 1v1.8M8 13.2V15M1 8h1.8M13.2 8H15M2.8 2.8l1.3 1.3M11.9 11.9l1.3 1.3M2.8 13.2l1.3-1.3M11.9 4.1l1.3-1.3"/>
+  </svg>
+);
+
 const NAV = [
+  { id:"home",      Icon:HomeIcon,        label:"Home"      },
   { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox"     },
-  { id:"unread",    Icon:Icons.Unread,    label:"Unread"    },
   { id:"today",     Icon:Icons.Today,     label:"Today"     },
   { id:"readlater", Icon:Icons.ReadLater, label:"Read Later"},
   { id:"history",   Icon:Icons.History,   label:"History"   },

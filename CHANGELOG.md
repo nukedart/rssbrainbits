@@ -3,6 +3,50 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.25.2] — 2026-03-20
+
+### Added
+- **Daily Briefing Home page** — new `Home` tab replaces `Unread` as the app's landing screen. Matches the "Distilled Workspace" editorial design exactly: serif italic mega-heading with today's date, bento grid layout (8-col featured card with hero image + 4-col two stacked secondary cards), and a "Latest Updates" editorial row list. Items are pulled live from all subscribed feeds, sorted by recency.
+- **Home nav item** — sun icon added to both the desktop sidebar and mobile bottom nav; `Unread` nav item removed from both.
+
+### Changed
+- **Default landing page** changed from `inbox` to `home` — users land on the Daily Briefing on every app open.
+- **Sidebar version** bumped to v1.25.2.
+
+---
+
+## [1.25.1] — 2026-03-20
+
+### Added
+- **Three-theme system** — Settings → Appearance now shows three interactive theme tiles:
+  - *Nocturne* — sage-emerald `#accfae` on deep slate `#121416`, Noto Serif editorial font
+  - *Distilled* — periwinkle-blue `#aac7ff` on near-black `#131315`, Newsreader serif font
+  - *Light* — warm parchment `#f4f2ee`, darker sage accent
+- **Follow X / Twitter** — new `𝕏 Follow` tab in the Add modal. Paste any `x.com/username` or bare `@handle` and it auto-routes through RSSHub RSS relay. X URLs pasted in the URL tab are also auto-detected.
+- **Apple Podcasts search** — new `🎙 Podcasts` tab in the Add modal. Live search against the iTunes Search API (no account required), showing artwork, host, and episode count. One-tap follow.
+- **YouTube chapter list** — timestamps in video descriptions are parsed and rendered as a clickable chapter list (links open the video at that point).
+- **YouTube description panel** — expandable show/hide description below the video.
+- **Podcast episode view** — opening a podcast item in the reader now shows: artwork + duration header, parsed chapter timestamps from show notes, expandable show notes with gradient fade. Article fetch is skipped for podcast items.
+- **Newsreader font** — added to the Google Fonts preload; used automatically when the Distilled theme is active.
+
+### Changed
+- **PodcastPlayer redesigned** — glassmorphic backdrop-blur bar, gradient seek fill, SVG play/pause/skip icons with accent glow on the play button, 5 speed steps (1×→1.25→1.5→1.75→2×), sleep timer toggle with `💤` icon.
+
+---
+
+## [1.25.0] — 2026-03-20
+
+### Changed
+- **Editorial Nocturne theme** — complete UI redesign applying the "Midnight Editor" design system:
+  - Color tokens: sage-emerald accent `#accfae`, deep slate surface hierarchy (`#121416` → `#1a1c1e` → `#1e2022`), ghost borders (no-line rule: borders at 20% opacity)
+  - Fonts: Noto Serif (editorial/reader default) + Inter (functional labels), replacing DM Sans
+  - Scrollbar: sage-emerald thumb on `surface-container-highest` track (3px thin)
+  - Reader defaults to Noto Serif at 19px for long-form editorial feel
+  - Card hover uses tonal background shift instead of shadow/border lift
+  - All hardcoded legacy teal `#4BBFAF`, charcoal `#2F373B`, and DM Sans references replaced
+
+---
+
 ## [1.24.8] — 2026-03-20
 
 ### Changes since v1.24.7

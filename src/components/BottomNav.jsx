@@ -1,18 +1,17 @@
 import { useTheme } from "../hooks/useTheme";
 
 const Icons = {
+  Home:     () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>),
   Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M2 15h5l2 4h6l2-4h5"/></svg>),
-  Unread:   () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>),
   Notes:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 3h16a1 1 0 0 1 1 1v13l-5 5H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M16 17v5M16 17h5"/><path d="M7 9h10M7 13h7"/></svg>),
   ReadLater:() => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>),
-  History:  () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 1.5-5"/><path d="M3 5v4h4"/><path d="M12 8v4l2.5 2.5"/></svg>),
   Stats:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="13" width="4" height="8" rx="1"/><rect x="9" y="7" width="4" height="14" rx="1"/><rect x="16" y="2" width="4" height="19" rx="1"/></svg>),
   Settings: () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg>),
 };
 
 const NAV = [
+  { id:"home",      Icon:Icons.Home,      label:"Home"     },
   { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox"    },
-  { id:"unread",    Icon:Icons.Unread,    label:"Unread"   },
   { id:"readlater", Icon:Icons.ReadLater, label:"Later"    },
   { id:"stats",     Icon:Icons.Stats,     label:"Stats"    },
   { id:"settings",  Icon:Icons.Settings,  label:"Settings" },
