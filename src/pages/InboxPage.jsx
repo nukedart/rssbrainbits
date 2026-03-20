@@ -489,8 +489,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
       {/* ── Source list (only on inbox/today mode) ── */}
       {filterMode !== "today" && filterMode !== "unread" && filterMode !== "smart" && !isMobile && !isTablet && (
-        <div style={{ width: 234, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: T.bg, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <div style={{ padding: "13px 12px 10px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center" }}>
+        <div style={{ width: 234, flexShrink: 0, background: T.surface, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ padding: "13px 12px 10px", display: "flex", alignItems: "center" }}>
             <span style={{ flex: 1, fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em" }}>Sources</span>
           </div>
 
@@ -612,7 +612,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg }}>
 
         {/* Toolbar */}
-        <div style={{ padding: "0 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 4 : 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 52 }}>
+        <div style={{ padding: "0 16px", background: T.bg, boxShadow: `0 1px 0 ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 4 : 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
 
           {/* Title + unread badge */}
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
@@ -620,7 +620,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
               {activeFeedName}
             </div>
             {unreadCount > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, background: T.accent, color: "#fff", padding: "1px 6px", borderRadius: 10, flexShrink: 0 }}>
+              <span style={{ fontSize: 10, fontWeight: 600, background: T.accentSurface, color: T.accent, padding: "1px 7px", borderRadius: 10, flexShrink: 0 }}>
                 {unreadCount}
               </span>
             )}
@@ -641,64 +641,62 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
           {/* Refresh button */}
           <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} style={{
-            background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7,
-            width: 28, height: 32, cursor: "pointer", flexShrink: 0,
+            background: "transparent", border: "none", borderRadius: 8,
+            width: 30, height: 30, cursor: "pointer", flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
-            color: T.textSecondary, fontSize: 14, transition: "all .15s",
+            color: T.textTertiary, fontSize: 14, transition: "all .15s",
           }}
-            onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = T.accent; }}
-            onMouseLeave={e => { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.textSecondary; e.currentTarget.style.borderColor = T.border; }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
           >↺</button>
 
           {/* Mark all read */}
           {unreadCount > 0 && (
             <button onClick={handleMarkAllRead} title="Mark all as read"
-              style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7,
-                height: 32, padding: "0 10px", cursor: "pointer", fontSize: 11, fontWeight: 600,
+              style={{ background: T.surface, border: "none", borderRadius: 20,
+                height: 28, padding: "0 12px", cursor: "pointer", fontSize: 11, fontWeight: 500,
                 flexShrink: 0, color: T.textSecondary, fontFamily: "inherit",
                 display: "flex", alignItems: "center", transition: "all .15s",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background=T.accent; e.currentTarget.style.color="#fff"; e.currentTarget.style.borderColor=T.accent; }}
-              onMouseLeave={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; e.currentTarget.style.borderColor=T.border; }}
-            >{isMobile ? "✓" : "✓ All"}</button>
+              onMouseEnter={e => { e.currentTarget.style.background=T.accentSurface; e.currentTarget.style.color=T.accent; }}
+              onMouseLeave={e => { e.currentTarget.style.background=T.surface; e.currentTarget.style.color=T.textSecondary; }}
+            >{isMobile ? "✓" : "✓ All read"}</button>
           )}
 
           {/* Hide read toggle */}
           {filterMode !== "unread" && (
             <button onClick={() => setHideRead(v => !v)} title="Toggle read articles" style={{
-              background: hideRead ? T.accentSurface : T.surface2,
-              border: `1px solid ${hideRead ? T.accent : T.border}`,
-              borderRadius: 8, padding: "0 10px", height: 32, cursor: "pointer",
-              fontSize: 11, fontWeight: 600, flexShrink: 0,
-              color: hideRead ? T.accentText : T.textSecondary, fontFamily: "inherit",
-              display: "flex", alignItems: "center",
+              background: hideRead ? T.accentSurface : T.surface,
+              border: "none",
+              borderRadius: 20, padding: "0 12px", height: 28, cursor: "pointer",
+              fontSize: 11, fontWeight: 500, flexShrink: 0,
+              color: hideRead ? T.accent : T.textSecondary, fontFamily: "inherit",
+              display: "flex", alignItems: "center", transition: "all .15s",
             }}>
-              {isMobile ? (hideRead ? "●" : "○") : (hideRead ? "Unread only" : "All articles")}
+              {isMobile ? (hideRead ? "●" : "○") : (hideRead ? "Unread only" : "All")}
             </button>
           )}
 
           {/* View + Size toggles — hidden on mobile */}
           {!isMobile && <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-            <div style={{ display: "flex", gap: 2, background: T.surface2, borderRadius: 8, padding: "3px" }}>
+            <div style={{ display: "flex", gap: 1, background: T.surface, borderRadius: 10, padding: "3px" }}>
               {[{ mode: "list", icon: "≡", title: "List" }, { mode: "card", icon: "⊞", title: "Cards" }].map(({ mode, icon, title }) => (
                 <button key={mode} onClick={() => toggleViewMode(mode)} title={title} style={{
-                  width: 28, height: 26, borderRadius: 6, border: "none",
-                  background: viewMode === mode ? T.card : "transparent",
+                  width: 28, height: 24, borderRadius: 7, border: "none",
+                  background: viewMode === mode ? T.surface2 : "transparent",
                   color: viewMode === mode ? T.text : T.textTertiary,
                   cursor: "pointer", fontSize: 14, fontWeight: 700,
-                  boxShadow: viewMode === mode ? "0 1px 3px rgba(0,0,0,.08)" : "none",
                   transition: "all .15s", display: "flex", alignItems: "center", justifyContent: "center",
                 }}>{icon}</button>
               ))}
             </div>
-            <div style={{ display: "flex", gap: 2, background: T.surface2, borderRadius: 8, padding: "3px" }}>
+            <div style={{ display: "flex", gap: 1, background: T.surface, borderRadius: 10, padding: "3px" }}>
               {[{ size: "sm", label: "S" }, { size: "md", label: "M" }, { size: "lg", label: "L" }].map(({ size, label }) => (
                 <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} title={`${size === "sm" ? "Small" : size === "md" ? "Medium" : "Large"} view`} style={{
-                  width: 24, height: 26, borderRadius: 6, border: "none",
-                  background: cardSize === size ? T.card : "transparent",
+                  width: 24, height: 24, borderRadius: 7, border: "none",
+                  background: cardSize === size ? T.surface2 : "transparent",
                   color: cardSize === size ? T.text : T.textTertiary,
                   cursor: "pointer", fontSize: 11, fontWeight: 700,
-                  boxShadow: cardSize === size ? "0 1px 3px rgba(0,0,0,.08)" : "none",
                   transition: "all .15s", fontFamily: "inherit",
                 }}>{label}</button>
               ))}

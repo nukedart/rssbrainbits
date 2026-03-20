@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-const APP_VERSION = "1.25.2"; // keep in sync with package.json
+const APP_VERSION = "1.25.3"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -55,14 +55,14 @@ function NavRow({ id, Icon, label, active, badge, onNavigate, collapsed, T }) {
       style={{
         display:"flex", alignItems:"center",
         gap: collapsed ? 0 : 10,
-        padding: collapsed ? "8px 0" : "6px 10px",
+        padding: collapsed ? "8px 0" : "8px 12px",
         justifyContent: collapsed ? "center" : "flex-start",
-        borderRadius:9, border:"none", cursor:"pointer",
+        borderRadius:10, border:"none", cursor:"pointer",
         width:"100%", textAlign:"left",
-        background: active ? T.accentSurface : "transparent",
-        fontFamily:"inherit", transition:"background .12s",
+        background: active ? T.surface : "transparent",
+        fontFamily:"inherit", transition:"background .15s",
       }}
-      onMouseEnter={e => { if (!active) e.currentTarget.style.background=T.surface2; }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.background=T.surface; }}
       onMouseLeave={e => { if (!active) e.currentTarget.style.background="transparent"; }}
     >
       <span style={{ color: active ? T.accent : T.textTertiary, display:"flex", flexShrink:0, position:"relative" }}>
@@ -72,7 +72,7 @@ function NavRow({ id, Icon, label, active, badge, onNavigate, collapsed, T }) {
         )}
       </span>
       {!collapsed && (
-        <span style={{ flex:1, fontSize:13, fontWeight: active?600:400, color: active?T.accentText:T.textSecondary, letterSpacing:"-.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+        <span style={{ flex:1, fontSize:13, fontWeight: active?500:400, color: active?T.accent:T.textSecondary, letterSpacing:"-.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
           {label}
         </span>
       )}
@@ -116,45 +116,65 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
   return (
     <aside style={{
       width:W, flexShrink:0,
-      background:T.surface,
-      borderRight:`1px solid ${T.border}`,
+      background:T.bg,
       display:"flex", flexDirection:"column",
       height:"100dvh",
       userSelect:"none",
       overflow:"hidden",
       position:"relative",
       transition:"width .2s ease",
-      clipPath:"none",
     }}>
 
-      {/* ── Logo + collapse toggle row ── */}
-      <div style={{ padding: collapsed ? "12px 6px 10px" : "12px 8px 10px", display:"flex", alignItems:"center", justifyContent: collapsed?"center":"flex-start", flexShrink:0, gap:6 }}>
-        {!collapsed && (
-          <img
-            src={`${import.meta.env.BASE_URL}feedbox-logo.png`}
-            alt="Feedbox"
-            style={{ height:20, flex:1, filter: isDark?"brightness(10) saturate(0)":"brightness(0) saturate(100%) invert(55%) sepia(50%) saturate(500%) hue-rotate(130deg) brightness(85%)" }}
-            onError={e => { e.target.style.display="none"; }}
-          />
+      {/* ── Branding header ── */}
+      <div style={{ padding: collapsed ? "16px 8px 10px" : "20px 16px 10px", display:"flex", alignItems:"flex-start", justifyContent: collapsed?"center":"space-between", flexShrink:0 }}>
+        {!collapsed ? (
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:17, fontWeight:700, color:T.text, fontFamily:"'Newsreader', Georgia, serif", fontStyle:"italic", letterSpacing:"-.02em", lineHeight:1.2 }}>
+              Feed Box
+            </div>
+            <div style={{ fontSize:9, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".1em", marginTop:2 }}>
+              Distilled Workspace
+            </div>
+          </div>
+        ) : (
+          <div style={{ width:28, height:28, borderRadius:8, background:T.surface, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <span style={{ fontSize:14, color:T.accent, fontWeight:700 }}>F</span>
+          </div>
         )}
-        {!isTablet && (
+        {!isTablet && !collapsed && (
           <button
             onClick={onToggle}
-            title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+            title="Collapse sidebar"
             style={{
-              width:22, height:22, borderRadius:6, flexShrink:0,
-              background:"transparent", border:`1px solid ${T.border}`,
+              width:22, height:22, borderRadius:6, flexShrink:0, marginTop:2,
+              background:"transparent", border:"none",
               cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
-              color:T.textTertiary, fontSize:12, fontFamily:"inherit",
+              color:T.textTertiary, fontSize:14, fontFamily:"inherit",
               transition:"all .15s",
             }}
-            onMouseEnter={e => { e.currentTarget.style.color=T.accent; e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.background=T.accentSurface; }}
-            onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background="transparent"; }}
-          >{isOpen ? "‹" : "›"}</button>
+            onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
+            onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
+          >‹</button>
+        )}
+        {!isTablet && collapsed && (
+          <button
+            onClick={onToggle}
+            title="Expand sidebar"
+            style={{
+              position:"absolute", right:6, top:20,
+              width:22, height:22, borderRadius:6,
+              background:"transparent", border:"none",
+              cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
+              color:T.textTertiary, fontSize:14, fontFamily:"inherit",
+              transition:"all .15s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
+            onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
+          >›</button>
         )}
       </div>
 
-      <div style={{ height: collapsed?4:8, flexShrink:0 }} />
+      <div style={{ height: collapsed?4:6, flexShrink:0 }} />
       {/* ── Main nav ── */}
       <nav style={{ padding: collapsed?"0 6px":"0 8px", display:"flex", flexDirection:"column", gap:1, flexShrink:0 }}>
         {NAV.map(({ id, Icon, label }) => (
@@ -169,7 +189,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
       <div style={{ padding: collapsed?"8px 6px 4px":"12px 8px 4px", flexShrink:0 }}>
         {!collapsed && (
           <div style={{ display:"flex", alignItems:"center", padding:"0 10px 6px" }}>
-            <span style={{ flex:1, fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:".07em", color:T.textTertiary }}>Smart Feeds</span>
+            <span style={{ flex:1, fontSize:9, fontWeight:600, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Collections</span>
             <button onClick={onAddSmartFeed} title="New smart feed"
               style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:2, borderRadius:4, transition:"color .1s" }}
               onMouseEnter={e => e.currentTarget.style.color=T.accent}
@@ -181,8 +201,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
           const isActive = active===`smart:${sf.id}`;
           const dot = SMART_COLORS[sf.color] || SMART_COLORS.teal;
           return (
-            <div key={sf.id} style={{ display:"flex", alignItems:"center", gap:4, borderRadius:9, background: isActive?T.accentSurface:"transparent", transition:"background .12s", marginBottom:1 }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface2; }}
+            <div key={sf.id} style={{ display:"flex", alignItems:"center", gap:4, borderRadius:10, background: isActive?T.surface:"transparent", transition:"background .15s", marginBottom:1 }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
             >
               {/* Main clickable area */}
@@ -192,7 +212,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
                 style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0 }}
               >
                 {!collapsed && (
-                  <span style={{ flex:1, fontSize:13, fontWeight:isActive?600:400, color:isActive?T.accentText:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em", paddingLeft:4 }}>{sf.name}</span>
+                  <span style={{ flex:1, fontSize:13, fontWeight:isActive?500:400, color:isActive?T.accent:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em", paddingLeft:4 }}>{sf.name}</span>
                 )}
                 {/* Color dot — right side */}
                 <span style={{ width:8, height:8, borderRadius:"50%", background:dot, flexShrink:0 }} />
@@ -242,7 +262,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
           {!collapsed
             ? (
               <div style={{ display:"flex", alignItems:"center", padding:"0 10px 6px" }}>
-                <span style={{ flex:1, fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:".07em", color:T.textTertiary }}>Folders</span>
+                <span style={{ flex:1, fontSize:9, fontWeight:600, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Folders</span>
                 <button onClick={onAddFolder} title="New folder"
                   style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:2, borderRadius:4, transition:"color .1s" }}
                   onMouseEnter={e => e.currentTarget.style.color=T.accent}
@@ -265,8 +285,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
             return (
               <div key={folder.id} style={{ marginBottom:1 }}>
                 {/* Folder header row */}
-                <div style={{ display:"flex", alignItems:"center", gap:4, borderRadius:9, transition:"background .12s", background: sidebarDragOver===folder.id ? T.accentSurface : "transparent", outline: sidebarDragOver===folder.id ? `1.5px solid ${T.accent}` : "none" }}
-                  onMouseEnter={e => { if (!collapsed && sidebarDragOver!==folder.id) e.currentTarget.style.background=T.surface2; }}
+                <div style={{ display:"flex", alignItems:"center", gap:4, borderRadius:10, transition:"background .15s", background: sidebarDragOver===folder.id ? T.accentSurface : "transparent", outline: sidebarDragOver===folder.id ? `1.5px solid ${T.accent}` : "none" }}
+                  onMouseEnter={e => { if (!collapsed && sidebarDragOver!==folder.id) e.currentTarget.style.background=T.surface; }}
                   onMouseLeave={e => { if (sidebarDragOver!==folder.id) e.currentTarget.style.background="transparent"; }}
                   onDragOver={e => { e.preventDefault(); setSidebarDragOver(folder.id); }}
                   onDragLeave={() => setSidebarDragOver(null)}
@@ -327,7 +347,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
       <div style={{ flex:1, minHeight:0 }} />
 
       {/* ── Bottom bar ── */}
-      <div style={{ borderTop:`1px solid ${T.border}`, padding: collapsed?"8px 6px":"8px 8px 10px", flexShrink:0 }}>
+      <div style={{ padding: collapsed?"8px 6px":"8px 12px 12px", flexShrink:0 }}>
 
         {/* Theme toggle */}
         <div style={{ display:"flex", gap:3, marginBottom:8, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"0":"0 2px" }}>
@@ -342,8 +362,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
         {user?.user_metadata?.is_admin && (
           <button onClick={() => onNavigate("analytics")}
             title="Analytics"
-            style={{ display:"flex", alignItems:"center", gap: collapsed?0:9, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"6px 8px", borderRadius:9, border:"none", background:active==="analytics"?T.accentSurface:"transparent", cursor:"pointer", width:"100%", fontFamily:"inherit", transition:"background .12s", marginBottom:2 }}
-            onMouseEnter={e => { if (active!=="analytics") e.currentTarget.style.background=T.surface2; }}
+            style={{ display:"flex", alignItems:"center", gap: collapsed?0:9, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"8px 12px", borderRadius:10, border:"none", background:active==="analytics"?T.surface:"transparent", cursor:"pointer", width:"100%", fontFamily:"inherit", transition:"background .15s", marginBottom:2 }}
+            onMouseEnter={e => { if (active!=="analytics") e.currentTarget.style.background=T.surface; }}
             onMouseLeave={e => { if (active!=="analytics") e.currentTarget.style.background="transparent"; }}
           >
             <span style={{ color:active==="analytics"?T.accent:T.textTertiary, display:"flex", flexShrink:0 }}>
@@ -357,8 +377,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
           <button onClick={() => onNavigate("settings")}
             title={collapsed ? "Settings" : undefined}
-            style={{ display:"flex", alignItems:"center", gap: collapsed?0:9, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"6px 8px", borderRadius:9, border:"none", background:active==="settings"?T.accentSurface:"transparent", cursor:"pointer", flex:1, fontFamily:"inherit", transition:"background .12s", minWidth:0 }}
-            onMouseEnter={e => { if (active!=="settings") e.currentTarget.style.background=T.surface2; }}
+            style={{ display:"flex", alignItems:"center", gap: collapsed?0:9, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"8px 12px", borderRadius:10, border:"none", background:active==="settings"?T.surface:"transparent", cursor:"pointer", flex:1, fontFamily:"inherit", transition:"background .15s", minWidth:0 }}
+            onMouseEnter={e => { if (active!=="settings") e.currentTarget.style.background=T.surface; }}
             onMouseLeave={e => { if (active!=="settings") e.currentTarget.style.background="transparent"; }}
           >
             {user?.user_metadata?.avatar_url

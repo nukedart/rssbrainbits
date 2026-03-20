@@ -40,7 +40,7 @@ function sourcePlaceholder(source) {
   };
 }
 
-// ── Action button (hover controls) ───────────────────────────
+// ── Ghost action button (hover controls, no border/bg) ────────
 function ActionBtn({ icon, label, title, onClick, T, small = false }) {
   function handleClick(e) {
     e.stopPropagation();
@@ -48,15 +48,15 @@ function ActionBtn({ icon, label, title, onClick, T, small = false }) {
   }
   return (
     <button onClick={handleClick} title={title || label} style={{
-      background: T.surface2, border: "none", borderRadius: 7,
-      padding: small ? "4px 8px" : "5px 9px",
+      background: "transparent", border: "none", borderRadius: 7,
+      padding: small ? "3px 7px" : "5px 8px",
       cursor: "pointer", fontSize: small ? 11 : 12,
-      color: T.textSecondary, fontFamily: "inherit",
+      color: T.textTertiary, fontFamily: "inherit",
       display: "flex", alignItems: "center", gap: 4,
-      transition: "background .1s",
+      transition: "color .1s, background .1s",
     }}
-      onMouseEnter={e => e.currentTarget.style.background = T.surface}
-      onMouseLeave={e => e.currentTarget.style.background = T.surface2}
+      onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; }}
+      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
     >
       <span>{icon}</span>
       {label && <span style={{ fontWeight: 500 }}>{label}</span>}
@@ -130,12 +130,35 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
   );
 }
 
-// ── List view item ────────────────────────────────────────────
+// ── Content type icon ─────────────────────────────────────────
+function ContentTypeIcon({ item }) {
+  const isYT = item.url ? parseYouTubeUrl(item.url).isYouTube : false;
+  if (item.isPodcast) return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <circle cx="8" cy="8" r="3"/>
+      <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M3.05 12.95l1.06-1.06M11.89 4.11l1.06-1.06"/>
+    </svg>
+  );
+  if (isYT) return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6.5 5.5l4 2.5-4 2.5V5.5z" fill="currentColor" stroke="none"/>
+      <rect x="1.5" y="2.5" width="13" height="11" rx="3"/>
+    </svg>
+  );
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+      <rect x="2" y="1.5" width="12" height="13" rx="2"/>
+      <path d="M5 5.5h6M5 8h5M5 10.5h3.5"/>
+    </svg>
+  );
+}
+
+// ── List view item (Things 3 task-row pattern) ───────────────
 function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, cardSize = "md" }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
-  const favicon = faviconUrl(item.url);
+  const vPad = cardSize === "sm" ? (isMobile ? "9px 16px" : "6px 16px") : cardSize === "lg" ? "14px 20px" : (isMobile ? "12px 16px" : "11px 20px");
 
   return (
     <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
@@ -146,53 +169,83 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           onMouseLeave={() => setHovered(false)}
           style={{
             display: "flex", alignItems: "center", gap: 12,
-            padding: cardSize === "lg" ? "14px 18px" : cardSize === "sm" ? (isMobile ? "10px 14px" : "7px 14px") : (isMobile ? "13px 16px" : "10px 16px"),
-            borderBottom: `1px solid ${T.border}`,
+            padding: vPad,
+            margin: "0 6px",
+            borderRadius: 12,
             cursor: "pointer",
             background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
-            transition: "background .1s",
+            transition: "background .15s",
           }}
         >
-          {/* Favicon */}
-          <div style={{ width: 20, height: 20, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {favicon
-              ? <img src={favicon} alt="" width={16} height={16} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
-              : <span style={{ fontSize: 10 }}>📰</span>
-            }
+          {/* Content type icon — small, accent on hover */}
+          <div style={{
+            width: 28, height: 28, flexShrink: 0, borderRadius: 8,
+            background: hovered ? T.accentSurface : T.surface,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: hovered ? T.accent : T.textTertiary,
+            transition: "all .15s",
+          }}>
+            <ContentTypeIcon item={item} />
           </div>
 
-          {/* Thumbnail — hidden on mobile to maximize text width */}
-          {item.image && !isMobile && (
-            <img src={item.image} alt="" loading="lazy"
-              style={{ width: cardSize === "lg" ? 96 : cardSize === "sm" ? 36 : 60, height: cardSize === "lg" ? 64 : cardSize === "sm" ? 36 : 44, borderRadius: 7, objectFit: "cover", flexShrink: 0, background: T.surface2 }}
-              onError={e => { e.target.style.display = "none"; }} />
-          )}
-
-          {/* Text */}
+          {/* Text block */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: cardSize === "lg" ? 15 : cardSize === "sm" ? 13 : 15, fontWeight: isRead ? 400 : 600, color: isRead ? T.textTertiary : T.text, lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: (isMobile || cardSize === "lg") ? "normal" : "nowrap", ...(isMobile && { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }), letterSpacing: "-.01em" }}>
+            <div style={{
+              fontSize: cardSize === "lg" ? 15 : 14,
+              fontWeight: isRead ? 400 : 500,
+              color: isRead ? T.textTertiary : T.text,
+              lineHeight: 1.35,
+              overflow: "hidden", textOverflow: "ellipsis",
+              whiteSpace: (isMobile || cardSize === "lg") ? "normal" : "nowrap",
+              ...(isMobile && { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }),
+              letterSpacing: "-.01em",
+            }}>
               {item.title}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-              <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+              <span style={{ fontSize: 11, color: T.textTertiary }}>{item.source}</span>
               {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
-              {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent }}>· ▶ {item.audioDuration}</span>}
+              {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent }}>· {item.audioDuration}</span>}
               {!item.isPodcast && item.description && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTime(item.description)}</span>}
             </div>
           </div>
 
-          {/* Hover actions — desktop only */}
-          {hovered && !isMobile && (
-            <div style={{ display: "flex", gap: 4, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-              {item.isPodcast && onPlayPodcast && (
-                <ActionBtn icon="▶" title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
-              )}
-              <ActionBtn icon={isRead ? "○" : "●"} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
-              <ActionBtn icon="🔖" title="Save" onClick={onSave} T={T} />
-              <ActionBtn icon="⏱" title="Read later" onClick={onReadLater} T={T} />
-              <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
-            </div>
-          )}
+          {/* Right: thumbnail (lg only) + source pill + hover actions or unread dot */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            {item.image && !isMobile && cardSize === "lg" && (
+              <img src={item.image} alt="" loading="lazy"
+                style={{ width: 56, height: 40, borderRadius: 7, objectFit: "cover", background: T.surface }}
+                onError={e => { e.target.style.display = "none"; }} />
+            )}
+
+            {!isMobile && !hovered && (
+              <span style={{
+                fontSize: 10, color: T.textTertiary, background: T.surface,
+                padding: "2px 8px", borderRadius: 20, whiteSpace: "nowrap",
+                opacity: isRead ? 0.5 : 0.8,
+              }}>
+                {item.feedName || item.source || "RSS"}
+              </span>
+            )}
+
+            {/* Hover actions */}
+            {hovered && !isMobile && (
+              <div style={{ display: "flex", gap: 1, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                {item.isPodcast && onPlayPodcast && (
+                  <ActionBtn icon="▶" title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
+                )}
+                <ActionBtn icon={isRead ? "○" : "●"} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
+                <ActionBtn icon="🔖" title="Save" onClick={onSave} T={T} />
+                <ActionBtn icon="⏱" title="Read later" onClick={onReadLater} T={T} />
+                <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
+              </div>
+            )}
+
+            {/* Unread indicator dot (non-hover, desktop only) */}
+            {!hovered && !isMobile && !isRead && (
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.accent, flexShrink: 0, opacity: 0.9 }} />
+            )}
+          </div>
         </div>
       )}
     </SwipeRow>
@@ -218,11 +271,9 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           style={{
-            background: isSelected ? T.accentSurface : T.card,
-            border: `1px solid ${isSelected ? T.accent : hovered ? T.borderStrong : T.border}`,
+            background: isSelected ? T.accentSurface : hovered ? T.surface : T.card,
             borderRadius: 12, overflow: "hidden", cursor: "pointer",
-            transition: "border-color .12s, box-shadow .12s",
-            boxShadow: hovered ? "0 4px 16px rgba(0,0,0,.08)" : "0 1px 3px rgba(0,0,0,.04)",
+            transition: "background .15s",
             display: "flex", flexDirection: "column",
           }}
         >

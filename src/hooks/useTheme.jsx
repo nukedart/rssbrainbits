@@ -12,7 +12,7 @@ export function ThemeProvider({ children }) {
     // Legacy migration: "dark" → nocturne, "light" → light
     if (saved === "dark") return "nocturne";
     if (saved === "light") return "light";
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "nocturne" : "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "distilled" : "light";
   });
 
   const T = THEMES[theme] || NOCTURNE;

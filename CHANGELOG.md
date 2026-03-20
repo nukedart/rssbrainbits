@@ -3,6 +3,20 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.25.3] — 2026-03-20
+
+### Changed
+- **Full UI revamp — "Distilled Workspace" design language** applied across all primary surfaces:
+  - **Sidebar** — background now matches the body (`T.bg`), removing the hard visual boundary. Header replaced with "Feed Box" serif italic branding + "Distilled Workspace" uppercase subtitle. Nav items use rounded-pill active state with `T.surface` tonal lift (no accent-colored bg). "Smart Feeds" label renamed to "COLLECTIONS". Bottom bar cleaned up — no border-top, tighter padding.
+  - **Feed list rows** — redesigned as Things 3-style "task rows": content-type icon (article / podcast / YouTube) in a small rounded tile that turns accent on hover; title at 14px/500 weight; source·time meta in `T.textTertiary`; right side shows source pill + unread dot at rest, ghost action buttons on hover. No bottom borders — rows float on `T.bg` with `12px` border-radius and tonal lift on hover.
+  - **Card items** — border removed; tonal background lift on hover replaces border/shadow treatment (no-line rule).
+  - **Inbox toolbar** — border-bottom replaced with subtle `boxShadow`; buttons restyled as pill-shaped ghost controls on `T.surface` background.
+  - **Source panel** — border-right removed; uses `T.surface` background for tonal separation from the article list (`T.bg`).
+- **Default theme** changed to `distilled` for new dark-mode users (system dark preference).
+- **Version** bumped to `1.25.3`.
+
+---
+
 ## [1.25.2] — 2026-03-20
 
 ### Added
