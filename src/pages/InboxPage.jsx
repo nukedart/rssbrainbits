@@ -684,7 +684,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
           onTouchStart={isMobile ? handlePTRStart : undefined}
           onTouchMove={isMobile ? handlePTRMove : undefined}
           onTouchEnd={isMobile ? handlePTREnd : undefined}
-          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? "14px" : "0", WebkitOverflowScrolling: "touch" }}>
+          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "10px 10px 80px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "80px" : undefined, WebkitOverflowScrolling: "touch" }}>
           {loadingItems && (
             viewMode === "card"
               ? <SkeletonList count={8} cardSize={cardSize} viewMode="card" />

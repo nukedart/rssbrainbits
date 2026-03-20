@@ -134,7 +134,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           onMouseLeave={() => setHovered(false)}
           style={{
             display: "flex", alignItems: "center", gap: 12,
-            padding: cardSize === "lg" ? "14px 18px" : cardSize === "sm" ? "7px 14px" : "10px 16px",
+            padding: cardSize === "lg" ? "14px 18px" : cardSize === "sm" ? (isMobile ? "10px 14px" : "7px 14px") : (isMobile ? "13px 16px" : "10px 16px"),
             borderBottom: `1px solid ${T.border}`,
             cursor: "pointer",
             background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
@@ -149,8 +149,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             }
           </div>
 
-          {/* Thumbnail */}
-          {item.image && (
+          {/* Thumbnail — hidden on mobile to maximize text width */}
+          {item.image && !isMobile && (
             <img src={item.image} alt="" loading="lazy"
               style={{ width: cardSize === "lg" ? 96 : cardSize === "sm" ? 36 : 60, height: cardSize === "lg" ? 64 : cardSize === "sm" ? 36 : 44, borderRadius: 7, objectFit: "cover", flexShrink: 0, background: T.surface2 }}
               onError={e => { e.target.style.display = "none"; }} />
