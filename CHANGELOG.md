@@ -3,16 +3,45 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.24.6] — 2026-03-20
+
+### Changes since v1.24.5
+
+---
+
+## [1.24.6] — 2026-03-20
+
+### Fixed
+- **Admin panel crash on retry** — `showLoadError` was replacing the section DOM with `innerHTML`, so clicking Retry destroyed all render targets and caused a silent JS crash. Error state is now an overlay that preserves the DOM underneath.
+- **Admin panel render errors** — `renderAll` now wrapped in try/catch; unexpected data shapes show a clear error instead of a blank spinner.
+
+### Added
+- **Admin panel version number** — shown in the sidebar footer (e.g. v1.24.6).
+
+---
+
 ## [1.24.5] — 2026-03-20
 
-### Changes since v1.24.4
+### Added
+- **Admin panel at rss.brainbits.us/admin/** — deployed to public directory so it's accessible without a separate server.
+- **Admin panel error handling** — was an infinite spinner on any failure. Now has full try/catch with a direct Supabase query fallback (analytics + subscriptions load even if the edge function is down), a warning banner when running in fallback mode, and a detailed error card with actionable steps when both paths fail.
+- **Admin panel auto-refresh** — reloads data every 5 minutes automatically.
+- **Events-per-day chart fixed** — was rendering DAU data twice. Edge function now returns a separate `eventsChart` (total event volume per day) and the admin panel uses it correctly.
+
+### Added (app — v1.24.4)
+- **Compact search bar** — reduced padding and shorter placeholder "Search…".
+- **Mobile toolbar cleanup** — hide-read toggle is now a `●`/`○` dot on mobile; toolbar gap tightened.
+- **Card image placeholders** — cards without images now show a colorful gradient + large source initial (deterministic hue from source name) instead of a blank gray box.
+- **PWA install banner revamp** — rounded card with app icon, star rating row, full-width install button (Android) or pill instruction (iOS).
+- **Podcast sleep timer** — "ZZ" button sets a 30-minute sleep timer; shows countdown (e.g. "28m"); auto-pauses when time expires.
+- **Podcast scrubber** — progress bar height increased from 3px to 6px for easier mobile tapping.
 
 ---
 
 ## [1.24.4] — 2026-03-20
 
 ### Changes since v1.24.3
-- docs: fill in changelog for v1.20.0–v1.24.3
+- Intermediate deploy — see v1.24.5 for full notes.
 
 ---
 

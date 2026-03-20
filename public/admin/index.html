@@ -239,6 +239,7 @@ html,body{height:100%;font-family:'DM Sans','Inter',system-ui,sans-serif;backgro
     <div class="sb-footer">
       <div class="sb-user" id="admin-email">—</div>
       <button class="btn-logout" id="logout-btn">Sign out</button>
+      <div style="font-size:9px;color:var(--t3);text-align:center;margin-top:8px;letter-spacing:.05em;opacity:.5">v<span id="admin-version"></span></div>
     </div>
   </div>
 
@@ -320,6 +321,7 @@ html,body{height:100%;font-family:'DM Sans','Inter',system-ui,sans-serif;backgro
 
 <script>
 // ── Config ────────────────────────────────────────────────────
+const ADMIN_VERSION = "1.24.5";
 const SUPABASE_URL  = "https://nmkwbsmdskqqgzsdxray.supabase.co";
 const SUPABASE_ANON = "sb_publishable_AssEJ7QqgKD1ChcedMfUrw_iEy2cYY1";
 const ADMIN_FN_URL  = `${SUPABASE_URL}/functions/v1/admin-stats`;
@@ -442,7 +444,16 @@ async function loadDashboard() {
     document.querySelector(".content").prepend(banner);
   }
 
-  renderAll(data);
+  // Clear any error overlay from a previous failed load
+  document.getElementById("error-overlay")?.remove();
+
+  try {
+    renderAll(data);
+  } catch (renderErr) {
+    console.error("Render error:", renderErr);
+    showLoadError(new Error("Render failed: " + renderErr.message), null);
+    return;
+  }
 
   // Auto-refresh every 5 minutes
   clearTimeout(autoRefreshTimer);
@@ -497,24 +508,41 @@ async function loadDirectFallback(session) {
 }
 
 function showLoadError(edgeErr, fallbackErr) {
-  const content = document.querySelector(".content");
-  content.innerHTML = `
-    <div class="error-card">
-      <div class="error-title">⚠ Failed to load dashboard data</div>
-      <div class="error-body">
-        Both the edge function and direct Supabase queries failed. Check the details below.
-        <br><br>
-        <strong>Likely causes:</strong>
-        <ul style="margin:8px 0 0 16px;line-height:2">
-          <li>The <code>admin-stats</code> edge function is not deployed — run <code>supabase functions deploy admin-stats</code></li>
-          <li>The RLS policy on <code>analytics_events</code> is missing — check Supabase → Authentication → Policies</li>
-          <li>Your session expired — try refreshing the page</li>
+  // Use an overlay so the section DOM is preserved for retry
+  let overlay = document.getElementById("error-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "error-overlay";
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(17,20,23,.92);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px";
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div style="background:var(--surface);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:32px;max-width:480px;width:100%">
+      <div style="font-size:16px;font-weight:700;color:var(--danger);margin-bottom:10px">⚠ Failed to load data</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px">
+        Both the edge function and direct Supabase queries failed.<br><br>
+        <strong style="color:var(--text)">Likely causes:</strong>
+        <ul style="margin:8px 0 0 16px;line-height:2.2">
+          <li><code>admin-stats</code> not deployed — run <code>supabase functions deploy admin-stats</code></li>
+          <li>RLS policy missing on <code>analytics_events</code></li>
+          <li>Session expired — try signing out and back in</li>
         </ul>
-        <div class="error-code">Edge function: ${edgeErr?.message || "unknown"}\nDirect query: ${fallbackErr?.message || "unknown"}</div>
       </div>
-    </div>
-    <button onclick="loadDashboard()" class="refresh-btn" style="font-size:13px;padding:10px 18px">↺ Retry</button>
-  `;
+      <div style="font-family:monospace;font-size:11px;background:var(--surface2);border-radius:8px;padding:10px 14px;color:var(--t3);margin-bottom:20px;word-break:break-all">
+        Edge fn: ${edgeErr?.message || "unknown"}<br>
+        Direct: ${fallbackErr?.message || "unknown"}
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('error-overlay').remove();loadDashboard()"
+          style="flex:1;padding:10px;background:var(--teal);color:#111;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          ↺ Retry
+        </button>
+        <button onclick="document.getElementById('error-overlay').remove()"
+          style="padding:10px 16px;background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">
+          Dismiss
+        </button>
+      </div>
+    </div>`;
 }
 
 // ── Render helpers ────────────────────────────────────────────
@@ -689,6 +717,7 @@ function renderActivity(activity) {
 }
 
 // ── Boot ──────────────────────────────────────────────────────
+document.getElementById("admin-version").textContent = ADMIN_VERSION;
 init();
 </script>
 </body>

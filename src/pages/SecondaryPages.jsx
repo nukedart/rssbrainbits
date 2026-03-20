@@ -631,7 +631,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.24.5</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.24.6</div>
         </Card>
       </div>
     </PageShell>

@@ -172,6 +172,19 @@ html,body{height:100%;font-family:'DM Sans','Inter',system-ui,sans-serif;backgro
 
 /* ── EMPTY ────────────────────────────────────────────── */
 .empty{padding:40px;text-align:center;color:var(--t3);font-size:13px}
+
+/* ── ERROR ────────────────────────────────────────────── */
+.error-card{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
+  border-radius:var(--r);padding:20px 22px;margin-bottom:16px}
+.error-title{font-size:13px;font-weight:700;color:var(--danger);margin-bottom:6px}
+.error-body{font-size:12px;color:var(--t2);line-height:1.6}
+.error-code{font-family:monospace;font-size:11px;background:var(--surface2);
+  border-radius:6px;padding:8px 12px;margin-top:10px;color:var(--t3);
+  word-break:break-all;white-space:pre-wrap}
+.warn-banner{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);
+  border-radius:8px;padding:10px 14px;font-size:12px;color:var(--warn);
+  margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -226,6 +239,7 @@ html,body{height:100%;font-family:'DM Sans','Inter',system-ui,sans-serif;backgro
     <div class="sb-footer">
       <div class="sb-user" id="admin-email">—</div>
       <button class="btn-logout" id="logout-btn">Sign out</button>
+      <div style="font-size:9px;color:var(--t3);text-align:center;margin-top:8px;letter-spacing:.05em;opacity:.5">v<span id="admin-version"></span></div>
     </div>
   </div>
 
@@ -307,6 +321,7 @@ html,body{height:100%;font-family:'DM Sans','Inter',system-ui,sans-serif;backgro
 
 <script>
 // ── Config ────────────────────────────────────────────────────
+const ADMIN_VERSION = "1.24.5";
 const SUPABASE_URL  = "https://nmkwbsmdskqqgzsdxray.supabase.co";
 const SUPABASE_ANON = "sb_publishable_AssEJ7QqgKD1ChcedMfUrw_iEy2cYY1";
 const ADMIN_FN_URL  = `${SUPABASE_URL}/functions/v1/admin-stats`;
@@ -379,17 +394,155 @@ document.querySelectorAll(".nav-item").forEach(btn => {
 });
 
 // ── Data loading ──────────────────────────────────────────────
+let autoRefreshTimer = null;
+
 async function loadDashboard() {
-  document.getElementById("refresh-btn").querySelector("svg").style.animation = "spin .7s linear infinite";
+  const svgEl = document.getElementById("refresh-btn").querySelector("svg");
+  svgEl.style.animation = "spin .7s linear infinite";
+
   const { data: { session } } = await sb.auth.getSession();
-  const res = await fetch(ADMIN_FN_URL, {
-    headers: { "Authorization": `Bearer ${session.access_token}`, "Content-Type": "application/json" }
-  });
-  const data = await res.json();
+  if (!session) { location.reload(); return; }
+
+  let data = null;
+  let warning = null;
+
+  // ── Try edge function first ──────────────────────────────
+  try {
+    const res = await fetch(ADMIN_FN_URL, {
+      headers: { "Authorization": `Bearer ${session.access_token}`, "Content-Type": "application/json" }
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
+    }
+    data = await res.json();
+    if (data.error) throw new Error(data.error);
+  } catch (edgeErr) {
+    // ── Fallback: direct Supabase queries ────────────────
+    warning = `Edge function unavailable (${edgeErr.message}) — showing partial data from direct queries. Deploy admin-stats to see user metrics.`;
+    try {
+      data = await loadDirectFallback(session);
+    } catch (fallbackErr) {
+      svgEl.style.animation = "";
+      showLoadError(edgeErr, fallbackErr);
+      return;
+    }
+  }
+
+  svgEl.style.animation = "";
   dashData = data;
-  document.getElementById("refresh-btn").querySelector("svg").style.animation = "";
   document.getElementById("last-updated").textContent = "Updated " + new Date().toLocaleTimeString();
-  renderAll(data);
+
+  // Show warning banner if using fallback
+  const existing = document.getElementById("data-warning");
+  if (existing) existing.remove();
+  if (warning) {
+    const banner = document.createElement("div");
+    banner.id = "data-warning";
+    banner.className = "warn-banner";
+    banner.innerHTML = `<div class="status-dot" style="background:var(--warn)"></div>${warning}`;
+    document.querySelector(".content").prepend(banner);
+  }
+
+  // Clear any error overlay from a previous failed load
+  document.getElementById("error-overlay")?.remove();
+
+  try {
+    renderAll(data);
+  } catch (renderErr) {
+    console.error("Render error:", renderErr);
+    showLoadError(new Error("Render failed: " + renderErr.message), null);
+    return;
+  }
+
+  // Auto-refresh every 5 minutes
+  clearTimeout(autoRefreshTimer);
+  autoRefreshTimer = setTimeout(loadDashboard, 5 * 60 * 1000);
+}
+
+async function loadDirectFallback(session) {
+  const ago30 = new Date(); ago30.setDate(ago30.getDate() - 30);
+  const ago7  = new Date(); ago7.setDate(ago7.getDate() - 7);
+  const ago30iso = ago30.toISOString();
+  const ago7iso  = ago7.toISOString();
+
+  const [{ data: aEvents }, { data: subEvents }] = await Promise.all([
+    sb.from("analytics_events").select("event, user_id, session_id, created_at").gte("created_at", ago30iso).order("created_at", { ascending: false }),
+    sb.from("subscription_events").select("user_id, event, plan, created_at").gte("created_at", ago30iso).order("created_at", { ascending: false }),
+  ]);
+
+  const rows = aEvents || [];
+  const now = new Date();
+  const days30 = [];
+  for (let i = 29; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate()-i); days30.push(d.toISOString().slice(0,10)); }
+
+  const dauByDay = {}, eventsByDay = {}, eventCounts = {};
+  for (const r of rows) {
+    const day = r.created_at.slice(0,10);
+    if (!dauByDay[day]) dauByDay[day] = new Set();
+    if (r.user_id) dauByDay[day].add(r.user_id);
+    eventsByDay[day] = (eventsByDay[day] || 0) + 1;
+    eventCounts[r.event] = (eventCounts[r.event] || 0) + 1;
+  }
+
+  const todayStr = now.toISOString().slice(0,10);
+  const uniqueUsers30d = new Set(rows.map(r=>r.user_id).filter(Boolean)).size;
+  const uniqueUsers7d  = new Set(rows.filter(r=>r.created_at>=ago7iso).map(r=>r.user_id).filter(Boolean)).size;
+  const uniqueUsersToday = dauByDay[todayStr]?.size || 0;
+  const topEvents = Object.entries(eventCounts).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([event,count])=>({event,count}));
+  const upgrades30d = (subEvents||[]).filter(e=>e.event==="upgraded").length;
+  const cancellations30d = (subEvents||[]).filter(e=>e.event==="cancelled").length;
+
+  return {
+    users: { totalUsers: "—", proUsers: "—", freeUsers: "—", newUsers7d: "—", newUsers30d: "—", mrr: "—", recentUsers: [] },
+    subscriptions: { upgrades30d, cancellations30d, recentSubEvents: (subEvents||[]).slice(0,30).map(e=>({...e,email:"—"})) },
+    analytics: {
+      totalEvents: rows.length, uniqueUsers30d, uniqueUsers7d, uniqueUsersToday,
+      dauChart: days30.map(day=>({ day, count: dauByDay[day]?.size||0 })),
+      eventsChart: days30.map(day=>({ day, count: eventsByDay[day]||0 })),
+      topEvents,
+      funnel: { limitHits: eventCounts["plan_limit_hit"]||0, upgradeClicked: eventCounts["upgrade_initiated"]||0, upgrades: upgrades30d },
+    },
+    recentActivity: rows.slice(0,50).map(r=>({ event: r.event, user_email: null, created_at: r.created_at })),
+  };
+}
+
+function showLoadError(edgeErr, fallbackErr) {
+  // Use an overlay so the section DOM is preserved for retry
+  let overlay = document.getElementById("error-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "error-overlay";
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(17,20,23,.92);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px";
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div style="background:var(--surface);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:32px;max-width:480px;width:100%">
+      <div style="font-size:16px;font-weight:700;color:var(--danger);margin-bottom:10px">⚠ Failed to load data</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px">
+        Both the edge function and direct Supabase queries failed.<br><br>
+        <strong style="color:var(--text)">Likely causes:</strong>
+        <ul style="margin:8px 0 0 16px;line-height:2.2">
+          <li><code>admin-stats</code> not deployed — run <code>supabase functions deploy admin-stats</code></li>
+          <li>RLS policy missing on <code>analytics_events</code></li>
+          <li>Session expired — try signing out and back in</li>
+        </ul>
+      </div>
+      <div style="font-family:monospace;font-size:11px;background:var(--surface2);border-radius:8px;padding:10px 14px;color:var(--t3);margin-bottom:20px;word-break:break-all">
+        Edge fn: ${edgeErr?.message || "unknown"}<br>
+        Direct: ${fallbackErr?.message || "unknown"}
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('error-overlay').remove();loadDashboard()"
+          style="flex:1;padding:10px;background:var(--teal);color:#111;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          ↺ Retry
+        </button>
+        <button onclick="document.getElementById('error-overlay').remove()"
+          style="padding:10px 16px;background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">
+          Dismiss
+        </button>
+      </div>
+    </div>`;
 }
 
 // ── Render helpers ────────────────────────────────────────────
@@ -546,11 +699,9 @@ function renderAnalytics(a) {
     </div>`).join("");
   document.getElementById("top-events-body").innerHTML = evRows || '<div class="empty">No events yet</div>';
 
-  // Events chart (daily total)
-  document.getElementById("events-chart-body").innerHTML = barChart(
-    a.dauChart.map((d, i) => ({ day: d.day, count: a.dauChart[i]?.count || 0 })),
-    "var(--warn)"
-  );
+  // Events chart (daily total) — use eventsChart if available, else derive from dauChart counts
+  const eventsChartData = a.eventsChart || a.dauChart;
+  document.getElementById("events-chart-body").innerHTML = barChart(eventsChartData, "var(--warn)");
 }
 
 function renderActivity(activity) {
@@ -566,6 +717,7 @@ function renderActivity(activity) {
 }
 
 // ── Boot ──────────────────────────────────────────────────────
+document.getElementById("admin-version").textContent = ADMIN_VERSION;
 init();
 </script>
 </body>
