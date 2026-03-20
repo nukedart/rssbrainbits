@@ -464,7 +464,7 @@ function PlanCard({ T, user, feedCount, planName }) {
 }
 
 export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate }) {
-  const { T, isDark, setIsDark } = useTheme();
+  const { T, isDark, setIsDark, theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const planName = getPlanName(user);
   const shortcuts = [
@@ -508,17 +508,32 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
 
         {/* Appearance */}
         <Card title="Appearance" T={T}>
-          <div style={{ display: "flex", gap: 8 }}>
-            {[{ label: "☀️  Light", dark: false }, { label: "🌙  Dark", dark: true }].map(({ label, dark }) => (
-              <button key={label} onClick={() => setIsDark(dark)} style={{
-                flex: 1, padding: "10px 0",
-                border: `1.5px solid ${isDark === dark ? T.accent : T.border}`,
-                borderRadius: 10, background: isDark === dark ? T.accentSurface : T.surface,
-                color: isDark === dark ? T.accentText : T.textSecondary,
-                fontWeight: isDark === dark ? 600 : 400, fontSize: 13,
-                cursor: "pointer", fontFamily: "inherit",
-              }}>{label}</button>
-            ))}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {[
+              { id: "nocturne",  label: "Nocturne",   desc: "Sage & slate",  swatch: "#accfae", bg: "#121416" },
+              { id: "distilled", label: "Distilled",  desc: "Blue & night",  swatch: "#aac7ff", bg: "#131315" },
+              { id: "light",     label: "Light",      desc: "Parchment",     swatch: "#4f6f52", bg: "#f4f2ee" },
+            ].map(({ id, label, desc, swatch, bg }) => {
+              const active = theme === id;
+              return (
+                <button key={id} onClick={() => setTheme(id)} style={{
+                  flex: "1 1 120px", padding: "12px 10px", borderRadius: 12,
+                  border: `1.5px solid ${active ? T.accent : T.border}`,
+                  background: active ? T.accentSurface : T.surface,
+                  cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+                  transition: "all .15s",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <div style={{ width: 28, height: 18, borderRadius: 5, background: bg, border: `1px solid ${T.border}`, position: "relative", flexShrink: 0 }}>
+                      <div style={{ position: "absolute", right: 4, top: 4, width: 8, height: 8, borderRadius: "50%", background: swatch }} />
+                    </div>
+                    {active && <span style={{ fontSize: 10, color: T.accent, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase" }}>Active</span>}
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: active ? 600 : 500, color: active ? T.text : T.textSecondary }}>{label}</div>
+                  <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 2 }}>{desc}</div>
+                </button>
+              );
+            })}
           </div>
         </Card>
 

@@ -1,11 +1,12 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;1,6..72,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap');
+
 /* ── Reader preference CSS variables ────────────────────────── */
 :root {
   --reader-font-size:   19px;
   --reader-line-width:  680px;
   --reader-font-family: 'Noto Serif', Georgia, serif;
 }
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; }
 

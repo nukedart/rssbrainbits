@@ -59,6 +59,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
   // ── Fetch article ──────────────────────────────────────────
   useEffect(() => {
     if (!item || yt.isYouTube) return;
+    // Podcast episodes — use RSS description as show notes, no article fetch needed
+    if (item.isPodcast && item.audioUrl) return;
 
     // Short-circuit: if feed has fetch_full_content and RSS provided fullText, use it
     if (item.fetchFullContent && item.fullText && item.fullText.length > 200) {
@@ -385,18 +387,14 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
       >
         <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "40px 32px 120px", width: "100%" }}>
 
-        {/* YouTube */}
+        {/* ── YouTube ── */}
         {yt.isYouTube && (
-          <div>
-            <div style={{ borderRadius: 14, overflow: "hidden", marginBottom: 20, aspectRatio: "16/9" }}>
-              <iframe src={`https://www.youtube.com/embed/${yt.videoId}`} title="YouTube video"
-                style={{ width: "100%", height: "100%", border: "none" }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-            </div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3 }}>{item.title}</h1>
-            {item.source && <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 20 }}>{item.source}</div>}
-            <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} />
-          </div>
+          <YouTubeView item={item} videoId={yt.videoId} summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} isMobile={isMobile} />
+        )}
+
+        {/* ── Podcast episode view ── */}
+        {!yt.isYouTube && item?.isPodcast && item?.audioUrl && !loading && (
+          <PodcastEpisodeView item={item} summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} />
         )}
 
         {/* Article loading */}
@@ -656,6 +654,195 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
           {!yt?.isYouTube && menuItem(`Highlights${highlights.length > 0 ? ` (${highlights.length})` : ""}`, () => setShowDrawer(true))}
           {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback || "Copy highlights as MD", () => handleExportHighlights(false), true)}
           {!yt?.isYouTube && highlights.length > 0 && menuItem("Download highlights .md", () => handleExportHighlights(true))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── YouTube View ─────────────────────────────────────────────
+// Parses timestamps like "0:00 Intro\n3:22 Chapter" from description
+function parseChapters(text) {
+  if (!text) return [];
+  const chapters = [];
+  const re = /(?:^|\n)\s*(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+)/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const parts = m[1].split(":").map(Number);
+    const secs = parts.length === 3
+      ? parts[0]*3600 + parts[1]*60 + parts[2]
+      : parts[0]*60 + parts[1];
+    chapters.push({ time: m[1], secs, label: m[2].trim() });
+  }
+  return chapters;
+}
+
+function YouTubeView({ item, videoId, summary, summarizing, onSummarize, T, isMobile }) {
+  const [showDesc, setShowDesc] = useState(false);
+  const desc = item?.description || item?.fullText || "";
+  const chapters = parseChapters(desc);
+  const ytEmbed = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+
+  return (
+    <div>
+      {/* Video player */}
+      <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, aspectRatio: "16/9", background: "#000" }}>
+        <iframe src={ytEmbed} title="YouTube video"
+          style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+      </div>
+
+      {/* Title + meta */}
+      <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3, fontFamily: "var(--reader-font-family)" }}>
+        {item.title}
+      </h1>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {item.source && <span style={{ fontSize: 12, fontWeight: 600, color: T.accent }}>{item.source}</span>}
+        {item.date && <span style={{ fontSize: 12, color: T.textTertiary }}>{new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>}
+        <a href={item.url} target="_blank" rel="noopener noreferrer"
+          style={{ fontSize: 11, color: T.textTertiary, marginLeft: "auto", textDecoration: "none" }}>
+          ↗ Open on YouTube
+        </a>
+      </div>
+
+      {/* AI Summary */}
+      <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} T={T} />
+
+      {/* Chapters */}
+      {chapters.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.textTertiary, textTransform: "uppercase", marginBottom: 10 }}>
+            Chapters ({chapters.length})
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {chapters.map((ch, i) => (
+              <a key={i}
+                href={`https://www.youtube.com/watch?v=${videoId}&t=${ch.secs}s`}
+                target="_blank" rel="noopener noreferrer"
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 8, textDecoration: "none", transition: "background .15s" }}
+                onMouseEnter={e => e.currentTarget.style.background = T.surface}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                <span style={{ fontSize: 11, fontFamily: "monospace", color: T.accent, minWidth: 38 }}>{ch.time}</span>
+                <span style={{ fontSize: 13, color: T.textSecondary }}>{ch.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Description */}
+      {desc && (
+        <div>
+          <button onClick={() => setShowDesc(v => !v)} style={{
+            background: "none", border: "none", cursor: "pointer",
+            fontSize: 12, fontWeight: 600, color: T.textSecondary, padding: 0, fontFamily: "inherit",
+            display: "flex", alignItems: "center", gap: 6, marginBottom: 10,
+          }}>
+            {showDesc ? "▲" : "▼"} {showDesc ? "Hide" : "Show"} description
+          </button>
+          {showDesc && (
+            <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.8, whiteSpace: "pre-wrap", background: T.surface, borderRadius: 10, padding: "14px 16px" }}>
+              {desc}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Podcast Episode View ──────────────────────────────────────
+// Show notes view for podcast items — artwork, metadata, description
+function PodcastEpisodeView({ item, summary, summarizing, onSummarize, T }) {
+  const [expanded, setExpanded] = useState(false);
+  const desc = item?.description || item?.fullText || "";
+  const chapters = parseChapters(desc);
+  const duration = item?.audioDuration;
+
+  function fmtDuration(s) {
+    if (!s) return null;
+    // Handle HH:MM:SS and MM:SS strings as-is
+    if (/^\d+:\d+/.test(s)) return s;
+    // Handle seconds as number
+    const n = parseInt(s, 10);
+    if (isNaN(n)) return s;
+    const h = Math.floor(n/3600), m = Math.floor((n%3600)/60), sec = n%60;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m ${sec}s`;
+  }
+
+  return (
+    <div>
+      {/* Art + metadata row */}
+      <div style={{ display: "flex", gap: 18, marginBottom: 22, alignItems: "flex-start" }}>
+        {item.image && (
+          <img src={item.image} alt="" style={{
+            width: 88, height: 88, borderRadius: 14, objectFit: "cover", flexShrink: 0,
+            boxShadow: "0 8px 24px rgba(0,0,0,.3)",
+          }} />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.accent, textTransform: "uppercase", marginBottom: 6 }}>Podcast Episode</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3, fontFamily: "var(--reader-font-family)" }}>
+            {item.title}
+          </h1>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+            {item.source && <span style={{ fontSize: 12, fontWeight: 500, color: T.textSecondary }}>{item.source}</span>}
+            {duration && <span style={{ fontSize: 12, color: T.textTertiary }}>⏱ {fmtDuration(duration)}</span>}
+            {item.date && <span style={{ fontSize: 12, color: T.textTertiary }}>{new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* AI Summary */}
+      <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} T={T} />
+
+      {/* Chapters from timestamps */}
+      {chapters.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.textTertiary, textTransform: "uppercase", marginBottom: 10 }}>
+            Chapters ({chapters.length})
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {chapters.map((ch, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 8 }}>
+                <span style={{ fontSize: 11, fontFamily: "monospace", color: T.accent, minWidth: 38 }}>{ch.time}</span>
+                <span style={{ fontSize: 13, color: T.textSecondary }}>{ch.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Show notes */}
+      {desc && (
+        <div>
+          <button onClick={() => setExpanded(v => !v)} style={{
+            background: "none", border: "none", cursor: "pointer",
+            fontSize: 12, fontWeight: 600, color: T.textSecondary,
+            padding: 0, fontFamily: "inherit",
+            display: "flex", alignItems: "center", gap: 6, marginBottom: 12,
+          }}>
+            {expanded ? "▲" : "▼"} Show notes
+          </button>
+          <div style={{
+            maxHeight: expanded ? "none" : 120,
+            overflow: "hidden",
+            position: "relative",
+          }}>
+            <div style={{ fontSize: 14, color: T.textSecondary, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
+              {desc}
+            </div>
+            {!expanded && desc.length > 300 && (
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 60, background: `linear-gradient(transparent, ${T.bg})` }} />
+            )}
+          </div>
+          {!expanded && desc.length > 300 && (
+            <button onClick={() => setExpanded(true)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: T.accent, padding: "8px 0 0", fontFamily: "inherit" }}>
+              Read more
+            </button>
+          )}
         </div>
       )}
     </div>

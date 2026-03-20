@@ -1,32 +1,30 @@
 import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
 
-// ── Mini podcast player — sticky bar at bottom of content area ─
+// ── Podcast Player — glassmorphic sticky bar ─────────────────
 // Props: item { title, source, audioUrl, audioDuration, image }
 //        onClose — dismiss the player
 export default function PodcastPlayer({ item, onClose }) {
   const { T } = useTheme();
   const audioRef = useRef(null);
-  const [playing, setPlaying]       = useState(false);
-  const [progress, setProgress]     = useState(0);   // 0-1
+  const [playing, setPlaying]         = useState(false);
+  const [progress, setProgress]       = useState(0);    // 0–1
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration]     = useState(0);
-  const [volume, setVolume]         = useState(1);
-  const [loading, setLoading]       = useState(true);
-  const [rate, setRate]             = useState(1);
-  const [sleepTimer, setSleepTimer] = useState(null); // minutes remaining
+  const [duration, setDuration]       = useState(0);
+  const [loading, setLoading]         = useState(true);
+  const [rate, setRate]               = useState(1);
+  const [sleepTimer, setSleepTimer]   = useState(null);
+  const [expanded, setExpanded]       = useState(false);
   const sleepRef = useRef(null);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
     const onLoaded  = () => { setLoading(false); setDuration(audio.duration || 0); };
     const onTime    = () => { setCurrentTime(audio.currentTime); setProgress(audio.duration ? audio.currentTime / audio.duration : 0); };
     const onEnded   = () => setPlaying(false);
     const onWaiting = () => setLoading(true);
     const onCanPlay = () => setLoading(false);
-
     audio.addEventListener("loadedmetadata", onLoaded);
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("ended", onEnded);
@@ -63,27 +61,32 @@ export default function PodcastPlayer({ item, onClose }) {
     audio.currentTime = Math.max(0, Math.min(duration, audio.currentTime + secs));
   }
 
-  function setPlaybackRate(r) {
-    setRate(r);
-    if (audioRef.current) audioRef.current.playbackRate = r;
+  function cycleRate() {
+    const RATES = [1, 1.25, 1.5, 1.75, 2];
+    const next = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
+    setRate(next);
+    if (audioRef.current) audioRef.current.playbackRate = next;
   }
 
-  function setSleep(mins) {
-    clearInterval(sleepRef.current);
-    if (!mins) { setSleepTimer(null); return; }
-    setSleepTimer(mins);
-    const end = Date.now() + mins * 60000;
-    sleepRef.current = setInterval(() => {
-      const left = Math.round((end - Date.now()) / 60000);
-      if (left <= 0) {
-        audioRef.current?.pause();
-        setPlaying(false);
-        setSleepTimer(null);
-        clearInterval(sleepRef.current);
-      } else {
-        setSleepTimer(left);
-      }
-    }, 30000);
+  function toggleSleep() {
+    if (sleepTimer) {
+      clearInterval(sleepRef.current);
+      setSleepTimer(null);
+    } else {
+      setSleepTimer(30);
+      const end = Date.now() + 30 * 60000;
+      sleepRef.current = setInterval(() => {
+        const left = Math.round((end - Date.now()) / 60000);
+        if (left <= 0) {
+          audioRef.current?.pause();
+          setPlaying(false);
+          setSleepTimer(null);
+          clearInterval(sleepRef.current);
+        } else {
+          setSleepTimer(left);
+        }
+      }, 30000);
+    }
   }
 
   function fmt(s) {
@@ -100,27 +103,36 @@ export default function PodcastPlayer({ item, onClose }) {
   return (
     <div style={{
       position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 600,
-      background: T.card,
-      borderTop: `1px solid ${T.border}`,
-      backdropFilter: "blur(20px) saturate(180%)",
-      WebkitBackdropFilter: "blur(20px) saturate(180%)",
-      boxShadow: "0 -4px 24px rgba(0,0,0,.12)",
+      background: `${T.surface}e8`,
+      backdropFilter: "blur(24px) saturate(180%)",
+      WebkitBackdropFilter: "blur(24px) saturate(180%)",
+      boxShadow: "0 -1px 0 rgba(255,255,255,.04), 0 -8px 32px rgba(0,0,0,.24)",
       paddingBottom: "env(safe-area-inset-bottom, 0px)",
     }}>
       <audio ref={audioRef} src={item.audioUrl} preload="metadata" />
 
-      {/* Progress bar — full width, clickable */}
-      <div
-        onClick={seek}
-        style={{ height: 6, background: T.surface2, cursor: "pointer", position: "relative", borderRadius: 0 }}
-      >
-        <div style={{ position: "absolute", inset: 0, right: `${(1-progress)*100}%`, background: T.accent, transition: "right .1s linear", borderRadius: 0 }} />
+      {/* Seek bar — full width, thin */}
+      <div onClick={seek} style={{ height: 3, background: T.surface2, cursor: "pointer", position: "relative" }}>
+        <div style={{
+          position: "absolute", inset: 0, right: `${(1-progress)*100}%`,
+          background: `linear-gradient(90deg, ${T.accent}, ${T.accentHover})`,
+          transition: "right .1s linear",
+        }} />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px" }}>
-        {/* Art */}
+        {/* Artwork — tap to expand details */}
         {item.image && (
-          <img src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+          <button onClick={() => setExpanded(v => !v)} style={{
+            background: "none", border: "none", padding: 0, cursor: "pointer", flexShrink: 0,
+          }}>
+            <img src={item.image} alt="" style={{
+              width: 44, height: 44, borderRadius: 10, objectFit: "cover",
+              boxShadow: "0 2px 8px rgba(0,0,0,.3)",
+              opacity: expanded ? 1 : 0.9,
+              transition: "opacity .15s",
+            }} />
+          </button>
         )}
 
         {/* Info */}
@@ -128,58 +140,93 @@ export default function PodcastPlayer({ item, onClose }) {
           <div style={{ fontSize: 12, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {item.title}
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>
-            {item.source} · {fmt(currentTime)} / {fmt(duration)}
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 2, display: "flex", gap: 6 }}>
+            <span>{item.source}</span>
+            <span>·</span>
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(currentTime)}</span>
+            <span>/</span>
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(duration)}</span>
           </div>
         </div>
 
         {/* Controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
           {/* Skip back 15s */}
-          <button onClick={() => skip(-15)} title="Back 15s"
-            style={{ background: "none", border: "none", cursor: "pointer", color: T.textSecondary, fontSize: 11, fontWeight: 600, padding: "4px 6px", borderRadius: 6, fontFamily: "inherit" }}
-            onMouseEnter={e => e.currentTarget.style.background=T.surface2}
-            onMouseLeave={e => e.currentTarget.style.background="none"}
-          >-15</button>
+          <Btn onClick={() => skip(-15)} T={T} title="Back 15s">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/>
+              <text x="7" y="14" fontSize="7" fill="currentColor" stroke="none" fontWeight="700">15</text>
+            </svg>
+          </Btn>
 
           {/* Play/Pause */}
-          <button onClick={togglePlay}
-            style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: T.accent, color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
-            {loading ? (
-              <span style={{ width: 14, height: 14, border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", display: "block", animation: "spin .7s linear infinite" }} />
-            ) : playing ? "⏸" : "▶"}
+          <button onClick={togglePlay} style={{
+            width: 40, height: 40, borderRadius: "50%", border: "none",
+            background: T.accent, color: T.accentText,
+            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 14, flexShrink: 0, marginLeft: 2, marginRight: 2,
+            boxShadow: `0 0 12px ${T.accent}40`,
+          }}>
+            {loading
+              ? <span style={{ width: 14, height: 14, border: `2px solid ${T.accentText}`, borderTopColor: "transparent", borderRadius: "50%", display: "block", animation: "spin .7s linear infinite" }} />
+              : playing
+                ? <svg width="12" height="14" viewBox="0 0 12 14" fill={T.accentText}><rect x="0" y="0" width="4" height="14"/><rect x="8" y="0" width="4" height="14"/></svg>
+                : <svg width="12" height="14" viewBox="0 0 12 14" fill={T.accentText}><path d="M2 1l10 6-10 6V1z"/></svg>
+            }
           </button>
 
           {/* Skip forward 30s */}
-          <button onClick={() => skip(30)} title="Forward 30s"
-            style={{ background: "none", border: "none", cursor: "pointer", color: T.textSecondary, fontSize: 11, fontWeight: 600, padding: "4px 6px", borderRadius: 6, fontFamily: "inherit" }}
-            onMouseEnter={e => e.currentTarget.style.background=T.surface2}
-            onMouseLeave={e => e.currentTarget.style.background="none"}
-          >+30</button>
+          <Btn onClick={() => skip(30)} T={T} title="Forward 30s">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-.49-3.12"/>
+              <text x="7" y="14" fontSize="7" fill="currentColor" stroke="none" fontWeight="700">30</text>
+            </svg>
+          </Btn>
 
           {/* Playback rate */}
-          <button onClick={() => setPlaybackRate([1, 1.25, 1.5, 2][([1,1.25,1.5,2].indexOf(rate)+1)%4])}
-            title="Playback speed"
-            style={{ background: T.surface2, border: "none", borderRadius: 6, padding: "4px 7px", cursor: "pointer", fontSize: 11, fontWeight: 700, color: rate !== 1 ? T.accent : T.textSecondary, fontFamily: "inherit", minWidth: 36, textAlign: "center" }}
-          >{rate}×</button>
+          <button onClick={cycleRate} title="Playback speed" style={{
+            background: rate !== 1 ? T.accentSurface : T.surface2,
+            border: "none", borderRadius: 6, padding: "5px 7px",
+            cursor: "pointer", fontSize: 11, fontWeight: 700,
+            color: rate !== 1 ? T.accent : T.textSecondary,
+            fontFamily: "inherit", minWidth: 38, textAlign: "center",
+          }}>{rate}×</button>
 
           {/* Sleep timer */}
-          <button
-            onClick={() => setSleep(sleepTimer ? null : 30)}
-            title={sleepTimer ? `Sleep in ${sleepTimer}m (click to cancel)` : "Sleep timer (30 min)"}
-            style={{ background: sleepTimer ? T.accentSurface : T.surface2, border: "none", borderRadius: 6, padding: "4px 7px", cursor: "pointer", fontSize: 10, fontWeight: 700, color: sleepTimer ? T.accent : T.textSecondary, fontFamily: "inherit", minWidth: 32, textAlign: "center" }}
-          >
-            {sleepTimer ? `${sleepTimer}m` : "ZZ"}
+          <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer (30 min)"} style={{
+            background: sleepTimer ? T.accentSurface : T.surface2,
+            border: "none", borderRadius: 6, padding: "5px 7px",
+            cursor: "pointer", fontSize: 10, fontWeight: 700,
+            color: sleepTimer ? T.accent : T.textTertiary,
+            fontFamily: "inherit", minWidth: 32, textAlign: "center",
+          }}>
+            {sleepTimer ? `${sleepTimer}m` : "💤"}
           </button>
 
           {/* Close */}
-          <button onClick={onClose}
-            style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, fontSize: 18, padding: "0 4px", lineHeight: 1 }}
+          <button onClick={onClose} style={{
+            background: "none", border: "none", cursor: "pointer",
+            color: T.textTertiary, fontSize: 18, padding: "0 4px", lineHeight: 1, marginLeft: 2,
+          }}
             onMouseEnter={e => e.currentTarget.style.color=T.danger}
             onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
           >×</button>
         </div>
       </div>
     </div>
+  );
+}
+
+// small icon button
+function Btn({ children, onClick, T, title }) {
+  return (
+    <button onClick={onClick} title={title} style={{
+      background: "none", border: "none", cursor: "pointer",
+      color: T.textSecondary, padding: "6px", borderRadius: 8,
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}
+      onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.text; }}
+      onMouseLeave={e => { e.currentTarget.style.background="none"; e.currentTarget.style.color=T.textSecondary; }}
+    >{children}</button>
   );
 }

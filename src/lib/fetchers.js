@@ -383,11 +383,56 @@ export function isRSSUrl(url) {
     url.includes("atom") || url.endsWith("/feed/") || url.includes("feedburner");
 }
 
+// ── X / Twitter ───────────────────────────────────────────────
+// Converts an x.com or twitter.com profile URL to an RSSHub RSS feed.
+// RSSHub is an open-source relay that bridges social platforms to RSS.
+// Public instance: https://rsshub.app — self-hostable for privacy.
+export function parseXUrl(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname === "x.com" || u.hostname === "twitter.com" || u.hostname === "www.x.com" || u.hostname === "www.twitter.com") {
+      // Match /<username> or /<username>/status/... (we only care about the username)
+      const parts = u.pathname.split("/").filter(Boolean);
+      if (parts.length >= 1 && !["search", "explore", "home", "notifications", "messages"].includes(parts[0])) {
+        return { isX: true, username: parts[0] };
+      }
+    }
+  } catch { /* ignore */ }
+  return { isX: false };
+}
+
+// Returns the RSS feed URL for an X account (via RSSHub public instance)
+export function xToRSSUrl(username) {
+  return `https://rsshub.app/twitter/user/${username}`;
+}
+
 export function detectInputType(url) {
   if (parseYouTubeUrl(url).isYouTube) return "youtube";
+  if (parseXUrl(url).isX) return "twitter";
   if (isPodcastUrl(url)) return "podcast";
   if (isRSSUrl(url)) return "rss";
   return "article";
+}
+
+// ── Apple Podcasts Search ─────────────────────────────────────
+// Uses the iTunes Search API (public, no auth required).
+// Returns an array of { title, feedUrl, artworkUrl, artistName, description }
+export async function searchApplePodcasts(term) {
+  if (!term || term.trim().length < 2) return [];
+  try {
+    const endpoint = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=podcast&entity=podcast&limit=12`;
+    const res = await fetchWithTimeout(endpoint, 8000);
+    const json = await res.json();
+    return (json.results || []).map(r => ({
+      title:       r.collectionName,
+      feedUrl:     r.feedUrl,
+      artworkUrl:  r.artworkUrl100,
+      artistName:  r.artistName,
+      trackCount:  r.trackCount,
+    })).filter(r => r.feedUrl);
+  } catch {
+    return [];
+  }
 }
 
 
