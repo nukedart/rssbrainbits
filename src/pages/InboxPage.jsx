@@ -647,8 +647,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             </button>
           )}
 
-          {/* View + Size toggles */}
-          <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+          {/* View + Size toggles — hidden on mobile */}
+          {!isMobile && <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
             <div style={{ display: "flex", gap: 2, background: T.surface2, borderRadius: 8, padding: "3px" }}>
               {[{ mode: "list", icon: "≡", title: "List" }, { mode: "card", icon: "⊞", title: "Cards" }].map(({ mode, icon, title }) => (
                 <button key={mode} onClick={() => toggleViewMode(mode)} title={title} style={{
@@ -673,7 +673,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                 }}>{label}</button>
               ))}
             </div>
-          </div>
+          </div>}
 
           <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: 32, paddingLeft: isMobile ? 10 : 12, paddingRight: isMobile ? 10 : 12, flexShrink: 0 }}>{isMobile ? "+" : "+ Add"}</Button>
         </div>

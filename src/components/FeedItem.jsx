@@ -158,7 +158,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 
           {/* Text */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: cardSize === "lg" ? 15 : cardSize === "sm" ? 13 : 15, fontWeight: isRead ? 400 : 600, color: isRead ? T.textTertiary : T.text, lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: cardSize === "lg" ? "normal" : "nowrap", letterSpacing: "-.01em" }}>
+            <div style={{ fontSize: cardSize === "lg" ? 15 : cardSize === "sm" ? 13 : 15, fontWeight: isRead ? 400 : 600, color: isRead ? T.textTertiary : T.text, lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: (isMobile || cardSize === "lg") ? "normal" : "nowrap", ...(isMobile && { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }), letterSpacing: "-.01em" }}>
               {item.title}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>

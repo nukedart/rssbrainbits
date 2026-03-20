@@ -489,8 +489,17 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               ? <img src={user.user_metadata.avatar_url} alt="" style={{ width: 44, height: 44, borderRadius: "50%" }} />
               : <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
             }
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{user?.user_metadata?.full_name || user?.user_metadata?.user_name || "GitHub User"}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.user_metadata?.full_name || user?.user_metadata?.user_name || "GitHub User"}</div>
+                <span style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: ".06em", padding: "2px 7px",
+                  borderRadius: 20, flexShrink: 0,
+                  background: planName === "Pro" ? T.accent : T.surface2,
+                  color: planName === "Pro" ? "#fff" : T.textTertiary,
+                  border: `1px solid ${planName === "Pro" ? T.accent : T.border}`,
+                }}>{planName === "Pro" ? "⚡ PRO" : "FREE"}</span>
+              </div>
               <div style={{ fontSize: 12, color: T.textSecondary }}>{user?.email}</div>
             </div>
           </div>
@@ -622,7 +631,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.17.0</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.24.1</div>
         </Card>
       </div>
     </PageShell>

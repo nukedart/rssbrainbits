@@ -3,6 +3,34 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.24.1] — 2026-03-19
+
+### Changes
+- chore: rename migrations to timestamped format, run against remote db
+- feat: standalone admin panel + admin-stats edge function — v1.23.0
+- feat: self-hosted analytics — events, dashboard, upgrade funnel — v1.22.0
+- security: remove VITE_ANTHROPIC_API_KEY from bundle
+- chore: ignore dist/assets/ to prevent bundled secrets from being committed
+- feat: landing page rewrite, fix Stripe upgrade paths, mobile nav — v1.21.0
+- polish: readable toggles, retry button, sticky reader controls, better errors — v1.20.0
+- perf: cap animations, faster proxy fallback, parallel feed discovery — v1.19.0
+- feat: polish AI summaries, fix stats, $9 Pro, bug fixes — v1.18.0
+- v1.17.0
+
+---
+
+---
+
+## [1.24.0] — 2026-03-19
+
+### Added
+- **Subscription badge in Settings** — Account card now shows an ⚡ PRO or FREE pill badge next to the user's display name, making plan status immediately visible.
+- **App version in Settings** — About card now displays the current version (v1.24.0), kept in sync with `package.json`.
+
+### Fixed
+- **Mobile toolbar** — View mode (List/Cards) and size (S/M/L) toggles are now hidden on mobile, eliminating the squished 48px toolbar. The toolbar now fits comfortably: title, search, refresh, unread filter, and Add button.
+- **FeedItem list titles on mobile** — Titles were single-line with `nowrap`, cutting off at the screen edge. On mobile they now wrap to 2 lines (WebkitLineClamp), making headlines fully readable.
+
 ---
 
 ## [1.23.0] — 2026-03-19
