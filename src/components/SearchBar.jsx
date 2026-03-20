@@ -101,7 +101,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
         display: "flex", alignItems: "center", gap: 8,
         background: focused ? T.card : T.surface2,
         border: `1px solid ${focused ? T.accent : T.border}`,
-        borderRadius: 10, padding: "7px 12px",
+        borderRadius: 10, padding: "5px 10px",
         transition: "all .15s",
       }}>
         <span style={{ color: T.textTertiary, display: "flex", flexShrink: 0 }}>
@@ -113,7 +113,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
           onChange={e => { setQuery(e.target.value); onLiveSearch?.(e.target.value); }}
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => setFocused(false), 200)}
-          placeholder="Search history, saved, tags…"
+          placeholder="Search…"
           style={{
             flex: 1, background: "none", border: "none", outline: "none",
             fontSize: 13, color: T.text, fontFamily: "inherit",

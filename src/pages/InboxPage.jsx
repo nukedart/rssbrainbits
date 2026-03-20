@@ -619,7 +619,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg }}>
 
         {/* Toolbar */}
-        <div style={{ padding: "0 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 6 : 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 52 }}>
+        <div style={{ padding: "0 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 4 : 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 52 }}>
 
           {/* Title + unread badge */}
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
@@ -680,7 +680,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
               color: hideRead ? T.accentText : T.textSecondary, fontFamily: "inherit",
               display: "flex", alignItems: "center",
             }}>
-              {isMobile ? (hideRead ? "Unread" : "All") : (hideRead ? "Unread only" : "All articles")}
+              {isMobile ? (hideRead ? "●" : "○") : (hideRead ? "Unread only" : "All articles")}
             </button>
           )}
 

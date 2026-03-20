@@ -28,6 +28,18 @@ function faviconUrl(url) {
   } catch { return null; }
 }
 
+function sourcePlaceholder(source) {
+  // Deterministic color from source name
+  let hash = 0;
+  for (let i = 0; i < (source || "").length; i++) hash = (hash * 31 + source.charCodeAt(i)) & 0xffffffff;
+  const hue = Math.abs(hash) % 360;
+  return {
+    bg: `linear-gradient(135deg, hsl(${hue},45%,28%) 0%, hsl(${(hue+40)%360},35%,18%) 100%)`,
+    initial: (source || "?")[0].toUpperCase(),
+    color: `hsl(${hue},60%,75%)`,
+  };
+}
+
 // ── Action button (hover controls) ───────────────────────────
 function ActionBtn({ icon, label, title, onClick, T, small = false }) {
   function handleClick(e) {
@@ -218,7 +230,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
           <div style={{
             position: "relative", flexShrink: 0, overflow: "hidden",
             paddingBottom: cardSize === "lg" ? "43.75%" : cardSize === "sm" ? "75%" : "56.25%", // 16/7, 16/12, 16/9
-            background: thumb ? T.surface2 : `linear-gradient(135deg, ${T.surface2} 0%, ${T.border} 100%)`,
+            background: thumb ? T.surface2 : sourcePlaceholder(item.source).bg,
           }}>
             {thumb && (
               <img src={thumb} alt="" loading="lazy"
@@ -231,6 +243,13 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
                 <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(0,0,0,.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <span style={{ fontSize: 14, marginLeft: 2 }}>▶</span>
                 </div>
+              </div>
+            )}
+            {!thumb && (
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontSize: cardSize === "lg" ? 40 : 28, fontWeight: 800, color: sourcePlaceholder(item.source).color, opacity: 0.9, letterSpacing: "-.02em", userSelect: "none" }}>
+                  {sourcePlaceholder(item.source).initial}
+                </span>
               </div>
             )}
           </div>

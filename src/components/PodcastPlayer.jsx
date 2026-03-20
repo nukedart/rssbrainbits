@@ -14,6 +14,8 @@ export default function PodcastPlayer({ item, onClose }) {
   const [volume, setVolume]         = useState(1);
   const [loading, setLoading]       = useState(true);
   const [rate, setRate]             = useState(1);
+  const [sleepTimer, setSleepTimer] = useState(null); // minutes remaining
+  const sleepRef = useRef(null);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -31,6 +33,7 @@ export default function PodcastPlayer({ item, onClose }) {
     audio.addEventListener("waiting", onWaiting);
     audio.addEventListener("canplay", onCanPlay);
     return () => {
+      clearInterval(sleepRef.current);
       audio.removeEventListener("loadedmetadata", onLoaded);
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("ended", onEnded);
@@ -65,6 +68,24 @@ export default function PodcastPlayer({ item, onClose }) {
     if (audioRef.current) audioRef.current.playbackRate = r;
   }
 
+  function setSleep(mins) {
+    clearInterval(sleepRef.current);
+    if (!mins) { setSleepTimer(null); return; }
+    setSleepTimer(mins);
+    const end = Date.now() + mins * 60000;
+    sleepRef.current = setInterval(() => {
+      const left = Math.round((end - Date.now()) / 60000);
+      if (left <= 0) {
+        audioRef.current?.pause();
+        setPlaying(false);
+        setSleepTimer(null);
+        clearInterval(sleepRef.current);
+      } else {
+        setSleepTimer(left);
+      }
+    }, 30000);
+  }
+
   function fmt(s) {
     if (!s || isNaN(s)) return "0:00";
     const h = Math.floor(s / 3600);
@@ -91,9 +112,9 @@ export default function PodcastPlayer({ item, onClose }) {
       {/* Progress bar — full width, clickable */}
       <div
         onClick={seek}
-        style={{ height: 3, background: T.surface2, cursor: "pointer", position: "relative" }}
+        style={{ height: 6, background: T.surface2, cursor: "pointer", position: "relative", borderRadius: 0 }}
       >
-        <div style={{ position: "absolute", inset: 0, right: `${(1-progress)*100}%`, background: T.accent, transition: "right .1s linear" }} />
+        <div style={{ position: "absolute", inset: 0, right: `${(1-progress)*100}%`, background: T.accent, transition: "right .1s linear", borderRadius: 0 }} />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px" }}>
@@ -141,6 +162,15 @@ export default function PodcastPlayer({ item, onClose }) {
             title="Playback speed"
             style={{ background: T.surface2, border: "none", borderRadius: 6, padding: "4px 7px", cursor: "pointer", fontSize: 11, fontWeight: 700, color: rate !== 1 ? T.accent : T.textSecondary, fontFamily: "inherit", minWidth: 36, textAlign: "center" }}
           >{rate}×</button>
+
+          {/* Sleep timer */}
+          <button
+            onClick={() => setSleep(sleepTimer ? null : 30)}
+            title={sleepTimer ? `Sleep in ${sleepTimer}m (click to cancel)` : "Sleep timer (30 min)"}
+            style={{ background: sleepTimer ? T.accentSurface : T.surface2, border: "none", borderRadius: 6, padding: "4px 7px", cursor: "pointer", fontSize: 10, fontWeight: 700, color: sleepTimer ? T.accent : T.textSecondary, fontFamily: "inherit", minWidth: 32, textAlign: "center" }}
+          >
+            {sleepTimer ? `${sleepTimer}m` : "ZZ"}
+          </button>
 
           {/* Close */}
           <button onClick={onClose}
