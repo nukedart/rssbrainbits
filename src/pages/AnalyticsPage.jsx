@@ -129,6 +129,18 @@ export default function AnalyticsPage() {
       const days = last30Days();
       const since30 = new Date(); since30.setDate(since30.getDate() - 30);
 
+      // Try to fetch user metrics from admin-stats edge function
+      let userStats = null;
+      let edgeFnError = null;
+      try {
+        const { data: efData, error: efError } = await supabase.functions.invoke("admin-stats");
+        if (efError) throw efError;
+        userStats = efData?.users || null;
+      } catch (err) {
+        edgeFnError = err?.message || "Edge function unavailable";
+        console.warn("admin-stats edge function:", edgeFnError);
+      }
+
       // Fetch all events in the last 30 days
       const { data: rows, error } = await supabase
         .from("analytics_events")
@@ -190,6 +202,8 @@ export default function AnalyticsPage() {
         totalEvents: rows.length,
         dauChart, eventsChart, topEvents,
         funnel: { limitHits, upgradeClicked },
+        userStats,
+        edgeFnError,
       });
     } catch (err) {
       console.error("Analytics load error:", err);
@@ -240,6 +254,24 @@ export default function AnalyticsPage() {
         {!loading && data && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
+            {/* Edge function error banner */}
+            {data.edgeFnError && (
+              <div style={{ background: `${T.warning}18`, border: `1px solid ${T.warning}40`, borderRadius: 10, padding: "10px 16px", fontSize: 12, color: T.warning, display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontWeight: 700 }}>⚠</span>
+                <span>User metrics unavailable — {data.edgeFnError}. Run <code style={{ background: T.surface2, padding: "1px 5px", borderRadius: 4 }}>supabase functions deploy admin-stats</code> to enable.</span>
+              </div>
+            )}
+
+            {/* User stats — from edge function */}
+            {data.userStats && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+                <Stat label="Total Users" value={data.userStats.totalUsers} sub={`${data.userStats.newUsers7d} new this week`} color={T.accent} />
+                <Stat label="Pro" value={data.userStats.proUsers} sub={`${data.userStats.freeUsers} free`} color={T.success} />
+                <Stat label="MRR" value={`$${data.userStats.mrr}`} sub="$9 × pro seats" color={T.warning} />
+                <Stat label="New (30d)" value={data.userStats.newUsers30d} sub="Signups" />
+              </div>
+            )}
+
             {/* KPI row */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
               <Stat label="MAU" value={data.mau} sub="Unique users, 30d" color={T.accent} />
@@ -274,6 +306,22 @@ export default function AnalyticsPage() {
 
             {/* Top events */}
             <EventTable events={data.topEvents.slice(0, 12)} T={T} />
+
+            {/* Recent users — from edge function */}
+            {data.userStats?.recentUsers?.length > 0 && (
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+                <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700, color: T.textSecondary, textTransform: "uppercase", letterSpacing: ".07em" }}>
+                  Recent signups
+                </div>
+                {data.userStats.recentUsers.slice(0, 10).map((u, i) => (
+                  <div key={u.id} style={{ display: "flex", alignItems: "center", padding: "10px 20px", borderBottom: i < 9 ? `1px solid ${T.border}` : "none", gap: 12 }}>
+                    <div style={{ flex: 1, fontSize: 13, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: u.plan === "pro" ? T.accentSurface : T.surface2, color: u.plan === "pro" ? T.accent : T.textTertiary, flexShrink: 0 }}>{u.plan === "pro" ? "PRO" : "free"}</span>
+                    <div style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>{new Date(u.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
+                  </div>
+                ))}
+              </div>
+            )}
 
           </div>
         )}

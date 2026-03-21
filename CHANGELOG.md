@@ -3,6 +3,15 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.28.4] — 2026-03-21
+
+### Added
+- **Admin panel — user metrics** — Analytics page now calls the `admin-stats` edge function to show Total Users, Pro subscribers, MRR, new users in the last 30 days, and a recent signups table. Graceful fallback banner if edge function is unavailable.
+
+### Changed
+- **P7 — Editorial Nocturne typography** — article titles in the reading panel, feed item cards, and Home page rows now use the theme's serif font (`var(--reader-font-family)`). Distilled theme renders Newsreader; Nocturne renders Noto Serif.
+- **Reading panel metadata** — source label is now uppercase with tight tracking; source + date displayed inline with a dot separator.
+
 ## [1.28.3] — 2026-03-21
 
 ### Added

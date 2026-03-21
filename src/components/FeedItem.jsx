@@ -322,10 +322,11 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
 
             {/* Title */}
             <div style={{
-              fontSize: cardSize === "lg" ? 15 : cardSize === "sm" ? 12 : 13,
+              fontFamily: "var(--reader-font-family)",
+              fontSize: cardSize === "lg" ? 16 : cardSize === "sm" ? 13 : 14,
               fontWeight: isRead ? 400 : 600,
               color: isRead ? T.textTertiary : T.text,
-              lineHeight: 1.4, marginBottom: 6,
+              lineHeight: 1.35, marginBottom: 6,
               overflow: "hidden", display: "-webkit-box",
               WebkitLineClamp: cardSize === "lg" ? 3 : 2,
               WebkitBoxOrient: "vertical",

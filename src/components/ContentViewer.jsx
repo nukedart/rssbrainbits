@@ -437,15 +437,18 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             {content.image && (
               <img src={content.image} alt="" style={{ width: "100%", borderRadius: 12, marginBottom: 20, maxHeight: 320, objectFit: "cover" }} />
             )}
-            <h1 style={{ fontSize: 26, fontWeight: 600, color: T.text, margin: "0 0 10px", lineHeight: 1.25, letterSpacing: "-.02em" }}>
+            <h1 style={{ fontFamily: "var(--reader-font-family)", fontSize: 28, fontWeight: 700, color: T.text, margin: "0 0 12px", lineHeight: 1.2, letterSpacing: "-.03em" }}>
               {content.title || item.title}
             </h1>
-            {item.source && <div style={{ fontSize: 12, fontWeight: 500, color: T.accent, marginBottom: 4, letterSpacing: ".01em" }}>{item.source}</div>}
-            {item.date && (
-              <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 20 }}>
-                {new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-              </div>
-            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+              {item.source && <span style={{ fontSize: 11, fontWeight: 700, color: T.accent, textTransform: "uppercase", letterSpacing: ".08em" }}>{item.source}</span>}
+              {item.source && item.date && <span style={{ width: 3, height: 3, borderRadius: "50%", background: T.textTertiary, flexShrink: 0 }} />}
+              {item.date && (
+                <span style={{ fontSize: 11, color: T.textTertiary }}>
+                  {new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                </span>
+              )}
+            </div>
 
             <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} />
 

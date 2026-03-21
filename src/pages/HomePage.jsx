@@ -337,9 +337,11 @@ function ArticleRow({ item, relTime, onClick, T, isMobile }) {
         </span>
         <div>
           <h4 style={{
+            fontFamily: "var(--reader-font-family)",
             fontSize: isMobile ? 15 : 17, fontWeight: 500,
             color: hovered ? T.accent : T.text, margin: 0,
             lineHeight: 1.35, transition: "color .15s",
+            letterSpacing: "-.01em",
           }}>
             {item.title}
           </h4>
