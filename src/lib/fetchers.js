@@ -11,7 +11,23 @@ const OWN_PROXY      = import.meta.env.VITE_PROXY_URL
 const PROXY_PRIMARY  = "https://corsproxy.io/?";
 const PROXY_FALLBACK = "https://api.allorigins.win/get?url=";
 const PROXY_THIRD    = "https://api.codetabs.com/v1/proxy?quest=";
+const RSS2JSON_API   = "https://api.rss2json.com/v1/api.json?rss_url=";
 const TIMEOUT_MS     = 10000; // 10s — some sites are slow
+
+// Detect when a proxy returned a bot-challenge page instead of RSS/HTML content
+function looksLikeBlockPage(text) {
+  const t = text.trim().toLowerCase().slice(0, 2000);
+  return (
+    t.startsWith("<!doctype html") || t.startsWith("<html") ||
+    t.includes("cf-browser-verification") ||
+    t.includes("attention required") ||
+    t.includes("just a moment") ||        // Cloudflare
+    t.includes("enable javascript") ||
+    t.includes("access denied") ||
+    t.includes("403 forbidden") ||
+    t.includes("blocked")
+  );
+}
 
 async function fetchWithTimeout(url, ms = TIMEOUT_MS) {
   const controller = new AbortController();
@@ -83,10 +99,62 @@ export async function fetchRSSFeed(feedUrl, { forceRefresh = false } = {}) {
     // getCachedFeed returns { data, isStale } where data = { title, items }
     if (cached?.data) return cached.data;
   }
-  const text   = await proxiedFetch(feedUrl);
-  const result = parseRSS(text, feedUrl);
+
+  let result;
+  try {
+    const text = await proxiedFetch(feedUrl);
+    // Proxy returned a Cloudflare challenge / block page — skip to rss2json
+    if (looksLikeBlockPage(text)) throw new Error("proxy blocked");
+    result = parseRSS(text, feedUrl);
+  } catch {
+    // Fallback: rss2json has publisher relationships that bypass Cloudflare blocks
+    result = await fetchViaRss2Json(feedUrl);
+  }
+
   setCachedFeed(feedUrl, result);
   return result;
+}
+
+async function fetchViaRss2Json(feedUrl) {
+  const res = await fetchWithTimeout(RSS2JSON_API + encodeURIComponent(feedUrl), TIMEOUT_MS);
+  if (!res.ok) throw new Error(`rss2json HTTP ${res.status}`);
+  const json = await res.json();
+  if (json.status !== "ok") throw new Error(`rss2json: ${json.message || "error"}`);
+
+  return {
+    title: json.feed?.title || new URL(feedUrl).hostname,
+    items: (json.items || []).slice(0, 80).map(item => {
+      // rss2json returns thumbnail separately; also try to extract from content
+      const image = item.thumbnail && !item.thumbnail.includes("1x1")
+        ? item.thumbnail
+        : extractImageFromText(item.content || item.description || "");
+      const descRaw = item.description || "";
+      const enclosure = item.enclosure;
+      const audioUrl = enclosure?.type?.startsWith("audio") ? enclosure.link : null;
+      return {
+        title:         item.title || "Untitled",
+        url:           item.link || "",
+        description:   stripHtml(descRaw).slice(0, 400),
+        fullText:      item.content || item.description || "",
+        date:          normaliseDate(item.pubDate),
+        author:        item.author || "",
+        image,
+        audioUrl,
+        audioDuration: null,
+        isPodcast:     !!audioUrl,
+      };
+    }),
+  };
+}
+
+// Extract first usable image from HTML string (used in rss2json fallback)
+function extractImageFromText(html) {
+  if (!html) return null;
+  const match = html.match(/<img[^>]+src=["']([^"']{20,})["']/i);
+  const src = match?.[1];
+  if (!src) return null;
+  if (src.includes("tracking") || src.includes("pixel") || src.includes("spacer")) return null;
+  return src;
 }
 
 function parseRSS(xmlText, sourceUrl) {

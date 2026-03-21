@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.28.6] — 2026-03-21
+
+### Fixed
+- **Cloudflare-protected feeds now load** — sites like MakeUseOf, 9to5Mac, and XDA block the public CORS proxies via Cloudflare Bot Fight Mode. The fetcher now detects challenge/block pages and falls back to `rss2json`, which has publisher-level whitelisting and bypasses these restrictions.
+- **Dead code removed** — `ReaderEmptyState` component cleaned up after the reading panel was made click-to-open.
+
 ## [1.28.5] — 2026-03-21
 
 ### Fixed

@@ -1004,33 +1004,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 }
 
 // ── Onboarding card — shown to new users with no feeds ────────
-// ── Empty state for right reading panel ──────────────────────
-function ReaderEmptyState({ T }) {
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 32px", gap: 20, background: T.bg }}>
-      <div style={{ width: 52, height: 52, borderRadius: 14, background: T.surface, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={T.textTertiary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-        </svg>
-      </div>
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 6 }}>Select an article to read</div>
-        <div style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.7, maxWidth: 260 }}>
-          Click any article in the list or press <kbd style={{ background: T.surface2, padding: "1px 5px", borderRadius: 4, fontSize: 11, fontFamily: "monospace", color: T.textSecondary }}>o</kbd> to open the focused one
-        </div>
-      </div>
-      <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
-        {[{ key: "j / k", desc: "Navigate" }, { key: "o", desc: "Open" }, { key: "m", desc: "Mark read" }, { key: "s", desc: "Star" }].map(({ key, desc }) => (
-          <div key={key} style={{ textAlign: "center" }}>
-            <kbd style={{ background: T.surface2, padding: "3px 7px", borderRadius: 5, fontSize: 11, fontFamily: "monospace", color: T.textSecondary, display: "block", marginBottom: 4 }}>{key}</kbd>
-            <span style={{ fontSize: 10, color: T.textTertiary }}>{desc}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function OnboardingCard({ onAddFeed, onQuickAdd, T }) {
   const SUGGESTIONS = [
     { name: "Hacker News", url: "https://news.ycombinator.com/rss", emoji: "🟠" },
