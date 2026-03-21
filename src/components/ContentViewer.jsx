@@ -18,7 +18,7 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
 
-export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false }) {
+export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false, currentIdx = -1, totalCount = 0 }) {
   const { T } = useTheme();
   const { user } = useAuth();
   const { isMobile } = useBreakpoint();
@@ -272,21 +272,33 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           WebkitTapHighlightColor: "transparent",
         }}>←</button>
 
-        {/* Mobile prev/next arrows */}
-        {isMobile && onPrev && (
-          <button onClick={onPrev} title="Previous article"
-            style={{ background: T.surface2, border: "none", borderRadius: 8, width: 38, height: 38, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textSecondary, fontSize: 16, flexShrink: 0, WebkitTapHighlightColor: "transparent" }}>‹</button>
+        {/* Prev — both mobile and desktop */}
+        {onPrev && (
+          <button onClick={onPrev} title="Previous article (k)"
+            style={{ background: "transparent", border: "none", borderRadius: 8, width: isMobile ? 38 : 28, height: isMobile ? 38 : 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: isMobile ? 16 : 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "all .12s" }}
+            onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
+            onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
+          >‹</button>
         )}
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: isMobile ? 14 : 13, fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {item.source || "Feedbox"}
           </div>
+          {!isMobile && totalCount > 0 && currentIdx >= 0 && (
+            <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 1 }}>
+              {currentIdx + 1} of {totalCount}
+            </div>
+          )}
         </div>
 
-        {isMobile && onNext && (
-          <button onClick={onNext} title="Next article"
-            style={{ background: T.surface2, border: "none", borderRadius: 8, width: 38, height: 38, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textSecondary, fontSize: 16, flexShrink: 0, WebkitTapHighlightColor: "transparent" }}>›</button>
+        {/* Next — both mobile and desktop */}
+        {onNext && (
+          <button onClick={onNext} title="Next article (j)"
+            style={{ background: "transparent", border: "none", borderRadius: 8, width: isMobile ? 38 : 28, height: isMobile ? 38 : 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: isMobile ? 16 : 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "all .12s" }}
+            onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
+            onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
+          >›</button>
         )}
 
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>

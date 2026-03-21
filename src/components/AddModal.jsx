@@ -13,10 +13,46 @@ const TYPE_INFO = {
 
 // Tabs in the modal
 const TABS = [
-  { id: "url",     label: "URL / RSS" },
-  { id: "podcast", label: "🎙 Podcasts" },
-  { id: "x",       label: "𝕏 Follow" },
+  { id: "url",      label: "URL / RSS" },
+  { id: "podcast",  label: "🎙 Podcasts" },
+  { id: "x",        label: "𝕏 Follow" },
+  { id: "discover", label: "✦ Discover" },
 ];
+
+// Curated popular feeds by category
+const DISCOVER_FEEDS = {
+  "Tech": [
+    { name: "Hacker News",       url: "https://news.ycombinator.com/rss",                   desc: "Tech & startup discussions" },
+    { name: "The Verge",         url: "https://www.theverge.com/rss/index.xml",              desc: "Tech news & culture" },
+    { name: "Ars Technica",      url: "https://feeds.arstechnica.com/arstechnica/index",     desc: "In-depth tech journalism" },
+    { name: "MIT Tech Review",   url: "https://www.technologyreview.com/feed/",              desc: "Emerging technology" },
+  ],
+  "AI": [
+    { name: "VentureBeat AI",    url: "https://venturebeat.com/ai/feed/",                   desc: "AI news & analysis" },
+    { name: "Import AI",         url: "https://importai.substack.com/feed",                 desc: "Weekly AI newsletter by Jack Clark" },
+    { name: "The Gradient",      url: "https://thegradient.pub/rss/",                       desc: "AI research perspectives" },
+  ],
+  "Design": [
+    { name: "CSS-Tricks",        url: "https://css-tricks.com/feed/",                       desc: "Web design & CSS" },
+    { name: "Smashing Magazine", url: "https://www.smashingmagazine.com/feed",               desc: "Web design & development" },
+    { name: "A List Apart",      url: "https://alistapart.com/main/feed/",                  desc: "Web standards & craft" },
+  ],
+  "News": [
+    { name: "BBC World News",    url: "https://feeds.bbci.co.uk/news/world/rss.xml",        desc: "International news" },
+    { name: "Reuters",           url: "https://feeds.reuters.com/reuters/topNews",           desc: "Breaking news wire" },
+    { name: "NPR News",          url: "https://feeds.npr.org/1001/rss.xml",                 desc: "US news & culture" },
+    { name: "The Guardian",      url: "https://www.theguardian.com/world/rss",              desc: "World news & opinion" },
+  ],
+  "Science": [
+    { name: "NASA",              url: "https://www.nasa.gov/rss/dyn/breaking_news.rss",     desc: "Space & exploration" },
+    { name: "Scientific American", url: "https://rss.sciam.com/ScientificAmerican-Global", desc: "Science for curious minds" },
+    { name: "Nature",            url: "https://www.nature.com/nature.rss",                  desc: "Leading science journal" },
+  ],
+  "Business": [
+    { name: "Harvard Biz Review", url: "https://hbr.org/stories.rss",                      desc: "Management & leadership" },
+    { name: "Stratechery",       url: "https://stratechery.com/feed/",                      desc: "Tech strategy & business" },
+  ],
+};
 
 export default function AddModal({ onAdd, onClose, onSaveForLater }) {
   const { T } = useTheme();
@@ -279,6 +315,39 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
 
             {error && <div style={{ fontSize: 13, color: T.danger, padding: "9px 13px", background: `${T.danger}18`, borderRadius: 9, marginTop: 14, lineHeight: 1.5 }}>{error}</div>}
           </>
+        )}
+
+        {/* ── Tab: Discover ── */}
+        {tab === "discover" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {Object.entries(DISCOVER_FEEDS).map(([category, feeds]) => (
+              <div key={category}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, padding: "10px 2px 6px" }}>{category}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {feeds.map(feed => (
+                    <div key={feed.url} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, background: T.surface, cursor: "pointer", transition: "background .12s" }}
+                      onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+                      onMouseLeave={e => e.currentTarget.style.background = T.surface}
+                      onClick={async () => {
+                        setLoading(true); setError("");
+                        try { await onAdd({ url: feed.url, type: "rss", name: feed.name }); onClose(); }
+                        catch (err) { setError(err.message || "Failed to add feed."); setLoading(false); }
+                      }}
+                    >
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>📡</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{feed.name}</div>
+                        <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{feed.desc}</div>
+                      </div>
+                      <div style={{ fontSize: 12, color: T.accent, fontWeight: 600, flexShrink: 0 }}>+ Add</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {error && <div style={{ fontSize: 13, color: T.danger, padding: "9px 13px", background: `${T.danger}18`, borderRadius: 9, marginTop: 10, lineHeight: 1.5 }}>{error}</div>}
+            {loading && <div style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}><Spinner size={20} /></div>}
+          </div>
         )}
 
         {/* ── Tab: X Follow ── */}

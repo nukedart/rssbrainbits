@@ -638,7 +638,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       )}
 
       {/* ── Article list ── */}
-      <div style={{ flex: openItem && !isMobile ? "0 0 380px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
+      <div style={{ flex: !isMobile && feeds.length > 0 ? "0 0 380px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
         <div style={{ padding: "0 12px", background: T.bg, boxShadow: `0 1px 0 ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
@@ -927,16 +927,21 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
         }}>{toast}</div>
       )}
 
-      {/* ── Inline reading panel — desktop 3-pane layout ── */}
-      {openItem && !isMobile && (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <ContentViewer
-            inline={true}
-            item={openItem}
-            onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
-            onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
-            onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
-          />
+      {/* ── Right panel — always visible on desktop when feeds loaded ── */}
+      {!isMobile && feeds.length > 0 && (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: `1px solid ${T.border}` }}>
+          {openItem
+            ? <ContentViewer
+                inline={true}
+                item={openItem}
+                onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+                onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+                onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+                currentIdx={openIdx}
+                totalCount={baseItems.length}
+              />
+            : <ReaderEmptyState T={T} />
+          }
         </div>
       )}
 
@@ -947,6 +952,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
         onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
         onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
         onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+        currentIdx={openIdx}
+        totalCount={baseItems.length}
       />}
       {searchResult && <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />}
       {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
@@ -970,6 +977,33 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 }
 
 // ── Onboarding card — shown to new users with no feeds ────────
+// ── Empty state for right reading panel ──────────────────────
+function ReaderEmptyState({ T }) {
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 32px", gap: 20, background: T.bg }}>
+      <div style={{ width: 52, height: 52, borderRadius: 14, background: T.surface, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={T.textTertiary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 6 }}>Select an article to read</div>
+        <div style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.7, maxWidth: 260 }}>
+          Click any article in the list or press <kbd style={{ background: T.surface2, padding: "1px 5px", borderRadius: 4, fontSize: 11, fontFamily: "monospace", color: T.textSecondary }}>o</kbd> to open the focused one
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
+        {[{ key: "j / k", desc: "Navigate" }, { key: "o", desc: "Open" }, { key: "m", desc: "Mark read" }, { key: "s", desc: "Star" }].map(({ key, desc }) => (
+          <div key={key} style={{ textAlign: "center" }}>
+            <kbd style={{ background: T.surface2, padding: "3px 7px", borderRadius: 5, fontSize: 11, fontFamily: "monospace", color: T.textSecondary, display: "block", marginBottom: 4 }}>{key}</kbd>
+            <span style={{ fontSize: 10, color: T.textTertiary }}>{desc}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function OnboardingCard({ onAddFeed, onQuickAdd, T }) {
   const SUGGESTIONS = [
     { name: "Hacker News", url: "https://news.ycombinator.com/rss", emoji: "🟠" },
