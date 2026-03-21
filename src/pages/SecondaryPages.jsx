@@ -75,52 +75,110 @@ export function ReadLaterPage() {
     }
   }
 
+  function relTime(iso) {
+    if (!iso) return "";
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 60) return m <= 1 ? "just now" : `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    if (d < 7) return `${d}d ago`;
+    return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
   return (
-    <PageShell title="Read Later" subtitle={`${items.length} article${items.length !== 1 ? "s" : ""} queued`}>
-      {/* Add URL bar */}
-      <div style={{ padding: "12px 16px 0" }}>
+    <PageShell title="Read Later" subtitle={`${items.length} article${items.length !== 1 ? "s" : ""} saved`}>
+      <div style={{ width: "100%", maxWidth: 780, padding: "16px 16px 40px", display: "flex", flexDirection: "column", gap: 12 }}>
+
+        {/* Add URL bar */}
         {!showAdd ? (
-          <button onClick={() => setShowAdd(true)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 14px", borderRadius: 10, border: `1.5px dashed ${T.border}`, background: "transparent", cursor: "pointer", color: T.textTertiary, fontSize: 13, fontFamily: "inherit", transition: "all .15s" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.accentSurface; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textTertiary; e.currentTarget.style.background = "transparent"; }}
+          <button onClick={() => setShowAdd(true)} style={{
+            display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "12px 16px",
+            borderRadius: 12, border: `1.5px dashed ${T.border}`, background: "transparent",
+            cursor: "pointer", color: T.textTertiary, fontSize: 13, fontFamily: "inherit", transition: "all .15s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accent; e.currentTarget.style.background=T.accentSurface; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.background="transparent"; }}
           >
-            <span style={{ fontSize: 16 }}>+</span> Save an article URL for later…
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M8 2v12M2 8h12"/></svg>
+            Save article URL for later…
           </button>
         ) : (
-          <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexDirection: "column" }}>
-            <div style={{ display: "flex", gap: 8, width: "100%" }}>
-              <input
-                autoFocus
-                value={addUrl}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input autoFocus value={addUrl}
                 onChange={e => { setAddUrl(e.target.value); setAddError(""); }}
                 onKeyDown={e => { if (e.key === "Enter") handleAddUrl(); if (e.key === "Escape") { setShowAdd(false); setAddUrl(""); setAddError(""); } }}
                 placeholder="Paste an article URL…"
-                style={{ flex: 1, background: T.surface, border: `1.5px solid ${T.accent}`, borderRadius: 9, padding: "9px 13px", fontSize: 13, color: T.text, fontFamily: "inherit", outline: "none" }}
+                style={{ flex:1, background:T.surface, border:`1.5px solid ${T.accent}`, borderRadius:10, padding:"10px 14px", fontSize:13, color:T.text, fontFamily:"inherit", outline:"none" }}
               />
               <button onClick={handleAddUrl} disabled={!addUrl.trim() || addLoading}
-                style={{ background: T.accent, border: "none", borderRadius: 9, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#fff", fontFamily: "inherit", flexShrink: 0, opacity: (!addUrl.trim() || addLoading) ? 0.5 : 1 }}>
+                style={{ background:T.accent, border:"none", borderRadius:10, padding:"10px 18px", cursor:"pointer", fontSize:13, fontWeight:600, color:"#fff", fontFamily:"inherit", flexShrink:0, opacity:(!addUrl.trim()||addLoading)?0.5:1 }}>
                 {addLoading ? "Saving…" : "Save"}
               </button>
               <button onClick={() => { setShowAdd(false); setAddUrl(""); setAddError(""); }}
-                style={{ background: T.surface2, border: "none", borderRadius: 9, padding: "9px 12px", cursor: "pointer", fontSize: 13, color: T.textSecondary, fontFamily: "inherit", flexShrink: 0 }}>
-                Cancel
-              </button>
+                style={{ background:T.surface2, border:"none", borderRadius:10, padding:"10px 14px", cursor:"pointer", fontSize:13, color:T.textSecondary, fontFamily:"inherit", flexShrink:0 }}>Cancel</button>
             </div>
-            {addError && <div style={{ fontSize: 12, color: T.danger, padding: "6px 12px", background: `${T.danger}15`, borderRadius: 7, width: "100%", boxSizing: "border-box" }}>{addError}</div>}
+            {addError && <div style={{ fontSize:12, color:T.danger, padding:"7px 12px", background:`${T.danger}15`, borderRadius:8 }}>{addError}</div>}
+          </div>
+        )}
+
+        {loading && <div style={{ display:"flex", justifyContent:"center", paddingTop:60 }}><Spinner size={28} /></div>}
+
+        {!loading && items.length === 0 && (
+          <div style={{ textAlign:"center", padding:"60px 20px", color:T.textTertiary }}>
+            <div style={{ fontSize:40, marginBottom:14 }}>📖</div>
+            <div style={{ fontSize:16, fontWeight:700, color:T.text, marginBottom:6 }}>Nothing saved yet</div>
+            <div style={{ fontSize:13, lineHeight:1.6, maxWidth:320, margin:"0 auto" }}>
+              Paste any article URL above, or press <kbd style={{ background:T.surface2, border:`1px solid ${T.border}`, borderRadius:4, padding:"1px 6px", fontSize:12 }}>L</kbd> while reading to save for later.
+            </div>
+          </div>
+        )}
+
+        {/* Card grid */}
+        {items.length > 0 && (
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
+            {items.map((item) => (
+              <div key={item.url}
+                onClick={() => setOpenItem(item)}
+                style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, overflow:"hidden", cursor:"pointer", display:"flex", flexDirection:"column", transition:"border-color .15s, transform .1s", position:"relative" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.transform="translateY(-1px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.transform="translateY(0)"; }}
+              >
+                {/* Thumbnail */}
+                {item.image ? (
+                  <div style={{ height:130, overflow:"hidden", background:T.surface2, flexShrink:0 }}>
+                    <img src={item.image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} onError={e => { e.target.parentElement.style.display="none"; }} />
+                  </div>
+                ) : (
+                  <div style={{ height:6, background:`linear-gradient(90deg, ${T.accent}40, ${T.accent}10)`, flexShrink:0 }} />
+                )}
+                <div style={{ padding:"12px 14px 14px", flex:1, display:"flex", flexDirection:"column", gap:6 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:T.text, lineHeight:1.45, display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                    {item.title || item.url}
+                  </div>
+                  <div style={{ marginTop:"auto", display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:6 }}>
+                    <span style={{ fontSize:11, color:T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                      {item.source || (() => { try { return new URL(item.url).hostname; } catch { return ""; } })()}
+                    </span>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0, marginLeft:8 }}>
+                      <span style={{ fontSize:11, color:T.textTertiary }}>{relTime(item.saved_at)}</span>
+                      <button
+                        onClick={e => { e.stopPropagation(); handleRemove(item.url); }}
+                        title="Remove"
+                        style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, padding:"2px 4px", borderRadius:5, fontSize:13, lineHeight:1, display:"flex", alignItems:"center", transition:"color .1s" }}
+                        onMouseEnter={e => { e.currentTarget.style.color=T.danger; }}
+                        onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
+                      >✕</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
-
-      {loading && <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}><Spinner size={28} /></div>}
-      {!loading && items.length === 0 && (
-        <EmptyState icon="⏱" title="Nothing queued" subtitle="Paste any article URL above, or press L while reading to save for later." />
-      )}
-      {items.map((item) => (
-        <FeedItem key={item.url} item={{ ...item, date: item.saved_at }}
-          onClick={() => setOpenItem(item)}
-          onDelete={() => handleRemove(item.url)}
-        />
-      ))}
       {openItem && <ContentViewer item={openItem} onClose={() => setOpenItem(null)} />}
     </PageShell>
   );
@@ -460,8 +518,8 @@ function PlanCard({ T, user, feedCount, planName }) {
   );
 }
 
-export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate }) {
-  const { T, isDark, setIsDark, theme, setTheme } = useTheme();
+export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onNavigate }) {
+  const { T, theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const planName = getPlanName(user);
   const shortcuts = [
@@ -479,15 +537,15 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
     <PageShell title="Settings">
       <div style={{ maxWidth: 520, width: "100%", padding: "24px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
 
-        {/* Account */}
+        {/* Account + Appearance inline */}
         <Card title="Account" T={T}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
             {user?.user_metadata?.avatar_url
-              ? <img src={user.user_metadata.avatar_url} alt="" style={{ width: 44, height: 44, borderRadius: "50%" }} />
-              : <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
+              ? <img src={user.user_metadata.avatar_url} alt="" style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0 }} />
+              : <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>👤</div>
             }
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.user_metadata?.full_name || user?.user_metadata?.user_name || "GitHub User"}</div>
                 <span style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: ".06em", padding: "2px 7px",
@@ -499,38 +557,25 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               </div>
               <div style={{ fontSize: 12, color: T.textSecondary }}>{user?.email}</div>
             </div>
+            {/* Theme toggle — icon buttons */}
+            <div style={{ display: "flex", gap: 3, flexShrink: 0 }}>
+              {[
+                { id: "distilled", title: "Dark", icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M13.5 10.5A6 6 0 0 1 5.5 2.5a6 6 0 1 0 8 8z"/></svg> },
+                { id: "light",     title: "Light", icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg> },
+              ].map(({ id, title, icon }) => {
+                const active = theme === id || (id === "distilled" && theme === "nocturne");
+                return (
+                  <button key={id} onClick={() => setTheme(id)} title={title} style={{
+                    width: 28, height: 28, borderRadius: 7, border: `1px solid ${active ? T.accent : T.border}`,
+                    background: active ? T.accentSurface : T.surface, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: active ? T.accent : T.textTertiary, transition: "all .15s",
+                  }}>{icon}</button>
+                );
+              })}
+            </div>
           </div>
           <Button variant="secondary" size="sm" onClick={signOut}>Sign out</Button>
-        </Card>
-
-        {/* Appearance */}
-        <Card title="Appearance" T={T}>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {[
-              { id: "distilled", label: "Dark",   desc: "Periwinkle on night",  swatch: "#aac7ff", bg: "#131315" },
-              { id: "light",     label: "Light",  desc: "Warm parchment",       swatch: "#4f6f52", bg: "#f4f2ee" },
-            ].map(({ id, label, desc, swatch, bg }) => {
-              const active = theme === id;
-              return (
-                <button key={id} onClick={() => setTheme(id)} style={{
-                  flex: "1 1 120px", padding: "12px 10px", borderRadius: 12,
-                  border: `1.5px solid ${active ? T.accent : T.border}`,
-                  background: active ? T.accentSurface : T.surface,
-                  cursor: "pointer", fontFamily: "inherit", textAlign: "left",
-                  transition: "all .15s",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                    <div style={{ width: 28, height: 18, borderRadius: 5, background: bg, border: `1px solid ${T.border}`, position: "relative", flexShrink: 0 }}>
-                      <div style={{ position: "absolute", right: 4, top: 4, width: 8, height: 8, borderRadius: "50%", background: swatch }} />
-                    </div>
-                    {active && <span style={{ fontSize: 10, color: T.accent, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase" }}>Active</span>}
-                  </div>
-                  <div style={{ fontSize: 13, fontWeight: active ? 600 : 500, color: active ? T.text : T.textSecondary }}>{label}</div>
-                  <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 2 }}>{desc}</div>
-                </button>
-              );
-            })}
-          </div>
         </Card>
 
         {/* Reading preferences */}
@@ -565,6 +610,25 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           </div>
         </Card>
 
+        {/* Manage Feeds link */}
+        {appFeeds.length > 0 && onNavigate && (
+          <button onClick={() => onNavigate("manage-feeds")} style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "14px 18px", background: T.card, border: `1px solid ${T.border}`,
+            borderRadius: 14, cursor: "pointer", fontFamily: "inherit", transition: "border-color .15s",
+            textAlign: "left", width: "100%",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; }}
+          >
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>Manage Feeds</div>
+              <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>{appFeeds.length} feed{appFeeds.length !== 1 ? "s" : ""} · Rename, organise into collections</div>
+            </div>
+            <span style={{ color: T.textTertiary, fontSize: 16 }}>›</span>
+          </button>
+        )}
+
         {/* Data & Export */}
         <Card title="Data &amp; Export" T={T}>
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7, marginBottom: 14 }}>
@@ -580,24 +644,16 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           }}>↓ Export OPML</button>
         </Card>
 
-        {/* Reading Stats */}
-        {/* Plan / Billing card */}
         <PlanCard T={T} user={user} feedCount={appFeeds.length} planName={planName} />
         <ReadingStatsCard T={T} user={user} />
-
-        {/* Feed Health */}
         <FeedHealthCard T={T} user={user} feeds={appFeeds} />
         <DataPrivacyCard T={T} user={user} />
-
-        {/* Manage Feeds */}
-        <ManageFeedsCard T={T} user={user} initialFeeds={appFeeds} initialFolders={appFolders} onFeedUpdate={onFeedUpdate} />
 
         {/* API Keys */}
         <Card title="API Keys" T={T}>
           <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14, lineHeight: 1.6 }}>
             Keys are stored in your browser only — never sent to any server other than the respective API.
           </div>
-
           <ApiKeyInput
             label="Anthropic API Key"
             placeholder="sk-ant-..."
@@ -607,8 +663,6 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
             T={T}
           />
         </Card>
-
-
 
         {/* Database migrations */}
         <Card title="Database Migrations" T={T}>
@@ -625,25 +679,54 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
             <div key={label} style={{ marginBottom: 10 }}>
               <div style={{ fontSize: 12, fontWeight: 500, color: T.text, marginBottom: 4 }}>{label}</div>
               <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                <code style={{ flex: 1, fontSize: 10, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "6px 10px", color: T.textSecondary, lineHeight: 1.5, wordBreak: "break-all", display: "block" }}>
-                  {sql}
-                </code>
+                <code style={{ flex: 1, fontSize: 10, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "6px 10px", color: T.textSecondary, lineHeight: 1.5, wordBreak: "break-all", display: "block" }}>{sql}</code>
                 <button onClick={() => { navigator.clipboard?.writeText(sql); }}
-                  style={{ flexShrink: 0, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", fontSize: 11, color: T.textSecondary, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                  Copy
-                </button>
+                  style={{ flexShrink: 0, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", fontSize: 11, color: T.textSecondary, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Copy</button>
               </div>
             </div>
           ))}
         </Card>
+
+        {/* Admin — analytics shortcut */}
+        {user?.user_metadata?.is_admin && onNavigate && (
+          <button onClick={() => onNavigate("analytics")} style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "14px 18px", background: T.card, border: `1px solid ${T.border}`,
+            borderRadius: 14, cursor: "pointer", fontFamily: "inherit", transition: "border-color .15s",
+            textAlign: "left", width: "100%",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; }}
+          >
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>Analytics Dashboard</div>
+              <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Admin · User metrics, DAU, events</div>
+            </div>
+            <span style={{ color: T.textTertiary, fontSize: 16 }}>›</span>
+          </button>
+        )}
 
         {/* About */}
         <Card title="About" T={T}>
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
             Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 8 }}>v1.24.8</div>
         </Card>
+      </div>
+    </PageShell>
+  );
+}
+
+// ── Manage Feeds page ──────────────────────────────────────────
+export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onNavigate }) {
+  const { T } = useTheme();
+  const { user } = useAuth();
+  return (
+    <PageShell title="Manage Feeds" subtitle={`${appFeeds.length} feed${appFeeds.length !== 1 ? "s" : ""}`}
+      action={onNavigate && <Button variant="ghost" size="sm" onClick={() => onNavigate("settings")}>← Settings</Button>}
+    >
+      <div style={{ maxWidth: 520, width: "100%", padding: "24px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <ManageFeedsCard T={T} user={user} initialFeeds={appFeeds} initialFolders={appFolders} onFeedUpdate={onFeedUpdate} />
       </div>
     </PageShell>
   );

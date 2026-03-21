@@ -627,7 +627,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       )}
 
       {/* ── Article list ── */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg }}>
+      <div style={{ flex: openItem && !isMobile ? "0 0 380px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
         <div style={{ padding: "0 16px", background: T.bg, boxShadow: `0 1px 0 ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 4 : 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
@@ -838,8 +838,22 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
         }}>{toast}</div>
       )}
 
+      {/* ── Inline reading panel — desktop 3-pane layout ── */}
+      {openItem && !isMobile && (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <ContentViewer
+            inline={true}
+            item={openItem}
+            onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+            onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+            onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+          />
+        </div>
+      )}
+
       {showAdd && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} onSaveForLater={handleSaveForLater} />}
-      {openItem && <ContentViewer
+      {/* Mobile: ContentViewer as full-screen overlay */}
+      {openItem && isMobile && <ContentViewer
         item={openItem}
         onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
         onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}

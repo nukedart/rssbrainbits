@@ -340,21 +340,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
           })}
         </div>
 
-        {/* Analytics — admin only */}
-        {user?.user_metadata?.is_admin && (
-          <button onClick={() => onNavigate("analytics")}
-            title="Analytics"
-            style={{ display:"flex", alignItems:"center", gap: collapsed?0:9, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"8px 12px", borderRadius:10, border:"none", background:active==="analytics"?T.surface:"transparent", cursor:"pointer", width:"100%", fontFamily:"inherit", transition:"background .15s", marginBottom:2 }}
-            onMouseEnter={e => { if (active!=="analytics") e.currentTarget.style.background=T.surface; }}
-            onMouseLeave={e => { if (active!=="analytics") e.currentTarget.style.background="transparent"; }}
-          >
-            <span style={{ color:active==="analytics"?T.accent:T.textTertiary, display:"flex", flexShrink:0 }}>
-              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12l3.5-4 3 3L12 6l2 2"/><circle cx="14" cy="4" r="1.5" fill="currentColor" stroke="none"/></svg>
-            </span>
-            {!collapsed && <span style={{ fontSize:13, fontWeight:500, color:active==="analytics"?T.accent:T.textSecondary }}>Analytics</span>}
-          </button>
-        )}
-
         {/* User / settings row */}
         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
           <button onClick={() => onNavigate("settings")}

@@ -18,7 +18,7 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
 
-export default function ContentViewer({ item, onClose, onNext, onPrev }) {
+export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false }) {
   const { T } = useTheme();
   const { user } = useAuth();
   const { isMobile } = useBreakpoint();
@@ -235,7 +235,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev }) {
     <div
       {...(isMobile ? swipeHandlers : {})}
       style={{
-        position: "fixed", inset: 0, background: T.bg, zIndex: 500,
+        ...(inline
+          ? { position: "relative", flex: 1, height: "100%" }
+          : { position: "fixed", inset: 0, zIndex: 500 }
+        ),
+        background: T.bg,
         borderLeft: `1px solid ${T.border}`,
         display: "flex", flexDirection: "column", overflow: "hidden",
       }}

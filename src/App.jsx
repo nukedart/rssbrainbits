@@ -4,7 +4,7 @@ import { ThemeProvider, useTheme } from "./hooks/useTheme";
 import LoginPage from "./pages/LoginPage";
 import InboxPage from "./pages/InboxPage";
 import HomePage from "./pages/HomePage";
-import { HistoryPage, ReadLaterPage, SettingsPage, StatsPage } from "./pages/SecondaryPages";
+import { HistoryPage, ReadLaterPage, SettingsPage, StatsPage, ManageFeedsPage } from "./pages/SecondaryPages";
 import NotesPage from "./components/NotesPage";
 import SmartFeedModal from "./components/SmartFeedModal";
 import Sidebar from "./components/Sidebar";
@@ -173,8 +173,9 @@ function AppShell() {
       case "history":   return <HistoryPage />;
       case "stats":     return <StatsPage />;
       case "notes":     return <NotesPage />;
-      case "analytics": return <AnalyticsPage />;
-      case "settings":  return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} />;
+      case "analytics":     return <AnalyticsPage />;
+      case "settings":      return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} />;
+      case "manage-feeds":  return <ManageFeedsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} />;
       default:          return <HomePage feeds={feeds} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
     }
   }

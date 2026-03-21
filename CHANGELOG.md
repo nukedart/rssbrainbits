@@ -3,9 +3,32 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.28.0] — 2026-03-21
+
+### Changes since v1.27.1
+
+---
+
+## [1.28.0] — 2026-03-21
+
+### Added
+- **3-pane reading layout** — on desktop, clicking any article in the Inbox opens a reading panel inline to the right (Feedly-style). The article list narrows to 380px; the reading panel fills the remaining space. Mobile keeps the full-screen overlay as before.
+- **Manage Feeds page** — dedicated page (`Settings → Manage Feeds →`) for renaming feeds, assigning to collections, and toggling full-content fetch. No longer embedded inside the Settings page.
+
+### Changed
+- **Settings — Appearance moved into Account card** — Dark/Light toggle is now two small icon buttons (Moon/Sun) in the top-right of the Account card. Separate "Appearance" card removed.
+- **Analytics removed from sidebar** — Admin analytics link moved to the bottom of the Settings page (admin-only). Left nav is now the same for all users.
+- **Read Later redesigned** — articles now display as a card grid with thumbnails, title, source, and time-saved. Empty state improved. Remove button per card.
+- **admin-stats edge function deployed** — resolves HTTP 401 on the Analytics Dashboard. The function was built but had never been deployed to Supabase.
+
+---
+
 ## [1.27.1] — 2026-03-21
 
-### Changes since v1.26.1
+### Changed
+- **Collections sidebar unified** — smart feeds and folders merged into a single "Collections" section. Left icon differentiates type: funnel = smart feed, folder = collection. Edit pencil appears on hover for both types.
+- **BottomNav add button** — solid SVG plus icon replaces plain "+" text character inside the accent square.
+- **View options popover** — the ≡/⊞ + S/M/L button strip replaced by a single icon button that opens a compact popover with Layout (List/Cards) and Size (S/M/L) options. Works on mobile and desktop.
 
 ---
 
