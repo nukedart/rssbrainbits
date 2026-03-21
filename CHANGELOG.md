@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.27.1] — 2026-03-21
+
+### Changes since v1.26.1
+
+---
+
 ## [1.26.1] — 2026-03-21
 
 ### Changed — Phase 3: Simplification

@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-const APP_VERSION = "1.26.1"; // keep in sync with package.json
+const APP_VERSION = "1.27.0"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -18,6 +18,8 @@ const Icons = {
   Plus:     () => (<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>),
   Edit:     () => (<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M11 2.5l2.5 2.5L5 13.5H2.5V11L11 2.5z"/></svg>),
   Stats:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6" y="5" width="3" height="10" rx="1"/><rect x="11" y="1" width="3" height="14" rx="1"/></svg>),
+  Folder:   () => (<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 3.5h4.5l1.5 2h7v7.5h-13z"/></svg>),
+  SmartFeed:() => (<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h12l-4 5v5l-4-2V8L2 3z"/></svg>),
 };
 
 const SMART_COLORS = { blue:"#2F6FED", teal:"#accfae", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -194,39 +196,52 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
         ))}
       </nav>
 
-      {/* ── Smart feeds ── */}
-      <div style={{ padding: collapsed?"8px 6px 4px":"12px 8px 4px", flexShrink:0 }}>
+      {/* ── Collections (smart feeds + folders unified) ── */}
+      <div style={{ padding: collapsed?"8px 6px 4px":"12px 8px 4px", flex:1, minHeight:0, overflowY:"auto", display:"flex", flexDirection:"column" }}>
+        {/* Section header */}
         {!collapsed && (
-          <div style={{ display:"flex", alignItems:"center", padding:"0 10px 6px" }}>
+          <div style={{ display:"flex", alignItems:"center", padding:"0 10px 6px", flexShrink:0 }}>
             <span style={{ flex:1, fontSize:9, fontWeight:600, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Collections</span>
-            <button onClick={onAddSmartFeed} title="New smart feed"
-              style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:2, borderRadius:4, transition:"color .1s" }}
+            {/* Add folder button */}
+            <button onClick={onAddFolder} title="New collection"
+              style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 3px", borderRadius:4, transition:"color .1s" }}
               onMouseEnter={e => e.currentTarget.style.color=T.accent}
               onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-            ><Icons.Plus /></button>
+            ><Icons.Folder /></button>
+            {/* Add smart feed button */}
+            <button onClick={onAddSmartFeed} title="New smart feed"
+              style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 3px", borderRadius:4, transition:"color .1s", marginLeft:2 }}
+              onMouseEnter={e => e.currentTarget.style.color=T.accent}
+              onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+            ><Icons.SmartFeed /></button>
           </div>
         )}
+        {collapsed && (
+          <button onClick={onAddFolder} title="New collection"
+            style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"100%", padding:"6px 0", background:"none", border:"none", cursor:"pointer", color:T.textTertiary, transition:"color .1s", marginBottom:2 }}
+            onMouseEnter={e => e.currentTarget.style.color=T.accent}
+            onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+          ><Icons.Plus /></button>
+        )}
+
+        {/* Smart feeds */}
         {smartFeeds.map(sf => {
           const isActive = active===`smart:${sf.id}`;
-          const dot = SMART_COLORS[sf.color] || SMART_COLORS.teal;
           return (
-            <div key={sf.id} style={{ display:"flex", alignItems:"center", gap:4, borderRadius:10, background: isActive?T.surface:"transparent", transition:"background .15s", marginBottom:1 }}
+            <div key={sf.id} style={{ display:"flex", alignItems:"center", borderRadius:10, background: isActive?T.surface:"transparent", transition:"background .15s", marginBottom:1, flexShrink:0 }}
               onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
             >
-              {/* Main clickable area */}
               <button
                 onClick={() => onNavigate(`smart:${sf.id}`)}
                 title={collapsed ? sf.name : undefined}
                 style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0 }}
               >
+                <span style={{ color: isActive ? T.accent : T.textTertiary, display:"flex", flexShrink:0 }}><Icons.SmartFeed /></span>
                 {!collapsed && (
-                  <span style={{ flex:1, fontSize:13, fontWeight:isActive?500:400, color:isActive?T.accent:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em", paddingLeft:4 }}>{sf.name}</span>
+                  <span style={{ flex:1, fontSize:13, fontWeight:isActive?500:400, color:isActive?T.accent:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>{sf.name}</span>
                 )}
-                {/* Color dot — right side */}
-                <span style={{ width:8, height:8, borderRadius:"50%", background:dot, flexShrink:0 }} />
               </button>
-              {/* Edit icon — always visible on hover */}
               {!collapsed && (
                 <button onClick={e => { e.stopPropagation(); onEditSmartFeed(sf); }}
                   title="Edit smart feed"
@@ -238,122 +253,77 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
             </div>
           );
         })}
-        {!collapsed && smartFeeds.length === 0 && (
-          <button onClick={onAddSmartFeed}
-            style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, color:T.textTertiary, padding:"3px 10px", textAlign:"left", lineHeight:1.5, width:"100%", transition:"color .1s" }}
-            onMouseEnter={e => e.currentTarget.style.color=T.accent}
-            onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-          >+ Create keyword bucket</button>
-        )}
-        {collapsed && (
-          <button onClick={onAddSmartFeed} title="New smart feed"
-            style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"100%", padding:"6px 0", background:"none", border:"none", cursor:"pointer", color:T.textTertiary, transition:"color .1s" }}
-            onMouseEnter={e => e.currentTarget.style.color=T.accent}
-            onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-          ><Icons.Plus /></button>
-        )}
-      </div>
 
-      {/* ── New folder — shown even when no folders exist ── */}
-      {folders.length === 0 && !collapsed && (
-        <div style={{ padding:"4px 8px 0" }}>
-          <button onClick={onAddFolder}
-            style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"4px 10px", borderRadius:8, background:"none", border:"none", cursor:"pointer", color:T.textTertiary, fontFamily:"inherit", fontSize:12, transition:"color .1s" }}
-            onMouseEnter={e => e.currentTarget.style.color=T.accent}
-            onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-          ><Icons.Plus /><span>New collection</span></button>
-        </div>
-      )}
-
-      {/* ── Folders ── */}
-      {folders.length > 0 && (
-        <div style={{ padding: collapsed?"4px 6px":"8px 8px 4px", flexShrink:0 }}>
-          {!collapsed
-            ? (
-              <div style={{ display:"flex", alignItems:"center", padding:"0 10px 6px" }}>
-                <span style={{ flex:1, fontSize:9, fontWeight:600, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Collections</span>
-                <button onClick={onAddFolder} title="New folder"
-                  style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:2, borderRadius:4, transition:"color .1s" }}
-                  onMouseEnter={e => e.currentTarget.style.color=T.accent}
-                  onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-                ><Icons.Plus /></button>
-              </div>
-            )
-            : (
-              <button onClick={onAddFolder} title="New folder"
-                style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"100%", padding:"6px 0", background:"none", border:"none", cursor:"pointer", color:T.textTertiary, transition:"color .1s" }}
-                onMouseEnter={e => e.currentTarget.style.color=T.accent}
-                onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-              ><Icons.Plus /></button>
-            )
-          }
-          {folders.map(folder => {
-            const dot = FCOLS[folder.color] || "#8A9099";
-            const isExpanded = expandedFolders.has(folder.id);
-            const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
-            return (
-              <div key={folder.id} style={{ marginBottom:1 }}>
-                {/* Folder header row */}
-                <div style={{ display:"flex", alignItems:"center", gap:4, borderRadius:10, transition:"background .15s", background: sidebarDragOver===folder.id ? T.accentSurface : "transparent", outline: sidebarDragOver===folder.id ? `1.5px solid ${T.accent}` : "none" }}
-                  onMouseEnter={e => { if (!collapsed && sidebarDragOver!==folder.id) e.currentTarget.style.background=T.surface; }}
-                  onMouseLeave={e => { if (sidebarDragOver!==folder.id) e.currentTarget.style.background="transparent"; }}
-                  onDragOver={e => { e.preventDefault(); setSidebarDragOver(folder.id); }}
-                  onDragLeave={() => setSidebarDragOver(null)}
-                  onDrop={async e => {
-                    e.preventDefault();
-                    const feedId = e.dataTransfer.getData("feedId");
-                    if (feedId && onMoveFeedToFolder) await onMoveFeedToFolder(feedId, folder.id);
-                    setSidebarDragOver(null);
-                  }}
+        {/* Folders */}
+        {folders.map(folder => {
+          const dot = FCOLS[folder.color] || "#8A9099";
+          const isExpanded = expandedFolders.has(folder.id);
+          const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
+          return (
+            <div key={folder.id} style={{ marginBottom:1, flexShrink:0 }}>
+              <div style={{ display:"flex", alignItems:"center", borderRadius:10, transition:"background .15s", background: sidebarDragOver===folder.id ? T.accentSurface : "transparent", outline: sidebarDragOver===folder.id ? `1.5px solid ${T.accent}` : "none" }}
+                onMouseEnter={e => { if (!collapsed && sidebarDragOver!==folder.id) e.currentTarget.style.background=T.surface; }}
+                onMouseLeave={e => { if (sidebarDragOver!==folder.id) e.currentTarget.style.background="transparent"; }}
+                onDragOver={e => { e.preventDefault(); setSidebarDragOver(folder.id); }}
+                onDragLeave={() => setSidebarDragOver(null)}
+                onDrop={async e => {
+                  e.preventDefault();
+                  const feedId = e.dataTransfer.getData("feedId");
+                  if (feedId && onMoveFeedToFolder) await onMoveFeedToFolder(feedId, folder.id);
+                  setSidebarDragOver(null);
+                }}
+              >
+                <button onClick={() => !collapsed && toggleFolder(folder.id)}
+                  title={collapsed ? folder.name : undefined}
+                  style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:collapsed?"default":"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0 }}
                 >
-                  <button onClick={() => !collapsed && toggleFolder(folder.id)}
-                    title={collapsed ? folder.name : undefined}
-                    style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:collapsed?"default":"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0 }}
-                  >
-                    {/* Chevron */}
-                    {!collapsed && (
-                      <span style={{ fontSize:8, color:T.textTertiary, transition:"transform .15s", transform:isExpanded?"rotate(90deg)":"rotate(0deg)", display:"inline-block", flexShrink:0 }}>▶</span>
-                    )}
-                    {/* Folder name — text left */}
-                    {!collapsed && (
+                  <span style={{ color:T.textTertiary, display:"flex", flexShrink:0 }}><Icons.Folder /></span>
+                  {!collapsed && (
+                    <>
                       <span style={{ flex:1, fontSize:13, fontWeight:500, color:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
                         {folder.name}
                         {folderFeeds.length > 0 && <span style={{ fontSize:10, color:T.textTertiary, marginLeft:5, fontWeight:400 }}>{folderFeeds.length}</span>}
                       </span>
-                    )}
-                    {/* Color dot — right */}
-                    <span style={{ width:8, height:8, borderRadius:2, background:dot, flexShrink:0 }} />
-                  </button>
-                  {/* Edit icon */}
-                  {!collapsed && (
-                    <button onClick={e => { e.stopPropagation(); onEditFolder(folder); }}
-                      title="Edit folder"
-                      style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"6px 8px 6px 2px", opacity:0, transition:"opacity .1s", flexShrink:0 }}
-                      onMouseEnter={e => { e.currentTarget.style.opacity="1"; e.currentTarget.style.color=T.accent; }}
-                      onMouseLeave={e => { e.currentTarget.style.opacity="0"; e.currentTarget.style.color=T.textTertiary; }}
-                    ><Icons.Edit /></button>
+                      <span style={{ fontSize:8, color:T.textTertiary, transition:"transform .15s", transform:isExpanded?"rotate(90deg)":"rotate(0deg)", display:"inline-block", flexShrink:0, marginRight:2 }}>▶</span>
+                    </>
                   )}
-                </div>
-                {/* Feeds inside folder */}
-                {!collapsed && isExpanded && folderFeeds.map(f => (
-                  <div key={f.id}
-                    draggable
-                    onDragStart={e => { e.dataTransfer.setData("feedId", f.id); e.dataTransfer.effectAllowed = "move"; }}
-                    style={{ padding:"3px 10px 3px 26px", fontSize:12, color:T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", cursor:"grab", borderRadius:6 }}
-                    onMouseEnter={e => e.currentTarget.style.background=T.surface2}
-                    onMouseLeave={e => e.currentTarget.style.background="transparent"}
-                    title="Drag to move to another folder"
-                  >
-                    ⠿ {f.name || (() => { try { return new URL(f.url).hostname; } catch { return f.url; } })()}
-                  </div>
-                ))}
+                </button>
+                {!collapsed && (
+                  <button onClick={e => { e.stopPropagation(); onEditFolder(folder); }}
+                    title="Edit collection"
+                    style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"6px 8px 6px 2px", opacity:0, transition:"opacity .1s", flexShrink:0 }}
+                    onMouseEnter={e => { e.currentTarget.style.opacity="1"; e.currentTarget.style.color=T.accent; }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity="0"; e.currentTarget.style.color=T.textTertiary; }}
+                  ><Icons.Edit /></button>
+                )}
               </div>
-            );
-          })}
-        </div>
-      )}
+              {!collapsed && isExpanded && folderFeeds.map(f => (
+                <div key={f.id}
+                  draggable
+                  onDragStart={e => { e.dataTransfer.setData("feedId", f.id); e.dataTransfer.effectAllowed = "move"; }}
+                  style={{ padding:"3px 10px 3px 30px", fontSize:12, color:T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", cursor:"grab", borderRadius:6 }}
+                  onMouseEnter={e => e.currentTarget.style.background=T.surface2}
+                  onMouseLeave={e => e.currentTarget.style.background="transparent"}
+                  title="Drag to move to another folder"
+                >
+                  ⠿ {f.name || (() => { try { return new URL(f.url).hostname; } catch { return f.url; } })()}
+                </div>
+              ))}
+            </div>
+          );
+        })}
 
-      <div style={{ flex:1, minHeight:0 }} />
+        {/* Empty state */}
+        {!collapsed && smartFeeds.length === 0 && folders.length === 0 && (
+          <div style={{ padding:"2px 10px" }}>
+            <button onClick={onAddFolder}
+              style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, color:T.textTertiary, padding:"3px 0", textAlign:"left", lineHeight:1.5, width:"100%", transition:"color .1s" }}
+              onMouseEnter={e => e.currentTarget.style.color=T.accent}
+              onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+            >+ New collection</button>
+          </div>
+        )}
+      </div>
 
       {/* ── Bottom bar ── */}
       <div style={{ padding: collapsed?"8px 6px":"8px 12px 12px", flexShrink:0 }}>

@@ -62,6 +62,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const pullStartY = useRef(null); // touch start Y for pull-to-refresh
   const fetchAllRef = useRef(null); // stable ref to fetchAll — accessible from PTR handlers
   const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
+  const [viewMenuOpen, setViewMenuOpen]     = useState(false);
+  const viewMenuRef = useRef(null);
 
   function toggleFolderOpen(id) {
     setOpenFolders(prev => {
@@ -430,6 +432,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
   function toggleViewMode(mode) { setViewMode(mode); localStorage.setItem("fb-viewmode", mode); }
 
+  useEffect(() => {
+    if (!viewMenuOpen) return;
+    const h = e => { if (viewMenuRef.current && !viewMenuRef.current.contains(e.target)) setViewMenuOpen(false); };
+    document.addEventListener("mousedown", h);
+    document.addEventListener("touchstart", h);
+    return () => { document.removeEventListener("mousedown", h); document.removeEventListener("touchstart", h); };
+  }, [viewMenuOpen]);
+
   const activeFeedName = filterMode === "today"  ? "Today"
     : filterMode === "unread" ? "Unread"
     : filterMode === "smart"  ? (smartFeedDef?.name || "Smart Feed")
@@ -685,31 +695,70 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             </button>
           )}
 
-          {/* View + Size toggles — hidden on mobile */}
-          {!isMobile && <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-            <div style={{ display: "flex", gap: 1, background: T.surface, borderRadius: 10, padding: "3px" }}>
-              {[{ mode: "list", icon: "≡", title: "List" }, { mode: "card", icon: "⊞", title: "Cards" }].map(({ mode, icon, title }) => (
-                <button key={mode} onClick={() => toggleViewMode(mode)} title={title} style={{
-                  width: 28, height: 24, borderRadius: 7, border: "none",
-                  background: viewMode === mode ? T.surface2 : "transparent",
-                  color: viewMode === mode ? T.text : T.textTertiary,
-                  cursor: "pointer", fontSize: 14, fontWeight: 700,
-                  transition: "all .15s", display: "flex", alignItems: "center", justifyContent: "center",
-                }}>{icon}</button>
-              ))}
-            </div>
-            <div style={{ display: "flex", gap: 1, background: T.surface, borderRadius: 10, padding: "3px" }}>
-              {[{ size: "sm", label: "S" }, { size: "md", label: "M" }, { size: "lg", label: "L" }].map(({ size, label }) => (
-                <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} title={`${size === "sm" ? "Small" : size === "md" ? "Medium" : "Large"} view`} style={{
-                  width: 24, height: 24, borderRadius: 7, border: "none",
-                  background: cardSize === size ? T.surface2 : "transparent",
-                  color: cardSize === size ? T.text : T.textTertiary,
-                  cursor: "pointer", fontSize: 11, fontWeight: 700,
-                  transition: "all .15s", fontFamily: "inherit",
-                }}>{label}</button>
-              ))}
-            </div>
-          </div>}
+          {/* View options — single icon button with popover */}
+          <div ref={viewMenuRef} style={{ position: "relative", flexShrink: 0 }}>
+            <button
+              onClick={() => setViewMenuOpen(v => !v)}
+              title="View options"
+              style={{
+                width: 32, height: 32, borderRadius: 9, border: "none",
+                background: viewMenuOpen ? T.surface2 : T.surface,
+                color: viewMenuOpen ? T.text : T.textTertiary,
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all .15s",
+              }}
+            >
+              {viewMode === "card"
+                ? <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+                : <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+              }
+            </button>
+            {viewMenuOpen && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 6px)", right: 0,
+                background: T.card, border: `1px solid ${T.border}`,
+                borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,.18)",
+                zIndex: 900, minWidth: 160, overflow: "hidden",
+                animation: "fadeIn .12s ease",
+              }}>
+                {/* List / Card toggle */}
+                <div style={{ padding: "10px 12px 6px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Layout</div>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {[{ mode: "list", label: "List", icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg> },
+                      { mode: "card", label: "Cards", icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg> }
+                    ].map(({ mode, label, icon }) => (
+                      <button key={mode} onClick={() => toggleViewMode(mode)} style={{
+                        flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        padding: "6px 8px", borderRadius: 8, border: "none",
+                        background: viewMode === mode ? T.accentSurface : T.surface,
+                        color: viewMode === mode ? T.accent : T.textSecondary,
+                        cursor: "pointer", fontSize: 12, fontWeight: viewMode === mode ? 600 : 400,
+                        fontFamily: "inherit", transition: "all .12s",
+                      }}>{icon}{label}</button>
+                    ))}
+                  </div>
+                </div>
+                {/* Size — only for card mode */}
+                {viewMode === "card" && (
+                  <div style={{ padding: "6px 12px 10px" }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Size</div>
+                    <div style={{ display: "flex", gap: 4 }}>
+                      {[{ size: "sm", label: "S" }, { size: "md", label: "M" }, { size: "lg", label: "L" }].map(({ size, label }) => (
+                        <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} style={{
+                          flex: 1, padding: "5px 0", borderRadius: 8, border: "none",
+                          background: cardSize === size ? T.accentSurface : T.surface,
+                          color: cardSize === size ? T.accent : T.textSecondary,
+                          cursor: "pointer", fontSize: 12, fontWeight: cardSize === size ? 700 : 400,
+                          fontFamily: "inherit", transition: "all .12s",
+                        }}>{label}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: 32, paddingLeft: isMobile ? 10 : 12, paddingRight: isMobile ? 10 : 12, flexShrink: 0 }}>{isMobile ? "+" : "+ Add"}</Button>
         </div>

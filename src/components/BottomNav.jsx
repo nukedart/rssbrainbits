@@ -64,9 +64,12 @@ export default function BottomNav({ active, onNavigate, onAdd, unreadCount = 0 }
                 width: 40, height: 40, borderRadius: 13,
                 background: T.accent, color: T.accentText,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 22, fontWeight: 300, lineHeight: 1,
                 boxShadow: `0 2px 12px ${T.accent}50`,
-              }}>+</span>
+              }}>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M9 2v14M2 9h14"/>
+                </svg>
+              </span>
             </button>
           );
         }
