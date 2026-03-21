@@ -32,8 +32,8 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
     focusInput: () => { inputRef.current?.focus(); inputRef.current?.select(); }
   }));
 
-  // Auto-focus when mounted
-  useEffect(() => { inputRef.current?.focus(); }, []);
+  // No auto-focus on mount — on mobile this pops the keyboard immediately
+  // Programmatic focus is available via ref.focusInput() for keyboard shortcut (f)
 
   // Close on Escape
   useEffect(() => {

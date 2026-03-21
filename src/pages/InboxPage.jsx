@@ -394,7 +394,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
   async function handleSaveItem(item) {
     await saveItem(user.id, { ...item });
-    showToast("✓ Saved");
+    showToast("⭐ Starred");
   }
 
   async function handleSaveForLater({ url, type }) {
@@ -822,7 +822,7 @@ function OnboardingCard({ onAddFeed, onQuickAdd, T }) {
   const STEPS = [
     { icon: "📡", title: "Add a feed", desc: "Paste any RSS URL, YouTube channel, or article link" },
     { icon: "📖", title: "Read calmly", desc: "Clean reader view, swipe between articles, no noise" },
-    { icon: "🔖", title: "Save what matters", desc: "Highlight, tag, and export to Markdown" },
+    { icon: "⭐", title: "Star what matters", desc: "Highlight, tag, and export to Markdown" },
   ];
   return (
     <div style={{ maxWidth: 560, margin: "40px auto 0", padding: "0 20px 80px" }}>

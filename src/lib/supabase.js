@@ -395,53 +395,66 @@ export function matchesSmartFeed(item, defOrKeywords) {
 
 // ── Reading stats ─────────────────────────────────────────────
 export async function getReadingStats(userId) {
-  // Total all-time count — gracefully ignore schema errors
-  const { count } = await supabase
-    .from("read_items").select("url", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .catch(() => ({ count: 0 }));
+  let allTime = 0;
+  let recentData = [];
 
-  // Fetch recent reads — 500 items covers ~30 days for most users
-  const { data: recentData = [] } = await supabase
-    .from("read_items").select("url, read_at")
-    .eq("user_id", userId).order("read_at", { ascending: false }).limit(500)
-    .catch(() => ({ data: [] }));
+  // Total all-time count
+  try {
+    const { count, error } = await supabase
+      .from("read_items").select("url", { count: "exact", head: true })
+      .eq("user_id", userId);
+    if (!error && count != null) allTime = count;
+  } catch {}
+
+  // Fallback: count from localStorage if Supabase returned nothing
+  if (allTime === 0) {
+    try {
+      const local = JSON.parse(localStorage.getItem(`fb-readurls-${userId}`) || "[]");
+      allTime = local.length;
+    } catch {}
+  }
+
+  // Fetch recent reads with timestamps for per-day chart + streak
+  try {
+    const { data, error } = await supabase
+      .from("read_items").select("url, read_at")
+      .eq("user_id", userId).order("read_at", { ascending: false }).limit(500);
+    if (!error && data) recentData = data;
+  } catch {}
 
   const weekAgo  = new Date(Date.now() - 7  * 86400000).toISOString();
   const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString();
-  const weekData  = (recentData || []).filter(r => r.read_at && r.read_at >= weekAgo);
+
+  // Only count rows that actually have a read_at timestamp
+  const timedData = recentData.filter(r => r.read_at);
+  const weekData  = timedData.filter(r => r.read_at >= weekAgo);
 
   // Reading streak — count consecutive days with at least one read
   let streak = 0;
-  if (recentData?.length && recentData[0]?.read_at) {
-    const days = new Set(recentData.map(r => r.read_at?.slice(0, 10)).filter(Boolean));
+  if (timedData.length) {
+    const days = new Set(timedData.map(r => r.read_at.slice(0, 10)));
     const today = new Date().toISOString().slice(0, 10);
     let check = today;
     for (let i = 0; i < 365; i++) {
       if (days.has(check)) {
         streak++;
-        const d = new Date(check);
+        const d = new Date(check + "T12:00:00");
         d.setDate(d.getDate() - 1);
         check = d.toISOString().slice(0, 10);
       } else break;
     }
   }
 
-  // Articles per day — cover the full 30-day window for the bar chart
+  // Articles per day — 30-day bar chart
   const perDay = {};
-  (recentData || [])
-    .filter(r => r.read_at && r.read_at >= monthAgo)
+  timedData
+    .filter(r => r.read_at >= monthAgo)
     .forEach(r => {
-      const day = r.read_at?.slice(0, 10);
-      if (day) perDay[day] = (perDay[day] || 0) + 1;
+      const day = r.read_at.slice(0, 10);
+      perDay[day] = (perDay[day] || 0) + 1;
     });
 
-  return {
-    thisWeek: weekData.length,
-    allTime:  count || 0,
-    streak,
-    perDay,  // now covers the full 30 days shown in the chart
-  };
+  return { thisWeek: weekData.length, allTime, streak, perDay };
 }
 
 export async function getAllHighlights(userId) {

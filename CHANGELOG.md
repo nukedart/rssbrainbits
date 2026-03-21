@@ -3,6 +3,20 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.26.0] — 2026-03-20
+
+### Fixed
+- **Home page items now open** — tapping any card or article row on the Home page now opens the full reader. `ContentViewer` is now rendered locally within `HomePage` via internal `openItem` state (the `onOpenItem` prop was never being passed from `App.jsx`).
+- **Inbox search no longer hijacks keyboard on mobile** — `SearchBar` was calling `inputRef.current?.focus()` on every mount, popping the mobile keyboard instantly when navigating to Inbox. Auto-focus on mount removed; programmatic focus still works via the `f` keyboard shortcut.
+- **Stats page now shows data** — `getReadingStats` was using `.catch()` on Supabase query builders (which don't throw — errors come back in the result object). Replaced with proper `try/catch` blocks. Added localStorage fallback for all-time count so total reads appear even if the DB `read_at` column is missing. Error message simplified.
+- **Folders renamed to Collections** — `FolderModal` title, field label; Sidebar section headers and button labels all updated to "Collection / Collections". DB/code internals unchanged.
+
+### Changed
+- **Save → Star** — "Save" action renamed to "Star" throughout: card action buttons (🔖 → ⭐), list-view hover actions, toast notification ("✓ Saved" → "⭐ Starred"), keyboard shortcut tooltip, onboarding card copy.
+- **Sidebar nav simplified** — removed "Today" and "History" from desktop sidebar nav. Remaining items: Home · Inbox · Read Later · Notes · Stats. Settings remains in the footer.
+
+---
+
 ## [1.25.4] — 2026-03-20
 
 ### Fixed

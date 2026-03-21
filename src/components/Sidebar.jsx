@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-const APP_VERSION = "1.25.4"; // keep in sync with package.json
+const APP_VERSION = "1.26.0"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -34,16 +34,14 @@ const HomeIcon = () => (
 const NAV = [
   { id:"home",      Icon:HomeIcon,        label:"Home"      },
   { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox"     },
-  { id:"today",     Icon:Icons.Today,     label:"Today"     },
   { id:"readlater", Icon:Icons.ReadLater, label:"Read Later"},
-  { id:"history",   Icon:Icons.History,   label:"History"   },
   { id:"notes",     Icon:Icons.Notes,     label:"Notes"     },
   { id:"stats",     Icon:Icons.Stats,     label:"Stats"     },
 ];
 
 const SHORTCUTS = [
   ["J / K","Navigate"],["O","Open"],["R","Read/unread"],
-  ["L","Read later"],["S","Save"],["A","Add feed"],["F","Focus search"],["Esc","Close"],
+  ["L","Read later"],["S","Star"],["A","Add feed"],["F","Focus search"],["Esc","Close"],
 ];
 
 // ── Single nav row — works in both expanded and collapsed state ──
@@ -252,7 +250,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
             style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"4px 10px", borderRadius:8, background:"none", border:"none", cursor:"pointer", color:T.textTertiary, fontFamily:"inherit", fontSize:12, transition:"color .1s" }}
             onMouseEnter={e => e.currentTarget.style.color=T.accent}
             onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-          ><Icons.Plus /><span>New folder</span></button>
+          ><Icons.Plus /><span>New collection</span></button>
         </div>
       )}
 
@@ -262,7 +260,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
           {!collapsed
             ? (
               <div style={{ display:"flex", alignItems:"center", padding:"0 10px 6px" }}>
-                <span style={{ flex:1, fontSize:9, fontWeight:600, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Folders</span>
+                <span style={{ flex:1, fontSize:9, fontWeight:600, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Collections</span>
                 <button onClick={onAddFolder} title="New folder"
                   style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:2, borderRadius:4, transition:"color .1s" }}
                   onMouseEnter={e => e.currentTarget.style.color=T.accent}

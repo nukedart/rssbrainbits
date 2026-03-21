@@ -5,6 +5,7 @@ import { getFeeds } from "../lib/supabase";
 import { fetchRSSFeed } from "../lib/fetchers";
 import { getCachedFeed } from "../lib/feedCache";
 import { Spinner } from "../components/UI";
+import ContentViewer from "../components/ContentViewer";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
 // ── Daily Briefing Home Page ────────────────────────────────
@@ -13,14 +14,15 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 //   • Bento grid: 8-col featured card + 4-col two stacked cards
 //   • "Latest Updates" editorial row list
 
-export default function HomePage({ feeds: propFeeds = null, onNavigate, onOpenItem, onPlayPodcast }) {
+export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPodcast }) {
   const { T }        = useTheme();
   const { user }     = useAuth();
   const { isMobile } = useBreakpoint();
 
-  const [items, setItems]     = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [feeds, setFeeds]     = useState(propFeeds || []);
+  const [items, setItems]       = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [feeds, setFeeds]       = useState(propFeeds || []);
+  const [openItem, setOpenItem] = useState(null);
 
   // load feeds if not supplied
   useEffect(() => {
@@ -115,6 +117,7 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onOpenIt
   }
 
   return (
+    <>
     <div style={{ flex: 1, overflowY: "auto", background: T.bg }}>
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: isMobile ? "32px 18px 100px" : "48px 48px 80px" }}>
 
@@ -150,7 +153,7 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onOpenIt
             {/* Featured card — 8 columns */}
             {featured && (
               <article
-                onClick={() => onOpenItem?.(featured)}
+                onClick={() => setOpenItem(featured)}
                 style={{
                   gridColumn: isMobile ? "1" : "span 8",
                   background: T.card, borderRadius: 16,
@@ -217,7 +220,7 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onOpenIt
               {/* Trending card */}
               {secondary && (
                 <article
-                  onClick={() => onOpenItem?.(secondary)}
+                  onClick={() => setOpenItem(secondary)}
                   style={{ background: T.card, borderRadius: 16, padding: "24px", cursor: "pointer", flex: "0 0 auto", transition: "background .2s" }}
                   onMouseEnter={e => e.currentTarget.style.background = T.surface}
                   onMouseLeave={e => e.currentTarget.style.background = T.card}
@@ -240,7 +243,7 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onOpenIt
               {/* Curated / second card */}
               {tertiary && (
                 <article
-                  onClick={() => onOpenItem?.(tertiary)}
+                  onClick={() => setOpenItem(tertiary)}
                   style={{ background: T.surface, borderRadius: 16, padding: "24px", cursor: "pointer", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 160, transition: "background .2s" }}
                   onMouseEnter={e => e.currentTarget.style.background = T.card}
                   onMouseLeave={e => e.currentTarget.style.background = T.surface}
@@ -288,7 +291,7 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onOpenIt
                   key={item.url || i}
                   item={item}
                   relTime={relativeTime(item.date)}
-                  onClick={() => onOpenItem?.(item)}
+                  onClick={() => setOpenItem(item)}
                   T={T}
                   isMobile={isMobile}
                 />
@@ -298,6 +301,13 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onOpenIt
         )}
       </div>
     </div>
+    {openItem && (
+      <ContentViewer
+        item={openItem}
+        onClose={() => setOpenItem(null)}
+      />
+    )}
+    </>
   );
 }
 

@@ -214,10 +214,7 @@ export function StatsPage() {
         <div style={{ padding:"40px 24px", textAlign:"center", color:T.textTertiary, maxWidth:400, margin:"0 auto" }}>
           <div style={{ fontSize:28, marginBottom:12 }}>📊</div>
           <div style={{ fontSize:14, fontWeight:600, color:T.text, marginBottom:6 }}>Stats unavailable</div>
-          <div style={{ fontSize:13, lineHeight:1.6 }}>
-            Reading stats require the <code style={{ background:T.surface2, padding:"1px 5px", borderRadius:4, fontSize:12 }}>read_at</code> column on <code style={{ background:T.surface2, padding:"1px 5px", borderRadius:4, fontSize:12 }}>read_items</code>.
-            Run the database migration in Settings → About to enable this.
-          </div>
+          <div style={{ fontSize:13, lineHeight:1.6 }}>Could not load reading data. Try again or contact support.</div>
         </div>
       )}
       {!loading && !error && stats && (

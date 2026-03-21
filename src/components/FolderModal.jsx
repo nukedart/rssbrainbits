@@ -45,14 +45,14 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
           <div style={{ width: 32, height: 32, borderRadius: 8, background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📁</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{isNew ? "New folder" : "Edit folder"}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{isNew ? "New collection" : "Edit collection"}</div>
           </div>
           <button onClick={onClose} style={{ background: T.surface2, border: "none", borderRadius: 7, width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
         </div>
 
         {/* Name */}
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: T.textTertiary, display: "block", marginBottom: 6 }}>Folder name</label>
+          <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: T.textTertiary, display: "block", marginBottom: 6 }}>Collection name</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}

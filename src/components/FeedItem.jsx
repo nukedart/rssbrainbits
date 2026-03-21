@@ -241,7 +241,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                   <ActionBtn icon="▶" title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
                 )}
                 <ActionBtn icon={isRead ? "○" : "●"} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
-                <ActionBtn icon="🔖" title="Save" onClick={onSave} T={T} />
+                <ActionBtn icon="⭐" title="Star" onClick={onSave} T={T} />
                 <ActionBtn icon="⏱" title="Read later" onClick={onReadLater} T={T} />
                 <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
               </div>
@@ -363,7 +363,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
             {/* Actions */}
             <div style={{ display: "flex", gap: 6, marginTop: "auto" }} onClick={e => e.stopPropagation()}>
               <ActionBtn icon="📖" label="Read" onClick={onClick} T={T} small />
-              <ActionBtn icon="🔖" label="Save" onClick={onSave} T={T} small />
+              <ActionBtn icon="⭐" label="Star" onClick={onSave} T={T} small />
               <ActionBtn icon="⏱" label="Later" onClick={onReadLater} T={T} small />
               <div style={{ marginLeft: "auto" }}>
                 <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} small />
