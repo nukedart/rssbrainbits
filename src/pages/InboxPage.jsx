@@ -648,7 +648,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       )}
 
       {/* ── Article list ── */}
-      <div style={{ flex: !isMobile && feeds.length > 0 ? "0 0 380px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
+      <div style={{ flex: !isMobile && openItem ? "0 0 380px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
         <div style={{ padding: "0 12px", background: T.bg, boxShadow: `0 1px 0 ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
@@ -957,21 +957,18 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
         }}>{toast}</div>
       )}
 
-      {/* ── Right panel — always visible on desktop when feeds loaded ── */}
-      {!isMobile && feeds.length > 0 && (
+      {/* ── Right panel — shown on desktop when an article is open ── */}
+      {!isMobile && openItem && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: `1px solid ${T.border}` }}>
-          {openItem
-            ? <ContentViewer
-                inline={true}
-                item={openItem}
-                onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
-                onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
-                onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
-                currentIdx={openIdx}
-                totalCount={baseItems.length}
-              />
-            : <ReaderEmptyState T={T} />
-          }
+          <ContentViewer
+            inline={true}
+            item={openItem}
+            onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+            onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+            onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+            currentIdx={openIdx}
+            totalCount={baseItems.length}
+          />
         </div>
       )}
 

@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.28.5] — 2026-03-21
+
+### Fixed
+- **Reading panel appears only when an article is open** — the right panel on desktop no longer shows the empty-state placeholder at rest. The article list fills the full width until you click an article, then the 380px list + reading panel layout snaps in.
+
 ## [1.28.4] — 2026-03-21
 
 ### Added
@@ -36,19 +41,40 @@ Format: `## [version] — YYYY-MM-DD`
 
 ## [1.28.2] — 2026-03-21
 
-### Changes since v1.28.1
+### Added
+- **Desktop prev/next navigation** — ‹ and › buttons appear in the reading panel header on desktop (not just mobile), with keyboard shortcut hints (`[` / `]`).
+- **Article position indicator** — "3 of 47" shown below the source name in the reading panel so you always know where you are in the list.
+- **✦ Discover tab in Add modal** — 18 hand-curated feeds across 6 categories (Tech, AI, Design, News, Science, Business). One click to subscribe with no URL needed.
 
 ---
 
 ## [1.28.1] — 2026-03-21
 
-### Changes since v1.28.0
+### Added
+- **Toolbar — Latest / Unread pill tabs** — replaces the old toggle button. Cleaner, more readable.
+- **Toolbar — search icon toggle** — search collapses to an icon by default; click to expand the full search input.
+- **Toolbar — error badge** — red `!` badge replaces verbose error text for failed feeds. Click for a popover with per-feed retry buttons and a "Retry all" option.
+- **Toolbar — SVG refresh icon** — replaces the `↺` text character.
+- **Toolbar — icon-only mark-all-read** — double-check SVG button saves toolbar space.
+
+### Fixed
+- **Folder persistence** — folder assignments now survive login/refresh. The inbox route in App.jsx was missing `feeds={feeds}`, causing InboxPage to re-fetch and lose optimistic folder updates on every mount.
 
 ---
 
 ## [1.28.0] — 2026-03-21
 
-### Changes since v1.27.1
+### Added
+- **3-pane reading layout** — on desktop, clicking any article opens a reading panel inline to the right (Feedly-style). Article list narrows to 380px; reading panel fills remaining space. Mobile keeps the full-screen overlay.
+- **Manage Feeds page** — dedicated page (`Settings → Manage Feeds`) for renaming feeds, assigning to collections, and toggling full-content fetch. No longer embedded inside the Settings page.
+
+### Changed
+- **Settings — Appearance moved into Account card** — Dark/Light toggle is now two small icon buttons (Moon/Sun) in the top-right of the Account card. Separate "Appearance" card removed.
+- **Analytics removed from sidebar** — Admin analytics link moved to the bottom of the Settings page (admin-only). Left nav is now the same for all users.
+- **Read Later redesigned** — articles display as a card grid with thumbnails, title, source, and time-saved. Empty state improved. Remove button per card.
+
+### Fixed
+- **admin-stats edge function deployed** — resolves HTTP 401 on the Analytics Dashboard. The function was built but had never been deployed to Supabase.
 
 ---
 
@@ -169,7 +195,9 @@ Format: `## [version] — YYYY-MM-DD`
 
 ## [1.24.8] — 2026-03-20
 
-### Changes since v1.24.7
+### Fixed
+- **Feed fetch reliability** — multiple edge-case crashes and timeouts in the parallel feed fetcher stabilised. Proxy fallback path now retries with exponential back-off before surfacing an error badge.
+- **Article deduplication** — items with matching URLs across multiple fetches are now deduplicated before being written to the list, preventing ghost duplicates on refresh.
 
 ---
 
@@ -182,12 +210,6 @@ Format: `## [version] — YYYY-MM-DD`
 - **Mark All Read was N network requests** — replaced `Promise.all(N × markRead())` with a single batch upsert (`markAllRead()`), reducing API calls from N to 1.
 - **Retry feed had redundant dynamic import** — `invalidateCachedFeed` was dynamically re-imported inside `handleRetryFeed` despite already being statically imported at the top of the file.
 - **Version stuck at v1.24.1** — `Sidebar.jsx` had a hardcoded version constant that wasn't updated by `deploy.sh`. Now shows correct version.
-
----
-
-## [1.24.6] — 2026-03-20
-
-### Changes since v1.24.5
 
 ---
 
