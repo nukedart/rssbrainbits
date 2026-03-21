@@ -507,9 +507,8 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         <Card title="Appearance" T={T}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {[
-              { id: "nocturne",  label: "Nocturne",   desc: "Sage & slate",  swatch: "#accfae", bg: "#121416" },
-              { id: "distilled", label: "Distilled",  desc: "Blue & night",  swatch: "#aac7ff", bg: "#131315" },
-              { id: "light",     label: "Light",      desc: "Parchment",     swatch: "#4f6f52", bg: "#f4f2ee" },
+              { id: "distilled", label: "Dark",   desc: "Periwinkle on night",  swatch: "#aac7ff", bg: "#131315" },
+              { id: "light",     label: "Light",  desc: "Warm parchment",       swatch: "#4f6f52", bg: "#f4f2ee" },
             ].map(({ id, label, desc, swatch, bg }) => {
               const active = theme === id;
               return (

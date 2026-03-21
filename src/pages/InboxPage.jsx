@@ -17,7 +17,7 @@ import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
 import { track } from "../lib/analytics";
 
-export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null }) {
+export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose }) {
   const { T } = useTheme();
   const { user: authUser } = useAuth();
   const user = propUser || authUser;
@@ -72,6 +72,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   }
   const listRef = useRef(null);
   const searchBarRef = useRef(null); // for f-key focus
+
+  // BottomNav + button: open AddModal when App.jsx signals forceShowAdd
+  useEffect(() => {
+    if (forceShowAdd) {
+      setShowAdd(true);
+      onForcedAddClose?.();
+    }
+  }, [forceShowAdd]);
 
   useEffect(() => {
     if (!user) return;

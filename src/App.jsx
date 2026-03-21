@@ -39,6 +39,7 @@ function AppShell() {
   const [feeds, setFeeds]             = useState([]); // for SmartFeedModal feed picker
   const [feedsLoaded, setFeedsLoaded] = useState(false); // don't show onboarding until feeds are confirmed empty
   const [onboardingDone, setOnboardingDone] = useState(() => !!localStorage.getItem("fb-onboarded"));
+  const [globalAdd, setGlobalAdd] = useState(false); // BottomNav + button triggers AddModal in InboxPage
 
   // Identify user for analytics once resolved
   useEffect(() => { identify(user); }, [user]);
@@ -61,6 +62,13 @@ function AppShell() {
   function navigateTo(p) {
     track("page_navigated", { page: p });
     setPage(p);
+  }
+
+  // ── Global Add — BottomNav + button ───────────────────────
+  function handleGlobalAdd() {
+    // Navigate to inbox if not already there, then signal InboxPage to open AddModal
+    if (page !== "inbox") setPage("inbox");
+    setGlobalAdd(true);
   }
 
   // ── Smart feed handlers ────────────────────────────────────
@@ -159,7 +167,7 @@ function AppShell() {
     }
     switch (page) {
       case "home":      return <HomePage feeds={feeds} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
-      case "inbox":     return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
+      case "inbox":     return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} />;
       case "today":     return <InboxPage filterMode="today"  onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
       case "readlater": return <ReadLaterPage />;
       case "history":   return <HistoryPage />;
@@ -199,7 +207,7 @@ function AppShell() {
             {renderPage()}
           </ErrorBoundary>
         </div>
-        {isMobile && <BottomNav active={page} onNavigate={navigateTo} unreadCount={unreadCount} />}
+        {isMobile && <BottomNav active={page} onNavigate={navigateTo} onAdd={handleGlobalAdd} unreadCount={unreadCount} />}
       </div>
       {editingSF && (
         <SmartFeedModal

@@ -3,6 +3,15 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.26.1] — 2026-03-21
+
+### Changed — Phase 3: Simplification
+- **BottomNav + Add button** — replaced Stats tab with a prominent accent-colored `+` square button in the centre. Tapping it navigates to Inbox and immediately opens the Add Feed modal. Stats remains accessible in the desktop sidebar and Settings.
+- **Theme simplified to 2** — Settings appearance picker now shows only **Dark** (Distilled) and **Light**. Nocturne remains in the codebase as a legacy theme but is no longer advertised. Sidebar Sun/Moon toggle now correctly switches between Distilled and Light (previously incorrectly toggled Nocturne).
+- **Collections always expanded** — sidebar collections (folders) now auto-expand on first load. Users can still collapse individual ones; they re-expand when new folders are added.
+
+---
+
 ## [1.26.0] — 2026-03-20
 
 ### Fixed

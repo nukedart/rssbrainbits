@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-const APP_VERSION = "1.26.0"; // keep in sync with package.json
+const APP_VERSION = "1.26.1"; // keep in sync with package.json
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -84,14 +84,25 @@ function NavRow({ id, Icon, label, active, badge, onNavigate, collapsed, T }) {
 }
 
 export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, isOpen=true, onToggle }) {
-  const { T, isDark, setIsDark } = useTheme();
+  const { T, isDark, theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { isTablet, isMobile } = useBreakpoint();
 
   // All hooks before any conditional return
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [expandedFolders, setExpandedFolders] = useState(new Set());
+  const [expandedFolders, setExpandedFolders] = useState(() => new Set());
   const [sidebarDragOver, setSidebarDragOver] = useState(null); // folderId being dragged over in sidebar
+
+  // Auto-expand all collections on first load
+  useEffect(() => {
+    if (folders.length > 0) {
+      setExpandedFolders(prev => {
+        const next = new Set(prev);
+        folders.forEach(f => next.add(f.id));
+        return next;
+      });
+    }
+  }, [folders]);
   const shortcutsRef = useRef(null);
 
   useEffect(() => {
@@ -347,13 +358,16 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
       {/* ── Bottom bar ── */}
       <div style={{ padding: collapsed?"8px 6px":"8px 12px 12px", flexShrink:0 }}>
 
-        {/* Theme toggle */}
+        {/* Theme toggle — Light ↔ Distilled */}
         <div style={{ display:"flex", gap:3, marginBottom:8, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"0":"0 2px" }}>
-          {[{Icon:Icons.Sun,dark:false,label:"Light"},{Icon:Icons.Moon,dark:true,label:"Dark"}].map(({Icon,dark,label}) => (
-            <button key={label} onClick={() => setIsDark(dark)} title={label}
-              style={{ flex: collapsed?undefined:1, width: collapsed?26:undefined, height:24, padding:"2px 0", borderRadius:6, border:`1px solid ${isDark===dark?T.accent:T.border}`, background:isDark===dark?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isDark===dark?T.accent:T.textTertiary, transition:"all .15s" }}
-            ><Icon /></button>
-          ))}
+          {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
+            const isActive = theme === id || (id === "distilled" && theme === "nocturne");
+            return (
+              <button key={label} onClick={() => setTheme(id)} title={label}
+                style={{ flex: collapsed?undefined:1, width: collapsed?26:undefined, height:24, padding:"2px 0", borderRadius:6, border:`1px solid ${isActive?T.accent:T.border}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"all .15s" }}
+              ><Icon /></button>
+            );
+          })}
         </div>
 
         {/* Analytics — admin only */}
