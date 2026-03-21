@@ -3,6 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { getFeeds } from "../lib/supabase";
 import { fetchRSSFeed } from "../lib/fetchers";
+import { getCachedFeed } from "../lib/feedCache";
 import { Spinner } from "../components/UI";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
@@ -28,15 +29,41 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onOpenIt
     getFeeds(user.id).then(setFeeds).catch(console.error);
   }, [user, propFeeds]);
 
-  // fetch items from all feeds
+  // fetch items from all feeds — serve from cache instantly, fetch only uncached feeds
   useEffect(() => {
     if (!feeds.length) { setLoading(false); return; }
     setLoading(true);
     const MAX_PER_FEED = 5;
+
+    // Build items from cache first for instant render
+    const cachedItems = feeds.flatMap(f => {
+      const cached = getCachedFeed(f.url);
+      if (!cached) return [];
+      return (cached.data?.items || []).slice(0, MAX_PER_FEED).map(item => ({
+        ...item, feedId: f.id, source: item.source || f.name || f.url,
+      }));
+    });
+    if (cachedItems.length) {
+      cachedItems.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      setItems(cachedItems.slice(0, 20));
+      setLoading(false);
+    }
+
+    // Fetch only feeds not in cache (or stale) in the background
+    const uncached = feeds.filter(f => { const c = getCachedFeed(f.url); return !c || c.isStale; });
+    if (!uncached.length) return;
     Promise.allSettled(
-      feeds.map(f => fetchRSSFeed(f.url).then(data => (data.items || []).slice(0, MAX_PER_FEED).map(item => ({ ...item, feedId: f.id, source: item.source || f.name || f.url }))))
+      uncached.map(f => fetchRSSFeed(f.url).then(data => (data.items || []).slice(0, MAX_PER_FEED).map(item => ({ ...item, feedId: f.id, source: item.source || f.name || f.url }))))
     ).then(results => {
-      const all = results.flatMap(r => r.status === "fulfilled" ? r.value : []);
+      const freshItems = results.flatMap(r => r.status === "fulfilled" ? r.value : []);
+      if (!freshItems.length) return;
+      // Merge fresh items with cached items from feeds we didn't re-fetch
+      const cachedOnlyItems = feeds.flatMap(f => {
+        if (uncached.find(u => u.id === f.id)) return []; // was refetched
+        const c = getCachedFeed(f.url);
+        return (c?.data?.items || []).slice(0, MAX_PER_FEED).map(item => ({ ...item, feedId: f.id, source: item.source || f.name || f.url }));
+      });
+      const all = [...freshItems, ...cachedOnlyItems];
       all.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
       setItems(all.slice(0, 20));
     }).finally(() => setLoading(false));

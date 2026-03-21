@@ -3,6 +3,17 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.25.4] — 2026-03-20
+
+### Fixed
+- **Mobile nav always visible** — `BottomNav` z-index raised to 600 (was 400), so it now renders above `ContentViewer` (500) and any other overlays. Navigation is always accessible on mobile.
+- **Frosted-glass nav background** — background was computed via a broken string-replace hack that only worked for `rgb(…)` colors. All theme tokens use hex; added a proper `hexToRgba()` converter so the `backdrop-filter` blur now correctly shows through a semi-transparent nav bar.
+- **Feed cards/items look squashed on mobile** — default view mode changed from `list` to `card`. New and returning users who haven't explicitly chosen a view will land in card view, which shows images and gives each item more breathing room.
+- **Images missing in list view on mobile** — list-view rows now show a 52×42 thumbnail on the right side on mobile (same pattern as desktop `lg` size). Items without images degrade gracefully (no broken element).
+- **Home page loading slowly / appearing stuck** — `HomePage` was re-fetching every subscribed feed from the network on every render. It now reads from the feed cache first (instant) and only fetches feeds that are missing from cache or stale, in the background.
+
+---
+
 ## [1.25.3] — 2026-03-20
 
 ### Changed

@@ -210,11 +210,17 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             </div>
           </div>
 
-          {/* Right: thumbnail (lg only) + source pill + hover actions or unread dot */}
+          {/* Right: thumbnail + source pill + hover actions or unread dot */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             {item.image && !isMobile && cardSize === "lg" && (
               <img src={item.image} alt="" loading="lazy"
                 style={{ width: 56, height: 40, borderRadius: 7, objectFit: "cover", background: T.surface }}
+                onError={e => { e.target.style.display = "none"; }} />
+            )}
+            {/* Mobile: small thumbnail always visible */}
+            {item.image && isMobile && (
+              <img src={item.image} alt="" loading="lazy"
+                style={{ width: 52, height: 42, borderRadius: 8, objectFit: "cover", flexShrink: 0, background: T.surface }}
                 onError={e => { e.target.style.display = "none"; }} />
             )}
 

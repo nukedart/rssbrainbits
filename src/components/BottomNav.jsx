@@ -1,5 +1,14 @@
 import { useTheme } from "../hooks/useTheme";
 
+// Convert any hex color to rgba — the frosted-glass blur needs transparency
+function hexToRgba(hex, alpha) {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 const Icons = {
   Home:     () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>),
   Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M2 15h5l2 4h6l2-4h5"/></svg>),
@@ -22,9 +31,9 @@ export default function BottomNav({ active, onNavigate, unreadCount = 0 }) {
 
   return (
     <nav style={{
-      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 400,
+      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 600,
       // iOS frosted glass blur
-      background: T.card.replace(")", ", 0.88)").replace("rgb", "rgba"),
+      background: hexToRgba(T.card, 0.88),
       backdropFilter: "blur(20px) saturate(180%)",
       WebkitBackdropFilter: "blur(20px) saturate(180%)",
       borderTop: `0.5px solid ${T.border}`,

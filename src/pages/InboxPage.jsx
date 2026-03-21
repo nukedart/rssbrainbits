@@ -37,7 +37,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [openItem, setOpenItem]         = useState(null);
   const [openIdx, setOpenIdx]           = useState(-1);
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
-  const [viewMode, setViewMode]         = useState(() => localStorage.getItem("fb-viewmode") || "list");
+  const [viewMode, setViewMode]         = useState(() => localStorage.getItem("fb-viewmode") || "card");
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
   const [hideRead, setHideRead]         = useState(false);
