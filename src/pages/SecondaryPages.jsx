@@ -518,6 +518,64 @@ function PlanCard({ T, user, feedCount, planName }) {
   );
 }
 
+function NotificationsCard({ T }) {
+  const [permission, setPermission] = useState(
+    typeof Notification !== "undefined" ? Notification.permission : "unsupported"
+  );
+  const [swReady, setSwReady] = useState(false);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.ready.then(() => setSwReady(true)).catch(() => {});
+    }
+  }, []);
+
+  async function handleEnable() {
+    if (!("Notification" in window)) return;
+    const result = await Notification.requestPermission();
+    setPermission(result);
+    if (result === "granted" && swReady) {
+      navigator.serviceWorker.ready.then(sw => sw.sync.register("feedbox-sync").catch(() => {})).catch(() => {});
+    }
+  }
+
+  function handleTest() {
+    if (permission !== "granted") return;
+    new Notification("Feedbox", {
+      body: "Notifications are working!",
+      icon: "/feedbox-logo.png",
+    });
+  }
+
+  const STATUS = {
+    granted:     { text: "Enabled — you'll get alerts for new articles", color: T.accent },
+    denied:      { text: "Blocked in browser — enable in site settings", color: "#e53e3e" },
+    default:     { text: "Not yet enabled", color: T.textTertiary },
+    unsupported: { text: "Not supported in this browser", color: T.textTertiary },
+  };
+  const s = STATUS[permission] || STATUS.default;
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: T.text }}>Browser notifications</div>
+          <div style={{ fontSize: 12, color: s.color, marginTop: 2 }}>{s.text}</div>
+        </div>
+        {permission === "default" && (
+          <button onClick={handleEnable} style={{ background: T.accent, color: "#fff", border: "none", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>Enable</button>
+        )}
+        {permission === "granted" && (
+          <button onClick={handleTest} style={{ background: T.surface2, color: T.textSecondary, border: `1px solid ${T.border}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>Test</button>
+        )}
+      </div>
+      <div style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.7 }}>
+        Get notified when new articles arrive in your feeds. Works best with the app installed as a PWA — use your browser's "Add to Home Screen" option.
+      </div>
+    </div>
+  );
+}
+
 export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onNavigate }) {
   const { T, theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
@@ -575,7 +633,13 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               })}
             </div>
           </div>
-          <Button variant="secondary" size="sm" onClick={signOut}>Sign out</Button>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+            <Button variant="secondary" size="sm" onClick={signOut}>Sign out</Button>
+            <span style={{ fontSize: 10, color: T.textTertiary, opacity: 0.6 }}>
+              {/* global __APP_VERSION__ */}
+              v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "?"}
+            </span>
+          </div>
         </Card>
 
         {/* Reading preferences */}
@@ -591,6 +655,11 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Articles are marked read when scrolled past in the list</div>
             </div>
           </label>
+        </Card>
+
+        {/* Notifications */}
+        <Card title="Notifications" T={T}>
+          <NotificationsCard T={T} />
         </Card>
 
         {/* Keyboard shortcuts */}

@@ -86,6 +86,16 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     }
   }, [forceShowAdd]);
 
+  // ── Background sync: listen for SW "BG_SYNC" message ─────
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    const handler = (e) => {
+      if (e.data?.type === "BG_SYNC") fetchAllRef.current?.(false);
+    };
+    navigator.serviceWorker.addEventListener("message", handler);
+    return () => navigator.serviceWorker.removeEventListener("message", handler);
+  }, []);
+
   useEffect(() => {
     if (!user) return;
     // If feeds are lifted from App.jsx, don't re-fetch
@@ -859,6 +869,26 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
           onTouchMove={isMobile ? handlePTRMove : undefined}
           onTouchEnd={isMobile ? handlePTREnd : undefined}
           style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "10px 10px 80px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "80px" : undefined, WebkitOverflowScrolling: "touch" }}>
+          {/* New articles banner — shown after a background refresh detects new items */}
+          {newArticleCount > 0 && !loadingItems && (
+            <button
+              onClick={() => { setNewArticleCount(0); listRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }}
+              style={{
+                width: "100%", border: "none", background: T.accent, color: "#fff",
+                padding: "10px 16px", cursor: "pointer", fontFamily: "inherit",
+                fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center",
+                justifyContent: "center", gap: 7, transition: "opacity .15s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 10V2M2 6l4-4 4 4"/>
+              </svg>
+              {newArticleCount} new article{newArticleCount !== 1 ? "s" : ""} — scroll to top
+            </button>
+          )}
+
           {loadingItems && (
             viewMode === "card"
               ? <SkeletonList count={8} cardSize={cardSize} viewMode="card" />

@@ -3,6 +3,28 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.28.3] — 2026-03-21
+
+### Added
+- **P6 — Push notification permission** — new Notifications card in Settings lets users enable browser notifications with a single click. Shows permission state, provides a "Test" button, and explains PWA usage.
+- **P6 — Background sync** — service worker now listens for background sync events (`feedbox-sync`, `periodicsync`) and tells the app to silently refresh feeds when the browser triggers a sync.
+- **New articles banner** — after a background refresh, a green banner appears at the top of the article list showing the count of newly arrived articles. Click it to scroll to top.
+- **P5 — Discover tab in Add modal** — "✦ Discover" tab offers 18 hand-curated feeds across 6 categories (Tech, AI, Design, News, Science, Business) — one click to subscribe.
+- **P4 — Always-visible reading panel** — on desktop, the right reading panel is always present when feeds are loaded. Before selecting an article it shows a clean empty state with a keyboard shortcut cheatsheet. Article list locks to 380px width.
+- **P4 — Desktop prev/next navigation** — ‹ and › buttons now appear in the reading panel header on desktop (not just mobile), with keyboard shortcut hints.
+- **P4 — Article position indicator** — "3 of 47" shown below the source name in the reading panel header.
+- **Dynamic version number** — app version is now injected from `package.json` at build time (via Vite `define`). The sidebar footer and Settings page always show the correct version without manual updates.
+
+### Changed
+- **Toolbar redesign** — "Latest" / "Unread" pill tabs replace the old toggle button. Search collapses to an icon; click to expand the search input. Red `!` badge replaces verbose error text for failed feeds (click for popover with per-feed retry).
+- **Refresh icon** — replaced `↺` text character with a proper SVG icon.
+- **Mark-all-read** — now an icon-only button (double-check SVG) to save toolbar space.
+
+### Fixed
+- **Folder persistence** — folder assignments now survive login/refresh. The inbox route in App.jsx now passes `feeds={feeds}` so InboxPage uses the centralized feeds state instead of re-fetching on every mount.
+
+---
+
 ## [1.28.2] — 2026-03-21
 
 ### Changes since v1.28.1

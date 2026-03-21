@@ -86,38 +86,34 @@ done
 
 # ── Step 3: CHANGELOG entry ───────────────────────────────────
 DATE=$(date +%Y-%m-%d)
-TEMP_ENTRY=$(mktemp)
 
-echo "## [$NEW_VERSION] — $DATE" > "$TEMP_ENTRY"
-echo "" >> "$TEMP_ENTRY"
-
-# Collect git changes since last tag for the changelog
-LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-if [[ -n "$LAST_TAG" ]]; then
-  echo "### Changes since $LAST_TAG" >> "$TEMP_ENTRY"
-  git log "$LAST_TAG"..HEAD --oneline --no-merges | \
-    sed 's/^[a-f0-9]* /- /' >> "$TEMP_ENTRY" || true
+# If CHANGELOG.md has a pre-written [Unreleased] section, promote it.
+# Otherwise auto-generate from git log.
+if grep -q "^## \[Unreleased\]" CHANGELOG.md; then
+  sed -i.bak "s/^## \[Unreleased\]/## [$NEW_VERSION] — $DATE/" CHANGELOG.md
+  rm -f CHANGELOG.md.bak
+  success "CHANGELOG.md — promoted [Unreleased] to v$NEW_VERSION"
 else
-  echo "### Changes" >> "$TEMP_ENTRY"
-  git log --oneline --no-merges -10 | \
-    sed 's/^[a-f0-9]* /- /' >> "$TEMP_ENTRY" || true
+  TEMP_ENTRY=$(mktemp)
+  echo "## [$NEW_VERSION] — $DATE" > "$TEMP_ENTRY"
+  echo "" >> "$TEMP_ENTRY"
+  LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+  if [[ -n "$LAST_TAG" ]]; then
+    echo "### Changes since $LAST_TAG" >> "$TEMP_ENTRY"
+    git log "$LAST_TAG"..HEAD --oneline --no-merges | sed 's/^[a-f0-9]* /- /' >> "$TEMP_ENTRY" || true
+  else
+    echo "### Changes" >> "$TEMP_ENTRY"
+    git log --oneline --no-merges -10 | sed 's/^[a-f0-9]* /- /' >> "$TEMP_ENTRY" || true
+  fi
+  echo "" >> "$TEMP_ENTRY"
+  echo "---" >> "$TEMP_ENTRY"
+  echo "" >> "$TEMP_ENTRY"
+  HEADER=$(head -5 CHANGELOG.md)
+  BODY=$(tail -n +6 CHANGELOG.md)
+  { echo "$HEADER"; echo ""; cat "$TEMP_ENTRY"; echo "$BODY"; } > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+  rm "$TEMP_ENTRY"
+  success "CHANGELOG.md — auto-generated entry for v$NEW_VERSION"
 fi
-
-echo "" >> "$TEMP_ENTRY"
-echo "---" >> "$TEMP_ENTRY"
-echo "" >> "$TEMP_ENTRY"
-
-# Prepend to CHANGELOG.md (after the header lines)
-HEADER=$(head -5 CHANGELOG.md)
-BODY=$(tail -n +6 CHANGELOG.md)
-{
-  echo "$HEADER"
-  echo ""
-  cat "$TEMP_ENTRY"
-  echo "$BODY"
-} > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
-rm "$TEMP_ENTRY"
-success "CHANGELOG.md updated"
 
 # ── Step 4: Build ─────────────────────────────────────────────
 info "Running npm run build…"

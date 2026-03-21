@@ -61,3 +61,27 @@ self.addEventListener("notificationclick", (e) => {
   e.notification.close();
   e.waitUntil(clients.openWindow(e.notification.data?.url || "/"));
 });
+
+// Background sync — tell the app to refresh feeds when triggered
+self.addEventListener("sync", (e) => {
+  if (e.tag === "feedbox-sync") {
+    e.waitUntil(
+      self.clients.matchAll({ type: "window", includeUncontrolled: false }).then((clientList) => {
+        clientList.forEach((client) => client.postMessage({ type: "BG_SYNC" }));
+      })
+    );
+  }
+});
+
+// Periodic background sync (if browser supports it)
+self.addEventListener("periodicsync", (e) => {
+  if (e.tag === "feedbox-periodic") {
+    e.waitUntil(
+      self.clients.matchAll({ type: "window", includeUncontrolled: false }).then((clientList) => {
+        if (clientList.length > 0) {
+          clientList.forEach((client) => client.postMessage({ type: "BG_SYNC" }));
+        }
+      })
+    );
+  }
+});
