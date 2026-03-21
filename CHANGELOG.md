@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.28.7] — 2026-03-21
+
+### Performance
+- **P8 — Code splitting** — bundle reduced from 628 KB (172 KB gzip) to ~110 KB initial load. Every page and modal is now a separate lazy chunk loaded on demand. Vendor libs (React, Supabase, Fuse.js) split into their own cacheable files.
+  - Initial load: App shell + vendors ≈ 110 KB gzip (was 172 KB everything-at-once)
+  - InboxPage, HomePage, SecondaryPages, NotesPage, AnalyticsPage each load only when navigated to
+  - SmartFeedModal, FolderModal, PodcastPlayer, Onboarding load only when first opened
+
 ## [1.28.6] — 2026-03-21
 
 ### Fixed

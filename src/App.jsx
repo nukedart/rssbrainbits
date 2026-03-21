@@ -1,26 +1,46 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { ThemeProvider, useTheme } from "./hooks/useTheme";
-import LoginPage from "./pages/LoginPage";
-import InboxPage from "./pages/InboxPage";
-import HomePage from "./pages/HomePage";
-import { HistoryPage, ReadLaterPage, SettingsPage, StatsPage, ManageFeedsPage } from "./pages/SecondaryPages";
-import NotesPage from "./components/NotesPage";
-import SmartFeedModal from "./components/SmartFeedModal";
-import Sidebar from "./components/Sidebar";
 import { Spinner, ErrorBoundary } from "./components/UI";
+import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
+import LoginPage from "./pages/LoginPage";
+import PWAInstallBanner from "./components/PWAInstallBanner";
 import { useBreakpoint } from "./hooks/useBreakpoint.js";
 import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
          getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder,
          getFeeds } from "./lib/supabase";
-import FolderModal from "./components/FolderModal";
 import { checkLimit } from "./lib/plan";
-import Onboarding from "./components/Onboarding";
-import PWAInstallBanner from "./components/PWAInstallBanner";
-import PodcastPlayer from "./components/PodcastPlayer";
-import AnalyticsPage from "./pages/AnalyticsPage";
 import { identify, track } from "./lib/analytics";
+
+// ── Lazy page chunks — each becomes a separate JS file ────────
+const InboxPage      = lazy(() => import("./pages/InboxPage"));
+const HomePage       = lazy(() => import("./pages/HomePage"));
+const NotesPage      = lazy(() => import("./components/NotesPage"));
+const AnalyticsPage  = lazy(() => import("./pages/AnalyticsPage"));
+
+// Named exports from SecondaryPages all share one chunk
+const lazySecondary = () => import("./pages/SecondaryPages");
+const HistoryPage    = lazy(() => lazySecondary().then(m => ({ default: m.HistoryPage })));
+const ReadLaterPage  = lazy(() => lazySecondary().then(m => ({ default: m.ReadLaterPage })));
+const SettingsPage   = lazy(() => lazySecondary().then(m => ({ default: m.SettingsPage })));
+const StatsPage      = lazy(() => lazySecondary().then(m => ({ default: m.StatsPage })));
+const ManageFeedsPage = lazy(() => lazySecondary().then(m => ({ default: m.ManageFeedsPage })));
+
+// ── Lazy modals/overlays — only load when first opened ────────
+const SmartFeedModal = lazy(() => import("./components/SmartFeedModal"));
+const FolderModal    = lazy(() => import("./components/FolderModal"));
+const PodcastPlayer  = lazy(() => import("./components/PodcastPlayer"));
+const Onboarding     = lazy(() => import("./components/Onboarding"));
+
+// Fallback shown while a page chunk is downloading
+function PageSpinner({ T }) {
+  return (
+    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: T?.bg }}>
+      <Spinner size={24} />
+    </div>
+  );
+}
 
 function AppShell() {
   const { user } = useAuth();
@@ -35,16 +55,14 @@ function AppShell() {
   const [folders, setFolders]         = useState([]);
   const [editingFolder, setEditingFolder] = useState(null);
   const [sidebarOpen, setSidebarOpen]       = useState(true);
-  const [podcastItem, setPodcastItem]       = useState(null); // currently playing podcast
-  const [feeds, setFeeds]             = useState([]); // for SmartFeedModal feed picker
-  const [feedsLoaded, setFeedsLoaded] = useState(false); // don't show onboarding until feeds are confirmed empty
+  const [podcastItem, setPodcastItem]       = useState(null);
+  const [feeds, setFeeds]             = useState([]);
+  const [feedsLoaded, setFeedsLoaded] = useState(false);
   const [onboardingDone, setOnboardingDone] = useState(() => !!localStorage.getItem("fb-onboarded"));
-  const [globalAdd, setGlobalAdd] = useState(false); // BottomNav + button triggers AddModal in InboxPage
+  const [globalAdd, setGlobalAdd] = useState(false);
 
-  // Identify user for analytics once resolved
   useEffect(() => { identify(user); }, [user]);
 
-  // Load smart feeds once user is known
   useEffect(() => {
     if (!user) return;
     getSmartFeeds(user.id)
@@ -58,20 +76,16 @@ function AppShell() {
       .catch(err => { console.error("getFeeds:", err); setFeeds([]); setFeedsLoaded(true); });
   }, [user]);
 
-  // ── Navigation with tracking ──────────────────────────────
   function navigateTo(p) {
     track("page_navigated", { page: p });
     setPage(p);
   }
 
-  // ── Global Add — BottomNav + button ───────────────────────
   function handleGlobalAdd() {
-    // Navigate to inbox if not already there, then signal InboxPage to open AddModal
     if (page !== "inbox") setPage("inbox");
     setGlobalAdd(true);
   }
 
-  // ── Smart feed handlers ────────────────────────────────────
   async function handleSaveSmartFeed({ name, keywords, color }) {
     if (editingSF && editingSF !== "new") {
       const updated = await updateSmartFeed(editingSF.id, { name, keywords, color });
@@ -93,7 +107,6 @@ function AppShell() {
     setEditingSF(null);
   }
 
-  // ── Folder handlers ───────────────────────────────────────
   async function handleMoveFeedToFolder(feedId, folderId) {
     setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: folderId } : f));
     try {
@@ -104,9 +117,8 @@ function AppShell() {
     }
   }
 
-  function handleFeedAdded(record) {
-    setFeeds(prev => [...prev, record]);
-  }
+  function handleFeedAdded(record) { setFeeds(prev => [...prev, record]); }
+  function handleFeedDeleted(feedId) { setFeeds(prev => prev.filter(f => f.id !== feedId)); }
 
   async function handleOnboardingAdd({ url, type, name }) {
     const { addFeed } = await import("./lib/supabase");
@@ -114,10 +126,6 @@ function AppShell() {
     const feedData = await fetchRSSFeed(url).catch(() => ({ title: name }));
     const record = await addFeed(user.id, { url, type, name: name || feedData.title });
     setFeeds(prev => [...prev, record]);
-  }
-
-  function handleFeedDeleted(feedId) {
-    setFeeds(prev => prev.filter(f => f.id !== feedId));
   }
 
   async function handleSaveFolder({ name, color }) {
@@ -140,8 +148,6 @@ function AppShell() {
     setEditingFolder(null);
   }
 
-
-
   // ── Early returns AFTER all hooks ─────────────────────────
   if (user === undefined) {
     return (
@@ -158,25 +164,23 @@ function AppShell() {
     if (page.startsWith("smart:")) {
       const sfId  = page.replace("smart:", "");
       const sfDef = smartFeeds.find(sf => sf.id === sfId);
-      // Guard: if smartFeeds hasn't loaded yet, sfDef may be undefined —
-      // fall back to inbox while it loads rather than passing undefined
       if (!sfDef) {
         return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} />;
       }
       return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} />;
     }
     switch (page) {
-      case "home":      return <HomePage feeds={feeds} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
-      case "inbox":     return <InboxPage filterMode="all"    onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} />;
-      case "today":     return <InboxPage filterMode="today"  onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
-      case "readlater": return <ReadLaterPage />;
-      case "history":   return <HistoryPage />;
-      case "stats":     return <StatsPage />;
-      case "notes":     return <NotesPage />;
-      case "analytics":     return <AnalyticsPage />;
-      case "settings":      return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} />;
-      case "manage-feeds":  return <ManageFeedsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} />;
-      default:          return <HomePage feeds={feeds} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
+      case "home":         return <HomePage feeds={feeds} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
+      case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} />;
+      case "today":        return <InboxPage filterMode="today" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
+      case "readlater":    return <ReadLaterPage />;
+      case "history":      return <HistoryPage />;
+      case "stats":        return <StatsPage />;
+      case "notes":        return <NotesPage />;
+      case "analytics":    return <AnalyticsPage />;
+      case "settings":     return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} />;
+      case "manage-feeds": return <ManageFeedsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} />;
+      default:             return <HomePage feeds={feeds} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
     }
   }
 
@@ -205,39 +209,52 @@ function AppShell() {
       <div style={{ flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column" }}>
         <div style={{ flex: 1, overflow: "hidden", paddingBottom: isMobile ? 62 : 0, display: "flex", flexDirection: "column" }}>
           <ErrorBoundary>
-            {renderPage()}
+            <Suspense fallback={<PageSpinner T={T} />}>
+              {renderPage()}
+            </Suspense>
           </ErrorBoundary>
         </div>
         {isMobile && <BottomNav active={page} onNavigate={navigateTo} onAdd={handleGlobalAdd} unreadCount={unreadCount} />}
       </div>
+
       {editingSF && (
-        <SmartFeedModal
-          feed={editingSF === "new" ? null : editingSF}
-          feeds={feeds}
-          onSave={handleSaveSmartFeed}
-          onDelete={handleDeleteSmartFeed}
-          onClose={() => setEditingSF(null)}
-        />
+        <Suspense fallback={null}>
+          <SmartFeedModal
+            feed={editingSF === "new" ? null : editingSF}
+            feeds={feeds}
+            onSave={handleSaveSmartFeed}
+            onDelete={handleDeleteSmartFeed}
+            onClose={() => setEditingSF(null)}
+          />
+        </Suspense>
       )}
-      {/* ── Podcast mini-player — persists across navigation ── */}
+
       {podcastItem && (
-        <PodcastPlayer item={podcastItem} onClose={() => setPodcastItem(null)} />
+        <Suspense fallback={null}>
+          <PodcastPlayer item={podcastItem} onClose={() => setPodcastItem(null)} />
+        </Suspense>
       )}
 
       {!onboardingDone && feeds.length === 0 && feedsLoaded && (
-        <Onboarding
-          onAdd={handleOnboardingAdd}
-          onDismiss={() => { setOnboardingDone(true); localStorage.setItem("fb-onboarded", "1"); }}
-        />
+        <Suspense fallback={null}>
+          <Onboarding
+            onAdd={handleOnboardingAdd}
+            onDismiss={() => { setOnboardingDone(true); localStorage.setItem("fb-onboarded", "1"); }}
+          />
+        </Suspense>
       )}
+
       <PWAInstallBanner />
+
       {editingFolder && (
-        <FolderModal
-          folder={editingFolder === "new" ? null : editingFolder}
-          onSave={handleSaveFolder}
-          onDelete={handleDeleteFolder}
-          onClose={() => setEditingFolder(null)}
-        />
+        <Suspense fallback={null}>
+          <FolderModal
+            folder={editingFolder === "new" ? null : editingFolder}
+            onSave={handleSaveFolder}
+            onDelete={handleDeleteFolder}
+            onClose={() => setEditingFolder(null)}
+          />
+        </Suspense>
       )}
     </div>
   );

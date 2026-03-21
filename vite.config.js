@@ -17,5 +17,16 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  build: { outDir: "dist" },
+  build: {
+    outDir: "dist",
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/react-dom") || id.includes("node_modules/react/")) return "vendor-react";
+          if (id.includes("node_modules/@supabase"))  return "vendor-supabase";
+          if (id.includes("node_modules/fuse.js"))    return "vendor-fuse";
+        },
+      },
+    },
+  },
 });
