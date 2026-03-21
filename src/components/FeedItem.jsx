@@ -40,26 +40,35 @@ function sourcePlaceholder(source) {
   };
 }
 
+// ── Cohesive SVG icon set for feed item actions ───────────────
+const Ic = {
+  Read:     () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 8C3.2 4.2 5.4 2.8 8 2.8S12.8 4.2 14.5 8C12.8 11.8 10.6 13.2 8 13.2S3.2 11.8 1.5 8z"/><circle cx="8" cy="8" r="2.3"/></svg>,
+  Unread:   () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 8C3.2 4.2 5.4 2.8 8 2.8S12.8 4.2 14.5 8C12.8 11.8 10.6 13.2 8 13.2S3.2 11.8 1.5 8z"/><circle cx="8" cy="8" r="2.3" fill="currentColor"/></svg>,
+  Star:     () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1.5l1.76 3.58 3.95.57-2.86 2.79.68 3.94L8 10.35l-3.53 1.03.68-3.94L2.29 5.65l3.95-.57L8 1.5z"/></svg>,
+  Clock:    () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.2"/></svg>,
+  External: () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2.5h4.5V7M9.5 6.5l4-4M7 3H3.5A1 1 0 0 0 2.5 4v8.5A1 1 0 0 0 3.5 13.5H12A1 1 0 0 0 13 12.5V9"/></svg>,
+  Play:     () => <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" stroke="none"><path d="M4 2.8l9 5.2-9 5.2V2.8z"/></svg>,
+};
+
 // ── Ghost action button (hover controls, no border/bg) ────────
-function ActionBtn({ icon, label, title, onClick, T, small = false }) {
+function ActionBtn({ icon, title, onClick, T }) {
   function handleClick(e) {
     e.stopPropagation();
     onClick?.(e);
   }
   return (
-    <button onClick={handleClick} title={title || label} style={{
+    <button onClick={handleClick} title={title} style={{
       background: "transparent", border: "none", borderRadius: 7,
-      padding: small ? "3px 7px" : "5px 8px",
-      cursor: "pointer", fontSize: small ? 11 : 12,
+      width: 28, height: 28,
+      cursor: "pointer",
       color: T.textTertiary, fontFamily: "inherit",
-      display: "flex", alignItems: "center", gap: 4,
+      display: "flex", alignItems: "center", justifyContent: "center",
       transition: "color .1s, background .1s",
     }}
-      onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; }}
+      onMouseEnter={e => { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.text; }}
       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
     >
-      <span>{icon}</span>
-      {label && <span style={{ fontWeight: 500 }}>{label}</span>}
+      {icon}
     </button>
   );
 }
@@ -102,19 +111,19 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
       {/* Revealed action buttons */}
       <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: ACTION_W, display: "flex" }}>
         <button onClick={e => { e.stopPropagation(); onMarkRead?.(); close(); }}
-          style={{ flex: 1, border: "none", background: isRead ? "#8A9099" : "#2F6FED", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
-          <span style={{ fontSize: 16 }}>{isRead ? "○" : "●"}</span>
+          style={{ flex: 1, border: "none", background: isRead ? "#8A9099" : "#2F6FED", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+          {isRead ? <Ic.Unread /> : <Ic.Read />}
           {isRead ? "Unread" : "Read"}
         </button>
         <button onClick={e => { e.stopPropagation(); onReadLater?.(); close(); }}
-          style={{ flex: 1, border: "none", background: "#AA8439", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
-          <span style={{ fontSize: 16 }}>⏱</span>
+          style={{ flex: 1, border: "none", background: "#AA8439", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+          <Ic.Clock />
           Later
         </button>
         <button onClick={e => { e.stopPropagation(); onSave?.(); close(); }}
-          style={{ flex: 1, border: "none", background: "#accfae", color: "#03210b", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
-          <span style={{ fontSize: 16 }}>🔖</span>
-          Save
+          style={{ flex: 1, border: "none", background: "#accfae", color: "#03210b", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+          <Ic.Star />
+          Star
         </button>
       </div>
       {/* Sliding row */}
@@ -177,9 +186,9 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             transition: "background .15s",
           }}
         >
-          {/* Content type icon — small, accent on hover */}
+          {/* Content type icon — small pill */}
           <div style={{
-            width: 28, height: 28, flexShrink: 0, borderRadius: 8,
+            width: 26, height: 26, flexShrink: 0, borderRadius: 7,
             background: hovered ? T.accentSurface : T.surface,
             display: "flex", alignItems: "center", justifyContent: "center",
             color: hovered ? T.accent : T.textTertiary,
@@ -187,6 +196,13 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           }}>
             <ContentTypeIcon item={item} />
           </div>
+
+          {/* Thumbnail — LEFT of text, always shown when available */}
+          {item.image && (
+            <img src={item.image} alt="" loading="lazy"
+              style={{ width: 52, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0, background: T.surface2 }}
+              onError={e => { e.target.style.display = "none"; }} />
+          )}
 
           {/* Text block */}
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -202,7 +218,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             }}>
               {item.title}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
               <span style={{ fontSize: 11, color: T.textTertiary }}>{item.source}</span>
               {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
               {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent }}>· {item.audioDuration}</span>}
@@ -210,40 +226,18 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             </div>
           </div>
 
-          {/* Right: thumbnail + source pill + hover actions or unread dot */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            {item.image && !isMobile && cardSize === "lg" && (
-              <img src={item.image} alt="" loading="lazy"
-                style={{ width: 56, height: 40, borderRadius: 7, objectFit: "cover", background: T.surface }}
-                onError={e => { e.target.style.display = "none"; }} />
-            )}
-            {/* Mobile: small thumbnail always visible */}
-            {item.image && isMobile && (
-              <img src={item.image} alt="" loading="lazy"
-                style={{ width: 52, height: 42, borderRadius: 8, objectFit: "cover", flexShrink: 0, background: T.surface }}
-                onError={e => { e.target.style.display = "none"; }} />
-            )}
-
-            {!isMobile && !hovered && (
-              <span style={{
-                fontSize: 10, color: T.textTertiary, background: T.surface,
-                padding: "2px 8px", borderRadius: 20, whiteSpace: "nowrap",
-                opacity: isRead ? 0.5 : 0.8,
-              }}>
-                {item.feedName || item.source || "RSS"}
-              </span>
-            )}
-
+          {/* Right: hover actions or unread dot */}
+          <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
             {/* Hover actions */}
             {hovered && !isMobile && (
-              <div style={{ display: "flex", gap: 1, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: "flex", gap: 0, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                 {item.isPodcast && onPlayPodcast && (
-                  <ActionBtn icon="▶" title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
+                  <ActionBtn icon={<Ic.Play />} title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
                 )}
-                <ActionBtn icon={isRead ? "○" : "●"} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
-                <ActionBtn icon="⭐" title="Star" onClick={onSave} T={T} />
-                <ActionBtn icon="⏱" title="Read later" onClick={onReadLater} T={T} />
-                <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
+                <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
+                <ActionBtn icon={<Ic.Star />} title="Star" onClick={onSave} T={T} />
+                <ActionBtn icon={<Ic.Clock />} title="Read later" onClick={onReadLater} T={T} />
+                <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
               </div>
             )}
 

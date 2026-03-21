@@ -64,6 +64,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
   const [viewMenuOpen, setViewMenuOpen]     = useState(false);
   const viewMenuRef = useRef(null);
+  const [searchOpen, setSearchOpen]         = useState(false);
+  const [errorPopoverOpen, setErrorPopoverOpen] = useState(false);
+  const errorPopoverRef = useRef(null);
 
   function toggleFolderOpen(id) {
     setOpenFolders(prev => {
@@ -440,6 +443,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     return () => { document.removeEventListener("mousedown", h); document.removeEventListener("touchstart", h); };
   }, [viewMenuOpen]);
 
+  useEffect(() => {
+    if (!errorPopoverOpen) return;
+    const h = e => { if (errorPopoverRef.current && !errorPopoverRef.current.contains(e.target)) setErrorPopoverOpen(false); };
+    document.addEventListener("mousedown", h);
+    document.addEventListener("touchstart", h);
+    return () => { document.removeEventListener("mousedown", h); document.removeEventListener("touchstart", h); };
+  }, [errorPopoverOpen]);
+
   const activeFeedName = filterMode === "today"  ? "Today"
     : filterMode === "unread" ? "Unread"
     : filterMode === "smart"  ? (smartFeedDef?.name || "Smart Feed")
@@ -630,70 +641,145 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       <div style={{ flex: openItem && !isMobile ? "0 0 380px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
-        <div style={{ padding: "0 16px", background: T.bg, boxShadow: `0 1px 0 ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 4 : 8, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
+        <div style={{ padding: "0 12px", background: T.bg, boxShadow: `0 1px 0 ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
 
-          {/* Title + unread badge */}
-          <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: T.text, letterSpacing: "-.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {activeFeedName}
+          {/* Title + unread badge + error badge — hidden when search open */}
+          {!searchOpen && (
+            <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: T.text, letterSpacing: "-.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {activeFeedName}
+              </div>
+              {unreadCount > 0 && (
+                <span style={{ fontSize: 10, fontWeight: 600, background: T.accentSurface, color: T.accent, padding: "1px 7px", borderRadius: 10, flexShrink: 0 }}>
+                  {unreadCount}
+                </span>
+              )}
+              {/* Red ! error badge with popover */}
+              {Object.keys(feedErrors).length > 0 && (
+                <div ref={errorPopoverRef} style={{ position: "relative", flexShrink: 0 }}>
+                  <button
+                    onClick={() => setErrorPopoverOpen(v => !v)}
+                    title={`${Object.keys(feedErrors).length} feed error${Object.keys(feedErrors).length > 1 ? "s" : ""} — click for details`}
+                    style={{
+                      width: 17, height: 17, borderRadius: "50%", border: "none",
+                      background: "#e53e3e", color: "#fff", cursor: "pointer",
+                      fontSize: 10, fontWeight: 700, fontFamily: "inherit",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >!</button>
+                  {errorPopoverOpen && (
+                    <div style={{
+                      position: "absolute", top: "calc(100% + 8px)", left: 0,
+                      background: T.card, border: `1px solid ${T.border}`,
+                      borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,.2)",
+                      zIndex: 950, minWidth: 230, overflow: "hidden",
+                      animation: "fadeIn .12s ease",
+                    }}>
+                      <div style={{ padding: "8px 12px 4px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary }}>
+                        Failed Feeds
+                      </div>
+                      {feeds.filter(f => feedErrors[f.id]).map(feed => (
+                        <div key={feed.id} style={{ padding: "5px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ flex: 1, fontSize: 12, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {feed.name || feed.url}
+                          </span>
+                          <button
+                            onClick={() => { handleRetryFeed(feed); setErrorPopoverOpen(false); }}
+                            style={{ background: T.accentSurface, color: T.accent, border: "none", borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
+                          >Retry</button>
+                        </div>
+                      ))}
+                      <div style={{ borderTop: `1px solid ${T.border}`, margin: "4px 0 0" }}>
+                        <button
+                          onClick={() => { feeds.filter(f => feedErrors[f.id]).forEach(f => handleRetryFeed(f)); setErrorPopoverOpen(false); }}
+                          style={{ width: "100%", background: "transparent", color: T.textSecondary, border: "none", padding: "7px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit", textAlign: "center" }}
+                        >Retry all</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            {unreadCount > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 600, background: T.accentSurface, color: T.accent, padding: "1px 7px", borderRadius: 10, flexShrink: 0 }}>
-                {unreadCount}
-              </span>
-            )}
-            {/* Error badge */}
-            {Object.keys(feedErrors).length > 0 && (
-              <button onClick={() => feeds.filter(f => feedErrors[f.id]).forEach(f => handleRetryFeed(f))}
-                title="Click to retry failed feeds"
-                style={{ fontSize: 10, fontWeight: 700, background: T.danger, color: "#fff", padding: "1px 8px", borderRadius: 10, cursor: "pointer", flexShrink: 0, border: "none", fontFamily: "inherit" }}>
-                ↺ {Object.keys(feedErrors).length} error{Object.keys(feedErrors).length > 1 ? "s" : ""}
-              </button>
-            )}
-          </div>
+          )}
 
-          {/* Search — fills remaining space */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <SearchBar ref={searchBarRef} onSelectResult={(item) => setSearchResult(item)} onLiveSearch={setLiveSearch} onClose={() => { setLiveSearch(""); }} allItems={allItems} />
-          </div>
+          {/* Spacer — pushes controls right when title is visible */}
+          {!searchOpen && <div style={{ flex: 1 }} />}
 
-          {/* Refresh button */}
+          {/* Latest / Unread pill tabs */}
+          {filterMode !== "unread" && !searchOpen && (
+            <div style={{ display: "flex", background: T.surface, borderRadius: 20, padding: 2, gap: 0, flexShrink: 0 }}>
+              {[{ label: "Latest", val: false }, { label: "Unread", val: true }].map(({ label, val }) => (
+                <button key={label} onClick={() => setHideRead(val)} style={{
+                  padding: "3px 10px", borderRadius: 18, border: "none",
+                  background: hideRead === val ? T.bg : "transparent",
+                  color: hideRead === val ? T.text : T.textTertiary,
+                  fontWeight: hideRead === val ? 600 : 400,
+                  fontSize: 11, cursor: "pointer", fontFamily: "inherit",
+                  transition: "all .15s",
+                  boxShadow: hideRead === val ? "0 1px 3px rgba(0,0,0,.12)" : "none",
+                }}>{label}</button>
+              ))}
+            </div>
+          )}
+
+          {/* Mark all read — icon button */}
+          {unreadCount > 0 && !searchOpen && (
+            <button onClick={handleMarkAllRead} title="Mark all as read"
+              style={{
+                background: "transparent", border: "none", borderRadius: 8,
+                width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: T.textTertiary, transition: "all .15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 9l4 4 10-10"/><path d="M1 5l4 4 10-10" strokeOpacity=".3"/>
+              </svg>
+            </button>
+          )}
+
+          {/* Search input — expands when open */}
+          {searchOpen && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <SearchBar ref={searchBarRef} onSelectResult={(item) => { setSearchResult(item); setSearchOpen(false); setLiveSearch(""); }} onLiveSearch={setLiveSearch} onClose={() => { setLiveSearch(""); setSearchOpen(false); }} allItems={allItems} />
+            </div>
+          )}
+
+          {/* Search icon toggle */}
+          <button
+            onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
+            title="Search"
+            style={{
+              background: searchOpen ? T.accentSurface : "transparent", border: "none", borderRadius: 8,
+              width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: searchOpen ? T.accent : T.textTertiary, transition: "all .15s",
+            }}
+            onMouseEnter={e => { if (!searchOpen) { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; } }}
+            onMouseLeave={e => { if (!searchOpen) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
+            </svg>
+          </button>
+
+          {/* Refresh button — SVG icon */}
           <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} style={{
             background: "transparent", border: "none", borderRadius: 8,
             width: 30, height: 30, cursor: "pointer", flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
-            color: T.textTertiary, fontSize: 14, transition: "all .15s",
+            color: T.textTertiary, transition: "all .15s",
           }}
             onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
-          >↺</button>
-
-          {/* Mark all read */}
-          {unreadCount > 0 && (
-            <button onClick={handleMarkAllRead} title="Mark all as read"
-              style={{ background: T.surface, border: "none", borderRadius: 20,
-                height: 28, padding: "0 12px", cursor: "pointer", fontSize: 11, fontWeight: 500,
-                flexShrink: 0, color: T.textSecondary, fontFamily: "inherit",
-                display: "flex", alignItems: "center", transition: "all .15s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background=T.accentSurface; e.currentTarget.style.color=T.accent; }}
-              onMouseLeave={e => { e.currentTarget.style.background=T.surface; e.currentTarget.style.color=T.textSecondary; }}
-            >{isMobile ? "✓" : "✓ All read"}</button>
-          )}
-
-          {/* Hide read toggle */}
-          {filterMode !== "unread" && (
-            <button onClick={() => setHideRead(v => !v)} title="Toggle read articles" style={{
-              background: hideRead ? T.accentSurface : T.surface,
-              border: "none",
-              borderRadius: 20, padding: "0 12px", height: 28, cursor: "pointer",
-              fontSize: 11, fontWeight: 500, flexShrink: 0,
-              color: hideRead ? T.accent : T.textSecondary, fontFamily: "inherit",
-              display: "flex", alignItems: "center", transition: "all .15s",
-            }}>
-              {isMobile ? (hideRead ? "●" : "○") : (hideRead ? "Unread only" : "All")}
-            </button>
-          )}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5"/><path d="M13.5 2.5v3.5h-3.5"/>
+            </svg>
+          </button>
 
           {/* View options — single icon button with popover */}
           <div ref={viewMenuRef} style={{ position: "relative", flexShrink: 0 }}>
@@ -701,16 +787,18 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
               onClick={() => setViewMenuOpen(v => !v)}
               title="View options"
               style={{
-                width: 32, height: 32, borderRadius: 9, border: "none",
-                background: viewMenuOpen ? T.surface2 : T.surface,
+                width: 30, height: 30, borderRadius: 8, border: "none",
+                background: viewMenuOpen ? T.surface2 : "transparent",
                 color: viewMenuOpen ? T.text : T.textTertiary,
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
                 transition: "all .15s",
               }}
+              onMouseEnter={e => { if (!viewMenuOpen) { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; } }}
+              onMouseLeave={e => { if (!viewMenuOpen) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
             >
               {viewMode === "card"
-                ? <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
-                : <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+                ? <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+                : <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
               }
             </button>
             {viewMenuOpen && (
@@ -721,7 +809,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                 zIndex: 900, minWidth: 160, overflow: "hidden",
                 animation: "fadeIn .12s ease",
               }}>
-                {/* List / Card toggle */}
                 <div style={{ padding: "10px 12px 6px" }}>
                   <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Layout</div>
                   <div style={{ display: "flex", gap: 4 }}>
@@ -739,7 +826,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                     ))}
                   </div>
                 </div>
-                {/* Size — only for card mode */}
                 {viewMode === "card" && (
                   <div style={{ padding: "6px 12px 10px" }}>
                     <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Size</div>
@@ -760,7 +846,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             )}
           </div>
 
-          <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: 32, paddingLeft: isMobile ? 10 : 12, paddingRight: isMobile ? 10 : 12, flexShrink: 0 }}>{isMobile ? "+" : "+ Add"}</Button>
+          <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: 30, paddingLeft: 10, paddingRight: 10, flexShrink: 0 }}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ display:"block" }}><path d="M6 1v10M1 6h10"/></svg>
+            {!isMobile && <span style={{ marginLeft: 4, fontSize: 12 }}>Add</span>}
+          </Button>
         </div>
 
         {/* Article list / grid */}
