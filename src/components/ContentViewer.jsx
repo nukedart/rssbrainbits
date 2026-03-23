@@ -32,6 +32,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   // AI summary
   const [summary, setSummary]         = useState(null);
   const [summarizing, setSummarizing] = useState(false);
+  const [summaryStyle, setSummaryStyle] = useState("keypoints"); // keypoints | brief | detailed
 
   // Highlights
   const [highlights, setHighlights]   = useState([]);
@@ -208,14 +209,19 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   }
 
   // ── AI Summary ─────────────────────────────────────────────
-  async function handleSummarize() {
+  async function handleSummarize(style) {
     const text = content?.bodyText || item?.description || "";
     if (!text) return;
+    const useStyle = style || summaryStyle;
     setSummarizing(true);
-    track("ai_summary_triggered", { source: item?.source });
-    const result = await summarizeContent(text, content?.title || item?.title);
+    track("ai_summary_triggered", { source: item?.source, style: useStyle });
+    const result = await summarizeContent(text, content?.title || item?.title, useStyle);
     setSummary(result);
     setSummarizing(false);
+    // Auto-save the article when a summary is generated
+    if (user && result && !result.startsWith("AI summarization")) {
+      try { await saveItem(user.id, { ...item, summary: result }); setSaved(true); } catch { /* silent */ }
+    }
   }
 
   // ── Swipe gestures (mobile) ──────────────────────────────
@@ -322,13 +328,55 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         )}
 
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-          {/* Aa — font controls */}
+          {/* Aa — font controls (compact dropdown) */}
           {!yt.isYouTube && content && (
-            <button onClick={() => setShowReaderControls(v => !v)} title="Reading preferences"
-              style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "all .12s" }}
-              onMouseEnter={e => { if (!showReaderControls) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
-              onMouseLeave={e => { if (!showReaderControls) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
-            >Aa</button>
+            <div style={{ position: "relative" }}>
+              <button onClick={() => setShowReaderControls(v => !v)} title="Reading preferences"
+                style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "all .12s" }}
+                onMouseEnter={e => { if (!showReaderControls) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
+                onMouseLeave={e => { if (!showReaderControls) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
+              >Aa</button>
+              {showReaderControls && (
+                <div style={{
+                  position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 300,
+                  background: T.card, border: `1px solid ${T.border}`,
+                  borderRadius: 14, boxShadow: "0 8px 32px rgba(0,0,0,.18)",
+                  padding: "14px 16px", minWidth: 220,
+                  display: "flex", flexDirection: "column", gap: 12,
+                  animation: "fadeInScale .15s ease",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Size</span>
+                    <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
+                      onChange={e => updatePref("fontSize", parseInt(e.target.value))}
+                      style={{ width: 90, accentColor: T.accent }} />
+                    <span style={{ fontSize: 11, color: T.textSecondary, minWidth: 24, textAlign: "right" }}>{readerPrefs.fontSize}</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Width</span>
+                    <div style={{ display: "flex", gap: 3 }}>
+                      {["narrow","medium","wide"].map(w => (
+                        <button key={w} onClick={() => updatePref("lineWidth", w)} style={{ padding: "3px 7px", borderRadius: 6, border: `1px solid ${readerPrefs.lineWidth===w?T.accent:T.border}`, background: readerPrefs.lineWidth===w?T.accentSurface:"transparent", color: readerPrefs.lineWidth===w?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit", textTransform: "capitalize" }}>{w[0].toUpperCase()}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Font</span>
+                    <div style={{ display: "flex", gap: 3 }}>
+                      {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
+                        <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} style={{ padding: "3px 9px", borderRadius: 6, border: `1px solid ${readerPrefs.fontFamily===f.id?T.accent:T.border}`, background: readerPrefs.fontFamily===f.id?T.accentSurface:"transparent", color: readerPrefs.fontFamily===f.id?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit" }}>{f.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Bionic</span>
+                    <button onClick={() => updatePref("bionic", !readerPrefs.bionic)} style={{ width: 32, height: 18, borderRadius: 9, border: "none", cursor: "pointer", background: readerPrefs.bionic?T.accent:T.border, position: "relative", transition: "background .2s", flexShrink: 0 }}>
+                      <span style={{ position: "absolute", top: 2, left: readerPrefs.bionic?16:2, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .18s", boxShadow: "0 1px 3px rgba(0,0,0,.15)" }} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {/* Save */}
@@ -378,42 +426,6 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
 
 
-      {/* ── Aa reader controls — pinned below header, always visible when open ── */}
-      {showReaderControls && (
-        <div style={{
-          flexShrink: 0, borderBottom: `1px solid ${T.border}`,
-          background: T.card, padding: "10px 16px",
-          display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center",
-          animation: "slideDown .15s ease",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "1 1 140px" }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Size</span>
-            <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
-              onChange={e => updatePref("fontSize", parseInt(e.target.value))}
-              style={{ flex: 1, accentColor: T.accent }} />
-            <span style={{ fontSize: 11, color: T.textSecondary, minWidth: 26 }}>{readerPrefs.fontSize}px</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 2 }}>Width</span>
-            {["narrow","medium","wide"].map(w => (
-              <button key={w} onClick={() => updatePref("lineWidth", w)} style={{ padding: "3px 8px", borderRadius: 6, border: `1px solid ${readerPrefs.lineWidth===w?T.accent:T.border}`, background: readerPrefs.lineWidth===w?T.accentSurface:"transparent", color: readerPrefs.lineWidth===w?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit", textTransform: "capitalize" }}>{w}</button>
-            ))}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 2 }}>Font</span>
-            {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
-              <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} style={{ padding: "3px 8px", borderRadius: 6, border: `1px solid ${readerPrefs.fontFamily===f.id?T.accent:T.border}`, background: readerPrefs.fontFamily===f.id?T.accentSurface:"transparent", color: readerPrefs.fontFamily===f.id?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "inherit" }}>{f.label}</button>
-            ))}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>Bionic</span>
-            <button onClick={() => updatePref("bionic", !readerPrefs.bionic)} style={{ width: 32, height: 18, borderRadius: 9, border: "none", cursor: "pointer", background: readerPrefs.bionic?T.accent:T.border, position: "relative", transition: "background .2s", flexShrink: 0 }}>
-              <span style={{ position: "absolute", top: 2, left: readerPrefs.bionic?16:2, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .18s", boxShadow: "0 1px 3px rgba(0,0,0,.15)" }} />
-            </button>
-          </div>
-          <button onClick={() => setShowReaderControls(false)} style={{ marginLeft: "auto", background: T.surface2, border: "none", borderRadius: 7, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.textSecondary, fontSize: 16, fontFamily: "inherit" }}>×</button>
-        </div>
-      )}
 
       {/* ── Main content — scroll container ── */}
       <div
@@ -470,7 +482,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               )}
             </div>
 
-            <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} />
+            <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} />
 
             {content.description && (
               <p style={{ fontSize: 16, color: T.textSecondary, lineHeight: 1.7, margin: "0 0 24px", fontStyle: "italic" }}>
@@ -610,33 +622,41 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
 }
 
 // ── SummaryBlock ──────────────────────────────────────────────
-function SummaryBlock({ summary, summarizing, onSummarize, T }) {
+const SUMMARY_STYLES = [
+  { id: "keypoints", label: "Key Points" },
+  { id: "brief",     label: "Brief" },
+  { id: "detailed",  label: "Detailed" },
+];
+
+function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypoints", onStyleChange, T }) {
   if (summary) {
-    // Parse bullet points — handles •, -, *, **bold**: prefix, numbered lists
     const bullets = summary
       .split("\n")
       .map(l => l.trim())
       .filter(l => l.length > 0)
       .map(l => l
-        .replace(/^[•\-\*]\s*/, "")           // strip leading bullet chars
-        .replace(/^\d+\.\s*/, "")              // strip numbered list prefix
-        .replace(/^\*\*[^*]+\*\*:\s*/, "")     // strip **Bold label**: prefix
-        .replace(/\*\*([^*]+)\*\*/g, "$1")     // strip remaining **bold** markers
+        .replace(/^[•\-\*]\s*/, "")
+        .replace(/^\d+\.\s*/, "")
+        .replace(/^\*\*[^*]+\*\*:\s*/, "")
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
         .trim()
       )
       .filter(l => l.length > 10);
 
     return (
-      <div style={{ background: T.accentSurface, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px", marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.accentText, marginBottom: 12 }}>
-          ✨ AI Summary
+      <div style={{ background: T.accentSurface, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px", marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.accentText, flex: 1 }}>✨ AI Summary</span>
+          <button onClick={() => { onStyleChange?.("keypoints"); onSummarize?.("keypoints"); }} style={{ fontSize: 10, background: "none", border: "none", cursor: "pointer", color: T.textTertiary, fontFamily: "inherit", padding: "2px 6px", borderRadius: 5, transition: "color .1s" }}
+            onMouseEnter={e => e.currentTarget.style.color = T.accent} onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
+          >↺ Regenerate</button>
         </div>
         {bullets.length > 0 ? (
-          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
             {bullets.map((point, i) => (
               <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <span style={{ color: T.accent, fontWeight: 700, fontSize: 16, lineHeight: "1.5", flexShrink: 0, marginTop: 1 }}>•</span>
-                <span style={{ fontSize: 14, color: T.text, lineHeight: 1.65 }}>{point}</span>
+                <span style={{ color: T.accent, fontWeight: 700, fontSize: 15, lineHeight: "1.5", flexShrink: 0, marginTop: 1 }}>•</span>
+                <span style={{ fontSize: 14, color: T.text, lineHeight: 1.6 }}>{point}</span>
               </li>
             ))}
           </ul>
@@ -648,9 +668,23 @@ function SummaryBlock({ summary, summarizing, onSummarize, T }) {
   }
   return (
     <div style={{ marginBottom: 24 }}>
-      <Button variant="secondary" onClick={onSummarize} disabled={summarizing}>
-        {summarizing ? "Summarizing…" : "✨ Summarize with AI"}
-      </Button>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", background: T.surface, borderRadius: 8, padding: 2, gap: 1 }}>
+          {SUMMARY_STYLES.map(s => (
+            <button key={s.id} onClick={() => onStyleChange?.(s.id)} style={{
+              padding: "4px 10px", borderRadius: 6, border: "none",
+              background: summaryStyle === s.id ? T.card : "transparent",
+              color: summaryStyle === s.id ? T.text : T.textTertiary,
+              fontSize: 11, fontWeight: summaryStyle === s.id ? 600 : 400,
+              cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
+              boxShadow: summaryStyle === s.id ? "0 1px 3px rgba(0,0,0,.1)" : "none",
+            }}>{s.label}</button>
+          ))}
+        </div>
+        <Button variant="secondary" onClick={() => onSummarize(summaryStyle)} disabled={summarizing}>
+          {summarizing ? "Summarizing…" : "✨ Summarize"}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -745,7 +779,7 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, T, isMo
       </div>
 
       {/* AI Summary */}
-      <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} T={T} />
+      <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} summaryStyle="keypoints" T={T} />
 
       {/* Chapters */}
       {chapters.length > 0 && (
@@ -835,7 +869,7 @@ function PodcastEpisodeView({ item, summary, summarizing, onSummarize, T }) {
       </div>
 
       {/* AI Summary */}
-      <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} T={T} />
+      <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} summaryStyle="keypoints" T={T} />
 
       {/* Chapters from timestamps */}
       {chapters.length > 0 && (

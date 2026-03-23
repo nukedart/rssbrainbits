@@ -3,6 +3,40 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.30.0] — 2026-03-23
+
+### Added
+- **Saved page stitch view** — "Saved" list redesigned from a card grid to a vertical stitch layout: thumbnail on the left (72×54), title + description + source inline. Much easier to scan a long reading list.
+- **AI Integration in Settings** — personal Anthropic API key input restored in Settings. Used only as a Tier 3 fallback when the app's built-in Cloudflare Worker and Supabase edge function are both unavailable. Key is stored locally in the browser, never sent to our servers.
+- **CF Worker style support** — `/summarize` endpoint now accepts a `style` field (`keypoints` | `brief` | `detailed`) and selects the appropriate prompt and token limit accordingly.
+
+---
+
+## [1.29.0] — 2026-03-23
+
+### Added
+- **AI summary style options** — three modes before generating: **Key Points** (3–5 bullets, default), **Brief** (1–2 sentence TL;DR), and **Detailed** (6–8 bullets). A "↺ Regenerate" button appears on existing summaries to re-run with any style.
+- **Auto-save on AI summary** — generating a summary automatically saves the article to your Saved list.
+- **Sources dropdown in Inbox toolbar** — compact "All sources" pill filter replaces the left-panel feed list. Filters articles by feed without leaving the inbox view. Only appears when you have more than one feed.
+- **Sources nav item** — new sidebar nav entry (replaces Stats) linking to Manage Feeds for full source control.
+- **Reading Stats in Settings** — "View reading stats →" button added to Settings so stats remain accessible after moving them off the sidebar nav.
+- **"↺ Refresh account" in Settings** — refreshes your Supabase session to pick up Pro plan status without needing to sign out and back in.
+
+### Changed
+- **"Read Later" renamed to "Saved"** — updated in sidebar nav, bottom nav, page title, toasts, action buttons, and keyboard shortcut labels for consistency.
+- **Reader controls condensed** — the Aa reading preferences panel is now a compact floating dropdown attached to the Aa button (top-right) instead of a full-width bar below the header.
+- **Add feed modal simplified** — tabs removed. Single clean input auto-detects RSS, YouTube, podcast, article, or X handle. "Browse popular feeds" moved to a collapsible section at the bottom.
+- **Card size available in list view** — the S/M/L size selector in the view menu now applies to both card and list layouts (was card-only).
+- **Article list panel wider** — desktop 3-pane layout: article list column increased from 380px → 420px when reading panel is open.
+- **Mark all as read confirmation** — a confirmation prompt now appears before marking all articles read, showing the count.
+- **"Distilled Workspace" label removed** — sub-label under the Feed Box logo in the sidebar is gone.
+- **App version moved** — version string removed from the sidebar footer; it remains in Settings → Account.
+- **Stats removed from sidebar nav** — Stats is now accessible via Settings only, freeing a nav slot for Sources.
+
+### Fixed
+- **AI summary error message** — no longer suggests adding an API key in Settings (the Cloudflare Worker handles authentication automatically).
+- **Unused API Keys settings card removed** — the Anthropic API key input in Settings is removed; the backend worker handles all AI calls securely.
+
 ## [1.28.9] — 2026-03-22
 
 ### Added

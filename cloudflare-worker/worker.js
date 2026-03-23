@@ -72,13 +72,21 @@ async function handleSummarize(request, env, origin) {
     );
   }
 
-  const { text, title } = body;
+  const { text, title, style = "keypoints" } = body;
   if (!text) {
     return new Response(
       JSON.stringify({ error: "Missing 'text' field" }),
       { status: 400, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }
+
+  const PROMPTS = {
+    keypoints: `Summarize the following article in 3–5 clear bullet points. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
+    brief:     `Give a 1–2 sentence TL;DR of the following article. Write in plain text only — no markdown, no formatting.`,
+    detailed:  `Summarize the following article in 6–8 detailed bullet points covering all key ideas, data, and conclusions. Write in plain text only. Each bullet must start with "•" and be a complete sentence.`,
+  };
+  const prompt = PROMPTS[style] || PROMPTS.keypoints;
+  const maxTokens = style === "detailed" ? 1500 : 800;
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -90,10 +98,10 @@ async function handleSummarize(request, env, origin) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 1000,
+        max_tokens: maxTokens,
         messages: [{
           role: "user",
-          content: `You are a reading assistant. Summarize the following article in 3–5 clear bullet points. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.\n\nTitle: "${title || "Untitled"}"\n\nArticle:\n${text.slice(0, 6000)}`,
+          content: `You are a reading assistant. ${prompt}\n\nTitle: "${title || "Untitled"}"\n\nArticle:\n${text.slice(0, 6000)}`,
         }],
       }),
     });

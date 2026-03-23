@@ -9,11 +9,11 @@ import { getHistory, clearHistory, getReadLater, removeReadLater,
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import { Button, EmptyState, Spinner } from "../components/UI";
-import { getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
 import { feedsToOPML, downloadFile } from "../lib/exportUtils";
 import { getCachedFeed, cacheAge, invalidateCachedFeed } from "../lib/feedCache";
 import { getPlan, getPlanName, PLANS } from "../lib/plan";
 import { track } from "../lib/analytics";
+import { getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -88,7 +88,7 @@ export function ReadLaterPage() {
   }
 
   return (
-    <PageShell title="Read Later" subtitle={`${items.length} article${items.length !== 1 ? "s" : ""} saved`}>
+    <PageShell title="Saved" subtitle={`${items.length} article${items.length !== 1 ? "s" : ""} saved`}>
       <div style={{ width: "100%", maxWidth: 780, padding: "16px 16px 40px", display: "flex", flexDirection: "column", gap: 12 }}>
 
         {/* Add URL bar */}
@@ -136,46 +136,62 @@ export function ReadLaterPage() {
           </div>
         )}
 
-        {/* Card grid */}
+        {/* Stitch list */}
         {items.length > 0 && (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
-            {items.map((item) => (
-              <div key={item.url}
-                onClick={() => setOpenItem(item)}
-                style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, overflow:"hidden", cursor:"pointer", display:"flex", flexDirection:"column", transition:"border-color .15s, transform .1s", position:"relative" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.transform="translateY(-1px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.transform="translateY(0)"; }}
-              >
-                {/* Thumbnail */}
-                {item.image ? (
-                  <div style={{ height:130, overflow:"hidden", background:T.surface2, flexShrink:0 }}>
-                    <img src={item.image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} onError={e => { e.target.parentElement.style.display="none"; }} />
-                  </div>
-                ) : (
-                  <div style={{ height:6, background:`linear-gradient(90deg, ${T.accent}40, ${T.accent}10)`, flexShrink:0 }} />
-                )}
-                <div style={{ padding:"12px 14px 14px", flex:1, display:"flex", flexDirection:"column", gap:6 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:T.text, lineHeight:1.45, display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
-                    {item.title || item.url}
-                  </div>
-                  <div style={{ marginTop:"auto", display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:6 }}>
-                    <span style={{ fontSize:11, color:T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                      {item.source || (() => { try { return new URL(item.url).hostname; } catch { return ""; } })()}
-                    </span>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0, marginLeft:8 }}>
-                      <span style={{ fontSize:11, color:T.textTertiary }}>{relTime(item.saved_at)}</span>
-                      <button
-                        onClick={e => { e.stopPropagation(); handleRemove(item.url); }}
-                        title="Remove"
-                        style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, padding:"2px 4px", borderRadius:5, fontSize:13, lineHeight:1, display:"flex", alignItems:"center", transition:"color .1s" }}
-                        onMouseEnter={e => { e.currentTarget.style.color=T.danger; }}
-                        onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
-                      >✕</button>
+          <div style={{ display:"flex", flexDirection:"column", gap:1 }}>
+            {items.map((item) => {
+              const hostname = (() => { try { return new URL(item.url).hostname; } catch { return ""; } })();
+              return (
+                <div key={item.url}
+                  onClick={() => setOpenItem(item)}
+                  style={{
+                    display:"flex", alignItems:"center", gap:14,
+                    padding:"12px 4px", cursor:"pointer",
+                    borderBottom:`1px solid ${T.border}`,
+                    transition:"background .12s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background=T.surface2; }}
+                  onMouseLeave={e => { e.currentTarget.style.background="transparent"; }}
+                >
+                  {/* Thumbnail */}
+                  {item.image ? (
+                    <div style={{ width:72, height:54, flexShrink:0, borderRadius:8, overflow:"hidden", background:T.surface2 }}>
+                      <img src={item.image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} onError={e => { e.target.parentElement.style.display="none"; }} />
+                    </div>
+                  ) : (
+                    <div style={{ width:72, height:54, flexShrink:0, borderRadius:8, background:`linear-gradient(135deg, ${T.accent}30, ${T.surface2})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>📄</div>
+                  )}
+
+                  {/* Text */}
+                  <div style={{ flex:1, minWidth:0, display:"flex", flexDirection:"column", gap:4 }}>
+                    <div style={{ fontSize:14, fontWeight:600, color:T.text, lineHeight:1.4, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                      {item.title || item.url}
+                    </div>
+                    {item.description && (
+                      <div style={{ fontSize:12, color:T.textSecondary, lineHeight:1.45, display:"-webkit-box", WebkitLineClamp:1, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                        {item.description}
+                      </div>
+                    )}
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontSize:11, color:T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:200 }}>
+                        {item.source || hostname}
+                      </span>
+                      <span style={{ fontSize:11, color:T.textTertiary, flexShrink:0 }}>·</span>
+                      <span style={{ fontSize:11, color:T.textTertiary, flexShrink:0 }}>{relTime(item.saved_at)}</span>
                     </div>
                   </div>
+
+                  {/* Remove */}
+                  <button
+                    onClick={e => { e.stopPropagation(); handleRemove(item.url); }}
+                    title="Remove"
+                    style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, padding:"6px 8px", borderRadius:7, fontSize:15, lineHeight:1, flexShrink:0, transition:"color .1s, background .1s" }}
+                    onMouseEnter={e => { e.currentTarget.style.color=T.danger; e.currentTarget.style.background=`${T.danger}15`; }}
+                    onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.background="none"; }}
+                  >✕</button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -585,7 +601,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
     { key: "K / ↑",   action: "Previous article" },
     { key: "O / Enter", action: "Open article" },
     { key: "R",        action: "Toggle read/unread" },
-    { key: "L",        action: "Add to Read Later" },
+    { key: "L",        action: "Save article" },
     { key: "S",        action: "Save article" },
     { key: "A",        action: "Add feed / URL" },
     { key: "Esc",      action: "Close reader" },
@@ -633,12 +649,20 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               })}
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
             <Button variant="secondary" size="sm" onClick={signOut}>Sign out</Button>
-            <span style={{ fontSize: 10, color: T.textTertiary, opacity: 0.6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button onClick={async () => {
+                await supabase.auth.refreshSession();
+                window.location.reload();
+              }} style={{ fontSize: 11, color: T.textTertiary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "3px 6px", borderRadius: 6, transition: "color .12s" }}
+                onMouseEnter={e => e.currentTarget.style.color = T.text}
+                onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
+                title="Refresh your account session — use this if your Pro status isn't showing"
+              >↺ Refresh account</button>
               {/* global __APP_VERSION__ */}
-              v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "?"}
-            </span>
+              <span style={{ fontSize: 10, color: T.textTertiary, opacity: 0.5 }}>v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "?"}</span>
+            </div>
           </div>
         </Card>
 
@@ -656,6 +680,29 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
             </div>
           </label>
         </Card>
+
+        {/* AI Integration */}
+        <Card title="AI Integration" T={T}>
+          <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 12, lineHeight: 1.6 }}>
+            AI summaries are powered by Anthropic Claude. Add your own API key as a personal fallback — used only if the app's built-in summarization is unavailable.
+          </div>
+          <ApiKeyInput
+            label="Anthropic API Key"
+            placeholder="sk-ant-api03-…"
+            hint="Stored locally in your browser only. Never sent to our servers."
+            getValue={getAnthropicKey}
+            setValue={setAnthropicKey}
+            T={T}
+          />
+        </Card>
+
+        {/* Reading Stats */}
+        {onNavigate && (
+          <Card title="Reading Stats" T={T}>
+            <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 12 }}>Track your reading habits and most-read sources.</div>
+            <Button variant="secondary" size="sm" onClick={() => onNavigate("stats")}>View reading stats →</Button>
+          </Card>
+        )}
 
         {/* Notifications */}
         <Card title="Notifications" T={T}>
@@ -717,21 +764,6 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         <ReadingStatsCard T={T} user={user} />
         <FeedHealthCard T={T} user={user} feeds={appFeeds} />
         <DataPrivacyCard T={T} user={user} />
-
-        {/* API Keys */}
-        <Card title="API Keys" T={T}>
-          <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14, lineHeight: 1.6 }}>
-            Keys are stored in your browser only — never sent to any server other than the respective API.
-          </div>
-          <ApiKeyInput
-            label="Anthropic API Key"
-            placeholder="sk-ant-..."
-            hint="Used for AI summaries. Get at console.anthropic.com"
-            getValue={getAnthropicKey}
-            setValue={setAnthropicKey}
-            T={T}
-          />
-        </Card>
 
         {/* Database migrations */}
         <Card title="Database Migrations" T={T}>

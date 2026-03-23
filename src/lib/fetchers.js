@@ -561,8 +561,15 @@ export async function discoverFeed(pageUrl) {
 const WORKER_BASE = import.meta.env.VITE_PROXY_URL || null;
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || null;
 
-export async function summarizeContent(text, title) {
-  const payload = { text: text.slice(0, 6000), title: title || "Untitled" };
+const SUMMARY_PROMPTS = {
+  keypoints: `Summarize the following article in 3–5 clear bullet points. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
+  brief: `Give a 1–2 sentence TL;DR of the following article. Write in plain text only — no markdown, no formatting.`,
+  detailed: `Summarize the following article in 6–8 detailed bullet points covering all key ideas, data, and conclusions. Write in plain text only. Each bullet must start with "•" and be a complete sentence.`,
+};
+
+export async function summarizeContent(text, title, style = "keypoints") {
+  const prompt = SUMMARY_PROMPTS[style] || SUMMARY_PROMPTS.keypoints;
+  const payload = { text: text.slice(0, 6000), title: title || "Untitled", style };
 
   // ── Tier 1: Cloudflare Worker (API key stored as Worker secret) ──
   if (WORKER_BASE) {
@@ -607,7 +614,7 @@ export async function summarizeContent(text, title) {
 
   // ── Tier 3: Direct browser call (dev/fallback only) ─────────────
   const key = getAnthropicKey();
-  if (!key) return "No AI summary backend configured. Deploy the Cloudflare Worker or set an API key in Settings.";
+  if (!key) return "AI summarization is temporarily unavailable. Please try again later.";
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -619,10 +626,10 @@ export async function summarizeContent(text, title) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 1000,
+        max_tokens: style === "detailed" ? 1500 : 800,
         messages: [{
           role: "user",
-          content: `You are a reading assistant. Summarize the following article in 3–5 clear bullet points. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 6000)}`,
+          content: `You are a reading assistant. ${prompt}\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 6000)}`,
         }],
       }),
     });

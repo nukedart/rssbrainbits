@@ -68,6 +68,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [searchOpen, setSearchOpen]         = useState(false);
   const [errorPopoverOpen, setErrorPopoverOpen] = useState(false);
   const errorPopoverRef = useRef(null);
+  const [sourceDropOpen, setSourceDropOpen] = useState(false);
+  const sourceDropRef = useRef(null);
 
   function toggleFolderOpen(id) {
     setOpenFolders(prev => {
@@ -397,6 +399,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   async function handleMarkAllRead() {
     const urlsToMark = baseItems.map(i => i.url).filter(u => !readUrls.has(u));
     if (urlsToMark.length === 0) return;
+    if (!window.confirm(`Mark all ${urlsToMark.length} article${urlsToMark.length !== 1 ? "s" : ""} as read?`)) return;
     await markAllRead(user.id, urlsToMark);
     setReadUrls(prev => {
       const next = new Set([...prev, ...urlsToMark]);
@@ -430,12 +433,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       item = { url, type: "article", title: content.title || url, source: new URL(url).hostname, description: content.description, image: content.image };
     } catch { /* use fallback */ }
     await addReadLater(user.id, item);
-    showToast("⏱ Saved for later");
+    showToast("🔖 Saved");
   }
 
   async function handleReadLater(item) {
     await addReadLater(user.id, { ...item });
-    showToast("⏱ Added to Read Later");
+    showToast("🔖 Saved");
     track("article_saved_for_later", { source: item.source });
   }
 
@@ -453,6 +456,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     document.addEventListener("touchstart", h);
     return () => { document.removeEventListener("mousedown", h); document.removeEventListener("touchstart", h); };
   }, [viewMenuOpen]);
+
+  useEffect(() => {
+    if (!sourceDropOpen) return;
+    const h = e => { if (sourceDropRef.current && !sourceDropRef.current.contains(e.target)) setSourceDropOpen(false); };
+    document.addEventListener("mousedown", h);
+    document.addEventListener("touchstart", h);
+    return () => { document.removeEventListener("mousedown", h); document.removeEventListener("touchstart", h); };
+  }, [sourceDropOpen]);
 
   useEffect(() => {
     if (!errorPopoverOpen) return;
@@ -527,129 +538,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   return (
     <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
 
-      {/* ── Source list (only on inbox/today mode) ── */}
-      {filterMode !== "today" && filterMode !== "unread" && filterMode !== "smart" && !isMobile && !isTablet && (
-        <div style={{ width: 234, flexShrink: 0, background: T.surface, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <div style={{ padding: "13px 12px 10px", display: "flex", alignItems: "center" }}>
-            <span style={{ flex: 1, fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em" }}>Sources</span>
-          </div>
-
-          <div style={{ flex: 1, overflowY: "auto", padding: "6px 6px" }}>
-            <SourceItem label="All Items" icon="📥" count={allItems.filter(i => !readUrls.has(i.url)).length}
-              active={activeSource === "all"} onClick={() => setActiveSource("all")} />
-
-            {/* ── Folders ── */}
-            {folders.length > 0 && folders.map(folder => {
-              const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
-              const folderUnread = folderFeeds.reduce((n, f) => n + allItems.filter(i => i.feedId === f.id && !readUrls.has(i.url)).length, 0);
-              const FOLDER_COLORS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
-              const dotColor = FOLDER_COLORS[folder.color] || "#8A9099";
-              const isOpen = openFolders.has(folder.id);
-              return (
-                <div key={folder.id}>
-                  {/* Folder header row — drag target */}
-                  <div
-                    style={{ display:"flex", alignItems:"center", padding:"7px 8px 3px", cursor:"pointer", borderRadius:6, background: dragOverFolder===folder.id ? T.accentSurface : "transparent", border: `1px solid ${dragOverFolder===folder.id ? T.accent : "transparent"}`, transition:"all .1s" }}
-                    onClick={() => toggleFolderOpen(folder.id)}
-                    onMouseEnter={e => { if (dragOverFolder !== folder.id) e.currentTarget.style.background=T.surface2; }}
-                    onMouseLeave={e => { if (dragOverFolder !== folder.id) e.currentTarget.style.background="transparent"; }}
-                    onDragOver={e => { e.preventDefault(); setDragOverFolder(folder.id); }}
-                    onDragLeave={() => setDragOverFolder(null)}
-                    onDrop={async e => {
-                      e.preventDefault();
-                      const feedId = e.dataTransfer.getData("feedId");
-                      if (feedId && onMoveFeedToFolder) {
-                        // Update local feeds state immediately so sources panel re-renders
-                        setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: folder.id } : f));
-                        await onMoveFeedToFolder(feedId, folder.id);
-                      }
-                      setDragOverFolder(null);
-                      setDraggingFeed(null);
-                    }}
-                  >
-                    <span style={{ fontSize:9, color:dotColor, marginRight:5, display:"inline-block", transform: isOpen?"rotate(90deg)":"rotate(0deg)", transition:"transform .15s" }}>▶</span>
-                    <span style={{ width:7, height:7, borderRadius:"50%", background:dotColor, flexShrink:0, marginRight:6 }} />
-                    <span style={{ flex:1, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:T.textSecondary }}>{folder.name}</span>
-                    {folderUnread > 0 && <span style={{ fontSize:9, fontWeight:700, color:T.accent, marginRight:4 }}>{folderUnread}</span>}
-                    <span
-                      onClick={e => { e.stopPropagation(); onEditFolder?.(folder); }}
-                      style={{ fontSize:12, color:T.textTertiary, cursor:"pointer", opacity:0, padding:"0 4px", transition:"opacity .1s" }}
-                      onMouseEnter={e => e.currentTarget.style.opacity="1"}
-                      onMouseLeave={e => e.currentTarget.style.opacity="0"}
-                    >···</span>
-                  </div>
-                  {/* Feeds inside folder */}
-                  {isOpen && folderFeeds.map(feed => {
-                    const feedUnread = allItems.filter(i => i.feedId === feed.id && !readUrls.has(i.url)).length;
-                    return (
-                      <div key={feed.id} style={{ paddingLeft: 10 }}>
-                        <SourceItem
-                          label={feed.name || new URL(feed.url).hostname}
-                          feedUrl={feed.url}
-                          feedId={feed.id}
-                          count={feedUnread}
-                          active={activeSource === feed.id}
-                          onClick={() => setActiveSource(feed.id)}
-                          onDelete={() => handleDeleteFeed(feed.id)}
-                          onRetry={() => handleRetryFeed(feed)}
-                          onMoveToFolder={async (folderId) => {
-                setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, folder_id: folderId } : f));
-                await onMoveFeedToFolder?.(feed.id, folderId);
-              }}
-                          folders={folders}
-                          isLoading={feedLoading[feed.id]}
-                          error={feedErrors[feed.id]}
-                        />
-                      </div>
-                    );
-                  })}
-                  {isOpen && folderFeeds.length === 0 && (
-                    <div style={{ padding:"4px 8px 4px 28px", fontSize:11, color:T.textTertiary, fontStyle:"italic" }}>No feeds</div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* ── Ungrouped feeds ── */}
-            {feeds.filter(f => !f.folder_id).length > 0 && (
-              <div style={{ padding: "8px 8px 3px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".1em", color: T.textTertiary }}>
-                {folders.length > 0 ? "Ungrouped" : "Feeds"}
-              </div>
-            )}
-
-            {loadingFeeds
-              ? <div style={{ padding: "14px 8px" }}><Spinner size={14} /></div>
-              : feeds.filter(f => !f.folder_id).map((feed) => {
-                  const feedUnread = allItems.filter(i => i.feedId === feed.id && !readUrls.has(i.url)).length;
-                  return (
-                    <SourceItem key={feed.id}
-                      label={feed.name || new URL(feed.url).hostname}
-                      feedUrl={feed.url}
-                      feedId={feed.id}
-                      count={feedUnread}
-                      active={activeSource === feed.id}
-                      onClick={() => setActiveSource(feed.id)}
-                      onDelete={() => handleDeleteFeed(feed.id)}
-                      onRetry={() => handleRetryFeed(feed)}
-                      onMoveToFolder={async (folderId) => {
-                setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, folder_id: folderId } : f));
-                await onMoveFeedToFolder?.(feed.id, folderId);
-              }}
-                      folders={folders}
-                      isLoading={feedLoading[feed.id]}
-                      error={feedErrors[feed.id]}
-                    />
-                  );
-                })
-            }
-
-
-          </div>
-        </div>
-      )}
 
       {/* ── Article list ── */}
-      <div style={{ flex: !isMobile && openItem ? "0 0 380px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
+      <div style={{ flex: !isMobile && openItem ? "0 0 420px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
         <div style={{ padding: "0 12px", background: T.bg, boxShadow: `0 1px 0 ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
@@ -709,6 +600,49 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Source filter dropdown — only in inbox mode with multiple feeds */}
+          {!searchOpen && filterMode === "all" && feeds.length > 1 && (
+            <div ref={sourceDropRef} style={{ position: "relative", flexShrink: 0 }}>
+              <button onClick={() => setSourceDropOpen(v => !v)} style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "4px 10px 4px 10px", borderRadius: 20,
+                border: `1px solid ${activeSource !== "all" ? T.accent : T.border}`,
+                background: activeSource !== "all" ? T.accentSurface : T.surface,
+                color: activeSource !== "all" ? T.accent : T.textSecondary,
+                cursor: "pointer", fontSize: 12, fontWeight: 500, fontFamily: "inherit",
+                transition: "all .12s", whiteSpace: "nowrap",
+              }}>
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg>
+                {activeSource === "all" ? "All sources" : feeds.find(f => f.id === activeSource)?.name || "Source"}
+                <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 3.5l3 3 3-3"/></svg>
+              </button>
+              {sourceDropOpen && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 6px)", left: 0,
+                  background: T.card, border: `1px solid ${T.border}`,
+                  borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,.18)",
+                  zIndex: 900, minWidth: 200, maxHeight: 320, overflowY: "auto",
+                  padding: "4px 0", animation: "fadeIn .12s ease",
+                }}>
+                  {[{ id: "all", name: "All sources" }, ...feeds].map(f => (
+                    <button key={f.id} onClick={() => { setActiveSource(f.id); setSourceDropOpen(false); }} style={{
+                      display: "flex", alignItems: "center", gap: 8, width: "100%",
+                      padding: "7px 14px", background: activeSource === f.id ? T.accentSurface : "none",
+                      border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+                      fontSize: 13, color: activeSource === f.id ? T.accent : T.text,
+                      fontWeight: activeSource === f.id ? 600 : 400, transition: "background .1s",
+                    }}
+                      onMouseEnter={e => { if (activeSource !== f.id) e.currentTarget.style.background = T.surface2; }}
+                      onMouseLeave={e => { if (activeSource !== f.id) e.currentTarget.style.background = "none"; }}
+                    >
+                      {f.id === "all" ? "📥 All sources" : f.name || new URL(f.url).hostname}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -837,22 +771,20 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
                     ))}
                   </div>
                 </div>
-                {viewMode === "card" && (
-                  <div style={{ padding: "6px 12px 10px" }}>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Size</div>
-                    <div style={{ display: "flex", gap: 4 }}>
-                      {[{ size: "sm", label: "S" }, { size: "md", label: "M" }, { size: "lg", label: "L" }].map(({ size, label }) => (
-                        <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} style={{
-                          flex: 1, padding: "5px 0", borderRadius: 8, border: "none",
-                          background: cardSize === size ? T.accentSurface : T.surface,
-                          color: cardSize === size ? T.accent : T.textSecondary,
-                          cursor: "pointer", fontSize: 12, fontWeight: cardSize === size ? 700 : 400,
-                          fontFamily: "inherit", transition: "all .12s",
-                        }}>{label}</button>
-                      ))}
-                    </div>
+                <div style={{ padding: "6px 12px 10px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Size</div>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {[{ size: "sm", label: "S" }, { size: "md", label: "M" }, { size: "lg", label: "L" }].map(({ size, label }) => (
+                      <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} style={{
+                        flex: 1, padding: "5px 0", borderRadius: 8, border: "none",
+                        background: cardSize === size ? T.accentSurface : T.surface,
+                        color: cardSize === size ? T.accent : T.textSecondary,
+                        cursor: "pointer", fontSize: 12, fontWeight: cardSize === size ? 700 : 400,
+                        fontFamily: "inherit", transition: "all .12s",
+                      }}>{label}</button>
+                    ))}
                   </div>
-                )}
+                </div>
               </div>
             )}
           </div>

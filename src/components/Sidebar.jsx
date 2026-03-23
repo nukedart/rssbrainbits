@@ -3,8 +3,6 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
-/* global __APP_VERSION__ */
-const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "?";
 
 const Icons = {
   Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
@@ -19,6 +17,7 @@ const Icons = {
   Plus:     () => (<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>),
   Edit:     () => (<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M11 2.5l2.5 2.5L5 13.5H2.5V11L11 2.5z"/></svg>),
   Stats:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6" y="5" width="3" height="10" rx="1"/><rect x="11" y="1" width="3" height="14" rx="1"/></svg>),
+  Sources:  () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4h12"/><path d="M2 8h8"/><path d="M2 12h5"/><circle cx="13" cy="11" r="2.5"/><path d="M13 8.5v1M13 13.5v1"/></svg>),
   Folder:   () => (<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 3.5h4.5l1.5 2h7v7.5h-13z"/></svg>),
   SmartFeed:() => (<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h12l-4 5v5l-4-2V8L2 3z"/></svg>),
 };
@@ -35,16 +34,16 @@ const HomeIcon = () => (
 );
 
 const NAV = [
-  { id:"home",      Icon:HomeIcon,        label:"Home"      },
-  { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox"     },
-  { id:"readlater", Icon:Icons.ReadLater, label:"Read Later"},
-  { id:"notes",     Icon:Icons.Notes,     label:"Notes"     },
-  { id:"stats",     Icon:Icons.Stats,     label:"Stats"     },
+  { id:"home",         Icon:HomeIcon,          label:"Home"    },
+  { id:"inbox",        Icon:Icons.Inbox,       label:"Inbox"   },
+  { id:"readlater",    Icon:Icons.ReadLater,   label:"Saved"   },
+  { id:"notes",        Icon:Icons.Notes,       label:"Notes"   },
+  { id:"manage-feeds", Icon:Icons.Sources,     label:"Sources" },
 ];
 
 const SHORTCUTS = [
   ["J / K","Navigate"],["O","Open"],["R","Read/unread"],
-  ["L","Read later"],["S","Star"],["A","Add feed"],["F","Focus search"],["Esc","Close"],
+  ["L","Save article"],["S","Star"],["A","Add feed"],["F","Focus search"],["Esc","Close"],
 ];
 
 // ── Single nav row — works in both expanded and collapsed state ──
@@ -143,9 +142,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontSize:17, fontWeight:700, color:T.text, fontFamily:"'Newsreader', Georgia, serif", fontStyle:"italic", letterSpacing:"-.02em", lineHeight:1.2 }}>
               Feed Box
-            </div>
-            <div style={{ fontSize:9, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".1em", marginTop:2 }}>
-              Distilled Workspace
             </div>
           </div>
         ) : (
@@ -369,12 +365,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
           )}
         </div>
 
-        {/* Version — only when expanded */}
-        {!collapsed && (
-          <div style={{ textAlign:"center", padding:"3px 10px 1px", fontSize:9, color:T.textTertiary, opacity:0.45, letterSpacing:".04em" }}>
-            v{APP_VERSION}
-          </div>
-        )}
 
         {/* Shortcuts — symbol button next to user row, only when expanded */}
         {!collapsed && (

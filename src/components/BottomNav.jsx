@@ -20,7 +20,7 @@ const NAV = [
   { id:"home",      Icon:Icons.Home,      label:"Home"     },
   { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox"    },
   { id:"add",       Icon:null,            label:"Add"      }, // special center button
-  { id:"readlater", Icon:Icons.ReadLater, label:"Later"    },
+  { id:"readlater", Icon:Icons.ReadLater, label:"Saved"    },
   { id:"settings",  Icon:Icons.Settings,  label:"Settings" },
 ];
 
