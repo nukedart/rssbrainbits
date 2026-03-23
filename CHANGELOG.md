@@ -3,6 +3,17 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.33.0] — 2026-03-23
+
+### Changed
+- **AI summary style tabs — pill design** — "Key Points / Brief / Detailed" tabs now match the "Summarize with AI" pill style: outlined pill shape (`border-radius: 100`), transparent background, accent color border + text when selected. Applied to both the pre-summary selector and the inline regenerate tabs inside the summary card.
+
+### Fixed
+- **Folders — inline creation** — ManageFeedsPage now shows a "+ Create folder" button when no folders exist, opening the folder editor directly (no longer sends users to the sidebar `+` button). Folder state sync fragility fixed — ManageFeedsCard now always mirrors the parent state regardless of count.
+- **Article tags — Pro gate** — Article tags are now gated behind the Pro plan. Free users see an upgrade prompt instead of the tags input when they open the Tags panel.
+
+---
+
 ## [1.32.0] — 2026-03-23
 
 ### Fixed

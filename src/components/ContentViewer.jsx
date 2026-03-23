@@ -17,6 +17,7 @@ import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
+import { isProUser } from "../lib/plan";
 
 export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false, currentIdx = -1, totalCount = 0, onExpand }) {
   const { T } = useTheme();
@@ -421,7 +422,14 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         <div style={{ background: T.surface, borderBottom: `1px solid ${T.border}`, padding: "10px 16px", flexShrink: 0 }}>
           <div style={{ maxWidth: 680, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, marginBottom: 8 }}>Tags</div>
-            <TagsInput tags={tags} onAdd={handleAddTag} onRemove={handleRemoveTag} allTags={allTags} />
+            {isProUser(user) ? (
+              <TagsInput tags={tags} onAdd={handleAddTag} onRemove={handleRemoveTag} allTags={allTags} />
+            ) : (
+              <div style={{ fontSize: 12, color: T.textSecondary, display: "flex", alignItems: "center", gap: 10 }}>
+                <span>Article tags are a Pro feature.</span>
+                <a href="/landing" style={{ color: T.accent, fontWeight: 600, textDecoration: "none" }}>Upgrade →</a>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -715,14 +723,15 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
           <SparkleIcon size={12} style={{ color: T.accent, flexShrink: 0 }} />
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: T.accent, flex: 1 }}>AI Summary</span>
-          {/* Style tabs inline */}
-          <div style={{ display: "flex", gap: 1, background: T.surface2, borderRadius: 8, padding: 2 }}>
+          {/* Style tabs inline — pill style matching summarize button */}
+          <div style={{ display: "flex", gap: 3 }}>
             {SUMMARY_STYLES.map(s => (
               <button key={s.id} onClick={() => { onStyleChange?.(s.id); onSummarize?.(s.id); }} style={{
-                padding: "2px 8px", borderRadius: 6, border: "none",
-                background: summaryStyle === s.id ? T.card : "transparent",
-                color: summaryStyle === s.id ? T.text : T.textTertiary,
-                fontSize: 10, fontWeight: 600,
+                padding: "3px 10px", borderRadius: 100,
+                border: `1px solid ${summaryStyle === s.id ? T.accent : T.border}`,
+                background: "transparent",
+                color: summaryStyle === s.id ? T.accent : T.textTertiary,
+                fontSize: 10, fontWeight: summaryStyle === s.id ? 700 : 400,
                 cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
               }}>{s.label}</button>
             ))}
@@ -747,14 +756,15 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
   // ── Pre-summary: centered pill ──────────────────────────────
   return (
     <div style={{ textAlign: "center", padding: "24px 0 28px" }}>
-      {/* Style selector */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 2, marginBottom: 14 }}>
+      {/* Style selector — pill tabs matching main summarize button */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 4, marginBottom: 14 }}>
         {SUMMARY_STYLES.map(s => (
           <button key={s.id} onClick={() => onStyleChange?.(s.id)} style={{
-            padding: "3px 11px", borderRadius: 20, border: "none",
-            background: summaryStyle === s.id ? T.surface2 : "transparent",
-            color: summaryStyle === s.id ? T.text : T.textTertiary,
-            fontSize: 11, fontWeight: summaryStyle === s.id ? 600 : 400,
+            padding: "5px 14px", borderRadius: 100,
+            border: `1px solid ${summaryStyle === s.id ? T.accent : T.border}`,
+            background: "transparent",
+            color: summaryStyle === s.id ? T.accent : T.textTertiary,
+            fontSize: 11, fontWeight: summaryStyle === s.id ? 700 : 400,
             cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
           }}>{s.label}</button>
         ))}

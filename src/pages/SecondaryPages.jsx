@@ -819,7 +819,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
 }
 
 // ── Manage Feeds page ──────────────────────────────────────────
-export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onNavigate }) {
+export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onNavigate, onAddFolder }) {
   const { T } = useTheme();
   const { user } = useAuth();
   return (
@@ -827,7 +827,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
       action={onNavigate && <Button variant="ghost" size="sm" onClick={() => onNavigate("settings")}>← Settings</Button>}
     >
       <div style={{ maxWidth: 520, width: "100%", padding: "24px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
-        <ManageFeedsCard T={T} user={user} initialFeeds={appFeeds} initialFolders={appFolders} onFeedUpdate={onFeedUpdate} />
+        <ManageFeedsCard T={T} user={user} initialFeeds={appFeeds} initialFolders={appFolders} onFeedUpdate={onFeedUpdate} onAddFolder={onAddFolder} />
       </div>
     </PageShell>
   );
@@ -868,15 +868,15 @@ function FeedNameEditor({ feed, T, onSave }) {
 }
 
 // ── Manage Feeds card ─────────────────────────────────────────
-function ManageFeedsCard({ T, user, initialFeeds = [], initialFolders = [], onFeedUpdate }) {
+function ManageFeedsCard({ T, user, initialFeeds = [], initialFolders = [], onFeedUpdate, onAddFolder }) {
   const [feeds, setFeeds]     = useState(initialFeeds);
   const [folders, setFolders] = useState(initialFolders);
   const [saving, setSaving]   = useState(null);
   const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 
-  // Sync if parent feeds change
-  useEffect(() => { if (initialFeeds.length > 0) setFeeds(initialFeeds); }, [initialFeeds]);
-  useEffect(() => { if (initialFolders.length > 0) setFolders(initialFolders); }, [initialFolders]);
+  // Always sync from parent so changes from Sidebar propagate immediately
+  useEffect(() => { setFeeds(initialFeeds); }, [initialFeeds]);
+  useEffect(() => { setFolders(initialFolders); }, [initialFolders]);
 
   async function handleMove(feedId, folderId) {
     setSaving(feedId);
@@ -949,8 +949,15 @@ function ManageFeedsCard({ T, user, initialFeeds = [], initialFolders = [], onFe
         })}
       </div>
       {folders.length === 0 && (
-        <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 10, fontStyle: "italic" }}>
-          Create a folder first using the + button in the sources panel.
+        <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, color: T.textTertiary, fontStyle: "italic" }}>No folders yet.</span>
+          {onAddFolder && (
+            <button onClick={onAddFolder} style={{
+              padding: "5px 12px", borderRadius: 8, cursor: "pointer",
+              background: T.accentSurface, border: `1px solid ${T.accent}`,
+              color: T.accent, fontSize: 12, fontWeight: 600, fontFamily: "inherit",
+            }}>+ Create folder</button>
+          )}
         </div>
       )}
     </Card>
