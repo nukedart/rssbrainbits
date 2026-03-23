@@ -298,23 +298,23 @@ export async function getSmartFeeds(userId) {
     .from("smart_feeds").select("*").eq("user_id", userId)
     .order("created_at", { ascending: true });
   if (error) throw error;
-  // Normalise: feed_ids may not exist on older DBs — default to null
-  return (data || []).map(sf => ({ ...sf, feed_ids: sf.feed_ids ?? null }));
+  return (data || []).map(sf => ({ ...sf, feed_ids: sf.feed_ids ?? null, match_mode: sf.match_mode ?? "any" }));
 }
 
-export async function addSmartFeed(userId, { name, keywords, color, feed_ids = null }) {
-  // Only include feed_ids in payload if column exists (safe for older DBs)
+export async function addSmartFeed(userId, { name, keywords, color, feed_ids = null, match_mode = "any" }) {
   const payload = { user_id: userId, name, keywords, color };
   if (feed_ids?.length) payload.feed_ids = feed_ids;
+  if (match_mode && match_mode !== "any") payload.match_mode = match_mode;
   const { data, error } = await supabase
     .from("smart_feeds").insert(payload).select().single();
   if (error) throw error;
   return data;
 }
 
-export async function updateSmartFeed(id, { name, keywords, color, feed_ids = null }) {
+export async function updateSmartFeed(id, { name, keywords, color, feed_ids = null, match_mode = "any" }) {
   const payload = { name, keywords, color };
   payload.feed_ids = feed_ids?.length ? feed_ids : null;
+  payload.match_mode = match_mode || "any";
   const { data, error } = await supabase
     .from("smart_feeds").update(payload).eq("id", id).select().single();
   if (error) throw error;
@@ -379,14 +379,18 @@ export function matchesSmartFeed(item, defOrKeywords) {
     return haystack.includes(t.toLowerCase());
   }
 
-  // All non-exclusion keywords must match (AND logic between positive terms)
-  // Exclusion keywords are applied independently
+  const matchMode  = Array.isArray(defOrKeywords) ? "any" : (defOrKeywords.match_mode || "any");
   const positives  = keywords.filter(kw => !kw.trim().startsWith("-"));
   const exclusions = keywords.filter(kw => kw.trim().startsWith("-"));
 
-  // At least one positive keyword must match
-  const posMatch = positives.length === 0 || positives.some(kw => termMatches(kw));
-  // No exclusion must match
+  // "all" mode: every positive keyword must match; "any" mode: at least one must match
+  const posMatch = positives.length === 0
+    ? true
+    : matchMode === "all"
+      ? positives.every(kw => termMatches(kw))
+      : positives.some(kw => termMatches(kw));
+
+  // Exclusions always apply regardless of mode
   const excMatch = exclusions.every(kw => termMatches(kw));
 
   return posMatch && excMatch;

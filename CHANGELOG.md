@@ -3,6 +3,15 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.28.8] — 2026-03-22
+
+### Added
+- **Home page 3-pane reading** — clicking any article on the Home page now opens an inline reading panel on desktop (same layout as the Inbox). The bento grid collapses to a slim article list at 380px; the reading panel fills the rest. Prev/next navigation and article position indicator both work. Mobile keeps the full-screen overlay.
+- **Smart feeds — Match ANY / Match ALL** — when a smart feed has 2+ positive keywords, a toggle appears to choose whether articles must match ANY keyword (OR — the previous behaviour) or ALL keywords (AND). Existing smart feeds default to "any" with no behaviour change.
+
+### Fixed
+- **Smart feed match mode consistency** — the previous code comment said "AND logic" but the implementation was OR (`some()`). Both the comment and the behaviour are now correctly documented and controlled by the match_mode setting.
+
 ## [1.28.7] — 2026-03-21
 
 ### Performance

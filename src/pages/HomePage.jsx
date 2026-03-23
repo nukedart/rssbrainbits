@@ -9,11 +9,6 @@ import ContentViewer from "../components/ContentViewer";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
 // ── Daily Briefing Home Page ────────────────────────────────
-// Matches the "Things 3 / Distilled Workspace" design:
-//   • Serif italic mega-heading + date
-//   • Bento grid: 8-col featured card + 4-col two stacked cards
-//   • "Latest Updates" editorial row list
-
 export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPodcast }) {
   const { T }        = useTheme();
   const { user }     = useAuth();
@@ -23,21 +18,19 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPo
   const [loading, setLoading]   = useState(true);
   const [feeds, setFeeds]       = useState(propFeeds || []);
   const [openItem, setOpenItem] = useState(null);
+  const [openIdx, setOpenIdx]   = useState(-1);
 
-  // load feeds if not supplied
   useEffect(() => {
     if (!user) return;
     if (propFeeds !== null) { setFeeds(propFeeds); return; }
     getFeeds(user.id).then(setFeeds).catch(console.error);
   }, [user, propFeeds]);
 
-  // fetch items from all feeds — serve from cache instantly, fetch only uncached feeds
   useEffect(() => {
     if (!feeds.length) { setLoading(false); return; }
     setLoading(true);
     const MAX_PER_FEED = 5;
 
-    // Build items from cache first for instant render
     const cachedItems = feeds.flatMap(f => {
       const cached = getCachedFeed(f.url);
       if (!cached) return [];
@@ -51,7 +44,6 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPo
       setLoading(false);
     }
 
-    // Fetch only feeds not in cache (or stale) in the background
     const uncached = feeds.filter(f => { const c = getCachedFeed(f.url); return !c || c.isStale; });
     if (!uncached.length) return;
     Promise.allSettled(
@@ -59,9 +51,8 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPo
     ).then(results => {
       const freshItems = results.flatMap(r => r.status === "fulfilled" ? r.value : []);
       if (!freshItems.length) return;
-      // Merge fresh items with cached items from feeds we didn't re-fetch
       const cachedOnlyItems = feeds.flatMap(f => {
-        if (uncached.find(u => u.id === f.id)) return []; // was refetched
+        if (uncached.find(u => u.id === f.id)) return [];
         const c = getCachedFeed(f.url);
         return (c?.data?.items || []).slice(0, MAX_PER_FEED).map(item => ({ ...item, feedId: f.id, source: item.source || f.name || f.url }));
       });
@@ -70,6 +61,12 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPo
       setItems(all.slice(0, 20));
     }).finally(() => setLoading(false));
   }, [feeds]);
+
+  function openByIdx(idx) {
+    if (idx < 0 || idx >= items.length) return;
+    setOpenItem(items[idx]);
+    setOpenIdx(idx);
+  }
 
   const today = new Date();
   const dateLabel = today.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -80,8 +77,7 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPo
 
   function estReadTime(text) {
     const words = (text || "").split(/\s+/).length;
-    const mins  = Math.max(1, Math.round(words / 200));
-    return `${mins} min read`;
+    return `${Math.max(1, Math.round(words / 200))} min read`;
   }
 
   function relativeTime(dateStr) {
@@ -116,202 +112,256 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPo
     );
   }
 
+  // ── Desktop 3-pane: article list + reading panel ──────────
+  const showSplitView = !isMobile && openItem;
+
   return (
-    <>
-    <div style={{ flex: 1, overflowY: "auto", background: T.bg }}>
-      <div style={{ maxWidth: 1120, margin: "0 auto", padding: isMobile ? "32px 18px 100px" : "48px 48px 80px" }}>
+    <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
-        {/* ── Header ── */}
-        <section style={{ marginBottom: isMobile ? 32 : 56 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".18em", color: T.accent, textTransform: "uppercase", marginBottom: 14 }}>
-            {dateLabel}
-          </div>
-          <h1 style={{
-            fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-            fontSize: isMobile ? "clamp(44px, 12vw, 60px)" : "clamp(60px, 7vw, 88px)",
-            fontWeight: 700, lineHeight: 1.05, color: T.text,
-            margin: "0 0 16px", letterSpacing: "-.02em",
-          }}>
-            Daily Briefing
-          </h1>
-          <p style={{ fontSize: isMobile ? 15 : 17, color: T.textSecondary, maxWidth: 560, lineHeight: 1.65, margin: 0, fontFamily: "inherit" }}>
-            A distilled summary of your interests. Today we&apos;ve gathered{" "}
-            <span style={{ color: T.text, fontWeight: 600 }}>{items.length} essential updates</span>{" "}
-            from your top feeds and channels.
-          </p>
-        </section>
-
-        {/* ── Bento Grid ── */}
-        {items.length > 0 && (
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "repeat(12, 1fr)",
-            gap: isMobile ? 16 : 24,
-            marginBottom: isMobile ? 40 : 56,
-          }}>
-
-            {/* Featured card — 8 columns */}
-            {featured && (
-              <article
-                onClick={() => setOpenItem(featured)}
-                style={{
-                  gridColumn: isMobile ? "1" : "span 8",
-                  background: T.card, borderRadius: 16,
-                  overflow: "hidden", cursor: "pointer",
-                  transition: "background .2s",
-                  position: "relative",
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = T.surface}
-                onMouseLeave={e => e.currentTarget.style.background = T.card}
-              >
-                {/* Hero image */}
-                <div style={{ height: 260, overflow: "hidden", position: "relative", background: T.surface2 }}>
-                  {featured.image
-                    ? <img src={featured.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s ease" }}
-                        onMouseEnter={e => e.target.style.transform="scale(1.04)"}
-                        onMouseLeave={e => e.target.style.transform="scale(1)"}
-                      />
-                    : <FallbackArt source={featured.source} T={T} size="large" />
-                  }
-                  {/* Featured pill */}
-                  <div style={{ position: "absolute", top: 16, left: 16, padding: "4px 12px", borderRadius: 999, background: `${T.accent}30`, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: T.accent, fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase" }}>
-                    Featured
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div style={{ padding: "24px 28px 28px" }}>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 14 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".1em" }}>{featured.source}</span>
-                    <span style={{ width: 3, height: 3, borderRadius: "50%", background: T.textTertiary, flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, color: T.textTertiary }}>{estReadTime(featured.description)}</span>
-                    <span style={{ fontSize: 11, color: T.textTertiary, marginLeft: "auto" }}>{relativeTime(featured.date)}</span>
-                  </div>
-                  <h2 style={{
-                    fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-                    fontSize: 26, fontWeight: 700, color: T.text, margin: "0 0 12px",
-                    lineHeight: 1.25, letterSpacing: "-.01em",
-                    transition: "color .15s",
-                  }}
-                    onMouseEnter={e => e.target.style.color = T.accent}
-                    onMouseLeave={e => e.target.style.color = T.text}
-                  >
-                    {featured.title}
-                  </h2>
-                  {featured.description && (
-                    <p style={{ fontSize: 14, color: T.textSecondary, lineHeight: 1.7, margin: "0 0 20px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                      {featured.description}
-                    </p>
-                  )}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <SourceDots T={T} />
-                    <BookmarkBtn T={T} />
-                  </div>
-                </div>
-              </article>
-            )}
-
-            {/* Right column — 4 columns */}
-            <div style={{
-              gridColumn: isMobile ? "1" : "span 4",
-              display: "flex", flexDirection: "column", gap: isMobile ? 16 : 24,
-            }}>
-
-              {/* Trending card */}
-              {secondary && (
-                <article
-                  onClick={() => setOpenItem(secondary)}
-                  style={{ background: T.card, borderRadius: 16, padding: "24px", cursor: "pointer", flex: "0 0 auto", transition: "background .2s" }}
-                  onMouseEnter={e => e.currentTarget.style.background = T.surface}
-                  onMouseLeave={e => e.currentTarget.style.background = T.card}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: T.warning, textTransform: "uppercase", letterSpacing: ".12em" }}>Trending</span>
-                    <span style={{ fontSize: 16 }}>⚡</span>
-                  </div>
-                  <h3 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 20, fontWeight: 700, color: T.text, margin: "0 0 10px", lineHeight: 1.3 }}>
-                    {secondary.title}
-                  </h3>
-                  {secondary.description && (
-                    <p style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.65, margin: 0, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                      {secondary.description}
-                    </p>
-                  )}
-                </article>
-              )}
-
-              {/* Curated / second card */}
-              {tertiary && (
-                <article
-                  onClick={() => setOpenItem(tertiary)}
-                  style={{ background: T.surface, borderRadius: 16, padding: "24px", cursor: "pointer", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 160, transition: "background .2s" }}
-                  onMouseEnter={e => e.currentTarget.style.background = T.card}
-                  onMouseLeave={e => e.currentTarget.style.background = T.surface}
-                >
-                  <div>
-                    {/* Accent bar */}
-                    <div style={{ width: 40, height: 3, borderRadius: 999, background: T.accent, marginBottom: 20 }} />
-                    <h3 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 22, fontWeight: 700, color: T.text, margin: "0 0 10px", lineHeight: 1.3 }}>
-                      {tertiary.title}
-                    </h3>
-                    {tertiary.description && (
-                      <p style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                        {tertiary.description}
-                      </p>
-                    )}
-                  </div>
-                  <div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, letterSpacing: ".08em", textTransform: "uppercase" }}>{tertiary.source}</span>
-                    <span style={{ color: T.accent, fontSize: 16, transition: "transform .15s" }}
-                      onMouseEnter={e => e.target.style.transform="translateX(3px)"}
-                      onMouseLeave={e => e.target.style.transform="translateX(0)"}
-                    >→</span>
-                  </div>
-                </article>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ── Latest Updates ── */}
-        {listItems.length > 0 && (
-          <section>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 20 : 28 }}>
-              <h2 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: isMobile ? 24 : 30, fontWeight: 700, color: T.text, margin: 0 }}>
-                Latest Updates
-              </h2>
-              <button onClick={() => onNavigate?.("inbox")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.accent, fontFamily: "inherit", padding: "4px 0" }}>
-                View All →
-              </button>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              {listItems.map((item, i) => (
-                <ArticleRow
+      {/* ── Left: article list (slim when split, full otherwise) ── */}
+      <div style={{
+        flex: showSplitView ? "0 0 380px" : 1,
+        overflowY: "auto",
+        background: T.bg,
+        transition: "flex .2s ease",
+        minWidth: 0,
+      }}>
+        {showSplitView
+          ? (
+            /* Slim list mode — shown when reading panel is open */
+            <div style={{ padding: "0 0 40px" }}>
+              {/* Mini header */}
+              <div style={{ padding: "18px 20px 12px", borderBottom: `1px solid ${T.border}` }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".12em", color: T.accent, textTransform: "uppercase" }}>{dateLabel}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginTop: 2, fontFamily: "var(--reader-font-family)", fontStyle: "italic" }}>Daily Briefing</div>
+              </div>
+              {items.map((item, i) => (
+                <BriefingRow
                   key={item.url || i}
                   item={item}
+                  isSelected={openItem?.url === item.url}
                   relTime={relativeTime(item.date)}
-                  onClick={() => setOpenItem(item)}
+                  onClick={() => openByIdx(i)}
                   T={T}
-                  isMobile={isMobile}
                 />
               ))}
             </div>
-          </section>
-        )}
+          )
+          : (
+            /* Full bento layout — default */
+            <div style={{ maxWidth: 1120, margin: "0 auto", padding: isMobile ? "32px 18px 100px" : "48px 48px 80px" }}>
+
+              {/* Header */}
+              <section style={{ marginBottom: isMobile ? 32 : 56 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".18em", color: T.accent, textTransform: "uppercase", marginBottom: 14 }}>
+                  {dateLabel}
+                </div>
+                <h1 style={{
+                  fontFamily: "var(--reader-font-family)", fontStyle: "italic",
+                  fontSize: isMobile ? "clamp(44px, 12vw, 60px)" : "clamp(60px, 7vw, 88px)",
+                  fontWeight: 700, lineHeight: 1.05, color: T.text,
+                  margin: "0 0 16px", letterSpacing: "-.02em",
+                }}>
+                  Daily Briefing
+                </h1>
+                <p style={{ fontSize: isMobile ? 15 : 17, color: T.textSecondary, maxWidth: 560, lineHeight: 1.65, margin: 0 }}>
+                  A distilled summary of your interests. Today we&apos;ve gathered{" "}
+                  <span style={{ color: T.text, fontWeight: 600 }}>{items.length} essential updates</span>{" "}
+                  from your top feeds and channels.
+                </p>
+              </section>
+
+              {/* Bento Grid */}
+              {items.length > 0 && (
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: isMobile ? "1fr" : "repeat(12, 1fr)",
+                  gap: isMobile ? 16 : 24,
+                  marginBottom: isMobile ? 40 : 56,
+                }}>
+                  {featured && (
+                    <article
+                      onClick={() => openByIdx(0)}
+                      style={{ gridColumn: isMobile ? "1" : "span 8", background: T.card, borderRadius: 16, overflow: "hidden", cursor: "pointer", transition: "background .2s", position: "relative" }}
+                      onMouseEnter={e => e.currentTarget.style.background = T.surface}
+                      onMouseLeave={e => e.currentTarget.style.background = T.card}
+                    >
+                      <div style={{ height: 260, overflow: "hidden", position: "relative", background: T.surface2 }}>
+                        {featured.image
+                          ? <img src={featured.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s ease" }}
+                              onMouseEnter={e => e.target.style.transform="scale(1.04)"}
+                              onMouseLeave={e => e.target.style.transform="scale(1)"}
+                            />
+                          : <FallbackArt source={featured.source} T={T} size="large" />
+                        }
+                        <div style={{ position: "absolute", top: 16, left: 16, padding: "4px 12px", borderRadius: 999, background: `${T.accent}30`, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: T.accent, fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase" }}>
+                          Featured
+                        </div>
+                      </div>
+                      <div style={{ padding: "24px 28px 28px" }}>
+                        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 14 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".1em" }}>{featured.source}</span>
+                          <span style={{ width: 3, height: 3, borderRadius: "50%", background: T.textTertiary, flexShrink: 0 }} />
+                          <span style={{ fontSize: 11, color: T.textTertiary }}>{estReadTime(featured.description)}</span>
+                          <span style={{ fontSize: 11, color: T.textTertiary, marginLeft: "auto" }}>{relativeTime(featured.date)}</span>
+                        </div>
+                        <h2 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 26, fontWeight: 700, color: T.text, margin: "0 0 12px", lineHeight: 1.25, letterSpacing: "-.01em" }}>
+                          {featured.title}
+                        </h2>
+                        {featured.description && (
+                          <p style={{ fontSize: 14, color: T.textSecondary, lineHeight: 1.7, margin: "0 0 20px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                            {featured.description}
+                          </p>
+                        )}
+                        <SourceDots T={T} />
+                      </div>
+                    </article>
+                  )}
+
+                  <div style={{ gridColumn: isMobile ? "1" : "span 4", display: "flex", flexDirection: "column", gap: isMobile ? 16 : 24 }}>
+                    {secondary && (
+                      <article
+                        onClick={() => openByIdx(1)}
+                        style={{ background: T.card, borderRadius: 16, padding: "24px", cursor: "pointer", flex: "0 0 auto", transition: "background .2s" }}
+                        onMouseEnter={e => e.currentTarget.style.background = T.surface}
+                        onMouseLeave={e => e.currentTarget.style.background = T.card}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: T.warning, textTransform: "uppercase", letterSpacing: ".12em" }}>Trending</span>
+                          <span style={{ fontSize: 16 }}>⚡</span>
+                        </div>
+                        <h3 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 20, fontWeight: 700, color: T.text, margin: "0 0 10px", lineHeight: 1.3 }}>
+                          {secondary.title}
+                        </h3>
+                        {secondary.description && (
+                          <p style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.65, margin: 0, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                            {secondary.description}
+                          </p>
+                        )}
+                      </article>
+                    )}
+
+                    {tertiary && (
+                      <article
+                        onClick={() => openByIdx(2)}
+                        style={{ background: T.surface, borderRadius: 16, padding: "24px", cursor: "pointer", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 160, transition: "background .2s" }}
+                        onMouseEnter={e => e.currentTarget.style.background = T.card}
+                        onMouseLeave={e => e.currentTarget.style.background = T.surface}
+                      >
+                        <div>
+                          <div style={{ width: 40, height: 3, borderRadius: 999, background: T.accent, marginBottom: 20 }} />
+                          <h3 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 22, fontWeight: 700, color: T.text, margin: "0 0 10px", lineHeight: 1.3 }}>
+                            {tertiary.title}
+                          </h3>
+                          {tertiary.description && (
+                            <p style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                              {tertiary.description}
+                            </p>
+                          )}
+                        </div>
+                        <div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, letterSpacing: ".08em", textTransform: "uppercase" }}>{tertiary.source}</span>
+                          <span style={{ color: T.accent, fontSize: 16 }}>→</span>
+                        </div>
+                      </article>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Latest Updates list */}
+              {listItems.length > 0 && (
+                <section>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 20 : 28 }}>
+                    <h2 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: isMobile ? 24 : 30, fontWeight: 700, color: T.text, margin: 0 }}>
+                      Latest Updates
+                    </h2>
+                    <button onClick={() => onNavigate?.("inbox")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.accent, fontFamily: "inherit", padding: "4px 0" }}>
+                      View All →
+                    </button>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                    {listItems.map((item, i) => (
+                      <ArticleRow
+                        key={item.url || i}
+                        item={item}
+                        relTime={relativeTime(item.date)}
+                        onClick={() => openByIdx(i + 3)}
+                        T={T}
+                        isMobile={isMobile}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          )
+        }
       </div>
+
+      {/* ── Right: reading panel (desktop only, when article open) ── */}
+      {showSplitView && (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: `1px solid ${T.border}` }}>
+          <ContentViewer
+            inline={true}
+            item={openItem}
+            onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+            onNext={openIdx < items.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+            onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+            currentIdx={openIdx}
+            totalCount={items.length}
+          />
+        </div>
+      )}
+
+      {/* Mobile: full-screen overlay */}
+      {openItem && isMobile && (
+        <ContentViewer
+          item={openItem}
+          onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+          onNext={openIdx < items.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+          onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+          currentIdx={openIdx}
+          totalCount={items.length}
+          onPlayPodcast={onPlayPodcast}
+        />
+      )}
     </div>
-    {openItem && (
-      <ContentViewer
-        item={openItem}
-        onClose={() => setOpenItem(null)}
-      />
-    )}
-    </>
   );
 }
 
 // ── Sub-components ────────────────────────────────────────────
+
+// Slim row used in split-view left panel
+function BriefingRow({ item, isSelected, relTime, onClick, T }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex", alignItems: "flex-start", gap: 12,
+        padding: "12px 20px", cursor: "pointer",
+        background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
+        borderLeft: `3px solid ${isSelected ? T.accent : "transparent"}`,
+        transition: "background .15s",
+      }}
+    >
+      {item.image && (
+        <img src={item.image} alt="" style={{ width: 48, height: 36, objectFit: "cover", borderRadius: 6, flexShrink: 0, marginTop: 2 }} onError={e => { e.target.style.display = "none"; }} />
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: isSelected ? 600 : 500, color: isSelected ? T.accent : T.text, lineHeight: 1.35, marginBottom: 3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontFamily: "var(--reader-font-family)" }}>
+          {item.title}
+        </div>
+        <div style={{ fontSize: 11, color: T.textTertiary }}>
+          {item.source}{relTime ? ` · ${relTime}` : ""}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ArticleRow({ item, relTime, onClick, T, isMobile }) {
   const [hovered, setHovered] = useState(false);
@@ -330,7 +380,6 @@ function ArticleRow({ item, relTime, onClick, T, isMobile }) {
         transition: "background .2s",
       }}
     >
-      {/* Left: icon + text */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: isMobile ? 12 : 20 }}>
         <span style={{ marginTop: 2, color: hovered ? T.accent : T.textTertiary, transition: "color .15s", flexShrink: 0 }}>
           <RSSIcon size={18} />
@@ -340,8 +389,7 @@ function ArticleRow({ item, relTime, onClick, T, isMobile }) {
             fontFamily: "var(--reader-font-family)",
             fontSize: isMobile ? 15 : 17, fontWeight: 500,
             color: hovered ? T.accent : T.text, margin: 0,
-            lineHeight: 1.35, transition: "color .15s",
-            letterSpacing: "-.01em",
+            lineHeight: 1.35, transition: "color .15s", letterSpacing: "-.01em",
           }}>
             {item.title}
           </h4>
@@ -350,8 +398,6 @@ function ArticleRow({ item, relTime, onClick, T, isMobile }) {
           </p>
         </div>
       </div>
-
-      {/* Right: category pill + more icon */}
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: isMobile ? 10 : 0, marginLeft: isMobile ? 30 : 0, flexShrink: 0 }}>
         {item.isPodcast
           ? <Pill label="Podcast" T={T} />
@@ -367,12 +413,7 @@ function ArticleRow({ item, relTime, onClick, T, isMobile }) {
 
 function Pill({ label, T }) {
   return (
-    <span style={{
-      padding: "3px 10px", borderRadius: 999,
-      background: T.surface, color: T.textSecondary,
-      fontSize: 10, fontWeight: 700,
-      textTransform: "uppercase", letterSpacing: ".08em",
-    }}>{label}</span>
+    <span style={{ padding: "3px 10px", borderRadius: 999, background: T.surface, color: T.textSecondary, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em" }}>{label}</span>
   );
 }
 
@@ -393,17 +434,6 @@ function SourceDots({ T }) {
         <div key={i} style={{ width: 22, height: 22, borderRadius: "50%", background: bg, border: `2px solid ${T.card}`, marginLeft: i === 0 ? 0 : -8 }} />
       ))}
     </div>
-  );
-}
-
-function BookmarkBtn({ T }) {
-  const [saved, setSaved] = useState(false);
-  return (
-    <button onClick={e => { e.stopPropagation(); setSaved(v => !v); }}
-      style={{ background: "none", border: "none", cursor: "pointer", color: saved ? T.accent : T.textTertiary, fontSize: 20, padding: "4px", lineHeight: 1, transition: "color .15s" }}
-    >
-      {saved ? "🔖" : "🏷️"}
-    </button>
   );
 }
 

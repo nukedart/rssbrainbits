@@ -15,13 +15,14 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
   const { T } = useTheme();
   const isEdit = !!feed;
 
-  const [name,     setName]     = useState(feed?.name    || "");
-  const [kwInput,  setKwInput]  = useState("");
-  const [keywords, setKeywords] = useState(feed?.keywords || []);
-  const [color,    setColor]    = useState(feed?.color   || "teal");
-  const [feedIds,  setFeedIds]  = useState(feed?.feed_ids || null); // null = all feeds
+  const [name,      setName]      = useState(feed?.name       || "");
+  const [kwInput,   setKwInput]   = useState("");
+  const [keywords,  setKeywords]  = useState(feed?.keywords  || []);
+  const [color,     setColor]     = useState(feed?.color     || "teal");
+  const [feedIds,   setFeedIds]   = useState(feed?.feed_ids  || null);
+  const [matchMode, setMatchMode] = useState(feed?.match_mode || "any"); // "any" | "all"
   const [showFeedPicker, setShowFeedPicker] = useState(false);
-  const [error,    setError]    = useState("");
+  const [error,     setError]     = useState("");
 
   function addKeyword() {
     const kw = kwInput.trim().toLowerCase();
@@ -38,7 +39,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
   function handleSave() {
     if (!name.trim())       { setError("Give this bucket a name."); return; }
     if (!keywords.length)   { setError("Add at least one keyword."); return; }
-    onSave({ name: name.trim(), keywords, color, feed_ids: feedIds?.length ? feedIds : null });
+    onSave({ name: name.trim(), keywords, color, feed_ids: feedIds?.length ? feedIds : null, match_mode: matchMode });
   }
 
   const selectedColor = COLORS.find(c => c.id === color) || COLORS[0];
@@ -120,6 +121,27 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
             <span style={{ color: T.accent, fontWeight: 600 }}>-android</span> — exclude &nbsp;·&nbsp;
             <span style={{ color: T.accent, fontWeight: 600 }}>AI OR ML</span> — either
           </div>
+
+          {/* Match mode — only meaningful when 2+ keywords */}
+          {keywords.filter(k => !k.startsWith("-")).length >= 2 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+              <span style={{ fontSize: 11, color: T.textTertiary }}>Articles must match:</span>
+              {[{ value: "any", label: "ANY keyword" }, { value: "all", label: "ALL keywords" }].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setMatchMode(opt.value)}
+                  style={{
+                    fontSize: 11, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+                    padding: "3px 10px", borderRadius: 6, border: `1px solid ${matchMode === opt.value ? T.accent : T.border}`,
+                    background: matchMode === opt.value ? T.accentSurface : T.surface2,
+                    color: matchMode === opt.value ? T.accent : T.textSecondary,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Color picker */}
