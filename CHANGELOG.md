@@ -3,6 +3,15 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.35.0] — 2026-03-23
+
+### Added
+- **Notes Library** — full rewrite with dedicated notes CRUD (create, edit, delete standalone notes) + `notes` table in Supabase. Library shows both highlights and notes in a unified view.
+- **Notes Editor** — focused full-screen note editor with large title, body textarea, tag chips, color picker, word count, and reading time. Accessible from the library or create button.
+- **Supabase notes CRUD** — `getNotes`, `createNote`, `updateNote`, `deleteNote` functions added.
+
+---
+
 ## [1.34.0] — 2026-03-23
 
 ### Added

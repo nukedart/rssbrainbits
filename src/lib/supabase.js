@@ -207,6 +207,37 @@ export async function getAllArticleTags(userId) {
   return data || [];
 }
 
+// ── User Notes ─────────────────────────────────────────────────
+export async function getNotes(userId) {
+  const { data, error } = await supabase
+    .from("notes").select("*").eq("user_id", userId)
+    .order("updated_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createNote(userId, { title = "Untitled Note", body = "", tags = [], color = "teal" } = {}) {
+  const { data, error } = await supabase
+    .from("notes").insert({ user_id: userId, title, body, tags, color })
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateNote(noteId, updates) {
+  const { data, error } = await supabase
+    .from("notes")
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq("id", noteId).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteNote(noteId) {
+  const { error } = await supabase.from("notes").delete().eq("id", noteId);
+  if (error) throw error;
+}
+
 // ── Read Later ────────────────────────────────────────────────
 export async function getReadLater(userId) {
   const { data, error } = await supabase
