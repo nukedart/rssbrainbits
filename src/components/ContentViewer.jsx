@@ -265,8 +265,10 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
       {/* ── Top bar ── */}
       <div style={{
         position: "sticky", top: 0, zIndex: 10,
-        background: T.card, borderBottom: `1px solid ${T.border}`,
-        padding: isMobile ? "10px 12px" : "12px 16px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 10,
+        background: `${T.bg}d8`,
+        backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
+        borderBottom: `1px solid ${T.border}`,
+        padding: isMobile ? "8px 12px" : "10px 16px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 10,
         flexShrink: 0,
       }}>
         <button onClick={onClose} style={{
@@ -433,21 +435,24 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         onScroll={handleScroll}
         style={{ flex: 1, overflowY: "auto", position: "relative" }}
       >
-        <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "40px 32px 120px", width: "100%" }}>
 
         {/* ── YouTube ── */}
         {yt.isYouTube && (
-          <YouTubeView item={item} videoId={yt.videoId} summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} isMobile={isMobile} />
+          <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "40px 32px 120px", width: "100%" }}>
+            <YouTubeView item={item} videoId={yt.videoId} summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} isMobile={isMobile} />
+          </div>
         )}
 
         {/* ── Podcast episode view ── */}
         {!yt.isYouTube && item?.isPodcast && item?.audioUrl && !loading && (
-          <PodcastEpisodeView item={item} summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} />
+          <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "40px 32px 120px", width: "100%" }}>
+            <PodcastEpisodeView item={item} summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} />
+          </div>
         )}
 
         {/* Article loading */}
         {!yt.isYouTube && loading && (
-          <div style={{ display: "flex", justifyContent: "center", paddingTop: 60 }}><Spinner size={28} /></div>
+          <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}><Spinner size={28} /></div>
         )}
 
         {/* Article error */}
@@ -463,50 +468,99 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           </div>
         )}
 
-        {/* Article content */}
+        {/* ── Article content — editorial layout ── */}
         {!yt.isYouTube && content && (
           <div>
-            {content.image && (
-              <img src={content.image} alt="" style={{ width: "100%", borderRadius: 12, marginBottom: 20, maxHeight: 320, objectFit: "cover" }} />
-            )}
-            <h1 style={{ fontFamily: "var(--reader-font-family)", fontSize: 28, fontWeight: 700, color: T.text, margin: "0 0 12px", lineHeight: 1.2, letterSpacing: "-.03em" }}>
-              {content.title || item.title}
-            </h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-              {item.source && <span style={{ fontSize: 11, fontWeight: 700, color: T.accent, textTransform: "uppercase", letterSpacing: ".08em" }}>{item.source}</span>}
-              {item.source && item.date && <span style={{ width: 3, height: 3, borderRadius: "50%", background: T.textTertiary, flexShrink: 0 }} />}
-              {item.date && (
-                <span style={{ fontSize: 11, color: T.textTertiary }}>
-                  {new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                </span>
+
+            {/* ── Hero section — full bleed ── */}
+            <div style={{
+              position: "relative",
+              minHeight: isMobile ? 260 : 360,
+              overflow: "hidden",
+              flexShrink: 0,
+            }}>
+              {/* Background: image or atmospheric gradient */}
+              {content.image ? (
+                <img
+                  src={content.image} alt=""
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%" }}
+                  onError={e => { e.target.style.display = "none"; }}
+                />
+              ) : (
+                <div style={{
+                  position: "absolute", inset: 0,
+                  background: `radial-gradient(ellipse at 50% -10%, ${T.accent}22 0%, transparent 65%), ${T.surface}`,
+                }} />
               )}
+              {/* Gradient overlay — blends hero into page bg */}
+              <div style={{
+                position: "absolute", inset: 0,
+                background: `linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.42) 52%, ${T.bg} 92%)`,
+              }} />
+              {/* Title + source overlaid on hero */}
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0,
+                padding: isMobile ? "28px 20px 20px" : "36px 48px 24px",
+                textAlign: "center",
+              }}>
+                {(item.source || item.date) && (
+                  <div style={{
+                    fontSize: 10, fontWeight: 700, letterSpacing: ".14em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.55)",
+                    marginBottom: 10,
+                  }}>
+                    {[item.source, item.date ? new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null].filter(Boolean).join("  ·  ")}
+                  </div>
+                )}
+                <h1 style={{
+                  fontFamily: "var(--reader-font-family)",
+                  fontSize: isMobile ? 24 : 32,
+                  fontWeight: 700,
+                  color: "#ffffff",
+                  margin: "0 auto",
+                  lineHeight: 1.18,
+                  letterSpacing: "-.025em",
+                  textShadow: "0 2px 28px rgba(0,0,0,0.55)",
+                  maxWidth: 600,
+                }}>
+                  {content.title || item.title}
+                </h1>
+              </div>
             </div>
 
-            <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} />
+            {/* ── Content column ── */}
+            <div style={{
+              maxWidth: "var(--reader-line-width)",
+              margin: "0 auto",
+              padding: isMobile ? "4px 18px 140px" : "4px 32px 120px",
+              width: "100%",
+            }}>
 
-            {content.description && (
-              <p style={{ fontSize: 16, color: T.textSecondary, lineHeight: 1.7, margin: "0 0 24px", fontStyle: "italic" }}>
-                {content.description}
-              </p>
-            )}
+              {/* AI Summarize */}
+              <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} />
 
-            {/* Article body with highlights */}
-            <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em" }}>
-              <HighlightedText
-                text={content.bodyText}
-                highlights={highlights}
-                onClickHighlight={setActiveNote}
-                bionic={readerPrefs.bionic}
-              />
+              {content.description && (
+                <p style={{ fontSize: 16, color: T.textSecondary, lineHeight: 1.7, margin: "0 0 28px", fontStyle: "italic" }}>
+                  {content.description}
+                </p>
+              )}
+
+              {/* Article body */}
+              <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em" }}>
+                <HighlightedText
+                  text={content.bodyText}
+                  highlights={highlights}
+                  onClickHighlight={setActiveNote}
+                  bionic={readerPrefs.bionic}
+                />
+              </div>
+
+              {/* Selection toolbar */}
+              <SelectionToolbar containerRef={articleRef} onHighlight={handleHighlight} />
             </div>
           </div>
         )}
-
-        {/* Selection toolbar */}
-        {!yt.isYouTube && content && (
-          <SelectionToolbar containerRef={articleRef} onHighlight={handleHighlight} />
-        )}
-        </div>{/* closes inner maxWidth wrapper */}
 
         {/* ── Scroll to top FAB ── */}
         {readProgress > 8 && (
@@ -628,6 +682,12 @@ const SUMMARY_STYLES = [
   { id: "detailed",  label: "Detailed" },
 ];
 
+const SparkleIcon = ({ size = 13, style }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" style={style}>
+    <path d="M8 0 L9.6 6.4 L16 8 L9.6 9.6 L8 16 L6.4 9.6 L0 8 L6.4 6.4 Z" />
+  </svg>
+);
+
 function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypoints", onStyleChange, T }) {
   if (summary) {
     const bullets = summary
@@ -644,19 +704,36 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
       .filter(l => l.length > 10);
 
     return (
-      <div style={{ background: T.accentSurface, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px", marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.accentText, flex: 1 }}>✨ AI Summary</span>
-          <button onClick={() => { onStyleChange?.("keypoints"); onSummarize?.("keypoints"); }} style={{ fontSize: 10, background: "none", border: "none", cursor: "pointer", color: T.textTertiary, fontFamily: "inherit", padding: "2px 6px", borderRadius: 5, transition: "color .1s" }}
-            onMouseEnter={e => e.currentTarget.style.color = T.accent} onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
-          >↺ Regenerate</button>
+      <div style={{
+        background: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 16,
+        padding: "18px 20px",
+        marginBottom: 32,
+        marginTop: 8,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <SparkleIcon size={12} style={{ color: T.accent, flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: T.accent, flex: 1 }}>AI Summary</span>
+          {/* Style tabs inline */}
+          <div style={{ display: "flex", gap: 1, background: T.surface2, borderRadius: 8, padding: 2 }}>
+            {SUMMARY_STYLES.map(s => (
+              <button key={s.id} onClick={() => { onStyleChange?.(s.id); onSummarize?.(s.id); }} style={{
+                padding: "2px 8px", borderRadius: 6, border: "none",
+                background: summaryStyle === s.id ? T.card : "transparent",
+                color: summaryStyle === s.id ? T.text : T.textTertiary,
+                fontSize: 10, fontWeight: 600,
+                cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
+              }}>{s.label}</button>
+            ))}
+          </div>
         </div>
         {bullets.length > 0 ? (
-          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 9 }}>
             {bullets.map((point, i) => (
               <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <span style={{ color: T.accent, fontWeight: 700, fontSize: 15, lineHeight: "1.5", flexShrink: 0, marginTop: 1 }}>•</span>
-                <span style={{ fontSize: 14, color: T.text, lineHeight: 1.6 }}>{point}</span>
+                <span style={{ color: T.accent, fontWeight: 700, fontSize: 14, lineHeight: "1.6", flexShrink: 0 }}>•</span>
+                <span style={{ fontSize: 14, color: T.text, lineHeight: 1.65 }}>{point}</span>
               </li>
             ))}
           </ul>
@@ -666,25 +743,48 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
       </div>
     );
   }
+
+  // ── Pre-summary: centered pill ──────────────────────────────
   return (
-    <div style={{ marginBottom: 24 }}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-        <div style={{ display: "flex", background: T.surface, borderRadius: 8, padding: 2, gap: 1 }}>
-          {SUMMARY_STYLES.map(s => (
-            <button key={s.id} onClick={() => onStyleChange?.(s.id)} style={{
-              padding: "4px 10px", borderRadius: 6, border: "none",
-              background: summaryStyle === s.id ? T.card : "transparent",
-              color: summaryStyle === s.id ? T.text : T.textTertiary,
-              fontSize: 11, fontWeight: summaryStyle === s.id ? 600 : 400,
-              cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
-              boxShadow: summaryStyle === s.id ? "0 1px 3px rgba(0,0,0,.1)" : "none",
-            }}>{s.label}</button>
-          ))}
-        </div>
-        <Button variant="secondary" onClick={() => onSummarize(summaryStyle)} disabled={summarizing}>
-          {summarizing ? "Summarizing…" : "✨ Summarize"}
-        </Button>
+    <div style={{ textAlign: "center", padding: "24px 0 28px" }}>
+      {/* Style selector */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 2, marginBottom: 14 }}>
+        {SUMMARY_STYLES.map(s => (
+          <button key={s.id} onClick={() => onStyleChange?.(s.id)} style={{
+            padding: "3px 11px", borderRadius: 20, border: "none",
+            background: summaryStyle === s.id ? T.surface2 : "transparent",
+            color: summaryStyle === s.id ? T.text : T.textTertiary,
+            fontSize: 11, fontWeight: summaryStyle === s.id ? 600 : 400,
+            cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
+          }}>{s.label}</button>
+        ))}
       </div>
+      {/* Pill button */}
+      <button
+        onClick={() => onSummarize?.(summaryStyle)}
+        disabled={summarizing}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          padding: "10px 26px",
+          borderRadius: 100,
+          border: `1px solid ${T.borderStrong || T.border}`,
+          background: "transparent",
+          color: T.text,
+          fontSize: 11,
+          fontWeight: 700,
+          fontFamily: "inherit",
+          letterSpacing: ".1em",
+          textTransform: "uppercase",
+          cursor: summarizing ? "default" : "pointer",
+          opacity: summarizing ? 0.6 : 1,
+          transition: "border-color .2s, color .2s",
+        }}
+        onMouseEnter={e => { if (!summarizing) { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}}
+        onMouseLeave={e => { if (!summarizing) { e.currentTarget.style.borderColor = T.borderStrong || T.border; e.currentTarget.style.color = T.text; }}}
+      >
+        <SparkleIcon size={12} />
+        {summarizing ? "Summarizing…" : "Summarize with AI"}
+      </button>
     </div>
   );
 }

@@ -3,6 +3,15 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.31.0] — 2026-03-23
+
+### Changed
+- **Article reader — editorial redesign** — full-bleed hero image (or atmospheric radial gradient when no image) with source label + title overlaid in white at the bottom of the hero. The image bleeds seamlessly into the page background via a linear gradient overlay.
+- **"Summarize with AI" pill button** — pre-summary state is now a centered pill (`✦ SUMMARIZE WITH AI`) with style tabs (Key Points / Brief / Detailed) above it. Border and text shift to accent color on hover. Post-summary shows a clean card with inline style tabs for regenerating.
+- **Frosted glass top bar** — reader top bar switched from solid background to `backdrop-filter: blur(14px)` with semi-transparent background, so the hero slightly bleeds behind it as you scroll.
+
+---
+
 ## [1.30.0] — 2026-03-23
 
 ### Added
