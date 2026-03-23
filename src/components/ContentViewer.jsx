@@ -18,7 +18,7 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
 
-export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false, currentIdx = -1, totalCount = 0 }) {
+export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false, currentIdx = -1, totalCount = 0, onExpand }) {
   const { T } = useTheme();
   const { user } = useAuth();
   const { isMobile } = useBreakpoint();
@@ -299,6 +299,26 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
           >›</button>
+        )}
+
+        {/* Expand to full view — only in inline mode */}
+        {inline && onExpand && !isMobile && (
+          <button
+            onClick={onExpand}
+            title="Open in full view"
+            style={{
+              background: "transparent", border: "none", borderRadius: 8,
+              width: 28, height: 28, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: T.textTertiary, flexShrink: 0, transition: "all .12s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.textSecondary; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 1.5h4.5V6M9.5 6.5l5-5M6 14.5H1.5V10M6.5 9.5l-5 5"/>
+            </svg>
+          </button>
         )}
 
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>

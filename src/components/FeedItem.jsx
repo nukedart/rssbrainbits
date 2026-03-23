@@ -198,9 +198,13 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           </div>
 
           {/* Thumbnail — LEFT of text, always shown when available */}
-          {item.image && (
+          {item.image && cardSize !== "sm" && (
             <img src={item.image} alt="" loading="lazy"
-              style={{ width: 52, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0, background: T.surface2 }}
+              style={{
+                width: cardSize === "lg" ? 88 : 64,
+                height: cardSize === "lg" ? 66 : 48,
+                borderRadius: 8, objectFit: "cover", flexShrink: 0, background: T.surface2,
+              }}
               onError={e => { e.target.style.display = "none"; }} />
           )}
 
@@ -219,6 +223,11 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {item.title}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
+              {faviconUrl(item.url) && (
+                <img src={faviconUrl(item.url)} alt="" width={12} height={12}
+                  style={{ borderRadius: 2, opacity: 0.75, flexShrink: 0 }}
+                  onError={e => { e.target.style.display = "none"; }} />
+              )}
               <span style={{ fontSize: 11, color: T.textTertiary }}>{item.source}</span>
               {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
               {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent }}>· {item.audioDuration}</span>}
@@ -280,7 +289,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
           {/* Hero image */}
           <div style={{
             position: "relative", flexShrink: 0, overflow: "hidden",
-            paddingBottom: cardSize === "lg" ? "43.75%" : cardSize === "sm" ? "75%" : "56.25%", // 16/7, 16/12, 16/9
+            paddingBottom: cardSize === "lg" ? "62.5%" : cardSize === "sm" ? "75%" : "72%",
             background: thumb ? T.surface2 : sourcePlaceholder(item.source).bg,
           }}>
             {thumb && (

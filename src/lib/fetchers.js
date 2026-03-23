@@ -16,17 +16,18 @@ const TIMEOUT_MS     = 10000; // 10s — some sites are slow
 
 // Detect when a proxy returned a bot-challenge page instead of RSS/HTML content
 function looksLikeBlockPage(text) {
+  if (!text?.trim()) return true; // empty response is always a failure
   const t = text.trim().toLowerCase().slice(0, 2000);
-  return (
-    t.startsWith("<!doctype html") || t.startsWith("<html") ||
-    t.includes("cf-browser-verification") ||
-    t.includes("attention required") ||
-    t.includes("just a moment") ||        // Cloudflare
-    t.includes("enable javascript") ||
-    t.includes("access denied") ||
-    t.includes("403 forbidden") ||
-    t.includes("blocked")
-  );
+  // Must start with RSS/Atom/XML markers to be valid
+  const isXml = t.startsWith("<?xml") || t.startsWith("<rss") || t.startsWith("<feed") || t.startsWith("<rdf:");
+  if (isXml) return false; // looks like a real feed — don't block it
+  // HTML page returned instead of XML = block page
+  if (t.startsWith("<!doctype html") || t.startsWith("<html")) return true;
+  // Cloudflare-specific markers (appear in JSON error responses too)
+  if (t.includes("cf-browser-verification") || t.includes("just a moment") || t.includes("enable javascript")) return true;
+  // JSON wrapping (some proxies return {error: ...} or status codes in JSON)
+  if (t.startsWith("{") && (t.includes('"error"') || t.includes('"status":4') || t.includes('"status":5'))) return true;
+  return false;
 }
 
 async function fetchWithTimeout(url, ms = TIMEOUT_MS) {

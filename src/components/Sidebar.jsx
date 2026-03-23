@@ -236,7 +236,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
               <button
                 onClick={() => onNavigate(`smart:${sf.id}`)}
                 title={collapsed ? sf.name : undefined}
-                style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0 }}
+                style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed ? "center" : "flex-start" }}
               >
                 <span style={{ color: isActive ? T.accent : T.textTertiary, display:"flex", flexShrink:0 }}><Icons.SmartFeed /></span>
                 {!collapsed && (
@@ -276,7 +276,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
               >
                 <button onClick={() => !collapsed && toggleFolder(folder.id)}
                   title={collapsed ? folder.name : undefined}
-                  style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:collapsed?"default":"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0 }}
+                  style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:collapsed?"default":"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed ? "center" : "flex-start" }}
                 >
                   <span style={{ color:T.textTertiary, display:"flex", flexShrink:0 }}><Icons.Folder /></span>
                   {!collapsed && (

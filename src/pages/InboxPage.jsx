@@ -36,6 +36,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
   const [showAdd, setShowAdd]           = useState(false);
   const [openItem, setOpenItem]         = useState(null);
   const [openIdx, setOpenIdx]           = useState(-1);
+  const [expandedView, setExpandedView] = useState(false);
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
   const [viewMode, setViewMode]         = useState(() => localStorage.getItem("fb-viewmode") || "card");
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
@@ -283,7 +284,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
           if (openItem) handleSaveItem(openItem);
           break;
         case "Escape":
-          setOpenItem(null); setOpenIdx(-1);
+          setOpenItem(null); setOpenIdx(-1); setExpandedView(false);
           break;
         case "a":
           setShowAdd(true);
@@ -958,7 +959,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       )}
 
       {/* ── Right panel — shown on desktop when an article is open ── */}
-      {!isMobile && openItem && (
+      {!isMobile && openItem && !expandedView && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: `1px solid ${T.border}` }}>
           <ContentViewer
             inline={true}
@@ -968,8 +969,20 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
             onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
             currentIdx={openIdx}
             totalCount={baseItems.length}
+            onExpand={() => setExpandedView(true)}
           />
         </div>
+      )}
+      {/* ── Full-screen expanded view (desktop) ── */}
+      {!isMobile && openItem && expandedView && (
+        <ContentViewer
+          item={openItem}
+          onClose={() => setExpandedView(false)}
+          onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+          onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+          currentIdx={openIdx}
+          totalCount={baseItems.length}
+        />
       )}
 
       {showAdd && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} onSaveForLater={handleSaveForLater} />}

@@ -3,6 +3,18 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.28.9] — 2026-03-22
+
+### Added
+- **Expand to full view** — inline reading panel (3-pane) now has an expand button (⤢) in the header. Clicking it opens the article as a full-screen overlay. The ← back button collapses it back to the split view without closing the article.
+- **Favicons in list view** — source favicon now appears next to the source name in list view rows, matching card view.
+
+### Changed
+- **Collapsed sidebar icon centering** — smart feed and folder icons were left-aligned in collapsed mode; they are now correctly centred like all other nav icons.
+- **Card images larger** — hero image height increased across all card sizes (md: 56% → 72% tall, lg: 44% → 63% tall) for a more editorial, image-forward look.
+- **List view thumbnails scale with size** — S hides thumbnails, M shows 64×48px, L shows 88×66px. Previously the thumbnail was a fixed 52×40px regardless of size.
+- **Feed parser block detection improved** — valid XML feeds (<?xml, <rss, <feed, <rdf:) are now whitelisted and bypass the Cloudflare-challenge detection entirely, preventing false positives on edge-case feeds.
+
 ## [1.28.8] — 2026-03-22
 
 ### Added
