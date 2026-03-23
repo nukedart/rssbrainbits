@@ -10,15 +10,15 @@ function hexToRgba(hex, alpha) {
 }
 
 const Icons = {
-  Home:     () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>),
   Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M2 15h5l2 4h6l2-4h5"/></svg>),
+  Notes:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 3h16a1 1 0 0 1 1 1v13l-5 5H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M16 17v5M16 17h5"/><path d="M8 9h8M8 13h5"/></svg>),
   ReadLater:() => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>),
   Settings: () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg>),
 };
 
 const NAV = [
-  { id:"home",      Icon:Icons.Home,      label:"Home"     },
   { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox"    },
+  { id:"notes",     Icon:Icons.Notes,     label:"Notes"    },
   { id:"add",       Icon:null,            label:"Add"      }, // special center button
   { id:"readlater", Icon:Icons.ReadLater, label:"Saved"    },
   { id:"settings",  Icon:Icons.Settings,  label:"Settings" },

@@ -3,6 +3,22 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.34.0] — 2026-03-23
+
+### Added
+- **Notes page — Tags tab** (Pro) — a third tab shows all tagged articles grouped by article, with tag chips that filter by tag on click. Tags and highlights share the same search bar.
+- **Notes page — delete highlights** — each highlight card has a ✕ delete button (hover-revealed on desktop, always visible on mobile). Deletes immediately, no confirmation.
+- **Notes page — inline note editing** — click any note to edit it inline with a textarea; Cmd/Ctrl+Enter saves, Esc cancels. Cards with no note show a "+ Add a note…" dashed button.
+- **Notes page — Re-read button** — each article group header shows a "Re-read" button that opens the full ContentViewer over the Notes page, so you can re-read and re-highlight without leaving.
+- **Notes page — article link** — ↗ shortcut on each article group opens in browser.
+- **Mobile export bar** — on mobile, "Copy all as Markdown" and ↓ download buttons are shown at the bottom of the list instead of the toolbar.
+
+### Changed
+- **Bottom nav** — replaced "Home" with "Notes" so highlights are one tap away on mobile. Home is still reachable on desktop via the sidebar.
+- **Mobile initial page** — app opens on Inbox (not Home) on mobile-width screens.
+
+---
+
 ## [1.33.0] — 2026-03-23
 
 ### Changed

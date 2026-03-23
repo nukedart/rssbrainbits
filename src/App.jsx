@@ -48,7 +48,7 @@ function AppShell() {
   const { isMobile } = useBreakpoint();
 
   // ── ALL state at the top — no hooks after conditional returns ──
-  const [page, setPage]             = useState("home");
+  const [page, setPage]             = useState(() => window.innerWidth < 768 ? "inbox" : "home");
   const [unreadCount, setUnreadCount] = useState(0);
   const [smartFeeds, setSmartFeeds]   = useState([]);
   const [editingSF, setEditingSF]     = useState(null);

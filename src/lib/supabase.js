@@ -199,6 +199,14 @@ export async function getAllTags(userId) {
   return [...new Set(data.map((r) => r.tag))].sort();
 }
 
+export async function getAllArticleTags(userId) {
+  const { data, error } = await supabase
+    .from("article_tags").select("*").eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 // ── Read Later ────────────────────────────────────────────────
 export async function getReadLater(userId) {
   const { data, error } = await supabase
