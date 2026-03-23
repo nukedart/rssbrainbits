@@ -122,12 +122,13 @@ async function setPlan(email: string, plan: string, stripeCustomerId: string) {
     return;
   }
 
-  // Update user metadata with plan + stripe customer id
+  // Store plan in app_metadata — this is admin-only and NOT overwritten by OAuth providers.
+  // user_metadata IS wiped by GitHub/Google on every login, so we must NOT use it for plan.
   const { error: updateError } = await supabase.auth.admin.updateUserById(
     user.id,
     {
-      user_metadata: {
-        ...user.user_metadata,
+      app_metadata: {
+        ...user.app_metadata,
         plan,
         stripe_customer_id: stripeCustomerId,
         plan_updated_at: new Date().toISOString(),

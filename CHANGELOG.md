@@ -3,6 +3,20 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.32.0] — 2026-03-23
+
+### Fixed
+- **Pro plan persisting through OAuth logins** — plan was stored in `user_metadata`, which GitHub/Google OAuth overwrites on every login, silently reverting Pro users to Free. Plan is now stored in `app_metadata` (admin-only, never touched by OAuth providers). `getPlan` reads `app_metadata` first with `user_metadata` as fallback for any existing upgrades.
+- **Stripe webhook updated** — `stripe-webhook` edge function now writes `plan` and `stripe_customer_id` to `app_metadata` instead of `user_metadata`.
+
+> **To fix your account now:** run this in the Supabase SQL editor, then click "↺ Refresh account" in Settings:
+> ```sql
+> UPDATE auth.users SET raw_app_meta_data = raw_app_meta_data || '{"plan":"pro"}'
+> WHERE email = 'your@email.com';
+> ```
+
+---
+
 ## [1.31.0] — 2026-03-23
 
 ### Changed
