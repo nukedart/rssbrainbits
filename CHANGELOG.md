@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.37.0] — 2026-03-24
+
+### Changed
+- **Add Source button** — pill-shaped, fully centered in the sidebar (both expanded and collapsed states) with a subtle glow on hover. Consistent with modern nav aesthetics.
+- **Read filter tabs** — replaced the two-state Latest / Unread toggle with a three-state pill: **Latest** (all articles), **Unread** (hide read), **Read** (only read articles). Lets you browse your reading history inline without leaving the inbox. Empty states updated for each mode.
+
+---
+
 ## [1.36.0] — 2026-03-24
 
 ### Added

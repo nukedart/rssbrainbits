@@ -41,7 +41,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [viewMode, setViewMode]         = useState(() => localStorage.getItem("fb-viewmode") || "card");
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
-  const [hideRead, setHideRead]         = useState(false);
+  const [readFilter, setReadFilter]     = useState("all"); // "all" | "unread" | "read"
   const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
   const [toast, setToast]               = useState(null);
   const [searchResult, setSearchResult]   = useState(null);
@@ -217,7 +217,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       const ids = ytFeedIds || [];
       items = items.filter((i) => ids.includes(i.feedId));
     }
-    if (filterMode !== "unread" && hideRead) items = items.filter((i) => !readUrls.has(i.url));
+    if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !readUrls.has(i.url));
+    if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  readUrls.has(i.url));
     // Client-side live search across in-memory items
     if (liveSearch.trim().length > 1) {
       const q = liveSearch.toLowerCase();
@@ -671,18 +672,18 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Spacer — pushes controls right when title is visible */}
           {!searchOpen && <div style={{ flex: 1 }} />}
 
-          {/* Latest / Unread pill tabs */}
+          {/* Latest / Unread / Read pill tabs */}
           {filterMode !== "unread" && !searchOpen && (
-            <div style={{ display: "flex", background: T.surface, borderRadius: 20, padding: 2, gap: 0, flexShrink: 0 }}>
-              {[{ label: "Latest", val: false }, { label: "Unread", val: true }].map(({ label, val }) => (
-                <button key={label} onClick={() => setHideRead(val)} style={{
-                  padding: "3px 10px", borderRadius: 18, border: "none",
-                  background: hideRead === val ? T.bg : "transparent",
-                  color: hideRead === val ? T.text : T.textTertiary,
-                  fontWeight: hideRead === val ? 600 : 400,
+            <div style={{ display: "flex", background: T.surface, borderRadius: 100, padding: 2, gap: 0, flexShrink: 0 }}>
+              {[{ label: "Latest", val: "all" }, { label: "Unread", val: "unread" }, { label: "Read", val: "read" }].map(({ label, val }) => (
+                <button key={label} onClick={() => setReadFilter(val)} style={{
+                  padding: "3px 10px", borderRadius: 100, border: "none",
+                  background: readFilter === val ? T.bg : "transparent",
+                  color: readFilter === val ? T.text : T.textTertiary,
+                  fontWeight: readFilter === val ? 600 : 400,
                   fontSize: 11, cursor: "pointer", fontFamily: "inherit",
                   transition: "all .15s",
-                  boxShadow: hideRead === val ? "0 1px 3px rgba(0,0,0,.12)" : "none",
+                  boxShadow: readFilter === val ? "0 1px 3px rgba(0,0,0,.12)" : "none",
                 }}>{label}</button>
               ))}
             </div>
@@ -861,9 +862,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           )}
 
           {!loadingItems && baseItems.length === 0 && feeds.length > 0 && (
-            <EmptyState icon={hideRead ? "✅" : "⏳"}
-              title={hideRead ? "All caught up!" : "Fetching articles…"}
-              subtitle={hideRead ? "No unread articles. Toggle to see all." : "Loading from your feeds."}
+            <EmptyState
+              icon={readFilter === "unread" ? "✅" : readFilter === "read" ? "📭" : "⏳"}
+              title={readFilter === "unread" ? "All caught up!" : readFilter === "read" ? "Nothing read yet" : "Fetching articles…"}
+              subtitle={readFilter === "unread" ? "No unread articles. Switch to Latest to see all." : readFilter === "read" ? "Articles you've read will appear here." : "Loading from your feeds."}
             />
           )}
 
