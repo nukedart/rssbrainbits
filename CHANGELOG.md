@@ -3,6 +3,19 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.40.0] — 2026-03-24
+
+### Fixed
+- **Inbox feeds broken** — `getCachedFeed` was called in the new cache pre-seed code but missing from the `feedCache` import, causing a `ReferenceError` that silently crashed the entire feed fetch loop. Added to import.
+
+### Changed
+- **Font system** — full typography overhaul across the app:
+  - **Poppins** (geometric sans) replaces Inter for all UI chrome — nav, buttons, labels, badges, metadata
+  - **Cormorant Garamond** (display serif) replaces Newsreader for brand name, article headlines in cards, notes titles, and editorial headings
+  - **Merriweather** (text serif) replaces Noto Serif for reader body text, reader font preference, and reading view content
+
+---
+
 ## [1.39.0] — 2026-03-24
 
 ### Fixed

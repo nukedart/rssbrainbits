@@ -5,7 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem,
          addReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed } from "../lib/supabase";
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChannelRSS } from "../lib/fetchers";
-import { invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
+import { getCachedFeed, invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import AddModal from "../components/AddModal";

@@ -199,7 +199,7 @@ function AppShell() {
     <div style={{
       height: "100dvh", display: "flex", flexDirection: "row",
       background: T.bg, color: T.text,
-      fontFamily: "'Inter', system-ui, sans-serif",
+      fontFamily: "'Poppins', system-ui, sans-serif",
       WebkitFontSmoothing: "antialiased", overflow: "hidden",
     }}>
       <Sidebar

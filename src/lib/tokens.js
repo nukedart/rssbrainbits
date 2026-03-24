@@ -25,7 +25,7 @@ export const NOCTURNE = {
   blue:   { bg: "#1a2033",               text: "#9badb5" },
   purple: { bg: "#1f1a30",               text: "#a89fd5" },
   overlay: "rgba(0,0,0,0.65)",
-  readerFont: "'Noto Serif', Georgia, serif",
+  readerFont: "'Merriweather', Georgia, serif",
 };
 
 // ── Theme 2: The Distilled Workspace ────────────────────────
@@ -52,7 +52,7 @@ export const DISTILLED = {
   blue:   { bg: "rgba(170,199,255,0.08)", text: "#aac7ff" },
   purple: { bg: "rgba(210,179,255,0.08)", text: "#d2b3ff" },
   overlay: "rgba(0,0,0,0.7)",
-  readerFont: "'Newsreader', Georgia, serif",
+  readerFont: "'Merriweather', Georgia, serif",
 };
 
 // ── Theme 3: Light (Parchment Editorial) ────────────────────
@@ -78,7 +78,7 @@ export const LIGHT = {
   blue:   { bg: "#e8eef8", text: "#3a5a8a" },
   purple: { bg: "#f0eef8", text: "#5b4fa0" },
   overlay: "rgba(26,28,30,0.5)",
-  readerFont: "'Noto Serif', Georgia, serif",
+  readerFont: "'Merriweather', Georgia, serif",
 };
 
 // backwards-compat alias

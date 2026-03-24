@@ -34,8 +34,8 @@ export function applyReaderPrefs(prefs) {
   );
   root.style.setProperty("--reader-font-family",
     p.fontFamily === "sans"
-      ? "'Inter', system-ui, sans-serif"
-      : "'Noto Serif', Georgia, serif"
+      ? "'Poppins', system-ui, sans-serif"
+      : "'Merriweather', Georgia, serif"
   );
 }
 

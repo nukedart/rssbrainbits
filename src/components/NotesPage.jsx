@@ -89,7 +89,7 @@ function NoteCard({ note, onOpen, T, featured, isMobile }) {
 
       {/* Title */}
       <h2 style={{
-        fontFamily: "'Newsreader', Georgia, serif",
+        fontFamily: "'Cormorant Garamond', Georgia, serif",
         fontSize: featured ? (isMobile ? 22 : 28) : (isMobile ? 17 : 19),
         fontWeight: 500, color: T.text,
         lineHeight: 1.22, margin: "0 0 10px", letterSpacing: "-.02em",
@@ -130,7 +130,7 @@ function NoteListRow({ note, onOpen, T }) {
       onMouseLeave={e => e.currentTarget.style.background = T.card}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: "'Newsreader', Georgia, serif", fontSize: 15, fontWeight: 500, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", letterSpacing: "-.01em" }}>
+        <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 15, fontWeight: 500, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", letterSpacing: "-.01em" }}>
           {note.title || "Untitled Note"}
         </div>
         {preview && (
@@ -185,7 +185,7 @@ function HighlightCard({ highlight, onDelete, onEdit, onReread, T, isMobile }) {
       </div>
 
       {/* Passage */}
-      <p style={{ fontFamily: "'Newsreader', Georgia, serif", fontSize: 15, fontStyle: "italic", fontWeight: 400, color: T.text, lineHeight: 1.6, margin: "0 0 10px", flex: 1 }}>
+      <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 15, fontStyle: "italic", fontWeight: 400, color: T.text, lineHeight: 1.6, margin: "0 0 10px", flex: 1 }}>
         "{passage.length > 200 ? passage.slice(0, 200) + "…" : passage}"
       </p>
 
@@ -243,7 +243,7 @@ function TagCard({ title, url, tags, onSearch, onReread, T }) {
   return (
     <div style={{ background: T.card, borderRadius: 14, padding: "18px 20px 0", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 12 }}>
-        <div style={{ fontFamily: "'Newsreader', Georgia, serif", fontSize: 16, fontWeight: 500, color: T.text, lineHeight: 1.3, flex: 1, minWidth: 0, letterSpacing: "-.01em" }}>{title}</div>
+        <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 16, fontWeight: 500, color: T.text, lineHeight: 1.3, flex: 1, minWidth: 0, letterSpacing: "-.01em" }}>{title}</div>
         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
           <button onClick={() => onReread({ url, title, source: "" })}
             style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 11, color: T.textSecondary, cursor: "pointer", fontFamily: "inherit", transition: "all .12s" }}
@@ -351,7 +351,7 @@ function NoteEditor({ note, onClose, onSave, onDelete, T, isMobile }) {
       {/* Top bar */}
       {!zenMode && (
         <div style={{ height: 48, borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", padding: "0 24px", flexShrink: 0, gap: 0 }}>
-          <span style={{ fontFamily: "'Newsreader', Georgia, serif", fontStyle: "italic", fontSize: 16, fontWeight: 500, color: T.accent, letterSpacing: "-.01em" }}>Feed Box</span>
+          <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 16, fontWeight: 500, color: T.accent, letterSpacing: "-.01em" }}>Feed Box</span>
           <span style={{ color: T.border, margin: "0 14px", fontSize: 20, fontWeight: 200 }}>|</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>Editor</span>
           <span style={{ color: T.textTertiary, margin: "0 10px", fontSize: 12 }}>·</span>
@@ -395,7 +395,7 @@ function NoteEditor({ note, onClose, onSave, onDelete, T, isMobile }) {
             style={{
               width: "100%", boxSizing: "border-box",
               background: "none", border: "none", outline: "none", resize: "none", overflow: "hidden",
-              fontFamily: "'Newsreader', Georgia, serif", fontStyle: "italic",
+              fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic",
               fontSize: isMobile ? 28 : 40, fontWeight: 500,
               color: title ? T.text : T.textTertiary, lineHeight: 1.15,
               letterSpacing: "-.03em", marginBottom: 28, padding: 0, display: "block",
@@ -408,7 +408,7 @@ function NoteEditor({ note, onClose, onSave, onDelete, T, isMobile }) {
             style={{
               width: "100%", boxSizing: "border-box",
               background: "none", border: "none", outline: "none", resize: "none", overflow: "hidden",
-              fontFamily: "'Newsreader', Georgia, serif",
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
               fontSize: isMobile ? 16 : 19, fontWeight: 400,
               color: T.text, lineHeight: 1.85, letterSpacing: "-.01em",
               padding: 0, minHeight: "35vh", display: "block",
@@ -603,7 +603,7 @@ export default function NotesPage() {
             {/* Heading block */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".16em", color: T.textTertiary, marginBottom: 2 }}>Library</div>
-              <h1 style={{ fontFamily: "'Newsreader', Georgia, serif", fontSize: isMobile ? 24 : 32, fontWeight: 500, color: T.text, margin: 0, letterSpacing: "-.025em", lineHeight: 1.1 }}>
+              <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: isMobile ? 24 : 32, fontWeight: 500, color: T.text, margin: 0, letterSpacing: "-.025em", lineHeight: 1.1 }}>
                 {headings[tab]}
               </h1>
             </div>
@@ -679,7 +679,7 @@ export default function NotesPage() {
           {/* Setup screen */}
           {!loading && tab === "notes" && setupNeeded && (
             <div style={{ maxWidth: 580, margin: "0 auto", paddingTop: 24 }}>
-              <h2 style={{ fontFamily: "'Newsreader', Georgia, serif", fontSize: 24, fontWeight: 500, color: T.text, margin: "0 0 10px" }}>Set up the Notes table</h2>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 24, fontWeight: 500, color: T.text, margin: "0 0 10px" }}>Set up the Notes table</h2>
               <p style={{ fontSize: 14, color: T.textSecondary, lineHeight: 1.65, margin: "0 0 20px" }}>
                 Run this SQL in your <strong>Supabase Dashboard → SQL Editor</strong>, then refresh the page.
               </p>

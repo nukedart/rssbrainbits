@@ -141,7 +141,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
       <div style={{ padding: collapsed ? "16px 8px 10px" : "20px 16px 10px", display:"flex", alignItems:"flex-start", justifyContent: collapsed?"center":"space-between", flexShrink:0 }}>
         {!collapsed ? (
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:17, fontWeight:700, color:T.text, fontFamily:"'Newsreader', Georgia, serif", fontStyle:"italic", letterSpacing:"-.02em", lineHeight:1.2 }}>
+            <div style={{ fontSize:17, fontWeight:700, color:T.text, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:"italic", letterSpacing:"-.02em", lineHeight:1.2 }}>
               Feed Box
             </div>
           </div>

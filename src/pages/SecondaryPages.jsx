@@ -808,7 +808,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         {/* About */}
         <Card title="About" T={T}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <span style={{ fontFamily: "'Newsreader', Georgia, serif", fontStyle: "italic", fontSize: 16, fontWeight: 500, color: T.text, letterSpacing: "-.01em" }}>Feed Box</span>
+            <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 16, fontWeight: 500, color: T.text, letterSpacing: "-.01em" }}>Feed Box</span>
             {/* global __APP_VERSION__ */}
             <span style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 20, padding: "2px 10px" }}>
               v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "?"}
