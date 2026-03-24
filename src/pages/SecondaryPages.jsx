@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import { getHistory, clearHistory, getReadLater, removeReadLater,
          getSaved, unsaveItem, saveItem,
          getFeeds, getFolders, setFeedFolder, updateFeedSettings, deleteFeed,
+         updateFolder, deleteFolder,
          getReadingStats } from "../lib/supabase";
 import { parseYouTubeUrl, isPodcastUrl } from "../lib/fetchers";
 import FeedItem from "../components/FeedItem";
@@ -824,18 +825,26 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
 
 // ── Source Dashboard (Manage Feeds) ───────────────────────────
 
+const FOLDER_COLORS = { gray:"#8A9099", teal:"#2DA66E", blue:"#2F6FED", amber:"#D4820A", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+
 function feedType(feed) {
   try {
-    if (feed.type === "youtube" || parseYouTubeUrl(feed.url).isYouTube) return "youtube";
+    if (feed.type === "youtube" || feed.url?.includes("youtube.com/feeds/videos.xml") || parseYouTubeUrl(feed.url).isYouTube) return "youtube";
     if (feed.type === "podcast" || isPodcastUrl(feed.url)) return "podcast";
   } catch {}
   return "article";
 }
 
-function FreqBadge({ T, label = "Auto" }) {
+const TYPE_BADGE = {
+  youtube: { label: "YouTube", bg: "#FF000018", color: "#CC0000" },
+  podcast: { label: "Podcast", bg: "#8B5CF620", color: "#8B5CF6" },
+  article: { label: "RSS",     bg: null,        color: null       },
+};
+function FreqBadge({ T, type = "article" }) {
+  const cfg = TYPE_BADGE[type] || TYPE_BADGE.article;
   return (
-    <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: T.surface2, color: T.textTertiary, letterSpacing: ".03em", flexShrink: 0 }}>
-      {label}
+    <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: cfg.bg || T.surface2, color: cfg.color || T.textTertiary, letterSpacing: ".03em", flexShrink: 0 }}>
+      {cfg.label}
     </span>
   );
 }
@@ -848,21 +857,22 @@ function Toggle({ checked, onChange, T }) {
   );
 }
 
-function InlineNameEditor({ feed, T, onSave }) {
+function InlineNameEditor({ name, T, onSave, placeholder }) {
   const [editing, setEditing] = useState(false);
-  const [val, setVal] = useState(feed.name || "");
+  const [val, setVal] = useState(name || "");
   const inputRef = useRef(null);
   useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+  useEffect(() => { setVal(name || ""); }, [name]);
   function commit() {
     const trimmed = val.trim();
-    if (trimmed && trimmed !== feed.name) onSave(trimmed);
+    if (trimmed && trimmed !== name) onSave(trimmed);
     setEditing(false);
   }
   if (editing) {
     return (
       <input ref={inputRef} value={val} onChange={e => setVal(e.target.value)}
         onBlur={commit}
-        onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setVal(feed.name || ""); setEditing(false); } }}
+        onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setVal(name || ""); setEditing(false); } }}
         style={{ flex: 1, background: T.surface2, border: `1.5px solid ${T.accent}`, borderRadius: 6, padding: "3px 8px", fontSize: 13, color: T.text, fontFamily: "inherit", outline: "none", minWidth: 0 }}
         onClick={e => e.stopPropagation()}
       />
@@ -871,7 +881,7 @@ function InlineNameEditor({ feed, T, onSave }) {
   return (
     <span title="Click to rename" onClick={e => { e.stopPropagation(); setEditing(true); }}
       style={{ fontSize: 13, fontWeight: 500, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", cursor: "text", lineHeight: 1.3 }}>
-      {feed.name || (() => { try { return new URL(feed.url).hostname.replace("www.", ""); } catch { return feed.url; } })()}
+      {name || placeholder || "Unnamed"}
     </span>
   );
 }
@@ -928,17 +938,22 @@ function SourceRow({ feed, T, onUpdate, onDelete }) {
 
       {/* Name + URL */}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-        <InlineNameEditor feed={feed} T={T} onSave={handleRename} />
+        <InlineNameEditor
+          name={feed.name}
+          placeholder={(() => { try { return new URL(feed.url).hostname.replace("www.", ""); } catch { return feed.url; } })()}
+          T={T}
+          onSave={handleRename}
+        />
         <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{host}</span>
       </div>
 
       {/* Last sync */}
       <span style={{ fontSize: 11, color: statusColor, flexShrink: 0, minWidth: 68, textAlign: "right" }}>{lastSync}</span>
 
-      {/* Frequency badge */}
-      <FreqBadge T={T} label={type === "youtube" ? "YouTube" : type === "podcast" ? "Podcast" : "RSS"} />
+      {/* Type badge */}
+      <FreqBadge T={T} type={type} />
 
-      {/* Live updates toggle (fetch full content) */}
+      {/* Full content toggle */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
         <Toggle checked={!!feed.fetch_full_content} onChange={handleToggleFull} T={T} />
         <span style={{ fontSize: 9, color: T.textTertiary, textAlign: "center" }}>Full</span>
@@ -965,22 +980,20 @@ function FeedGroup({ title, icon, feeds, T, onUpdate, onDelete }) {
   const [collapsed, setCollapsed] = useState(false);
   if (feeds.length === 0) return null;
   return (
-    <div style={{ marginBottom: 8 }}>
-      {/* Group header */}
+    <div style={{ marginBottom: 0 }}>
       <button onClick={() => setCollapsed(v => !v)}
         style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", borderBottom: `1px solid ${T.border}` }}>
-        <span style={{ fontSize: 13, color: T.textTertiary }}>{icon}</span>
+        <span style={{ fontSize: 13 }}>{icon}</span>
         <span style={{ fontSize: 12, fontWeight: 600, color: T.text, letterSpacing: "-.01em" }}>{title}</span>
-        <span style={{ fontSize: 11, color: T.textTertiary, marginLeft: 4 }}>{feeds.length} {feeds.length === 1 ? "subscription" : "subscriptions"}</span>
+        <span style={{ fontSize: 11, color: T.textTertiary, marginLeft: 4 }}>{feeds.length}</span>
         <span style={{ marginLeft: "auto", fontSize: 10, color: T.textTertiary, transform: collapsed ? "rotate(-90deg)" : "rotate(0deg)", display: "inline-block", transition: "transform .15s" }}>▼</span>
       </button>
-      {/* Column headers */}
       {!collapsed && (
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "6px 16px", borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "6px 16px", borderBottom: `1px solid ${T.border}`, background: T.surface }}>
           <div style={{ width: 28, flexShrink: 0 }} />
           <span style={{ flex: 1, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary }}>Source</span>
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, minWidth: 68, textAlign: "right" }}>Last Sync</span>
-          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, width: 60 }}>Type</span>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, width: 62 }}>Type</span>
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, width: 36, textAlign: "center" }}>Full</span>
           <div style={{ width: 25 }} />
         </div>
@@ -992,14 +1005,108 @@ function FeedGroup({ title, icon, feeds, T, onUpdate, onDelete }) {
   );
 }
 
-export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onFeedDeleted, onNavigate, onAddFolder, onAddSource }) {
+// ── Folder row for folder management tab ─────────────────────
+function FolderRow({ folder, feedCount, T, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }) {
+  const [deleting, setDeleting] = useState(false);
+  const [showColors, setShowColors] = useState(false);
+  const dot = FOLDER_COLORS[folder.color] || FOLDER_COLORS.gray;
+
+  async function handleRename(name) {
+    try {
+      const updated = await updateFolder(folder.id, { name });
+      onUpdate(folder.id, updated);
+    } catch (err) { console.error(err); }
+  }
+
+  async function handleColorChange(color) {
+    setShowColors(false);
+    try {
+      const updated = await updateFolder(folder.id, { color });
+      onUpdate(folder.id, updated);
+    } catch (err) { console.error(err); }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Delete collection "${folder.name}"? Feeds inside will become uncategorized.`)) return;
+    setDeleting(true);
+    try {
+      await deleteFolder(folder.id);
+      onDelete(folder.id);
+    } catch (err) { console.error(err); setDeleting(false); }
+  }
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: `1px solid ${T.border}`, transition: "background .12s", opacity: deleting ? 0.4 : 1, position: "relative" }}
+      onMouseEnter={e => e.currentTarget.style.background = T.surface}
+      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; setShowColors(false); }}
+    >
+      {/* Reorder arrows */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 1, flexShrink: 0 }}>
+        <button onClick={onMoveUp} disabled={isFirst} title="Move up"
+          style={{ background: "none", border: "none", cursor: isFirst ? "default" : "pointer", color: isFirst ? T.border : T.textTertiary, padding: "1px 3px", fontSize: 10, lineHeight: 1, transition: "color .1s" }}
+          onMouseEnter={e => { if (!isFirst) e.currentTarget.style.color = T.accent; }}
+          onMouseLeave={e => e.currentTarget.style.color = isFirst ? T.border : T.textTertiary}
+        >▲</button>
+        <button onClick={onMoveDown} disabled={isLast} title="Move down"
+          style={{ background: "none", border: "none", cursor: isLast ? "default" : "pointer", color: isLast ? T.border : T.textTertiary, padding: "1px 3px", fontSize: 10, lineHeight: 1, transition: "color .1s" }}
+          onMouseEnter={e => { if (!isLast) e.currentTarget.style.color = T.accent; }}
+          onMouseLeave={e => e.currentTarget.style.color = isLast ? T.border : T.textTertiary}
+        >▼</button>
+      </div>
+
+      {/* Color dot — click to pick */}
+      <div style={{ position: "relative" }}>
+        <button onClick={() => setShowColors(v => !v)} title="Change color"
+          style={{ width: 20, height: 20, borderRadius: "50%", background: dot, border: `2px solid ${showColors ? T.text : "transparent"}`, cursor: "pointer", flexShrink: 0, transition: "border .12s" }}
+        />
+        {showColors && (
+          <div style={{ position: "absolute", top: 26, left: 0, display: "flex", gap: 5, background: T.card, border: `1px solid ${T.borderStrong}`, borderRadius: 10, padding: "7px 9px", boxShadow: "0 4px 16px rgba(0,0,0,.15)", zIndex: 20 }}>
+            {Object.entries(FOLDER_COLORS).map(([key, hex]) => (
+              <button key={key} onClick={() => handleColorChange(key)} title={key}
+                style={{ width: 18, height: 18, borderRadius: "50%", background: hex, border: folder.color === key ? `2px solid ${T.text}` : "2px solid transparent", cursor: "pointer", transition: "border .1s" }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Name (inline editable) */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <InlineNameEditor name={folder.name} T={T} onSave={handleRename} placeholder="Untitled Collection" />
+      </div>
+
+      {/* Feed count */}
+      <span style={{ fontSize: 12, color: T.textTertiary, flexShrink: 0, minWidth: 60, textAlign: "right" }}>
+        {feedCount} {feedCount === 1 ? "feed" : "feeds"}
+      </span>
+
+      {/* Delete */}
+      <button onClick={handleDelete} disabled={deleting} title="Delete collection"
+        style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, padding: "4px 6px", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "color .12s, background .12s" }}
+        onMouseEnter={e => { e.currentTarget.style.color = T.danger; e.currentTarget.style.background = `${T.danger}15`; }}
+        onMouseLeave={e => { e.currentTarget.style.color = T.textTertiary; e.currentTarget.style.background = "none"; }}
+      >
+        {deleting ? "…" : (
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 4h12M6 4V2h4v2M5 4v9a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V4"/>
+          </svg>
+        )}
+      </button>
+    </div>
+  );
+}
+
+export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onFeedDeleted, onNavigate, onAddFolder, onFolderUpdate, onFolderDeleted, onAddSource }) {
   const { T } = useTheme();
   const { user } = useAuth();
   const [feeds, setFeeds] = useState(appFeeds);
+  const [folders, setFolders] = useState(appFolders);
   const [filterType, setFilterType] = useState("all");
+  const [activeTab, setActiveTab] = useState("feeds"); // "feeds" | "folders"
   const [syncingAll, setSyncingAll] = useState(false);
 
   useEffect(() => { setFeeds(appFeeds); }, [appFeeds]);
+  useEffect(() => { setFolders(appFolders); }, [appFolders]);
 
   function handleUpdate(feedId, data) {
     setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, ...data } : f));
@@ -1011,6 +1118,24 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
     onFeedDeleted?.(feedId);
   }
 
+  function handleFolderUpdate(folderId, updated) {
+    setFolders(prev => prev.map(f => f.id === folderId ? { ...f, ...updated } : f));
+    onFolderUpdate?.(folderId, updated);
+  }
+
+  function handleFolderDelete(folderId) {
+    setFolders(prev => prev.filter(f => f.id !== folderId));
+    onFolderDeleted?.(folderId);
+  }
+
+  function moveFolder(idx, dir) {
+    const next = [...folders];
+    const swap = idx + dir;
+    if (swap < 0 || swap >= next.length) return;
+    [next[idx], next[swap]] = [next[swap], next[idx]];
+    setFolders(next);
+  }
+
   async function handleSyncAll() {
     setSyncingAll(true);
     try {
@@ -1019,9 +1144,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
         invalidateCachedFeed(f.url);
         return fetchRSSFeed(f.url, { forceRefresh: true });
       }));
-    } finally {
-      setSyncingAll(false);
-    }
+    } finally { setSyncingAll(false); }
   }
 
   // Stats
@@ -1033,12 +1156,9 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
   const syncHealth = feeds.length > 0 ? Math.round((freshCount / feeds.length) * 100) : 0;
   const healthLabel = syncHealth >= 90 ? "OPTIMAL" : syncHealth >= 60 ? "GOOD" : syncHealth >= 30 ? "FAIR" : "POOR";
   const healthColor = syncHealth >= 90 ? T.success : syncHealth >= 60 ? T.accent : syncHealth >= 30 ? T.warning : T.danger;
-
-  // Stale/errored feeds for alert
   const staleFeedsCount = feeds.filter(f => { const a = cacheAge(f.url); return a !== null && a > 120; }).length;
 
-  const filtered = filterType === "all" ? feeds
-    : feeds.filter(f => feedType(f) === filterType);
+  const filtered = filterType === "all" ? feeds : feeds.filter(f => feedType(f) === filterType);
   const ytFeeds  = filtered.filter(f => feedType(f) === "youtube");
   const podFeeds = filtered.filter(f => feedType(f) === "podcast");
   const artFeeds = filtered.filter(f => feedType(f) === "article");
@@ -1046,93 +1166,166 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
       {/* ── Header ── */}
-      <div style={{ padding: "14px 24px 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Source Dashboard</div>
-          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{feeds.length} subscription{feeds.length !== 1 ? "s" : ""}</div>
+      <div style={{ padding: "14px 24px 0", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Source Dashboard</div>
+            <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{feeds.length} source{feeds.length !== 1 ? "s" : ""} · {folders.length} collection{folders.length !== 1 ? "s" : ""}</div>
+          </div>
+          <button onClick={onAddSource}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
+          >
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>
+            Add Source
+          </button>
         </div>
-        <button onClick={onAddSource}
-          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
-          onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>
-          Add New Source
-        </button>
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 0 }}>
+          {[["feeds", `Feeds (${feeds.length})`], ["folders", `Collections (${folders.length})`]].map(([id, label]) => (
+            <button key={id} onClick={() => setActiveTab(id)}
+              style={{ padding: "7px 16px", fontSize: 13, fontWeight: activeTab === id ? 600 : 400, color: activeTab === id ? T.accent : T.textTertiary, background: "none", border: "none", borderBottom: `2px solid ${activeTab === id ? T.accent : "transparent"}`, cursor: "pointer", fontFamily: "inherit", transition: "all .15s", marginBottom: -1 }}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div style={{ flex: 1, overflowY: "auto" }}>
-        {/* ── Stats bar ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, padding: "20px 24px 0" }}>
-          {[
-            { label: "Total Subscriptions", value: feeds.length, color: T.text },
-            { label: "Articles Loaded", value: totalItems, color: T.accent },
-            { label: "Sync Health", value: `${syncHealth}%`, badge: healthLabel, color: healthColor },
-            { label: "Fresh Feeds", value: freshCount, color: T.success },
-          ].map(({ label, value, badge, color }) => (
-            <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px" }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color, lineHeight: 1, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
-                {value}
-                {badge && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, background: `${color}20`, color, letterSpacing: ".08em" }}>{badge}</span>}
+        {activeTab === "feeds" ? (
+          <>
+            {/* Stats bar */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, padding: "20px 24px 0" }}>
+              {[
+                { label: "Total Sources", value: feeds.length, color: T.text },
+                { label: "Articles Loaded", value: totalItems, color: T.accent },
+                { label: "Sync Health", value: `${syncHealth}%`, badge: healthLabel, color: healthColor },
+                { label: "Fresh Feeds", value: freshCount, color: T.success },
+              ].map(({ label, value, badge, color }) => (
+                <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color, lineHeight: 1, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                    {value}
+                    {badge && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, background: `${color}20`, color, letterSpacing: ".08em" }}>{badge}</span>}
+                  </div>
+                  <div style={{ fontSize: 11, color: T.textTertiary }}>{label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Stale alert */}
+            {staleFeedsCount > 0 && (
+              <div style={{ margin: "16px 24px 0", padding: "12px 16px", background: `${T.warning}18`, border: `1px solid ${T.warning}40`, borderRadius: 10, display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 14 }}>⚠️</span>
+                <div style={{ flex: 1, fontSize: 13, color: T.text }}>
+                  <span style={{ fontWeight: 600 }}>Stale Feeds — </span>
+                  <span style={{ color: T.textSecondary }}>{staleFeedsCount} feed{staleFeedsCount !== 1 ? "s have" : " has"} not synced in over 2 hours.</span>
+                </div>
+                <button onClick={handleSyncAll} disabled={syncingAll}
+                  style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 7, border: `1px solid ${T.warning}`, background: "transparent", color: T.warning, cursor: "pointer", fontFamily: "inherit" }}>
+                  {syncingAll ? "Syncing…" : "Sync All"}
+                </button>
               </div>
-              <div style={{ fontSize: 11, color: T.textTertiary }}>{label}</div>
-            </div>
-          ))}
-        </div>
+            )}
 
-        {/* ── Stale alert ── */}
-        {staleFeedsCount > 0 && (
-          <div style={{ margin: "16px 24px 0", padding: "12px 16px", background: `${T.warning}18`, border: `1px solid ${T.warning}40`, borderRadius: 10, display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 14 }}>⚠️</span>
-            <div style={{ flex: 1, fontSize: 13, color: T.text }}>
-              <span style={{ fontWeight: 600 }}>Stale Feeds </span>
-              <span style={{ color: T.textSecondary }}>{staleFeedsCount} feed{staleFeedsCount !== 1 ? "s have" : " has"} not synced in over 2 hours.</span>
-            </div>
-            <button onClick={handleSyncAll} disabled={syncingAll}
-              style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 7, border: `1px solid ${T.warning}`, background: "transparent", color: T.warning, cursor: "pointer", fontFamily: "inherit" }}>
-              {syncingAll ? "Syncing…" : "Sync All"}
-            </button>
-          </div>
-        )}
-
-        {/* ── Filter + Sort + Sync row ── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 24px 12px" }}>
-          <span style={{ fontSize: 12, color: T.textTertiary, flexShrink: 0 }}>Filter by Type:</span>
-          <div style={{ display: "flex", gap: 4 }}>
-            {[["all","All"],["youtube","YouTube"],["podcast","Podcasts"],["article","Articles"]].map(([v, label]) => (
-              <button key={v} onClick={() => setFilterType(v)}
-                style={{ padding: "4px 12px", borderRadius: 20, border: `1px solid ${filterType === v ? T.accent : T.border}`, background: filterType === v ? T.accentSurface : "transparent", color: filterType === v ? T.accent : T.textSecondary, fontSize: 12, fontWeight: filterType === v ? 600 : 400, cursor: "pointer", fontFamily: "inherit", transition: "all .12s" }}>
-                {label}
+            {/* Filter + Sync row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 24px 12px" }}>
+              <div style={{ display: "flex", background: T.surface, borderRadius: 100, padding: 2 }}>
+                {[["all","All"],["youtube","YouTube"],["podcast","Podcasts"],["article","Articles"]].map(([v, label]) => (
+                  <button key={v} onClick={() => setFilterType(v)}
+                    style={{ padding: "4px 12px", borderRadius: 100, border: "none", background: filterType === v ? T.bg : "transparent", color: filterType === v ? T.text : T.textTertiary, fontSize: 12, fontWeight: filterType === v ? 600 : 400, cursor: "pointer", fontFamily: "inherit", transition: "all .12s", boxShadow: filterType === v ? "0 1px 3px rgba(0,0,0,.12)" : "none" }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div style={{ flex: 1 }} />
+              <button onClick={handleSyncAll} disabled={syncingAll}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 8, border: `1px solid ${T.border}`, background: syncingAll ? T.accentSurface : T.surface, color: syncingAll ? T.accent : T.textSecondary, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
+                onMouseEnter={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; } }}
+                onMouseLeave={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textSecondary; } }}
+              >
+                <span style={{ display: "inline-block", animation: syncingAll ? "spin .7s linear infinite" : "none" }}>↺</span>
+                {syncingAll ? "Syncing…" : "Sync All"}
               </button>
-            ))}
-          </div>
-          <div style={{ flex: 1 }} />
-          <button onClick={handleSyncAll} disabled={syncingAll}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 8, border: `1px solid ${T.border}`, background: syncingAll ? T.accentSurface : T.surface, color: syncingAll ? T.accent : T.textSecondary, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
-            onMouseEnter={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; } }}
-            onMouseLeave={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textSecondary; } }}
-          >
-            <span style={{ display: "inline-block", animation: syncingAll ? "spin .7s linear infinite" : "none" }}>↺</span>
-            {syncingAll ? "Syncing…" : "Sync All Sources"}
-          </button>
-        </div>
+            </div>
 
-        {/* ── Feed groups ── */}
-        {feeds.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 20px", color: T.textTertiary }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>📡</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 6 }}>No sources yet</div>
-            <div style={{ fontSize: 13, marginBottom: 20 }}>Add your first RSS feed, podcast, or YouTube channel.</div>
-            <button onClick={onAddSource}
-              style={{ padding: "9px 20px", borderRadius: 10, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-              + Add Source
-            </button>
-          </div>
+            {/* Feed groups */}
+            {feeds.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: T.textTertiary }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>📡</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 6 }}>No sources yet</div>
+                <div style={{ fontSize: 13, marginBottom: 20 }}>Add your first RSS feed, podcast, or YouTube channel.</div>
+                <button onClick={onAddSource}
+                  style={{ padding: "9px 20px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                  + Add Source
+                </button>
+              </div>
+            ) : ytFeeds.length === 0 && podFeeds.length === 0 && artFeeds.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "40px 20px", color: T.textTertiary, fontSize: 13 }}>
+                No {filterType} sources found.
+              </div>
+            ) : (
+              <div style={{ margin: "0 24px 40px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+                <FeedGroup title="YouTube Channels" icon="▶" feeds={ytFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
+                <FeedGroup title="Podcasts" icon="🎙" feeds={podFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
+                <FeedGroup title="Article Feeds" icon="📰" feeds={artFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
+              </div>
+            )}
+          </>
         ) : (
-          <div style={{ margin: "0 24px 40px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
-            <FeedGroup title="YouTube Channels" icon="▶" feeds={ytFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
-            <FeedGroup title="Podcasts" icon="🎙" feeds={podFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
-            <FeedGroup title="Article Feeds" icon="📰" feeds={artFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
+          /* ── Folders tab ── */
+          <div style={{ padding: "20px 24px 40px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Collections</div>
+                <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Group your feeds into collections. Click a name to rename, click the dot to change color.</div>
+              </div>
+              <button onClick={onAddFolder}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s", flexShrink: 0 }}
+                onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
+              >
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>
+                New Collection
+              </button>
+            </div>
+
+            {folders.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "48px 20px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, color: T.textTertiary }}>
+                <div style={{ fontSize: 32, marginBottom: 10 }}>📁</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 6 }}>No collections yet</div>
+                <div style={{ fontSize: 13, marginBottom: 18 }}>Organize your feeds into collections to keep things tidy.</div>
+                <button onClick={onAddFolder}
+                  style={{ padding: "8px 18px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                  + New Collection
+                </button>
+              </div>
+            ) : (
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+                {/* Column headers */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 16px", borderBottom: `1px solid ${T.border}`, background: T.surface }}>
+                  <div style={{ width: 28, flexShrink: 0 }} />
+                  <div style={{ width: 20, flexShrink: 0 }} />
+                  <span style={{ flex: 1, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary }}>Name</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, minWidth: 60, textAlign: "right" }}>Feeds</span>
+                  <div style={{ width: 25 }} />
+                </div>
+                {folders.map((folder, idx) => (
+                  <FolderRow
+                    key={folder.id}
+                    folder={folder}
+                    feedCount={feeds.filter(f => f.folder_id === folder.id).length}
+                    T={T}
+                    onUpdate={handleFolderUpdate}
+                    onDelete={handleFolderDelete}
+                    onMoveUp={() => moveFolder(idx, -1)}
+                    onMoveDown={() => moveFolder(idx, 1)}
+                    isFirst={idx === 0}
+                    isLast={idx === folders.length - 1}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

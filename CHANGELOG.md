@@ -3,6 +3,20 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.38.0] — 2026-03-24
+
+### Added
+- **Collections tab in Source Dashboard** — new "Collections" tab alongside the Feeds tab. Lists all folders with feed count, inline rename (click name), color picker (click the dot), delete with confirmation, and up/down reorder buttons. "New Collection" button in the tab header.
+- **Folder management from dashboard** — edit folder name, color, and order without leaving the Source Dashboard. Changes propagate instantly to the sidebar.
+
+### Changed
+- **YouTube tagging fixed** — `feedType()` now correctly detects YouTube feeds by URL pattern (`youtube.com/feeds/videos.xml`) in addition to the `type` field, so legacy-added YouTube feeds show the correct badge and appear under the YouTube filter.
+- **Type filter pills** — filter tabs (All / YouTube / Podcasts / Articles) use the same consistent pill style as the read filter. Empty filter results now show a "no sources found" message instead of empty space.
+- **Type badges color-coded** — YouTube badge is red, Podcast badge is purple, RSS badge is neutral gray. Makes source type scannable at a glance.
+- **Source Dashboard header** — pill-shaped Add Source button, subtitle now shows both source count and collection count.
+
+---
+
 ## [1.37.0] — 2026-03-24
 
 ### Changed
