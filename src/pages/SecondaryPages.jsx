@@ -652,18 +652,14 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
             <Button variant="secondary" size="sm" onClick={signOut}>Sign out</Button>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <button onClick={async () => {
-                await supabase.auth.refreshSession();
-                window.location.reload();
-              }} style={{ fontSize: 11, color: T.textTertiary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "3px 6px", borderRadius: 6, transition: "color .12s" }}
-                onMouseEnter={e => e.currentTarget.style.color = T.text}
-                onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
-                title="Refresh your account session — use this if your Pro status isn't showing"
-              >↺ Refresh account</button>
-              {/* global __APP_VERSION__ */}
-              <span style={{ fontSize: 10, color: T.textTertiary, opacity: 0.5 }}>v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "?"}</span>
-            </div>
+            <button onClick={async () => {
+              await supabase.auth.refreshSession();
+              window.location.reload();
+            }} style={{ fontSize: 11, color: T.textTertiary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "3px 6px", borderRadius: 6, transition: "color .12s" }}
+              onMouseEnter={e => e.currentTarget.style.color = T.text}
+              onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
+              title="Refresh your account session — use this if your Pro status isn't showing"
+            >↺ Refresh account</button>
           </div>
         </Card>
 
@@ -810,8 +806,15 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
 
         {/* About */}
         <Card title="About" T={T}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <span style={{ fontFamily: "'Newsreader', Georgia, serif", fontStyle: "italic", fontSize: 16, fontWeight: 500, color: T.text, letterSpacing: "-.01em" }}>Feed Box</span>
+            {/* global __APP_VERSION__ */}
+            <span style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 20, padding: "2px 10px" }}>
+              v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "?"}
+            </span>
+          </div>
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7 }}>
-            Feedbox — a calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
+            A calm reading space for RSS, articles, and YouTube. Built with React + Vite, hosted on GitHub Pages, powered by Supabase.
           </div>
         </Card>
       </div>
