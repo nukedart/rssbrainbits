@@ -946,9 +946,17 @@ function InlineNameEditor({ name, T, onSave, placeholder }) {
   );
 }
 
-function SourceRow({ feed, T, onUpdate, onDelete }) {
+function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }) {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [folderOpen, setFolderOpen] = useState(false);
+  const folderRef = useRef(null);
+  useEffect(() => {
+    if (!folderOpen) return;
+    function onOutside(e) { if (folderRef.current && !folderRef.current.contains(e.target)) setFolderOpen(false); }
+    document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, [folderOpen]);
   const host = (() => { try { return new URL(feed.url).hostname.replace("www.", ""); } catch { return feed.url; } })();
   const age = cacheAge(feed.url);
   const isFresh = age !== null && age < 30;
@@ -956,6 +964,17 @@ function SourceRow({ feed, T, onUpdate, onDelete }) {
   const statusColor = isFresh ? T.success : isStale ? T.warning : T.textTertiary;
   const lastSync = age === null ? "Not synced" : age < 1 ? "Just now" : age < 60 ? `${age}m ago` : `${Math.round(age / 60)}h ago`;
   const type = feedType(feed);
+  const cachedCount = getCachedFeed(feed.url)?.data?.items?.length ?? null;
+  const currentFolder = folders.find(f => f.id === feed.folder_id);
+
+  async function handleMoveToFolder(folderId) {
+    setFolderOpen(false);
+    try {
+      await setFeedFolder(feed.id, folderId);
+      onUpdate(feed.id, { folder_id: folderId });
+      onMoveToFolder?.(feed.id, folderId);
+    } catch (err) { console.error(err); }
+  }
 
   async function handleToggleFull(val) {
     setSaving(true);
@@ -1007,11 +1026,87 @@ function SourceRow({ feed, T, onUpdate, onDelete }) {
         <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{host}</span>
       </div>
 
+      {/* Article count */}
+      {cachedCount !== null && (
+        <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0, minWidth: 32, textAlign: "right" }} title="Cached articles">
+          {cachedCount}
+        </span>
+      )}
+
       {/* Last sync */}
       <span style={{ fontSize: 11, color: statusColor, flexShrink: 0, minWidth: 68, textAlign: "right" }}>{lastSync}</span>
 
       {/* Type badge */}
       <FreqBadge T={T} type={type} />
+
+      {/* Folder selector */}
+      {folders.length > 0 && (
+        <div ref={folderRef} style={{ position: "relative", flexShrink: 0 }}>
+          <button
+            onClick={() => setFolderOpen(v => !v)}
+            title={currentFolder ? `Folder: ${currentFolder.name}` : "Assign to folder"}
+            style={{
+              background: folderOpen ? T.surface2 : "none", border: "none", cursor: "pointer",
+              color: currentFolder ? T.accent : T.textTertiary,
+              padding: "4px 6px", borderRadius: 6, display: "flex", alignItems: "center",
+              transition: "color .12s, background .12s",
+            }}
+            onMouseEnter={e => { if (!folderOpen) { e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.surface; } }}
+            onMouseLeave={e => { if (!folderOpen) { e.currentTarget.style.color = currentFolder ? T.accent : T.textTertiary; e.currentTarget.style.background = "none"; } }}
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1.5 3.5h4.5l1.5 2h7v7.5h-13z"/>
+            </svg>
+          </button>
+          {folderOpen && (
+            <div
+              style={{
+                position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 200,
+                background: T.card, border: `1px solid ${T.border}`, borderRadius: 10,
+                boxShadow: "0 8px 24px rgba(0,0,0,.16)", minWidth: 160, overflow: "hidden",
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                onClick={() => handleMoveToFolder(null)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, width: "100%",
+                  padding: "8px 12px", border: "none", background: !currentFolder ? T.accentSurface : "transparent",
+                  cursor: "pointer", fontFamily: "inherit", fontSize: 12, color: !currentFolder ? T.accent : T.textSecondary,
+                  transition: "background .1s",
+                }}
+                onMouseEnter={e => { if (currentFolder) e.currentTarget.style.background = T.surface; }}
+                onMouseLeave={e => { if (currentFolder) e.currentTarget.style.background = "transparent"; }}
+              >
+                <span style={{ fontSize: 10, color: T.textTertiary }}>No folder</span>
+              </button>
+              {folders.map(f => {
+                const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+                const dot = FCOLS[f.color] || "#8A9099";
+                const isCurrent = feed.folder_id === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    onClick={() => handleMoveToFolder(f.id)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8, width: "100%",
+                      padding: "8px 12px", border: "none", background: isCurrent ? T.accentSurface : "transparent",
+                      cursor: "pointer", fontFamily: "inherit", fontSize: 12, color: isCurrent ? T.accent : T.textSecondary,
+                      transition: "background .1s",
+                    }}
+                    onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = T.surface; }}
+                    onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <span style={{ width: 8, height: 8, borderRadius: 2, background: dot, flexShrink: 0 }} />
+                    {f.name}
+                    {isCurrent && <span style={{ marginLeft: "auto", fontSize: 10 }}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Full content toggle */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
@@ -1036,7 +1131,7 @@ function SourceRow({ feed, T, onUpdate, onDelete }) {
   );
 }
 
-function FeedGroup({ title, icon, feeds, T, onUpdate, onDelete }) {
+function FeedGroup({ title, icon, feeds, T, onUpdate, onDelete, folders, onMoveToFolder }) {
   const [collapsed, setCollapsed] = useState(false);
   if (feeds.length === 0) return null;
   return (
@@ -1052,14 +1147,16 @@ function FeedGroup({ title, icon, feeds, T, onUpdate, onDelete }) {
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "6px 16px", borderBottom: `1px solid ${T.border}`, background: T.surface }}>
           <div style={{ width: 28, flexShrink: 0 }} />
           <span style={{ flex: 1, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary }}>Source</span>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, minWidth: 32, textAlign: "right" }}>Items</span>
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, minWidth: 68, textAlign: "right" }}>Last Sync</span>
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, width: 62 }}>Type</span>
+          {folders?.length > 0 && <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, width: 25 }}>Folder</span>}
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, width: 36, textAlign: "center" }}>Full</span>
           <div style={{ width: 25 }} />
         </div>
       )}
       {!collapsed && feeds.map(feed => (
-        <SourceRow key={feed.id} feed={feed} T={T} onUpdate={onUpdate} onDelete={onDelete} />
+        <SourceRow key={feed.id} feed={feed} T={T} onUpdate={onUpdate} onDelete={onDelete} folders={folders} onMoveToFolder={onMoveToFolder} />
       ))}
     </div>
   );
@@ -1326,9 +1423,9 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
               </div>
             ) : (
               <div style={{ margin: "0 24px 40px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
-                <FeedGroup title="YouTube Channels" icon="▶" feeds={ytFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
-                <FeedGroup title="Podcasts" icon="🎙" feeds={podFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
-                <FeedGroup title="Article Feeds" icon="📰" feeds={artFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
+                <FeedGroup title="YouTube Channels" icon="▶" feeds={ytFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} folders={folders} onMoveToFolder={(feedId, folderId) => { handleUpdate(feedId, { folder_id: folderId }); }} />
+                <FeedGroup title="Podcasts" icon="🎙" feeds={podFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} folders={folders} onMoveToFolder={(feedId, folderId) => { handleUpdate(feedId, { folder_id: folderId }); }} />
+                <FeedGroup title="Article Feeds" icon="📰" feeds={artFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} folders={folders} onMoveToFolder={(feedId, folderId) => { handleUpdate(feedId, { folder_id: folderId }); }} />
               </div>
             )}
           </>

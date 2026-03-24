@@ -30,8 +30,9 @@ const ManageFeedsPage = lazy(() => lazySecondary().then(m => ({ default: m.Manag
 // ── Lazy modals/overlays — only load when first opened ────────
 const SmartFeedModal = lazy(() => import("./components/SmartFeedModal"));
 const FolderModal    = lazy(() => import("./components/FolderModal"));
-const PodcastPlayer  = lazy(() => import("./components/PodcastPlayer"));
-const Onboarding     = lazy(() => import("./components/Onboarding"));
+const PodcastPlayer      = lazy(() => import("./components/PodcastPlayer"));
+const Onboarding         = lazy(() => import("./components/Onboarding"));
+const MobileFeedDrawer   = lazy(() => import("./components/MobileFeedDrawer"));
 
 // Fallback shown while a page chunk is downloading
 function PageSpinner({ T }) {
@@ -63,6 +64,7 @@ function AppShell() {
   const [forceOpenSearch, setForceOpenSearch] = useState(false);
   const [feedErrorCount, setFeedErrorCount] = useState(0);
   const [feedUnreadCounts, setFeedUnreadCounts] = useState({});
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   useEffect(() => { identify(user); }, [user]);
 
@@ -250,7 +252,7 @@ function AppShell() {
             </Suspense>
           </ErrorBoundary>
         </div>
-        {isMobile && <BottomNav active={page} onNavigate={navigateTo} onAdd={handleGlobalAdd} unreadCount={unreadCount} />}
+        {isMobile && <BottomNav active={page} onNavigate={navigateTo} onAdd={handleGlobalAdd} unreadCount={unreadCount} onOpenFeeds={() => setMobileDrawerOpen(true)} />}
       </div>
 
       {editingSF && (
@@ -276,6 +278,26 @@ function AppShell() {
           <Onboarding
             onAdd={handleOnboardingAdd}
             onDismiss={() => { setOnboardingDone(true); localStorage.setItem("fb-onboarded", "1"); }}
+          />
+        </Suspense>
+      )}
+
+      {mobileDrawerOpen && (
+        <Suspense fallback={null}>
+          <MobileFeedDrawer
+            active={page}
+            onNavigate={navigateTo}
+            onClose={() => setMobileDrawerOpen(false)}
+            unreadCount={unreadCount}
+            feedUnreadCounts={feedUnreadCounts}
+            smartFeeds={smartFeeds}
+            onAddSmartFeed={() => { setEditingSF("new"); setMobileDrawerOpen(false); }}
+            onEditSmartFeed={(sf) => { setEditingSF(sf); setMobileDrawerOpen(false); }}
+            folders={folders}
+            feeds={feeds}
+            onAddFolder={() => { setEditingFolder("new"); setMobileDrawerOpen(false); }}
+            onMoveFeedToFolder={handleMoveFeedToFolder}
+            onAddSource={() => { handleGlobalAdd(); }}
           />
         </Suspense>
       )}

@@ -553,6 +553,30 @@ export async function searchApplePodcasts(term) {
 }
 
 
+// ── Podcast RSS Resolution ────────────────────────────────────
+// Given an Apple Podcasts or other podcast page URL, returns the actual RSS
+// feed URL. Uses the iTunes Lookup API for Apple Podcasts URLs; falls back to
+// discoverFeed() for other podcast sites (Spotify, Overcast, etc.).
+// Returns { feedUrl, title } or null.
+export async function resolvePodcastFeedUrl(url) {
+  try {
+    // Apple Podcasts: extract numeric ID from URL (e.g. /id1234567890)
+    const appleMatch = url.match(/\/id(\d{6,})/);
+    if (appleMatch) {
+      const id = appleMatch[1];
+      const res = await fetchWithTimeout(
+        `https://itunes.apple.com/lookup?id=${id}&entity=podcast`,
+        8000
+      );
+      const json = await res.json();
+      const entry = (json.results || []).find(r => r.feedUrl);
+      if (entry?.feedUrl) return { feedUrl: entry.feedUrl, title: entry.collectionName };
+    }
+  } catch { /* fall through */ }
+  // Generic fallback — scrape the page for <link rel="alternate">
+  return discoverFeed(url);
+}
+
 // ── RSS Auto-discovery ────────────────────────────────────────
 // Given any website URL, fetches the page and looks for:
 //   <link rel="alternate" type="application/rss+xml" href="...">

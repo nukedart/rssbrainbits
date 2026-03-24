@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { Input, Button, Spinner } from "./UI";
-import { detectInputType, discoverFeed, parseXUrl, xToRSSUrl, searchApplePodcasts } from "../lib/fetchers";
+import { detectInputType, discoverFeed, parseXUrl, xToRSSUrl, searchApplePodcasts, resolvePodcastFeedUrl, isRSSUrl } from "../lib/fetchers";
 
 const TYPE_INFO = {
   rss:     { icon: "📡",  label: "RSS Feed",          desc: "All articles from this feed will appear in your inbox" },
@@ -73,9 +73,16 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
       const type = detectInputType(trimmed);
       setDetected(type);
       if (type === "article" || type === "podcast") {
+        // Podcast URLs that are already RSS feeds (feeds.buzzsprout.com, anchor.fm/s/…/rss, etc.)
+        // don't need discovery — treat them as RSS directly.
+        if (type === "podcast" && isRSSUrl(trimmed)) {
+          setDetected("rss");
+          return;
+        }
         setDiscovering(true);
         discoverTimerRef.current = setTimeout(() => {
-          discoverFeed(trimmed).then(result => {
+          const resolver = type === "podcast" ? resolvePodcastFeedUrl(trimmed) : discoverFeed(trimmed);
+          resolver.then(result => {
             setDiscovered(result);
             if (result) setDetected("rss");
           }).catch(() => {}).finally(() => setDiscovering(false));
@@ -98,6 +105,18 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
         const username = xParsed.username || trimmed.replace(/^@/, "").replace(/.*\//,"").split("/")[0];
         finalUrl = xToRSSUrl(username);
         finalName = finalName || `@${username}`;
+      }
+
+      // If we still have a raw podcast page URL (not an RSS feed, discovery didn't run or failed),
+      // try resolving it now via iTunes Lookup API before attempting to add.
+      if (detected === "podcast" && finalUrl === trimmed && !isRSSUrl(trimmed)) {
+        const resolved = await resolvePodcastFeedUrl(trimmed).catch(() => null);
+        if (resolved?.feedUrl) {
+          finalUrl = resolved.feedUrl;
+          finalName = finalName || resolved.title || null;
+        } else {
+          throw new Error("Couldn't find an RSS feed for this podcast. Try pasting the feed URL directly, or search by podcast name above.");
+        }
       }
 
       const finalType = (detected === "podcast" || detected === "twitter" || isX) ? "rss" : (detected || "article");

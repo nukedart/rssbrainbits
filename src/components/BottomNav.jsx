@@ -10,21 +10,22 @@ function hexToRgba(hex, alpha) {
 }
 
 const Icons = {
-  Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M2 15h5l2 4h6l2-4h5"/></svg>),
-  Notes:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 3h16a1 1 0 0 1 1 1v13l-5 5H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M16 17v5M16 17h5"/><path d="M8 9h8M8 13h5"/></svg>),
-  ReadLater:() => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>),
-  Settings: () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg>),
+  Feeds:    () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h12M3 18h8"/></svg>),
+  Notes:    () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 3h16a1 1 0 0 1 1 1v13l-5 5H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M16 17v5M16 17h5"/><path d="M8 9h8M8 13h5"/></svg>),
+  ReadLater:() => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>),
+  Inbox:    () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M2 15h5l2 4h6l2-4h5"/></svg>),
+  Settings: () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg>),
 };
 
 const NAV = [
+  { id:"feeds",     Icon:Icons.Feeds,     label:"Feeds",   special:"feeds" },
   { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox"    },
-  { id:"notes",     Icon:Icons.Notes,     label:"Notes"    },
   { id:"add",       Icon:null,            label:"Add"      }, // special center button
   { id:"readlater", Icon:Icons.ReadLater, label:"Saved"    },
   { id:"settings",  Icon:Icons.Settings,  label:"Settings" },
 ];
 
-export default function BottomNav({ active, onNavigate, onAdd, unreadCount = 0 }) {
+export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {
   const { T } = useTheme();
 
   return (
@@ -74,8 +75,38 @@ export default function BottomNav({ active, onNavigate, onAdd, unreadCount = 0 }
           );
         }
 
+        // ── Feeds drawer trigger ──────────────────────────────────
+        if (id === "feeds") {
+          const isFeedsActive = active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:");
+          return (
+            <button
+              key="feeds"
+              onClick={onOpenFeeds}
+              style={{
+                flex: 1, display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                gap: 3, padding: "10px 4px 6px",
+                border: "none", background: "transparent",
+                color: isFeedsActive ? T.accent : T.textTertiary,
+                cursor: "pointer", fontFamily: "inherit",
+                WebkitTapHighlightColor: "transparent",
+                transition: "transform .1s, color .12s",
+                position: "relative", minHeight: 52,
+              }}
+              onTouchStart={e => { e.currentTarget.style.transform = "scale(0.88)"; }}
+              onTouchEnd={e => { e.currentTarget.style.transform = "scale(1)"; }}
+            >
+              {isFeedsActive && (
+                <span style={{ position: "absolute", top: 6, width: 32, height: 3, borderRadius: 2, background: T.accent }} />
+              )}
+              <span style={{ display: "flex", marginTop: 6 }}><Icons.Feeds /></span>
+              <span style={{ fontSize: 10, fontWeight: isFeedsActive ? 600 : 400, letterSpacing: ".01em" }}>Feeds</span>
+            </button>
+          );
+        }
+
         // ── Standard nav tab ─────────────────────────────────────
-        const isActive = active === id || (id === "inbox" && active.startsWith("smart:"));
+        const isActive = active === id || (id === "inbox" && (active === "inbox" || active === "today"));
         return (
           <button
             key={id}
