@@ -162,12 +162,47 @@ function ContentTypeIcon({ item }) {
   );
 }
 
+// ── List thumbnail — always rendered for visual consistency ──
+function ListThumb({ item, cardSize, T }) {
+  const ph = sourcePlaceholder(item.source);
+  const fav = faviconUrl(item.url);
+  const w = cardSize === "lg" ? 96 : 72;
+  const h = cardSize === "lg" ? 72 : 54;
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImg = item.image && !imgFailed;
+
+  return (
+    <div style={{
+      width: w, height: h, borderRadius: 9, flexShrink: 0, overflow: "hidden",
+      background: showImg ? T.surface2 : ph.bg,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      position: "relative",
+    }}>
+      {showImg ? (
+        <img src={item.image} alt="" loading="lazy"
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          onError={() => setImgFailed(true)}
+        />
+      ) : fav ? (
+        <img src={fav} alt="" width={cardSize === "lg" ? 28 : 22} height={cardSize === "lg" ? 28 : 22}
+          style={{ borderRadius: 5, opacity: 0.9 }}
+          onError={e => { e.target.style.display = "none"; }}
+        />
+      ) : (
+        <span style={{ fontSize: cardSize === "lg" ? 22 : 17, fontWeight: 800, color: ph.color, opacity: 0.9 }}>
+          {ph.initial}
+        </span>
+      )}
+    </div>
+  );
+}
+
 // ── List view item (Things 3 task-row pattern) ───────────────
 function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, cardSize = "md" }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
-  const vPad = cardSize === "sm" ? (isMobile ? "9px 16px" : "6px 16px") : cardSize === "lg" ? "14px 20px" : (isMobile ? "12px 16px" : "11px 20px");
+  const vPad = cardSize === "sm" ? (isMobile ? "9px 14px" : "7px 16px") : cardSize === "lg" ? "14px 20px" : (isMobile ? "12px 16px" : "12px 18px");
 
   return (
     <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
@@ -186,43 +221,34 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             transition: "background .15s",
           }}
         >
-          {/* Content type icon — small pill */}
-          <div style={{
-            width: 26, height: 26, flexShrink: 0, borderRadius: 7,
-            background: hovered ? T.accentSurface : T.surface,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: hovered ? T.accent : T.textTertiary,
-            transition: "all .15s",
-          }}>
-            <ContentTypeIcon item={item} />
-          </div>
-
-          {/* Thumbnail — LEFT of text, always shown when available */}
-          {item.image && cardSize !== "sm" && (
-            <img src={item.image} alt="" loading="lazy"
-              style={{
-                width: cardSize === "lg" ? 88 : 64,
-                height: cardSize === "lg" ? 66 : 48,
-                borderRadius: 8, objectFit: "cover", flexShrink: 0, background: T.surface2,
-              }}
-              onError={e => { e.target.style.display = "none"; }} />
-          )}
+          {/* Thumbnail (md/lg) or type icon (sm) */}
+          {cardSize !== "sm"
+            ? <ListThumb item={item} cardSize={cardSize} T={T} />
+            : <div style={{ width:26, height:26, flexShrink:0, borderRadius:7, background:hovered?T.accentSurface:T.surface, display:"flex", alignItems:"center", justifyContent:"center", color:hovered?T.accent:T.textTertiary, transition:"all .15s" }}><ContentTypeIcon item={item} /></div>
+          }
 
           {/* Text block */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontSize: cardSize === "lg" ? 15 : 14,
-              fontWeight: isRead ? 400 : 500,
+              fontFamily: cardSize !== "sm" ? "var(--reader-font-family)" : "inherit",
+              fontSize: cardSize === "lg" ? 17 : cardSize === "sm" ? 13 : 15,
+              fontWeight: isRead ? 400 : 600,
               color: isRead ? T.textTertiary : T.text,
               lineHeight: 1.35,
               overflow: "hidden", textOverflow: "ellipsis",
-              whiteSpace: (isMobile || cardSize === "lg") ? "normal" : "nowrap",
-              ...(isMobile && { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }),
+              whiteSpace: (isMobile || cardSize !== "sm") ? "normal" : "nowrap",
+              display: "-webkit-box", WebkitLineClamp: cardSize === "lg" ? 3 : 2, WebkitBoxOrient: "vertical",
               letterSpacing: "-.01em",
+              marginBottom: 4,
             }}>
               {item.title}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
+            {cardSize !== "sm" && item.description && (
+              <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", marginBottom: 4 }}>
+                {item.description}
+              </div>
+            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 1 }}>
               {faviconUrl(item.url) && (
                 <img src={faviconUrl(item.url)} alt="" width={12} height={12}
                   style={{ borderRadius: 2, opacity: 0.75, flexShrink: 0 }}

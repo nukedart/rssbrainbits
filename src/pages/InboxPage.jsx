@@ -810,22 +810,18 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                     ))}
                   </div>
                 </div>
-                <div style={{ padding: "6px 12px 12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em" }}>Size</div>
-                    <span style={{ fontSize: 11, color: T.accent, fontWeight: 600 }}>
-                      {cardSize === "sm" ? "Small" : cardSize === "md" ? "Medium" : "Large"}
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 10, color: T.textTertiary, fontWeight: 500 }}>S</span>
-                    <input
-                      type="range" min={1} max={3} step={1}
-                      value={cardSize === "sm" ? 1 : cardSize === "md" ? 2 : 3}
-                      onChange={e => { const s = ["sm","md","lg"][e.target.value - 1]; setCardSize(s); localStorage.setItem("fb-cardsize", s); }}
-                      style={{ flex: 1, accentColor: T.accent, cursor: "pointer", height: 4 }}
-                    />
-                    <span style={{ fontSize: 10, color: T.textTertiary, fontWeight: 500 }}>L</span>
+                <div style={{ padding: "6px 12px 10px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Size</div>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {[{ size: "sm", label: "S" }, { size: "md", label: "M" }, { size: "lg", label: "L" }].map(({ size, label }) => (
+                      <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} style={{
+                        flex: 1, padding: "5px 0", borderRadius: 8, border: "none",
+                        background: cardSize === size ? T.accentSurface : T.surface,
+                        color: cardSize === size ? T.accent : T.textSecondary,
+                        cursor: "pointer", fontSize: 12, fontWeight: cardSize === size ? 700 : 400,
+                        fontFamily: "inherit", transition: "all .12s",
+                      }}>{label}</button>
+                    ))}
                   </div>
                 </div>
               </div>

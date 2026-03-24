@@ -3,6 +3,16 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.41.0] — 2026-03-24
+
+### Changed
+- **S/M/L size buttons restored** — reverted drag slider back to the three-button S / M / L selector in View Options.
+- **List view larger by default** — list items now use Merriweather for titles (md/lg sizes), font sizes bumped to 15px (M) / 17px (L). Descriptions shown in M and L list sizes.
+- **List cards uniform height** — thumbnail slot always rendered in list view (md/lg), eliminating height variance between items with and without images.
+- **Favicon placeholder in image slot** — when no article image is available, the list thumbnail shows the source favicon centered on the source color background. Falls back to the source initial letter if the favicon also fails.
+
+---
+
 ## [1.40.0] — 2026-03-24
 
 ### Fixed
