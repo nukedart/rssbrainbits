@@ -4,8 +4,9 @@ import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
 import { getHistory, clearHistory, getReadLater, removeReadLater,
          getSaved, unsaveItem, saveItem,
-         getFeeds, getFolders, setFeedFolder, updateFeedSettings,
+         getFeeds, getFolders, setFeedFolder, updateFeedSettings, deleteFeed,
          getReadingStats } from "../lib/supabase";
+import { parseYouTubeUrl, isPodcastUrl } from "../lib/fetchers";
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import { Button, EmptyState, Spinner } from "../components/UI";
@@ -818,149 +819,321 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
   );
 }
 
-// ── Manage Feeds page ──────────────────────────────────────────
-export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onNavigate, onAddFolder }) {
-  const { T } = useTheme();
-  const { user } = useAuth();
+// ── Source Dashboard (Manage Feeds) ───────────────────────────
+
+function feedType(feed) {
+  try {
+    if (feed.type === "youtube" || parseYouTubeUrl(feed.url).isYouTube) return "youtube";
+    if (feed.type === "podcast" || isPodcastUrl(feed.url)) return "podcast";
+  } catch {}
+  return "article";
+}
+
+function FreqBadge({ T, label = "Auto" }) {
   return (
-    <PageShell title="Manage Feeds" subtitle={`${appFeeds.length} feed${appFeeds.length !== 1 ? "s" : ""}`}
-      action={onNavigate && <Button variant="ghost" size="sm" onClick={() => onNavigate("settings")}>← Settings</Button>}
-    >
-      <div style={{ maxWidth: 520, width: "100%", padding: "24px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
-        <ManageFeedsCard T={T} user={user} initialFeeds={appFeeds} initialFolders={appFolders} onFeedUpdate={onFeedUpdate} onAddFolder={onAddFolder} />
-      </div>
-    </PageShell>
+    <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: T.surface2, color: T.textTertiary, letterSpacing: ".03em", flexShrink: 0 }}>
+      {label}
+    </span>
   );
 }
 
+function Toggle({ checked, onChange, T }) {
+  return (
+    <div onClick={() => onChange(!checked)} style={{ width: 34, height: 19, borderRadius: 10, background: checked ? T.accent : T.surface2, cursor: "pointer", position: "relative", transition: "background .2s", flexShrink: 0 }}>
+      <div style={{ position: "absolute", top: 2, left: checked ? 17 : 2, width: 15, height: 15, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.3)" }} />
+    </div>
+  );
+}
 
-
-// ── Inline feed name editor ───────────────────────────────────
-function FeedNameEditor({ feed, T, onSave }) {
+function InlineNameEditor({ feed, T, onSave }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(feed.name || "");
   const inputRef = useRef(null);
-
   useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
-
   function commit() {
     const trimmed = val.trim();
     if (trimmed && trimmed !== feed.name) onSave(trimmed);
     setEditing(false);
   }
-
   if (editing) {
     return (
       <input ref={inputRef} value={val} onChange={e => setVal(e.target.value)}
         onBlur={commit}
-        onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setVal(feed.name||""); setEditing(false); }}}
-        style={{ flex:1, background:T.surface2, border:`1.5px solid ${T.accent}`, borderRadius:7, padding:"3px 8px", fontSize:13, color:T.text, fontFamily:"inherit", outline:"none" }}
+        onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setVal(feed.name || ""); setEditing(false); } }}
+        style={{ flex: 1, background: T.surface2, border: `1.5px solid ${T.accent}`, borderRadius: 6, padding: "3px 8px", fontSize: 13, color: T.text, fontFamily: "inherit", outline: "none", minWidth: 0 }}
+        onClick={e => e.stopPropagation()}
       />
     );
   }
   return (
-    <span onClick={() => setEditing(true)} title="Click to rename"
-      style={{ flex:1, fontSize:13, color:T.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", cursor:"text", padding:"3px 0" }}>
-      {feed.name || new URL(feed.url).hostname}
-      <span style={{ fontSize:10, color:T.textTertiary, marginLeft:5 }}>✎</span>
+    <span title="Click to rename" onClick={e => { e.stopPropagation(); setEditing(true); }}
+      style={{ fontSize: 13, fontWeight: 500, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", cursor: "text", lineHeight: 1.3 }}>
+      {feed.name || (() => { try { return new URL(feed.url).hostname.replace("www.", ""); } catch { return feed.url; } })()}
     </span>
   );
 }
 
-// ── Manage Feeds card ─────────────────────────────────────────
-function ManageFeedsCard({ T, user, initialFeeds = [], initialFolders = [], onFeedUpdate, onAddFolder }) {
-  const [feeds, setFeeds]     = useState(initialFeeds);
-  const [folders, setFolders] = useState(initialFolders);
-  const [saving, setSaving]   = useState(null);
-  const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+function SourceRow({ feed, T, onUpdate, onDelete }) {
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const host = (() => { try { return new URL(feed.url).hostname.replace("www.", ""); } catch { return feed.url; } })();
+  const age = cacheAge(feed.url);
+  const isFresh = age !== null && age < 30;
+  const isStale = age !== null && age >= 30;
+  const statusColor = isFresh ? T.success : isStale ? T.warning : T.textTertiary;
+  const lastSync = age === null ? "Not synced" : age < 1 ? "Just now" : age < 60 ? `${age}m ago` : `${Math.round(age / 60)}h ago`;
+  const type = feedType(feed);
 
-  // Always sync from parent so changes from Sidebar propagate immediately
-  useEffect(() => { setFeeds(initialFeeds); }, [initialFeeds]);
-  useEffect(() => { setFolders(initialFolders); }, [initialFolders]);
-
-  async function handleMove(feedId, folderId) {
-    setSaving(feedId);
+  async function handleToggleFull(val) {
+    setSaving(true);
     try {
-      await setFeedFolder(feedId, folderId);
-      const updated = feeds.map(f => f.id === feedId ? { ...f, folder_id: folderId } : f);
-      setFeeds(updated);
-      onFeedUpdate?.(feedId, { folder_id: folderId });
+      await updateFeedSettings(feed.id, { fetch_full_content: val });
+      onUpdate(feed.id, { fetch_full_content: val });
+    } finally { setSaving(false); }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Remove "${feed.name || host}" from your feeds?`)) return;
+    setDeleting(true);
+    try {
+      await deleteFeed(feed.id);
+      onDelete(feed.id);
     } catch (err) {
       console.error(err);
-    } finally {
-      setSaving(null);
+      setDeleting(false);
     }
   }
 
-  if (feeds.length === 0) return null;
+  async function handleRename(name) {
+    setSaving(true);
+    try {
+      await updateFeedSettings(feed.id, { name });
+      onUpdate(feed.id, { name });
+    } finally { setSaving(false); }
+  }
 
   return (
-    <Card title="Manage Feeds" T={T}>
-      <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14, lineHeight: 1.6 }}>
-        Assign feeds to folders to organise your sources panel.
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 16px", borderBottom: `1px solid ${T.border}`, transition: "background .12s", opacity: deleting ? 0.4 : 1 }}
+      onMouseEnter={e => e.currentTarget.style.background = T.surface}
+      onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+    >
+      {/* Favicon */}
+      <div style={{ width: 28, height: 28, borderRadius: 8, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=32`} alt="" width={16} height={16}
+          onError={e => { e.target.style.display = "none"; }} />
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {feeds.map(feed => {
-          const currentFolder = folders.find(f => f.id === feed.folder_id);
-          const isSaving = saving === feed.id;
-          return (
-            <div key={feed.id} style={{ background: T.surface, borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                {/* Favicon */}
-                <div style={{ width: 16, height: 16, borderRadius: 3, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <img src={`https://www.google.com/s2/favicons?domain=${new URL(feed.url).hostname}&sz=32`}
-                    alt="" width={12} height={12} style={{ display: "block" }}
-                    onError={e => { e.target.style.display = "none"; }} />
-                </div>
-                {/* Editable name */}
-                <FeedNameEditor feed={feed} T={T} onSave={async (name) => {
-                  setSaving(feed.id);
-                  try {
-                    await updateFeedSettings(feed.id, { name });
-                    setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, name } : f));
-                    onFeedUpdate?.(feed.id, { name });
-                  } finally { setSaving(null); }
-                }} />
-                {isSaving && <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>saving…</span>}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, paddingLeft: 26 }}>
-                {/* Folder select */}
-                <select value={feed.folder_id || ""} onChange={e => handleMove(feed.id, e.target.value || null)}
-                  style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 8px", fontSize: 12, color: T.text, fontFamily: "inherit", cursor: "pointer", flex: 1 }}>
-                  <option value="">No folder</option>
-                  {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                </select>
-                {/* Fetch full content toggle */}
-                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.textSecondary, cursor: "pointer", flexShrink: 0 }}>
-                  <input type="checkbox" checked={!!feed.fetch_full_content} onChange={async e => {
-                    const val = e.target.checked;
-                    setSaving(feed.id);
-                    try {
-                      await updateFeedSettings(feed.id, { fetch_full_content: val });
-                      setFeeds(prev => prev.map(f => f.id === feed.id ? { ...f, fetch_full_content: val } : f));
-                      onFeedUpdate?.(feed.id, { fetch_full_content: val });
-                    } finally { setSaving(null); }
-                  }} style={{ accentColor: T.accent }} />
-                  Always fetch full content
-                </label>
-              </div>
-            </div>
-          );
-        })}
+
+      {/* Name + URL */}
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+        <InlineNameEditor feed={feed} T={T} onSave={handleRename} />
+        <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{host}</span>
       </div>
-      {folders.length === 0 && (
-        <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 12, color: T.textTertiary, fontStyle: "italic" }}>No folders yet.</span>
-          {onAddFolder && (
-            <button onClick={onAddFolder} style={{
-              padding: "5px 12px", borderRadius: 8, cursor: "pointer",
-              background: T.accentSurface, border: `1px solid ${T.accent}`,
-              color: T.accent, fontSize: 12, fontWeight: 600, fontFamily: "inherit",
-            }}>+ Create folder</button>
-          )}
+
+      {/* Last sync */}
+      <span style={{ fontSize: 11, color: statusColor, flexShrink: 0, minWidth: 68, textAlign: "right" }}>{lastSync}</span>
+
+      {/* Frequency badge */}
+      <FreqBadge T={T} label={type === "youtube" ? "YouTube" : type === "podcast" ? "Podcast" : "RSS"} />
+
+      {/* Live updates toggle (fetch full content) */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
+        <Toggle checked={!!feed.fetch_full_content} onChange={handleToggleFull} T={T} />
+        <span style={{ fontSize: 9, color: T.textTertiary, textAlign: "center" }}>Full</span>
+      </div>
+
+      {/* Delete */}
+      <button onClick={handleDelete} disabled={deleting}
+        title="Remove feed"
+        style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, padding: "4px 6px", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "color .12s, background .12s", fontSize: 13 }}
+        onMouseEnter={e => { e.currentTarget.style.color = T.danger; e.currentTarget.style.background = `${T.danger}15`; }}
+        onMouseLeave={e => { e.currentTarget.style.color = T.textTertiary; e.currentTarget.style.background = "none"; }}
+      >
+        {deleting ? "…" : (
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 4h12M6 4V2h4v2M5 4v9a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V4"/>
+          </svg>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function FeedGroup({ title, icon, feeds, T, onUpdate, onDelete }) {
+  const [collapsed, setCollapsed] = useState(false);
+  if (feeds.length === 0) return null;
+  return (
+    <div style={{ marginBottom: 8 }}>
+      {/* Group header */}
+      <button onClick={() => setCollapsed(v => !v)}
+        style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", borderBottom: `1px solid ${T.border}` }}>
+        <span style={{ fontSize: 13, color: T.textTertiary }}>{icon}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: T.text, letterSpacing: "-.01em" }}>{title}</span>
+        <span style={{ fontSize: 11, color: T.textTertiary, marginLeft: 4 }}>{feeds.length} {feeds.length === 1 ? "subscription" : "subscriptions"}</span>
+        <span style={{ marginLeft: "auto", fontSize: 10, color: T.textTertiary, transform: collapsed ? "rotate(-90deg)" : "rotate(0deg)", display: "inline-block", transition: "transform .15s" }}>▼</span>
+      </button>
+      {/* Column headers */}
+      {!collapsed && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "6px 16px", borderBottom: `1px solid ${T.border}` }}>
+          <div style={{ width: 28, flexShrink: 0 }} />
+          <span style={{ flex: 1, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary }}>Source</span>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, minWidth: 68, textAlign: "right" }}>Last Sync</span>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, width: 60 }}>Type</span>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, width: 36, textAlign: "center" }}>Full</span>
+          <div style={{ width: 25 }} />
         </div>
       )}
-    </Card>
+      {!collapsed && feeds.map(feed => (
+        <SourceRow key={feed.id} feed={feed} T={T} onUpdate={onUpdate} onDelete={onDelete} />
+      ))}
+    </div>
+  );
+}
+
+export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onFeedDeleted, onNavigate, onAddFolder, onAddSource }) {
+  const { T } = useTheme();
+  const { user } = useAuth();
+  const [feeds, setFeeds] = useState(appFeeds);
+  const [filterType, setFilterType] = useState("all");
+  const [syncingAll, setSyncingAll] = useState(false);
+
+  useEffect(() => { setFeeds(appFeeds); }, [appFeeds]);
+
+  function handleUpdate(feedId, data) {
+    setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, ...data } : f));
+    onFeedUpdate?.(feedId, data);
+  }
+
+  function handleDelete(feedId) {
+    setFeeds(prev => prev.filter(f => f.id !== feedId));
+    onFeedDeleted?.(feedId);
+  }
+
+  async function handleSyncAll() {
+    setSyncingAll(true);
+    try {
+      const { fetchRSSFeed } = await import("../lib/fetchers");
+      await Promise.allSettled(feeds.map(f => {
+        invalidateCachedFeed(f.url);
+        return fetchRSSFeed(f.url, { forceRefresh: true });
+      }));
+    } finally {
+      setSyncingAll(false);
+    }
+  }
+
+  // Stats
+  const totalItems = feeds.reduce((sum, f) => {
+    const cached = getCachedFeed(f.url);
+    return sum + (cached?.data?.items?.length || 0);
+  }, 0);
+  const freshCount = feeds.filter(f => { const a = cacheAge(f.url); return a !== null && a < 30; }).length;
+  const syncHealth = feeds.length > 0 ? Math.round((freshCount / feeds.length) * 100) : 0;
+  const healthLabel = syncHealth >= 90 ? "OPTIMAL" : syncHealth >= 60 ? "GOOD" : syncHealth >= 30 ? "FAIR" : "POOR";
+  const healthColor = syncHealth >= 90 ? T.success : syncHealth >= 60 ? T.accent : syncHealth >= 30 ? T.warning : T.danger;
+
+  // Stale/errored feeds for alert
+  const staleFeedsCount = feeds.filter(f => { const a = cacheAge(f.url); return a !== null && a > 120; }).length;
+
+  const filtered = filterType === "all" ? feeds
+    : feeds.filter(f => feedType(f) === filterType);
+  const ytFeeds  = filtered.filter(f => feedType(f) === "youtube");
+  const podFeeds = filtered.filter(f => feedType(f) === "podcast");
+  const artFeeds = filtered.filter(f => feedType(f) === "article");
+
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
+      {/* ── Header ── */}
+      <div style={{ padding: "14px 24px 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Source Dashboard</div>
+          <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{feeds.length} subscription{feeds.length !== 1 ? "s" : ""}</div>
+        </div>
+        <button onClick={onAddSource}
+          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
+          onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>
+          Add New Source
+        </button>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {/* ── Stats bar ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, padding: "20px 24px 0" }}>
+          {[
+            { label: "Total Subscriptions", value: feeds.length, color: T.text },
+            { label: "Articles Loaded", value: totalItems, color: T.accent },
+            { label: "Sync Health", value: `${syncHealth}%`, badge: healthLabel, color: healthColor },
+            { label: "Fresh Feeds", value: freshCount, color: T.success },
+          ].map(({ label, value, badge, color }) => (
+            <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px" }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color, lineHeight: 1, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                {value}
+                {badge && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, background: `${color}20`, color, letterSpacing: ".08em" }}>{badge}</span>}
+              </div>
+              <div style={{ fontSize: 11, color: T.textTertiary }}>{label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Stale alert ── */}
+        {staleFeedsCount > 0 && (
+          <div style={{ margin: "16px 24px 0", padding: "12px 16px", background: `${T.warning}18`, border: `1px solid ${T.warning}40`, borderRadius: 10, display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 14 }}>⚠️</span>
+            <div style={{ flex: 1, fontSize: 13, color: T.text }}>
+              <span style={{ fontWeight: 600 }}>Stale Feeds </span>
+              <span style={{ color: T.textSecondary }}>{staleFeedsCount} feed{staleFeedsCount !== 1 ? "s have" : " has"} not synced in over 2 hours.</span>
+            </div>
+            <button onClick={handleSyncAll} disabled={syncingAll}
+              style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 7, border: `1px solid ${T.warning}`, background: "transparent", color: T.warning, cursor: "pointer", fontFamily: "inherit" }}>
+              {syncingAll ? "Syncing…" : "Sync All"}
+            </button>
+          </div>
+        )}
+
+        {/* ── Filter + Sort + Sync row ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 24px 12px" }}>
+          <span style={{ fontSize: 12, color: T.textTertiary, flexShrink: 0 }}>Filter by Type:</span>
+          <div style={{ display: "flex", gap: 4 }}>
+            {[["all","All"],["youtube","YouTube"],["podcast","Podcasts"],["article","Articles"]].map(([v, label]) => (
+              <button key={v} onClick={() => setFilterType(v)}
+                style={{ padding: "4px 12px", borderRadius: 20, border: `1px solid ${filterType === v ? T.accent : T.border}`, background: filterType === v ? T.accentSurface : "transparent", color: filterType === v ? T.accent : T.textSecondary, fontSize: 12, fontWeight: filterType === v ? 600 : 400, cursor: "pointer", fontFamily: "inherit", transition: "all .12s" }}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div style={{ flex: 1 }} />
+          <button onClick={handleSyncAll} disabled={syncingAll}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 8, border: `1px solid ${T.border}`, background: syncingAll ? T.accentSurface : T.surface, color: syncingAll ? T.accent : T.textSecondary, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
+            onMouseEnter={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; } }}
+            onMouseLeave={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textSecondary; } }}
+          >
+            <span style={{ display: "inline-block", animation: syncingAll ? "spin .7s linear infinite" : "none" }}>↺</span>
+            {syncingAll ? "Syncing…" : "Sync All Sources"}
+          </button>
+        </div>
+
+        {/* ── Feed groups ── */}
+        {feeds.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: T.textTertiary }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>📡</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 6 }}>No sources yet</div>
+            <div style={{ fontSize: 13, marginBottom: 20 }}>Add your first RSS feed, podcast, or YouTube channel.</div>
+            <button onClick={onAddSource}
+              style={{ padding: "9px 20px", borderRadius: 10, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+              + Add Source
+            </button>
+          </div>
+        ) : (
+          <div style={{ margin: "0 24px 40px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+            <FeedGroup title="YouTube Channels" icon="▶" feeds={ytFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
+            <FeedGroup title="Podcasts" icon="🎙" feeds={podFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
+            <FeedGroup title="Article Feeds" icon="📰" feeds={artFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

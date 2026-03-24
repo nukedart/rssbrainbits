@@ -85,7 +85,7 @@ function NavRow({ id, Icon, label, active, badge, onNavigate, collapsed, T }) {
   );
 }
 
-export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, isOpen=true, onToggle }) {
+export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, isOpen=true, onToggle, onAddSource }) {
   const { T, isDark, theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { isTablet, isMobile } = useBreakpoint();
@@ -324,6 +324,27 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
 
       {/* ── Bottom bar ── */}
       <div style={{ padding: collapsed?"8px 6px":"8px 12px 12px", flexShrink:0 }}>
+
+        {/* Add Source button */}
+        <button
+          onClick={onAddSource}
+          title="Add Source"
+          style={{
+            display:"flex", alignItems:"center", justifyContent: collapsed?"center":"flex-start",
+            gap:8, width:"100%", marginBottom:10,
+            padding: collapsed?"9px 0":"10px 14px",
+            borderRadius:10, border:`1.5px solid ${T.accent}`,
+            background:T.accentSurface, cursor:"pointer",
+            color:T.accent, fontFamily:"inherit",
+            fontSize:13, fontWeight:600,
+            transition:"all .15s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background=T.accent; e.currentTarget.style.color="#fff"; }}
+          onMouseLeave={e => { e.currentTarget.style.background=T.accentSurface; e.currentTarget.style.color=T.accent; }}
+        >
+          <Icons.Plus />
+          {!collapsed && <span>Add Source</span>}
+        </button>
 
         {/* Theme toggle — Light ↔ Distilled */}
         <div style={{ display:"flex", gap:3, marginBottom:8, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"0":"0 2px" }}>

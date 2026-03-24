@@ -179,7 +179,7 @@ function AppShell() {
       case "notes":        return <NotesPage />;
       case "analytics":    return <AnalyticsPage />;
       case "settings":     return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} />;
-      case "manage-feeds": return <ManageFeedsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} onAddFolder={() => setEditingFolder("new")} />;
+      case "manage-feeds": return <ManageFeedsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFeedDeleted={handleFeedDeleted} onNavigate={navigateTo} onAddFolder={() => setEditingFolder("new")} onAddSource={handleGlobalAdd} />;
       default:             return <HomePage feeds={feeds} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
     }
   }
@@ -205,6 +205,7 @@ function AppShell() {
         onMoveFeedToFolder={handleMoveFeedToFolder}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(v => !v)}
+        onAddSource={handleGlobalAdd}
       />
       <div style={{ flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column" }}>
         <div style={{ flex: 1, overflow: "hidden", paddingBottom: isMobile ? 62 : 0, display: "flex", flexDirection: "column" }}>

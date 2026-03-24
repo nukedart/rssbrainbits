@@ -801,7 +801,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
           onTouchStart={isMobile ? handlePTRStart : undefined}
           onTouchMove={isMobile ? handlePTRMove : undefined}
           onTouchEnd={isMobile ? handlePTREnd : undefined}
-          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "10px 10px 80px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "80px" : undefined, WebkitOverflowScrolling: "touch" }}>
+          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 80px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "80px" : undefined, WebkitOverflowScrolling: "touch" }}>
           {/* New articles banner — shown after a background refresh detects new items */}
           {newArticleCount > 0 && !loadingItems && (
             <button
@@ -848,10 +848,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
           )}
 
           {viewMode === "card" ? (
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: cardSize === "lg" ? 18 : 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: isMobile ? 8 : (cardSize === "lg" ? 18 : 14) }}>
               {baseItems.map((item, i) => (
                 <div key={item.url + i} style={i < 20 ? { animation: `fadeInUp .2s ease both`, animationDelay: `${i * 30}ms` } : {}}>
-                <FeedItem item={item} viewMode="card" cardSize={isMobile ? "md" : cardSize}
+                <FeedItem item={item} viewMode="card" cardSize={isMobile ? "sm" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
                   onClick={() => { if (item.isPodcast && item.audioUrl && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}
@@ -865,7 +865,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
           ) : (
             baseItems.map((item, i) => (
               <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={i < 20 ? { animation: `fadeInUp .18s ease both`, animationDelay: `${i * 20}ms` } : {}}>
-              <FeedItem item={item} viewMode="list" cardSize={cardSize}
+              <FeedItem item={item} viewMode="list" cardSize={isMobile ? "sm" : (cardSize === "md" ? "lg" : cardSize)}
                 isSelected={openItem ? openItem?.url === item.url : cursorIdx === i}
                 isRead={readUrls.has(item.url)}
                 onClick={() => { setCursorIdx(i); if (item.isPodcast && item.audioUrl && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}

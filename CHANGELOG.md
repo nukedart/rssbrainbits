@@ -3,6 +3,27 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.36.0] — 2026-03-24
+
+### Added
+- **Source Dashboard** — completely redesigned Manage Feeds page. Full-width layout with stats bar (Total Subscriptions, Articles Loaded, Sync Health %, Fresh Feeds), stale-feed alert banner, filter pills (All / YouTube / Podcasts / Articles), "Sync All Sources" button, and feeds grouped by type (YouTube Channels, Podcasts, Article Feeds). Each group is collapsible with a subscription count.
+- **Feed delete** — each feed row now has a delete button (trash icon) with a confirmation prompt. Removal propagates instantly to the sidebar and app state.
+- **Add Source button in left nav** — prominent `+ Add Source` button added at the bottom of the sidebar above the theme toggle, opening the feed discovery modal from anywhere. Collapses to an icon when the sidebar is narrow.
+- **Feed health per-row** — each source row shows last-sync time (color-coded: green = fresh, amber = stale, grey = not loaded) and a Full Content toggle.
+- **Notes table** — Supabase `notes` table created via migration and is now live. Notes CRUD is fully operational.
+
+### Changed
+- **Mobile card view** — cards now render in a 2-column grid (was 1 column) at `"sm"` size on mobile, giving more density and smaller footprint.
+- **Desktop list view** — list items automatically use `"lg"` size on desktop (larger thumbnails + font) for a more comfortable reading layout.
+
+### Performance
+- Added `feed_folders(user_id)` index — eliminates 1003 sequential scans per session.
+- Added `smart_feeds(user_id)` index — eliminates 1159 sequential scans per session.
+- Added `history(user_id, read_at DESC)` and `read_items(user_id, read_at DESC)` indexes for stats and streak queries.
+- Added GIN index on `notes.tags` for future tag filtering.
+
+---
+
 ## [1.35.0] — 2026-03-23
 
 ### Added
