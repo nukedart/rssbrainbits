@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
@@ -16,8 +16,9 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
 import { track } from "../lib/analytics";
+const DigestModal = lazy(() => import("../components/DigestModal"));
 
-export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, ytFeedIds = null, onUnreadCount, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose }) {
+export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, folderDef = null, ytFeedIds = null, onUnreadCount, onFeedErrors, onFeedUnreadCounts, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose, forceOpenSearch = false, onForcedSearchClose }) {
   const { T } = useTheme();
   const { user: authUser } = useAuth();
   const user = propUser || authUser;
@@ -70,6 +71,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const errorPopoverRef = useRef(null);
   const [sourceDropOpen, setSourceDropOpen] = useState(false);
   const sourceDropRef = useRef(null);
+  const [digestOpen, setDigestOpen] = useState(false);
 
   function toggleFolderOpen(id) {
     setOpenFolders(prev => {
@@ -88,6 +90,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       onForcedAddClose?.();
     }
   }, [forceShowAdd]);
+
+  // Global `/` shortcut: open search from any page
+  useEffect(() => {
+    if (forceOpenSearch) {
+      setSearchOpen(true);
+      setTimeout(() => searchBarRef.current?.focusInput?.(), 50);
+      onForcedSearchClose?.();
+    }
+  }, [forceOpenSearch]);
 
   // ── Background sync: listen for SW "BG_SYNC" message ─────
   useEffect(() => {
@@ -234,6 +245,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     if (filterMode === "youtube-all") {
       const ids = ytFeedIds || [];
       items = items.filter((i) => ids.includes(i.feedId));
+    }
+    if (filterMode === "folder") {
+      if (!folderDef) return [];
+      const folderFeedIds = feeds.filter(f => f.folder_id === folderDef.id).map(f => f.id);
+      items = items.filter((i) => folderFeedIds.includes(i.feedId));
     }
     if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !readUrls.has(i.url));
     if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  readUrls.has(i.url));
@@ -514,6 +530,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     : filterMode === "unread"     ? "Unread"
     : filterMode === "smart"      ? (smartFeedDef?.name || "Smart Feed")
     : filterMode === "feed"       ? (feedDef?.name || "Feed")
+    : filterMode === "folder"     ? (folderDef?.name || "Folder")
     : filterMode === "youtube-all" ? "YouTube Channels"
     : activeSource === "all" ? "All Items"
     : feeds.find((f) => f.id === activeSource)?.name || "Feed";
@@ -524,6 +541,23 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   useEffect(() => {
     onUnreadCount?.(unreadCount);
   }, [unreadCount]);
+
+  // Report per-feed unread counts to parent (for sidebar feed tree)
+  useEffect(() => {
+    if (!onFeedUnreadCounts) return;
+    const counts = {};
+    allItems.forEach(item => {
+      if (!readUrls.has(item.url) && item.feedId) {
+        counts[item.feedId] = (counts[item.feedId] || 0) + 1;
+      }
+    });
+    onFeedUnreadCounts(counts);
+  }, [unreadCount, allItems.length]);
+
+  // Report feed error count to parent (for Sources badge)
+  useEffect(() => {
+    onFeedErrors?.(Object.keys(feedErrors).length);
+  }, [feedErrors]);
 
   // ── Auto-mark-read on scroll ─────────────────────────────
   const observerRef = useRef(null);
@@ -750,6 +784,25 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </svg>
           </button>
 
+          {/* AI Digest button */}
+          {!searchOpen && allItems.length > 0 && (
+            <button onClick={() => setDigestOpen(true)} title="AI daily digest"
+              style={{
+                background: "transparent", border: "none", borderRadius: 8,
+                width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: T.textTertiary, transition: "all .15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 1.5v2M8 12.5v2M2 8H.5M15.5 8H14M3.5 3.5l1.5 1.5M11 11l1.5 1.5M3.5 12.5L5 11M11 5l1.5-1.5"/>
+                <circle cx="8" cy="8" r="2.5"/>
+              </svg>
+            </button>
+          )}
+
           {/* Refresh button — SVG icon */}
           <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} style={{
             background: "transparent", border: "none", borderRadius: 8,
@@ -969,6 +1022,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       />}
       {searchResult && <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />}
       {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
+      {digestOpen && (
+        <Suspense fallback={null}>
+          <DigestModal items={baseItems.filter(i => !readUrls.has(i.url))} onClose={() => setDigestOpen(false)} />
+        </Suspense>
+      )}
       {opmlProgress && (
         <div style={{ position:"fixed", bottom: isMobile?80:24, left:"50%", transform:"translateX(-50%)", zIndex:2000, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, padding:"12px 20px", boxShadow:"0 4px 24px rgba(0,0,0,.15)", display:"flex", alignItems:"center", gap:12, minWidth:220 }}>
           <div style={{ width:10, height:10, border:`2px solid ${T.accent}`, borderTopColor:"transparent", borderRadius:"50%", animation:"spin .7s linear infinite", flexShrink:0 }} />

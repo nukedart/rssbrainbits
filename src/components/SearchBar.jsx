@@ -46,7 +46,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
   const fuse = useMemo(() => {
     if (!allItems.length) return null;
     return new Fuse(allItems, {
-      keys: [{ name: "title", weight: 0.6 }, { name: "description", weight: 0.25 }, { name: "source", weight: 0.1 }, { name: "author", weight: 0.05 }],
+      keys: [{ name: "title", weight: 0.55 }, { name: "description", weight: 0.22 }, { name: "fullText", weight: 0.12 }, { name: "source", weight: 0.07 }, { name: "author", weight: 0.04 }],
       threshold: 0.35, includeScore: true, minMatchCharLength: 2,
     });
   }, [allItems]);

@@ -28,6 +28,11 @@ function faviconUrl(url) {
   } catch { return null; }
 }
 
+function getStoredProgress(url) {
+  if (!url) return 0;
+  try { return parseInt(localStorage.getItem(`fb-prog-${encodeURIComponent(url)}`), 10) || 0; } catch { return 0; }
+}
+
 function sourcePlaceholder(source) {
   // Deterministic color from source name
   let hash = 0;
@@ -170,6 +175,7 @@ function ListThumb({ item, cardSize, T }) {
   const h = cardSize === "lg" ? 72 : 54;
   const [imgFailed, setImgFailed] = useState(false);
   const showImg = item.image && !imgFailed;
+  const progress = getStoredProgress(item.url);
 
   return (
     <div style={{
@@ -192,6 +198,11 @@ function ListThumb({ item, cardSize, T }) {
         <span style={{ fontSize: cardSize === "lg" ? 22 : 17, fontWeight: 800, color: ph.color, opacity: 0.9 }}>
           {ph.initial}
         </span>
+      )}
+      {progress > 5 && progress < 95 && (
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${progress}%`, background: "rgba(172,207,174,.95)", transition: "width .3s" }} />
+        </div>
       )}
     </div>
   );
@@ -297,6 +308,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
   const thumb = yt.isYouTube
     ? `https://img.youtube.com/vi/${yt.videoId}/mqdefault.jpg`
     : item.image || null;
+  const progress = getStoredProgress(item.url);
 
   return (
     <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
@@ -336,6 +348,11 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
                 <span style={{ fontSize: cardSize === "lg" ? 40 : 28, fontWeight: 800, color: sourcePlaceholder(item.source).color, opacity: 0.9, letterSpacing: "-.02em", userSelect: "none" }}>
                   {sourcePlaceholder(item.source).initial}
                 </span>
+              </div>
+            )}
+            {progress > 5 && progress < 95 && (
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${progress}%`, background: "rgba(172,207,174,.9)" }} />
               </div>
             )}
           </div>

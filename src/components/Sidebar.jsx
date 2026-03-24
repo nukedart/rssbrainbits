@@ -3,110 +3,288 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
+const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+const SMART_COLORS = { blue:"#2F6FED", teal:"#accfae", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 
 const Icons = {
-  Inbox:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
-  Today:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1.5v3M11 1.5v3M2 7h12"/></svg>),
-  Unread:   () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2.5" fill="currentColor" stroke="none"/></svg>),
-  ReadLater:() => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>),
-  History:  () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 8a5.5 5.5 0 1 0 1-3.2"/><path d="M2.5 3v2.5H5"/><path d="M8 5.5v3l1.5 1.5"/></svg>),
-  Notes:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2h10a1 1 0 0 1 1 1v9l-3 3H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M11 12v3M11 12h3"/><path d="M5 6h6M5 9h4"/></svg>),
-  Settings: () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.6 3.6l1.3 1.3M11.1 11.1l1.3 1.3M3.6 12.4l1.3-1.3M11.1 4.9l1.3-1.3"/></svg>),
-  Sun:      () => (<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>),
-  Moon:     () => (<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M13.5 10.5A6 6 0 0 1 5.5 2.5a6 6 0 1 0 8 8z"/></svg>),
+  Inbox:    () => (<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>),
+  Today:    () => (<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1.5v3M11 1.5v3M2 7h12"/></svg>),
+  ReadLater:() => (<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>),
+  Notes:    () => (<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2h10a1 1 0 0 1 1 1v9l-3 3H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M11 12v3M11 12h3"/><path d="M5 6h6M5 9h4"/></svg>),
+  Settings: () => (<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.6 3.6l1.3 1.3M11.1 11.1l1.3 1.3M3.6 12.4l1.3-1.3M11.1 4.9l1.3-1.3"/></svg>),
+  Sun:      () => (<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>),
+  Moon:     () => (<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M13.5 10.5A6 6 0 0 1 5.5 2.5a6 6 0 1 0 8 8z"/></svg>),
   Plus:     () => (<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>),
+  Sources:  () => (<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4h12"/><path d="M2 8h8"/><path d="M2 12h5"/><circle cx="13" cy="11" r="2.5"/><path d="M13 8.5v1M13 13.5v1"/></svg>),
+  SmartFeed:() => (<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h12l-4 5v5l-4-2V8L2 3z"/></svg>),
   Edit:     () => (<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M11 2.5l2.5 2.5L5 13.5H2.5V11L11 2.5z"/></svg>),
-  Stats:    () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6" y="5" width="3" height="10" rx="1"/><rect x="11" y="1" width="3" height="14" rx="1"/></svg>),
-  Sources:  () => (<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4h12"/><path d="M2 8h8"/><path d="M2 12h5"/><circle cx="13" cy="11" r="2.5"/><path d="M13 8.5v1M13 13.5v1"/></svg>),
-  Folder:   () => (<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 3.5h4.5l1.5 2h7v7.5h-13z"/></svg>),
-  SmartFeed:() => (<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h12l-4 5v5l-4-2V8L2 3z"/></svg>),
+  Folder:   () => (<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 3.5h4.5l1.5 2h7v7.5h-13z"/></svg>),
+  Chevron:  () => (<svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M2 2l3 2.5L2 7"/></svg>),
 };
-
-const SMART_COLORS = { blue:"#2F6FED", teal:"#accfae", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
-const FCOLS        = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
-
-// Home icon — sun rays
-const HomeIcon = () => (
-  <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-    <circle cx="8" cy="8" r="2.8"/>
-    <path d="M8 1v1.8M8 13.2V15M1 8h1.8M13.2 8H15M2.8 2.8l1.3 1.3M11.9 11.9l1.3 1.3M2.8 13.2l1.3-1.3M11.9 4.1l1.3-1.3"/>
-  </svg>
-);
-
-const NAV = [
-  { id:"home",         Icon:HomeIcon,          label:"Home"    },
-  { id:"inbox",        Icon:Icons.Inbox,       label:"Inbox"   },
-  { id:"readlater",    Icon:Icons.ReadLater,   label:"Saved"   },
-  { id:"notes",        Icon:Icons.Notes,       label:"Notes"   },
-  { id:"manage-feeds", Icon:Icons.Sources,     label:"Sources" },
-];
 
 const SHORTCUTS = [
   ["J / K","Navigate"],["O","Open"],["R","Read/unread"],
-  ["L","Save article"],["S","Star"],["A","Add feed"],["F","Focus search"],["Esc","Close"],
+  ["/","Search"],["L","Save article"],["S","Star"],["A","Add feed"],["Esc","Close"],
 ];
 
-// ── Single nav row — works in both expanded and collapsed state ──
-function NavRow({ id, Icon, label, active, badge, onNavigate, collapsed, T }) {
+// ── Feed favicon helper ───────────────────────────────────────
+function feedFavicon(url) {
+  try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=16`; }
+  catch { return null; }
+}
+
+function feedDisplayName(feed) {
+  return feed.name || (() => { try { return new URL(feed.url).hostname; } catch { return feed.url; } })();
+}
+
+// ── Top nav item (compact) ────────────────────────────────────
+function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, collapsed, T }) {
+  const bc = badgeColor || T.accent;
+  const isActive = active === id;
   return (
     <button
       onClick={() => onNavigate(id)}
       title={collapsed ? label : undefined}
       style={{
         display:"flex", alignItems:"center",
-        gap: collapsed ? 0 : 10,
-        padding: collapsed ? "8px 0" : "8px 12px",
+        gap: collapsed ? 0 : 9,
+        padding: collapsed ? "7px 0" : "6px 10px",
         justifyContent: collapsed ? "center" : "flex-start",
-        borderRadius:10, border:"none", cursor:"pointer",
+        borderRadius: 8, border:"none", cursor:"pointer",
         width:"100%", textAlign:"left",
-        background: active ? T.surface : "transparent",
-        fontFamily:"inherit", transition:"background .15s",
+        background: isActive ? T.surface : "transparent",
+        fontFamily:"inherit", transition:"background .12s",
+        position: "relative",
       }}
-      onMouseEnter={e => { if (!active) e.currentTarget.style.background=T.surface; }}
-      onMouseLeave={e => { if (!active) e.currentTarget.style.background="transparent"; }}
+      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
+      onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
     >
-      <span style={{ color: active ? T.accent : T.textTertiary, display:"flex", flexShrink:0, position:"relative" }}>
+      <span style={{ color: isActive ? T.accent : T.textTertiary, display:"flex", flexShrink:0, position:"relative" }}>
         <Icon />
         {badge > 0 && collapsed && (
-          <span style={{ position:"absolute", top:-3, right:-4, width:5, height:5, borderRadius:"50%", background:T.accent }} />
+          <span style={{ position:"absolute", top:-3, right:-4, width:5, height:5, borderRadius:"50%", background: bc }} />
         )}
       </span>
       {!collapsed && (
-        <span style={{ flex:1, fontSize:13, fontWeight: active?500:400, color: active?T.accent:T.textSecondary, letterSpacing:"-.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-          {label}
-        </span>
+        <>
+          <span style={{ flex:1, fontSize:12.5, fontWeight: isActive ? 500 : 400, color: isActive ? T.accent : T.textSecondary, letterSpacing:"-.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+            {label}
+          </span>
+          {badge > 0 && (
+            <span style={{ fontSize:10, fontWeight:700, color: badgeColor ? bc : (isActive ? T.accent : T.textTertiary), flexShrink:0 }}>
+              {badge > 99 ? "99+" : badge}
+            </span>
+          )}
+        </>
       )}
-      {!collapsed && badge > 0 && (
-        <span style={{ fontSize:10, fontWeight:700, color: active?T.accent:T.textTertiary }}>
-          {badge > 99 ? "99+" : badge}
+    </button>
+  );
+}
+
+// ── Individual feed row (nested under folder or uncategorized) ─
+function FeedRow({ feed, unread, active, onNavigate, T, indent = 0 }) {
+  const favicon = feedFavicon(feed.url);
+  const isActive = active === `feed:${feed.id}`;
+  const name = feedDisplayName(feed);
+
+  return (
+    <button
+      draggable
+      onDragStart={e => { e.dataTransfer.setData("feedId", feed.id); e.dataTransfer.effectAllowed = "move"; }}
+      onClick={() => onNavigate(`feed:${feed.id}`)}
+      title={name}
+      style={{
+        display:"flex", alignItems:"center", gap:6,
+        padding: `4px 10px 4px ${10 + indent}px`,
+        width:"100%", border:"none",
+        background: isActive ? T.accentSurface : "transparent",
+        cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+        borderRadius: 7, transition:"background .1s",
+      }}
+      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
+      onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
+    >
+      {/* Favicon or dot */}
+      <span style={{ width:14, height:14, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        {favicon
+          ? <img src={favicon} alt="" width={12} height={12} style={{ borderRadius:2, opacity:.8 }} onError={e => { e.target.style.display="none"; }} />
+          : <span style={{ width:5, height:5, borderRadius:"50%", background:T.textTertiary, display:"block" }} />
+        }
+      </span>
+      {/* Name */}
+      <span style={{
+        flex:1, fontSize:12.5,
+        overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+        letterSpacing:"-.01em",
+        color: isActive ? T.accent : unread > 0 ? T.text : T.textSecondary,
+        fontWeight: unread > 0 ? 500 : 400,
+      }}>
+        {name}
+      </span>
+      {/* Unread count */}
+      {unread > 0 && (
+        <span style={{ fontSize:10, fontWeight:700, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
+          {unread > 99 ? "99+" : unread}
         </span>
       )}
     </button>
   );
 }
 
-export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, isOpen=true, onToggle, onAddSource }) {
-  const { T, isDark, theme, setTheme } = useTheme();
+// ── Folder row with nested feeds ──────────────────────────────
+function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, expanded, onToggle, T, collapsed, onMoveFeedToFolder }) {
+  const [dragOver, setDragOver] = useState(false);
+  const dot = FCOLS[folder.color] || "#8A9099";
+  const folderUnread = folderFeeds.reduce((sum, f) => sum + (feedUnreadCounts[f.id] || 0), 0);
+  const isActive = active === `folder:${folder.id}`;
+
+  if (collapsed) {
+    return (
+      <button
+        onClick={() => onNavigate(`folder:${folder.id}`)}
+        title={folder.name}
+        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={async e => { e.preventDefault(); const feedId = e.dataTransfer.getData("feedId"); if (feedId) await onMoveFeedToFolder?.(feedId, folder.id); setDragOver(false); }}
+        style={{
+          display:"flex", alignItems:"center", justifyContent:"center",
+          width:"100%", padding:"7px 0", border:"none",
+          background: isActive ? T.surface : dragOver ? T.accentSurface : "transparent",
+          cursor:"pointer", position:"relative", borderRadius:8, transition:"background .1s",
+          outline: dragOver ? `2px solid ${T.accent}` : "none",
+        }}
+      >
+        <span style={{ width:8, height:8, borderRadius:2, background: dot, flexShrink:0 }} />
+        {folderUnread > 0 && <span style={{ position:"absolute", top:4, right:8, width:5, height:5, borderRadius:"50%", background:T.accent }} />}
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ marginBottom:1 }}>
+      <div
+        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={async e => { e.preventDefault(); const feedId = e.dataTransfer.getData("feedId"); if (feedId) await onMoveFeedToFolder?.(feedId, folder.id); setDragOver(false); }}
+        style={{
+          display:"flex", alignItems:"center", borderRadius:8,
+          background: isActive ? T.accentSurface : dragOver ? T.surface2 : "transparent",
+          outline: dragOver ? `1.5px dashed ${T.accent}` : "none",
+          transition:"background .1s",
+        }}
+        onMouseEnter={e => { if (!isActive && !dragOver) e.currentTarget.style.background=T.surface; }}
+        onMouseLeave={e => { if (!isActive && !dragOver) e.currentTarget.style.background="transparent"; }}
+      >
+        {/* Folder name — click to navigate */}
+        <button
+          onClick={() => onNavigate(`folder:${folder.id}`)}
+          style={{ display:"flex", alignItems:"center", gap:7, flex:1, padding:"5px 6px 5px 10px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", textAlign:"left", minWidth:0 }}
+        >
+          <span style={{ width:8, height:8, borderRadius:2, background:dot, flexShrink:0, marginTop:.5 }} />
+          <span style={{
+            flex:1, fontSize:13,
+            overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+            letterSpacing:"-.01em",
+            color: isActive ? T.accent : T.text,
+            fontWeight: folderUnread > 0 ? 600 : 500,
+          }}>
+            {folder.name}
+          </span>
+          {folderUnread > 0 && (
+            <span style={{ fontSize:10, fontWeight:700, color: isActive ? T.accent : T.textTertiary, flexShrink:0, marginRight:2 }}>
+              {folderUnread > 99 ? "99+" : folderUnread}
+            </span>
+          )}
+        </button>
+        {/* Expand/collapse chevron */}
+        <button
+          onClick={e => { e.stopPropagation(); onToggle(folder.id); }}
+          style={{ padding:"5px 8px 5px 4px", border:"none", background:"transparent", cursor:"pointer", color:T.textTertiary, display:"flex", alignItems:"center", flexShrink:0, transition:"color .1s" }}
+          onMouseEnter={e => e.currentTarget.style.color=T.text}
+          onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+        >
+          <span style={{ display:"inline-block", transition:"transform .15s", transform: expanded ? "rotate(90deg)" : "rotate(0deg)" }}>
+            <Icons.Chevron />
+          </span>
+        </button>
+      </div>
+
+      {/* Nested feeds */}
+      {expanded && folderFeeds.map(feed => (
+        <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} indent={14} T={T} />
+      ))}
+    </div>
+  );
+}
+
+// ── Smart feed row ────────────────────────────────────────────
+function SmartRow({ sf, active, onNavigate, onEdit, collapsed, T }) {
+  const isActive = active === `smart:${sf.id}`;
+  const color = SMART_COLORS[sf.color] || T.accent;
+  return (
+    <div style={{ display:"flex", alignItems:"center", borderRadius:8, background: isActive?T.surface:"transparent", transition:"background .15s", marginBottom:1 }}
+      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
+      onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
+    >
+      <button
+        onClick={() => onNavigate(`smart:${sf.id}`)}
+        title={collapsed ? sf.name : undefined}
+        style={{ display:"flex", alignItems:"center", gap:7, flex:1, padding: collapsed?"7px 6px":"5px 10px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed?"center":"flex-start" }}
+      >
+        <span style={{ width:7, height:7, borderRadius:"50%", background:color, flexShrink:0 }} />
+        {!collapsed && (
+          <span style={{ flex:1, fontSize:12.5, fontWeight:isActive?500:400, color:isActive?T.accent:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
+            {sf.name}
+          </span>
+        )}
+      </button>
+      {!collapsed && (
+        <button onClick={e => { e.stopPropagation(); onEdit(sf); }}
+          style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"5px 8px 5px 2px", opacity:0, transition:"opacity .1s", flexShrink:0 }}
+          onMouseEnter={e => { e.currentTarget.style.opacity="1"; e.currentTarget.style.color=T.accent; }}
+          onMouseLeave={e => { e.currentTarget.style.opacity="0"; e.currentTarget.style.color=T.textTertiary; }}
+        ><Icons.Edit /></button>
+      )}
+    </div>
+  );
+}
+
+// ── Section divider label ─────────────────────────────────────
+function SectionLabel({ label, action, actionTitle, T }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", padding:"8px 10px 4px", flexShrink:0 }}>
+      <span style={{ flex:1, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>{label}</span>
+      {action && (
+        <button onClick={action} title={actionTitle}
+          style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 3px", borderRadius:4, transition:"color .1s" }}
+          onMouseEnter={e => e.currentTarget.style.color=T.accent}
+          onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+        ><Icons.Plus /></button>
+      )}
+    </div>
+  );
+}
+
+export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCount=0, feedUnreadCounts={}, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, onMoveFeedToFolder, isOpen=true, onToggle, onAddSource }) {
+  const { T, theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { isTablet, isMobile } = useBreakpoint();
 
-  // All hooks before any conditional return
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(() => new Set());
-  const [youtubeExpanded, setYoutubeExpanded] = useState(true);
-  const [sidebarDragOver, setSidebarDragOver] = useState(null); // folderId being dragged over in sidebar
+  const shortcutsRef = useRef(null);
 
-  // Auto-expand all collections on first load
+  // Auto-expand all folders on first load
   useEffect(() => {
     if (folders.length > 0) {
       setExpandedFolders(prev => {
+        if (prev.size >= folders.length) return prev;
         const next = new Set(prev);
         folders.forEach(f => next.add(f.id));
         return next;
       });
     }
   }, [folders]);
-  const shortcutsRef = useRef(null);
 
   useEffect(() => {
     if (!shortcutsOpen) return;
@@ -121,9 +299,18 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
 
   if (isMobile) return null;
 
-  // collapsed = icons only (56px), expanded = icons + labels (220px)
   const collapsed = isTablet || !isOpen;
-  const W = collapsed ? 56 : 200;
+  const W = collapsed ? 52 : 208;
+
+  // Separate feeds into categorized and uncategorized
+  const uncategorized = feeds.filter(f => !f.folder_id);
+
+  const TOP_NAV = [
+    { id:"inbox",     Icon:Icons.Inbox,     label:"All Items",   badge: unreadCount },
+    { id:"today",     Icon:Icons.Today,     label:"Today",       badge: 0 },
+    { id:"readlater", Icon:Icons.ReadLater, label:"Saved",       badge: 0 },
+    { id:"notes",     Icon:Icons.Notes,     label:"Notes",       badge: 0 },
+  ];
 
   return (
     <aside style={{
@@ -135,260 +322,156 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
       overflow:"hidden",
       position:"relative",
       transition:"width .2s ease",
+      borderRight: `1px solid ${T.border}`,
     }}>
 
-      {/* ── Branding header ── */}
-      <div style={{ padding: collapsed ? "16px 8px 10px" : "20px 16px 10px", display:"flex", alignItems:"flex-start", justifyContent: collapsed?"center":"space-between", flexShrink:0 }}>
+      {/* ── Header ── */}
+      <div style={{ padding: collapsed ? "14px 8px 8px" : "16px 12px 8px", display:"flex", alignItems:"center", justifyContent: collapsed?"center":"space-between", flexShrink:0 }}>
         {!collapsed ? (
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:17, fontWeight:700, color:T.text, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:"italic", letterSpacing:"-.02em", lineHeight:1.2 }}>
-              Feed Box
-            </div>
+          <div style={{ fontSize:16, fontWeight:700, color:T.text, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:"italic", letterSpacing:"-.02em", lineHeight:1.2, flex:1 }}>
+            Feed Box
           </div>
         ) : (
-          <div style={{ width:28, height:28, borderRadius:8, background:T.surface, display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <span style={{ fontSize:14, color:T.accent, fontWeight:700 }}>F</span>
+          <div style={{ width:26, height:26, borderRadius:7, background:T.surface, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <span style={{ fontSize:13, color:T.accent, fontWeight:700 }}>F</span>
           </div>
         )}
         {!isTablet && !collapsed && (
-          <button
-            onClick={onToggle}
-            title="Collapse sidebar"
-            style={{
-              width:22, height:22, borderRadius:6, flexShrink:0, marginTop:2,
-              background:"transparent", border:"none",
-              cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
-              color:T.textTertiary, fontSize:14, fontFamily:"inherit",
-              transition:"all .15s",
-            }}
+          <button onClick={onToggle} title="Collapse sidebar"
+            style={{ width:20, height:20, borderRadius:5, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.textTertiary, fontSize:13, fontFamily:"inherit", transition:"all .12s" }}
             onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
             onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
           >‹</button>
         )}
         {!isTablet && collapsed && (
-          <button
-            onClick={onToggle}
-            title="Expand sidebar"
-            style={{
-              position:"absolute", right:6, top:20,
-              width:22, height:22, borderRadius:6,
-              background:"transparent", border:"none",
-              cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
-              color:T.textTertiary, fontSize:14, fontFamily:"inherit",
-              transition:"all .15s",
-            }}
+          <button onClick={onToggle} title="Expand sidebar"
+            style={{ position:"absolute", right:4, top:16, width:20, height:20, borderRadius:5, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.textTertiary, fontSize:13, fontFamily:"inherit", transition:"all .12s" }}
             onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
             onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
           >›</button>
         )}
       </div>
 
-      <div style={{ height: collapsed?4:6, flexShrink:0 }} />
-      {/* ── Main nav ── */}
-      <nav style={{ padding: collapsed?"0 6px":"0 8px", display:"flex", flexDirection:"column", gap:1, flexShrink:0 }}>
-        {NAV.map(({ id, Icon, label }) => (
-          <NavRow key={id} id={id} Icon={Icon} label={label}
-            active={active===id} badge={id==="inbox"?unreadCount:0}
+      {/* ── Top nav ── */}
+      <nav style={{ padding: collapsed?"0 4px":"0 6px", display:"flex", flexDirection:"column", gap:1, flexShrink:0, marginBottom:4 }}>
+        {TOP_NAV.map(({ id, Icon, label, badge }) => (
+          <NavItem key={id} id={id} Icon={Icon} label={label}
+            active={active} badge={badge}
             onNavigate={onNavigate} collapsed={collapsed} T={T}
           />
         ))}
       </nav>
 
-      {/* ── Collections (smart feeds + folders unified) ── */}
-      <div style={{ padding: collapsed?"8px 6px 4px":"12px 8px 4px", flex:1, minHeight:0, overflowY:"auto", display:"flex", flexDirection:"column" }}>
-        {/* Section header */}
+      {/* ── Divider ── */}
+      <div style={{ height:1, background:T.border, margin: collapsed?"0 8px":"0 10px", flexShrink:0 }} />
+
+      {/* ── Feed tree (scrollable) ── */}
+      <div style={{ flex:1, minHeight:0, overflowY:"auto", padding: collapsed?"4px":"4px 6px", display:"flex", flexDirection:"column" }}>
+
+        {/* Feeds section header */}
         {!collapsed && (
-          <div style={{ display:"flex", alignItems:"center", padding:"0 10px 6px", flexShrink:0 }}>
-            <span style={{ flex:1, fontSize:9, fontWeight:600, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Collections</span>
-            {/* Add folder button */}
-            <button onClick={onAddFolder} title="New collection"
-              style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 3px", borderRadius:4, transition:"color .1s" }}
+          <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", flexShrink:0 }}>
+            <span style={{ flex:1, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Feeds</span>
+            <button onClick={onAddFolder} title="New folder"
+              style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
               onMouseEnter={e => e.currentTarget.style.color=T.accent}
               onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
             ><Icons.Folder /></button>
-            {/* Add smart feed button */}
-            <button onClick={onAddSmartFeed} title="New smart feed"
-              style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 3px", borderRadius:4, transition:"color .1s", marginLeft:2 }}
+            <button onClick={onAddSource} title="Add feed"
+              style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
               onMouseEnter={e => e.currentTarget.style.color=T.accent}
               onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-            ><Icons.SmartFeed /></button>
+            ><Icons.Plus /></button>
           </div>
         )}
-        {collapsed && (
-          <button onClick={onAddFolder} title="New collection"
-            style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"100%", padding:"6px 0", background:"none", border:"none", cursor:"pointer", color:T.textTertiary, transition:"color .1s", marginBottom:2 }}
-            onMouseEnter={e => e.currentTarget.style.color=T.accent}
-            onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-          ><Icons.Plus /></button>
-        )}
-
-        {/* Smart feeds */}
-        {smartFeeds.map(sf => {
-          const isActive = active===`smart:${sf.id}`;
-          return (
-            <div key={sf.id} style={{ display:"flex", alignItems:"center", borderRadius:10, background: isActive?T.surface:"transparent", transition:"background .15s", marginBottom:1, flexShrink:0 }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
-              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
-            >
-              <button
-                onClick={() => onNavigate(`smart:${sf.id}`)}
-                title={collapsed ? sf.name : undefined}
-                style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed ? "center" : "flex-start" }}
-              >
-                <span style={{ color: isActive ? T.accent : T.textTertiary, display:"flex", flexShrink:0 }}><Icons.SmartFeed /></span>
-                {!collapsed && (
-                  <span style={{ flex:1, fontSize:13, fontWeight:isActive?500:400, color:isActive?T.accent:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>{sf.name}</span>
-                )}
-              </button>
-              {!collapsed && (
-                <button onClick={e => { e.stopPropagation(); onEditSmartFeed(sf); }}
-                  title="Edit smart feed"
-                  style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"6px 8px 6px 2px", opacity:0, transition:"opacity .1s", flexShrink:0 }}
-                  onMouseEnter={e => { e.currentTarget.style.opacity="1"; e.currentTarget.style.color=T.accent; }}
-                  onMouseLeave={e => { e.currentTarget.style.opacity="0"; e.currentTarget.style.color=T.textTertiary; }}
-                ><Icons.Edit /></button>
-              )}
-            </div>
-          );
-        })}
-
-        {/* YouTube Channels */}
-        {(() => {
-          const ytFeeds = feeds.filter(f =>
-            f.type === "youtube" ||
-            (f.url && f.url.includes("youtube.com/feeds/videos.xml"))
-          );
-          if (ytFeeds.length === 0) return null;
-          const isYtActive = active === "youtube-all";
-          return (
-            <div style={{ marginBottom: 2, flexShrink: 0 }}>
-              <div style={{ display:"flex", alignItems:"center", borderRadius:10, transition:"background .15s", background: isYtActive ? T.surface : "transparent" }}
-                onMouseEnter={e => { if (!isYtActive) e.currentTarget.style.background=T.surface; }}
-                onMouseLeave={e => { if (!isYtActive) e.currentTarget.style.background="transparent"; }}
-              >
-                <button
-                  onClick={() => { if (!collapsed) setYoutubeExpanded(v => !v); else onNavigate("youtube-all"); }}
-                  title={collapsed ? "YouTube Channels" : undefined}
-                  style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed ? "center" : "flex-start" }}
-                >
-                  <span style={{ color: isYtActive ? T.accent : "#FF0000", display:"flex", flexShrink:0, fontSize:14 }}>▶</span>
-                  {!collapsed && (
-                    <>
-                      <span style={{ flex:1, fontSize:13, fontWeight:500, color: isYtActive ? T.accent : T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
-                        YouTube
-                        <span style={{ fontSize:10, color:T.textTertiary, marginLeft:5, fontWeight:400 }}>{ytFeeds.length}</span>
-                      </span>
-                      <span style={{ fontSize:8, color:T.textTertiary, transition:"transform .15s", transform:youtubeExpanded?"rotate(90deg)":"rotate(0deg)", display:"inline-block", flexShrink:0, marginRight:2 }}>▶</span>
-                    </>
-                  )}
-                </button>
-              </div>
-              {!collapsed && youtubeExpanded && ytFeeds.map(f => {
-                const isActive = active === `feed:${f.id}`;
-                return (
-                  <button key={f.id}
-                    onClick={() => onNavigate(`feed:${f.id}`)}
-                    style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"3px 10px 3px 28px", fontSize:12, color: isActive ? T.accent : T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", border:"none", cursor:"pointer", background: isActive ? T.surface : "transparent", borderRadius:6, fontFamily:"inherit", textAlign:"left", transition:"background .12s" }}
-                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface2 || T.surface; }}
-                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
-                  >
-                    <span style={{ flexShrink:0, fontSize:10 }}>▶</span>
-                    <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                      {f.name || (() => { try { return new URL(f.url).hostname; } catch { return f.url; } })()}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          );
-        })()}
 
         {/* Folders */}
         {folders.map(folder => {
-          const dot = FCOLS[folder.color] || "#8A9099";
-          const isExpanded = expandedFolders.has(folder.id);
           const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
           return (
-            <div key={folder.id} style={{ marginBottom:1, flexShrink:0 }}>
-              <div style={{ display:"flex", alignItems:"center", borderRadius:10, transition:"background .15s", background: sidebarDragOver===folder.id ? T.accentSurface : "transparent", outline: sidebarDragOver===folder.id ? `1.5px solid ${T.accent}` : "none" }}
-                onMouseEnter={e => { if (!collapsed && sidebarDragOver!==folder.id) e.currentTarget.style.background=T.surface; }}
-                onMouseLeave={e => { if (sidebarDragOver!==folder.id) e.currentTarget.style.background="transparent"; }}
-                onDragOver={e => { e.preventDefault(); setSidebarDragOver(folder.id); }}
-                onDragLeave={() => setSidebarDragOver(null)}
-                onDrop={async e => {
-                  e.preventDefault();
-                  const feedId = e.dataTransfer.getData("feedId");
-                  if (feedId && onMoveFeedToFolder) await onMoveFeedToFolder(feedId, folder.id);
-                  setSidebarDragOver(null);
-                }}
-              >
-                <button onClick={() => !collapsed && toggleFolder(folder.id)}
-                  title={collapsed ? folder.name : undefined}
-                  style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:collapsed?"default":"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed ? "center" : "flex-start" }}
-                >
-                  <span style={{ color:T.textTertiary, display:"flex", flexShrink:0 }}><Icons.Folder /></span>
-                  {!collapsed && (
-                    <>
-                      <span style={{ flex:1, fontSize:13, fontWeight:500, color:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
-                        {folder.name}
-                        {folderFeeds.length > 0 && <span style={{ fontSize:10, color:T.textTertiary, marginLeft:5, fontWeight:400 }}>{folderFeeds.length}</span>}
-                      </span>
-                      <span style={{ fontSize:8, color:T.textTertiary, transition:"transform .15s", transform:isExpanded?"rotate(90deg)":"rotate(0deg)", display:"inline-block", flexShrink:0, marginRight:2 }}>▶</span>
-                    </>
-                  )}
-                </button>
-                {!collapsed && (
-                  <button onClick={e => { e.stopPropagation(); onEditFolder(folder); }}
-                    title="Edit collection"
-                    style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"6px 8px 6px 2px", opacity:0, transition:"opacity .1s", flexShrink:0 }}
-                    onMouseEnter={e => { e.currentTarget.style.opacity="1"; e.currentTarget.style.color=T.accent; }}
-                    onMouseLeave={e => { e.currentTarget.style.opacity="0"; e.currentTarget.style.color=T.textTertiary; }}
-                  ><Icons.Edit /></button>
-                )}
-              </div>
-              {!collapsed && isExpanded && folderFeeds.map(f => (
-                <div key={f.id}
-                  draggable
-                  onDragStart={e => { e.dataTransfer.setData("feedId", f.id); e.dataTransfer.effectAllowed = "move"; }}
-                  style={{ padding:"3px 10px 3px 30px", fontSize:12, color:T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", cursor:"grab", borderRadius:6 }}
-                  onMouseEnter={e => e.currentTarget.style.background=T.surface2}
-                  onMouseLeave={e => e.currentTarget.style.background="transparent"}
-                  title="Drag to move to another folder"
-                >
-                  ⠿ {f.name || (() => { try { return new URL(f.url).hostname; } catch { return f.url; } })()}
-                </div>
-              ))}
-            </div>
+            <FolderSection
+              key={folder.id}
+              folder={folder}
+              folderFeeds={folderFeeds}
+              feedUnreadCounts={feedUnreadCounts}
+              active={active}
+              onNavigate={onNavigate}
+              expanded={expandedFolders.has(folder.id)}
+              onToggle={toggleFolder}
+              T={T}
+              collapsed={collapsed}
+              onMoveFeedToFolder={onMoveFeedToFolder}
+            />
           );
         })}
 
+        {/* Uncategorized feeds */}
+        {uncategorized.length > 0 && (
+          <>
+            {!collapsed && folders.length > 0 && (
+              <div style={{ height:1, background:T.border, margin:"6px 4px 4px", flexShrink:0 }} />
+            )}
+            {uncategorized.map(feed => (
+              <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} T={T} />
+            ))}
+          </>
+        )}
+
+        {/* Smart feeds */}
+        {smartFeeds.length > 0 && (
+          <>
+            {!collapsed && (
+              <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", marginTop:4, flexShrink:0 }}>
+                <span style={{ flex:1, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Smart</span>
+                <button onClick={onAddSmartFeed} title="New smart feed"
+                  style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
+                  onMouseEnter={e => e.currentTarget.style.color=T.accent}
+                  onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+                ><Icons.Plus /></button>
+              </div>
+            )}
+            {smartFeeds.map(sf => (
+              <SmartRow key={sf.id} sf={sf} active={active} onNavigate={onNavigate} onEdit={onEditSmartFeed} collapsed={collapsed} T={T} />
+            ))}
+          </>
+        )}
+
         {/* Empty state */}
-        {!collapsed && smartFeeds.length === 0 && folders.length === 0 && (
-          <div style={{ padding:"2px 10px" }}>
-            <button onClick={onAddFolder}
-              style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, color:T.textTertiary, padding:"3px 0", textAlign:"left", lineHeight:1.5, width:"100%", transition:"color .1s" }}
-              onMouseEnter={e => e.currentTarget.style.color=T.accent}
-              onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-            >+ New collection</button>
+        {!collapsed && feeds.length === 0 && folders.length === 0 && smartFeeds.length === 0 && (
+          <div style={{ padding:"12px 10px", textAlign:"center" }}>
+            <div style={{ fontSize:12, color:T.textTertiary, lineHeight:1.6, marginBottom:8 }}>No feeds yet</div>
+            <button onClick={onAddSource}
+              style={{ fontSize:12, color:T.accent, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}
+            >+ Add your first feed</button>
           </div>
         )}
       </div>
 
-      {/* ── Bottom bar ── */}
-      <div style={{ padding: collapsed?"8px 6px":"8px 12px 12px", flexShrink:0 }}>
+      {/* ── Divider ── */}
+      <div style={{ height:1, background:T.border, margin: collapsed?"0 8px":"0 10px", flexShrink:0 }} />
 
-        {/* Add Source button */}
+      {/* ── Bottom bar ── */}
+      <div style={{ padding: collapsed?"8px 4px 12px":"8px 6px 12px", flexShrink:0, display:"flex", flexDirection:"column", gap:1 }}>
+
+        {/* Sources (manage-feeds) with error badge */}
+        <NavItem
+          id="manage-feeds" Icon={Icons.Sources} label="Sources"
+          badge={feedErrorCount} badgeColor="#e53e3e"
+          active={active} onNavigate={onNavigate} collapsed={collapsed} T={T}
+        />
+
+        {/* Add Source */}
         <button
           onClick={onAddSource}
-          title="Add Source"
+          title={collapsed ? "Add Source" : undefined}
           style={{
             display:"flex", alignItems:"center", justifyContent:"center",
-            gap:6, width:"100%", marginBottom:10,
-            padding: collapsed?"9px 0":"9px 0",
+            gap:6, width:"100%", marginTop:4,
+            padding: collapsed?"7px 0":"8px 0",
             borderRadius:100, border:`1.5px solid ${T.accent}`,
             background:T.accentSurface, cursor:"pointer",
             color:T.accent, fontFamily:"inherit",
-            fontSize:12, fontWeight:600, letterSpacing:".01em",
+            fontSize:11.5, fontWeight:600, letterSpacing:".01em",
             transition:"background .15s, color .15s, box-shadow .15s",
           }}
           onMouseEnter={e => { e.currentTarget.style.background=T.accent; e.currentTarget.style.color="#fff"; e.currentTarget.style.boxShadow=`0 2px 10px ${T.accent}44`; }}
@@ -398,53 +481,52 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
           {!collapsed && <span>Add Source</span>}
         </button>
 
-        {/* Theme toggle — Light ↔ Distilled */}
-        <div style={{ display:"flex", gap:3, marginBottom:8, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"0":"0 2px" }}>
+        {/* Theme toggle */}
+        <div style={{ display:"flex", gap:3, marginTop:6, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"0":"0 2px" }}>
           {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
             const isActive = theme === id || (id === "distilled" && theme === "nocturne");
             return (
               <button key={label} onClick={() => setTheme(id)} title={label}
-                style={{ flex: collapsed?undefined:1, width: collapsed?26:undefined, height:24, padding:"2px 0", borderRadius:6, border:`1px solid ${isActive?T.accent:T.border}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"all .15s" }}
+                style={{ flex: collapsed?undefined:1, width: collapsed?24:undefined, height:22, padding:"2px 0", borderRadius:6, border:`1px solid ${isActive?T.accent:T.border}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"all .15s" }}
               ><Icon /></button>
             );
           })}
         </div>
 
-        {/* User / settings row */}
-        <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+        {/* Settings / avatar row */}
+        <div style={{ display:"flex", alignItems:"center", gap:3, marginTop:2 }}>
           <button onClick={() => onNavigate("settings")}
             title={collapsed ? "Settings" : undefined}
-            style={{ display:"flex", alignItems:"center", gap: collapsed?0:9, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"8px 12px", borderRadius:10, border:"none", background:active==="settings"?T.surface:"transparent", cursor:"pointer", flex:1, fontFamily:"inherit", transition:"background .15s", minWidth:0 }}
+            style={{ display:"flex", alignItems:"center", gap: collapsed?0:8, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"7px 10px", borderRadius:8, border:"none", background:active==="settings"?T.surface:"transparent", cursor:"pointer", flex:1, fontFamily:"inherit", transition:"background .15s", minWidth:0 }}
             onMouseEnter={e => { if (active!=="settings") e.currentTarget.style.background=T.surface; }}
             onMouseLeave={e => { if (active!=="settings") e.currentTarget.style.background="transparent"; }}
           >
             {user?.user_metadata?.avatar_url
-              ? <img src={user.user_metadata.avatar_url} alt="" style={{ width:24, height:24, borderRadius:"50%", flexShrink:0 }} />
+              ? <img src={user.user_metadata.avatar_url} alt="" style={{ width:22, height:22, borderRadius:"50%", flexShrink:0 }} />
               : <span style={{ color:active==="settings"?T.accent:T.textTertiary, display:"flex", flexShrink:0 }}><Icons.Settings /></span>
             }
             {!collapsed && (
               <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:12, fontWeight:500, color:T.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.user_metadata?.user_name || "Settings"}</div>
-                <div style={{ fontSize:10, color:T.textTertiary }}>Settings</div>
+                <div style={{ fontSize:11.5, fontWeight:500, color:T.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                  {user?.user_metadata?.user_name || user?.user_metadata?.full_name || "Settings"}
+                </div>
               </div>
             )}
           </button>
           {!collapsed && (
             <button onClick={() => setShortcutsOpen(v => !v)} title="Keyboard shortcuts"
-              style={{ width:26, height:26, borderRadius:7, border:`1px solid ${shortcutsOpen?T.accent:T.border}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:13, fontFamily:"inherit", flexShrink:0, transition:"all .12s" }}
+              style={{ width:24, height:24, borderRadius:6, border:`1px solid ${shortcutsOpen?T.accent:T.border}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontFamily:"inherit", flexShrink:0, transition:"all .12s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accent; e.currentTarget.style.background=T.accentSurface; }}
               onMouseLeave={e => { if (!shortcutsOpen) { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.background="transparent"; }}}
             >⌘</button>
           )}
         </div>
 
-
-        {/* Shortcuts — symbol button next to user row, only when expanded */}
+        {/* Shortcuts popup */}
         {!collapsed && (
-          <div ref={shortcutsRef} style={{ position:"relative", marginTop:0 }}>
-            <div style={{ display:"none" }}>{/* anchor for popup */}</div>
+          <div ref={shortcutsRef} style={{ position:"relative" }}>
             {shortcutsOpen && (
-              <div style={{ position:"fixed", bottom:120, left:16, width:210, background:T.card, border:`1px solid ${T.borderStrong}`, borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.18)", zIndex:2000, overflow:"hidden", animation:"slideUp .15s ease" }}>
+              <div style={{ position:"fixed", bottom:100, left:12, width:200, background:T.card, border:`1px solid ${T.borderStrong}`, borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.18)", zIndex:2000, overflow:"hidden", animation:"slideUp .15s ease" }}>
                 <div style={{ padding:"10px 14px 7px", borderBottom:`1px solid ${T.border}` }}>
                   <div style={{ fontSize:11, fontWeight:700, color:T.text, textTransform:"uppercase", letterSpacing:".06em" }}>Shortcuts</div>
                 </div>

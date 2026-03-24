@@ -171,6 +171,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     if (Math.abs(pct - lastSavedProgressRef.current) >= 5) {
       lastSavedProgressRef.current = pct;
       setReadingProgress(user.id, item.url, pct).catch(console.error);
+      try { localStorage.setItem(`fb-prog-${encodeURIComponent(item.url)}`, pct); } catch {}
     }
   }
 

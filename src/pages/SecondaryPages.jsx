@@ -541,12 +541,42 @@ function NotificationsCard({ T }) {
     typeof Notification !== "undefined" ? Notification.permission : "unsupported"
   );
   const [swReady, setSwReady] = useState(false);
+  const [digestEnabled, setDigestEnabled] = useState(() => localStorage.getItem("fb-digest-enabled") === "true");
+  const [digestTime, setDigestTime] = useState(() => localStorage.getItem("fb-digest-time") || "08:00");
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.ready.then(() => setSwReady(true)).catch(() => {});
     }
   }, []);
+
+  useEffect(() => {
+    clearTimeout(timerRef.current);
+    if (!digestEnabled || permission !== "granted") return;
+    scheduleNext();
+    return () => clearTimeout(timerRef.current);
+  }, [digestEnabled, digestTime, permission]);
+
+  function scheduleNext() {
+    clearTimeout(timerRef.current);
+    const t = localStorage.getItem("fb-digest-time") || "08:00";
+    const [h, m] = t.split(":").map(Number);
+    const now = new Date();
+    const target = new Date();
+    target.setHours(h, m, 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1);
+    const ms = target - now;
+    timerRef.current = setTimeout(() => {
+      if (Notification.permission === "granted" && localStorage.getItem("fb-digest-enabled") === "true") {
+        new Notification("Feedbox Digest", {
+          body: "Your reading digest is ready. Open Feedbox to see today's highlights.",
+          icon: "/feedbox-logo.png",
+        });
+      }
+      scheduleNext();
+    }, ms);
+  }
 
   async function handleEnable() {
     if (!("Notification" in window)) return;
@@ -590,6 +620,36 @@ function NotificationsCard({ T }) {
       <div style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.7 }}>
         Get notified when new articles arrive in your feeds. Works best with the app installed as a PWA — use your browser's "Add to Home Screen" option.
       </div>
+
+      {/* Digest reminder scheduler */}
+      {permission === "granted" && (
+        <div style={{ marginTop: 14, padding: "12px 14px", background: T.surface, borderRadius: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: T.text, marginBottom: 8 }}>Daily digest reminder</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <input
+              type="time"
+              value={digestTime}
+              onChange={e => { setDigestTime(e.target.value); localStorage.setItem("fb-digest-time", e.target.value); }}
+              style={{
+                background: T.card, border: `1px solid ${T.border}`, borderRadius: 7,
+                padding: "5px 10px", fontSize: 13, color: T.text, fontFamily: "inherit",
+                outline: "none", cursor: "pointer", flexShrink: 0,
+              }}
+            />
+            <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", flex: 1 }}>
+              <input
+                type="checkbox"
+                checked={digestEnabled}
+                onChange={e => { setDigestEnabled(e.target.checked); localStorage.setItem("fb-digest-enabled", e.target.checked ? "true" : "false"); }}
+                style={{ accentColor: T.accent, width: 14, height: 14, flexShrink: 0 }}
+              />
+              <span style={{ fontSize: 12, color: T.textSecondary }}>
+                {digestEnabled ? `Reminder set for ${digestTime}` : "Enable daily reminder"}
+              </span>
+            </label>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
