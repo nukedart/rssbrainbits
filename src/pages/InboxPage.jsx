@@ -4,7 +4,7 @@ import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
 import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem,
          addReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed } from "../lib/supabase";
-import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl } from "../lib/fetchers";
+import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChannelRSS } from "../lib/fetchers";
 import { invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
@@ -17,7 +17,7 @@ import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
 import { track } from "../lib/analytics";
 
-export default function InboxPage({ filterMode = "all", smartFeedDef = null, onUnreadCount, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose }) {
+export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, ytFeedIds = null, onUnreadCount, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose }) {
   const { T } = useTheme();
   const { user: authUser } = useAuth();
   const user = propUser || authUser;
@@ -209,6 +209,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
       if (!smartFeedDef) return []; // still loading — return empty
       items = items.filter((i) => matchesSmartFeed(i, smartFeedDef));
     }
+    if (filterMode === "feed") {
+      if (!feedDef) return [];
+      items = items.filter((i) => i.feedId === feedDef.id);
+    }
+    if (filterMode === "youtube-all") {
+      const ids = ytFeedIds || [];
+      items = items.filter((i) => ids.includes(i.feedId));
+    }
     if (filterMode !== "unread" && hideRead) items = items.filter((i) => !readUrls.has(i.url));
     // Client-side live search across in-memory items
     if (liveSearch.trim().length > 1) {
@@ -300,14 +308,24 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
 
   // ── Action handlers ───────────────────────────────────────────
   const handleAdd = useCallback(async ({ url, type, name }) => {
-    if (type === "rss") {
+    if (type === "rss" || type === "podcast") {
       const limit = checkLimit(user, "feeds", feeds.length);
       if (!limit.allowed) { track("plan_limit_hit", { resource: "feeds", count: feeds.length }); throw new Error(limit.reason); }
       const feedData = await fetchRSSFeed(url);
-      const record   = await addFeed(user.id, { url, type: "rss", name: name || feedData.title });
+      const record   = await addFeed(user.id, { url, type: type === "podcast" ? "podcast" : "rss", name: name || feedData.title });
       if (onFeedAdded) onFeedAdded(record);
       else setFeeds((prev) => [...prev, record]);
-      track("feed_added", { type: "rss" });
+      track("feed_added", { type: record.type });
+    } else if (type === "youtube") {
+      const limit = checkLimit(user, "feeds", feeds.length);
+      if (!limit.allowed) { track("plan_limit_hit", { resource: "feeds", count: feeds.length }); throw new Error(limit.reason); }
+      const rssUrl = await resolveYouTubeChannelRSS(url);
+      if (!rssUrl) throw new Error("Could not find an RSS feed for this YouTube channel.");
+      const feedData = await fetchRSSFeed(rssUrl).catch(() => ({ title: name || "YouTube Channel" }));
+      const record   = await addFeed(user.id, { url: rssUrl, type: "youtube", name: name || feedData.title });
+      if (onFeedAdded) onFeedAdded(record);
+      else setFeeds((prev) => [...prev, record]);
+      track("feed_added", { type: "youtube" });
     } else {
       const yt = parseYouTubeUrl(url);
       let item;
@@ -473,9 +491,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, onU
     return () => { document.removeEventListener("mousedown", h); document.removeEventListener("touchstart", h); };
   }, [errorPopoverOpen]);
 
-  const activeFeedName = filterMode === "today"  ? "Today"
-    : filterMode === "unread" ? "Unread"
-    : filterMode === "smart"  ? (smartFeedDef?.name || "Smart Feed")
+  const activeFeedName = filterMode === "today"       ? "Today"
+    : filterMode === "unread"     ? "Unread"
+    : filterMode === "smart"      ? (smartFeedDef?.name || "Smart Feed")
+    : filterMode === "feed"       ? (feedDef?.name || "Feed")
+    : filterMode === "youtube-all" ? "YouTube Channels"
     : activeSource === "all" ? "All Items"
     : feeds.find((f) => f.id === activeSource)?.name || "Feed";
 

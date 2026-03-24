@@ -169,6 +169,17 @@ function AppShell() {
       }
       return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} />;
     }
+    if (page.startsWith("feed:")) {
+      const feedId = page.replace("feed:", "");
+      const feedDef = feeds.find(f => f.id === feedId);
+      if (!feedDef) return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} />;
+      return <InboxPage filterMode="feed" feedDef={feedDef} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} />;
+    }
+    if (page === "youtube-all") {
+      const ytFeeds = feeds.filter(f => f.type === "youtube" || (f.url && f.url.includes("youtube.com/feeds/videos.xml")));
+      // Show all YouTube feed items by using a synthetic smart-feed-style filter
+      return <InboxPage filterMode="youtube-all" ytFeedIds={ytFeeds.map(f => f.id)} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} />;
+    }
     switch (page) {
       case "home":         return <HomePage feeds={feeds} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
       case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} />;

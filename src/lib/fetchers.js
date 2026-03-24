@@ -437,6 +437,53 @@ export function parseYouTubeUrl(url) {
   } catch { return { isYouTube: false }; }
 }
 
+// Returns true for YouTube channel/handle/user URLs (not individual videos).
+export function isYouTubeChannelUrl(url) {
+  try {
+    const u = new URL(url);
+    if (!u.hostname.includes("youtube.com")) return false;
+    const p = u.pathname;
+    return (
+      p.startsWith("/feeds/videos.xml") ||
+      p.startsWith("/channel/") ||
+      p.startsWith("/@") ||
+      p.startsWith("/c/") ||
+      p.startsWith("/user/")
+    );
+  } catch { return false; }
+}
+
+// Resolves any YouTube channel URL to its RSS feed URL.
+// /channel/UCxxx  → direct conversion, no fetch needed.
+// /@handle or /c/ → fetch the channel page and extract channel_id from HTML.
+export async function resolveYouTubeChannelRSS(url) {
+  try {
+    const u = new URL(url);
+    if (!u.hostname.includes("youtube.com")) return null;
+
+    // Already a feeds.xml URL — return as-is
+    if (u.pathname.startsWith("/feeds/videos.xml")) return url;
+
+    // /channel/UCxxxxx — direct, no fetch needed
+    const chanMatch = u.pathname.match(/\/channel\/(UC[\w-]+)/);
+    if (chanMatch) return `https://www.youtube.com/feeds/videos.xml?channel_id=${chanMatch[1]}`;
+
+    // /@handle, /c/name, /user/name — fetch page to find channel_id
+    const html = await proxiedFetch(url).catch(() => null);
+    if (html) {
+      // Canonical RSS link in <head>
+      const rssMatch = html.match(/href="(https:\/\/www\.youtube\.com\/feeds\/videos\.xml[^"]+)"/);
+      if (rssMatch) return rssMatch[1].replace(/&amp;/g, "&");
+      // channel_id in page JSON data
+      const cidMatch = html.match(/"externalChannelId":"(UC[\w-]+)"/) ||
+                       html.match(/"channelId":"(UC[\w-]+)"/) ||
+                       html.match(/channel_id=(UC[\w-]+)/);
+      if (cidMatch) return `https://www.youtube.com/feeds/videos.xml?channel_id=${cidMatch[1]}`;
+    }
+  } catch {}
+  return null;
+}
+
 export function isPodcastUrl(url) {
   const u = url.toLowerCase();
   return u.includes("podcast") || u.includes("itunes.apple.com/") ||
@@ -477,6 +524,7 @@ export function xToRSSUrl(username) {
 
 export function detectInputType(url) {
   if (parseYouTubeUrl(url).isYouTube) return "youtube";
+  if (isYouTubeChannelUrl(url)) return "youtube";
   if (parseXUrl(url).isX) return "twitter";
   if (isPodcastUrl(url)) return "podcast";
   if (isRSSUrl(url)) return "rss";

@@ -93,6 +93,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
   // All hooks before any conditional return
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(() => new Set());
+  const [youtubeExpanded, setYoutubeExpanded] = useState(true);
   const [sidebarDragOver, setSidebarDragOver] = useState(null); // folderId being dragged over in sidebar
 
   // Auto-expand all collections on first load
@@ -250,6 +251,57 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, smartFeeds=
             </div>
           );
         })}
+
+        {/* YouTube Channels */}
+        {(() => {
+          const ytFeeds = feeds.filter(f =>
+            f.type === "youtube" ||
+            (f.url && f.url.includes("youtube.com/feeds/videos.xml"))
+          );
+          if (ytFeeds.length === 0) return null;
+          const isYtActive = active === "youtube-all";
+          return (
+            <div style={{ marginBottom: 2, flexShrink: 0 }}>
+              <div style={{ display:"flex", alignItems:"center", borderRadius:10, transition:"background .15s", background: isYtActive ? T.surface : "transparent" }}
+                onMouseEnter={e => { if (!isYtActive) e.currentTarget.style.background=T.surface; }}
+                onMouseLeave={e => { if (!isYtActive) e.currentTarget.style.background="transparent"; }}
+              >
+                <button
+                  onClick={() => { if (!collapsed) setYoutubeExpanded(v => !v); else onNavigate("youtube-all"); }}
+                  title={collapsed ? "YouTube Channels" : undefined}
+                  style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding: collapsed?"7px 6px":"6px 10px", border:"none", cursor:"pointer", background:"transparent", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed ? "center" : "flex-start" }}
+                >
+                  <span style={{ color: isYtActive ? T.accent : "#FF0000", display:"flex", flexShrink:0, fontSize:14 }}>▶</span>
+                  {!collapsed && (
+                    <>
+                      <span style={{ flex:1, fontSize:13, fontWeight:500, color: isYtActive ? T.accent : T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
+                        YouTube
+                        <span style={{ fontSize:10, color:T.textTertiary, marginLeft:5, fontWeight:400 }}>{ytFeeds.length}</span>
+                      </span>
+                      <span style={{ fontSize:8, color:T.textTertiary, transition:"transform .15s", transform:youtubeExpanded?"rotate(90deg)":"rotate(0deg)", display:"inline-block", flexShrink:0, marginRight:2 }}>▶</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              {!collapsed && youtubeExpanded && ytFeeds.map(f => {
+                const isActive = active === `feed:${f.id}`;
+                return (
+                  <button key={f.id}
+                    onClick={() => onNavigate(`feed:${f.id}`)}
+                    style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"3px 10px 3px 28px", fontSize:12, color: isActive ? T.accent : T.textTertiary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", border:"none", cursor:"pointer", background: isActive ? T.surface : "transparent", borderRadius:6, fontFamily:"inherit", textAlign:"left", transition:"background .12s" }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface2 || T.surface; }}
+                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
+                  >
+                    <span style={{ flexShrink:0, fontSize:10 }}>▶</span>
+                    <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                      {f.name || (() => { try { return new URL(f.url).hostname; } catch { return f.url; } })()}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* Folders */}
         {folders.map(folder => {
