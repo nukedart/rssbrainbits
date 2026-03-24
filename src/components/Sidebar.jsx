@@ -132,8 +132,9 @@ function FeedRow({ feed, unread, active, onNavigate, T, indent = 0 }) {
 }
 
 // ── Folder row with nested feeds ──────────────────────────────
-function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, expanded, onToggle, T, collapsed, onMoveFeedToFolder }) {
+function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, expanded, onToggle, T, collapsed, onMoveFeedToFolder, onEditFolder }) {
   const [dragOver, setDragOver] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const dot = FCOLS[folder.color] || "#8A9099";
   const folderUnread = folderFeeds.reduce((sum, f) => sum + (feedUnreadCounts[f.id] || 0), 0);
   const isActive = active === `folder:${folder.id}`;
@@ -166,14 +167,14 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
         onDragOver={e => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={async e => { e.preventDefault(); const feedId = e.dataTransfer.getData("feedId"); if (feedId) await onMoveFeedToFolder?.(feedId, folder.id); setDragOver(false); }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         style={{
           display:"flex", alignItems:"center", borderRadius:8,
-          background: isActive ? T.accentSurface : dragOver ? T.surface2 : "transparent",
+          background: isActive ? T.accentSurface : dragOver ? T.surface2 : hovered ? T.surface : "transparent",
           outline: dragOver ? `1.5px dashed ${T.accent}` : "none",
           transition:"background .1s",
         }}
-        onMouseEnter={e => { if (!isActive && !dragOver) e.currentTarget.style.background=T.surface; }}
-        onMouseLeave={e => { if (!isActive && !dragOver) e.currentTarget.style.background="transparent"; }}
       >
         {/* Folder name — click to navigate */}
         <button
@@ -190,12 +191,31 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
           }}>
             {folder.name}
           </span>
-          {folderUnread > 0 && (
+          {/* Unread count — hidden on hover to make room for actions */}
+          {folderUnread > 0 && !hovered && (
             <span style={{ fontSize:10, fontWeight:700, color: isActive ? T.accent : T.textTertiary, flexShrink:0, marginRight:2 }}>
               {folderUnread > 99 ? "99+" : folderUnread}
             </span>
           )}
         </button>
+        {/* Edit button — visible on hover */}
+        {hovered && onEditFolder && (
+          <button
+            onClick={e => { e.stopPropagation(); onEditFolder(folder); }}
+            title="Edit folder"
+            style={{ padding:"4px 4px", border:"none", background:"transparent", cursor:"pointer", color:T.textTertiary, display:"flex", alignItems:"center", flexShrink:0, transition:"color .1s" }}
+            onMouseEnter={e => e.currentTarget.style.color=T.accent}
+            onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+          >
+            <Icons.Edit />
+          </button>
+        )}
+        {/* Feed count badge on hover */}
+        {hovered && (
+          <span style={{ fontSize:9, fontWeight:700, color:T.textTertiary, flexShrink:0, paddingRight:2, letterSpacing:".01em" }}>
+            {folderFeeds.length}
+          </span>
+        )}
         {/* Expand/collapse chevron */}
         <button
           onClick={e => { e.stopPropagation(); onToggle(folder.id); }}
@@ -401,6 +421,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
               T={T}
               collapsed={collapsed}
               onMoveFeedToFolder={onMoveFeedToFolder}
+              onEditFolder={onEditFolder}
             />
           );
         })}

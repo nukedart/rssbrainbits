@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
-import { getFeeds } from "../lib/supabase";
+import { getFeeds, getSaved, getReadingStats } from "../lib/supabase";
 import { fetchRSSFeed } from "../lib/fetchers";
 import { getCachedFeed } from "../lib/feedCache";
 import { Spinner } from "../components/UI";
 import ContentViewer from "../components/ContentViewer";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 
+const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+
 // ── Daily Briefing Home Page ────────────────────────────────
-export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPodcast }) {
+export default function HomePage({ feeds: propFeeds = null, folders = [], feedUnreadCounts = {}, onNavigate, onPlayPodcast }) {
   const { T }        = useTheme();
   const { user }     = useAuth();
   const { isMobile } = useBreakpoint();
@@ -19,12 +21,20 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPo
   const [feeds, setFeeds]       = useState(propFeeds || []);
   const [openItem, setOpenItem] = useState(null);
   const [openIdx, setOpenIdx]   = useState(-1);
+  const [readStats, setReadStats]   = useState(null);
+  const [savedCount, setSavedCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
     if (propFeeds !== null) { setFeeds(propFeeds); return; }
     getFeeds(user.id).then(setFeeds).catch(console.error);
   }, [user, propFeeds]);
+
+  useEffect(() => {
+    if (!user) return;
+    getReadingStats(user.id).then(setReadStats).catch(() => {});
+    getSaved(user.id).then(r => setSavedCount(r?.length || 0)).catch(() => {});
+  }, [user]);
 
   useEffect(() => {
     if (!feeds.length) { setLoading(false); return; }
@@ -79,6 +89,22 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPo
     const words = (text || "").split(/\s+/).length;
     return `${Math.max(1, Math.round(words / 200))} min read`;
   }
+
+  function folderUnread(folder) {
+    return feeds.filter(f => f.folder_id === folder.id)
+      .reduce((sum, f) => sum + (feedUnreadCounts[f.id] || 0), 0);
+  }
+
+  // Top sources by total item count this session
+  const topSources = Object.entries(
+    feeds.reduce((acc, f) => {
+      const count = getCachedFeed(f.url)?.data?.items?.length || 0;
+      if (count > 0) acc[f.name || f.url] = (acc[f.name || f.url] || 0) + count;
+      return acc;
+    }, {})
+  ).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+  const totalUnread = Object.values(feedUnreadCounts).reduce((s, c) => s + c, 0);
 
   function relativeTime(dateStr) {
     if (!dateStr) return "";
@@ -170,6 +196,80 @@ export default function HomePage({ feeds: propFeeds = null, onNavigate, onPlayPo
                   from your top feeds and channels.
                 </p>
               </section>
+
+              {/* Stats strip */}
+              {(readStats || folders.length > 0 || savedCount > 0) && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: isMobile ? 28 : 40 }}>
+                  {readStats?.streak > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}` }}>
+                      <span style={{ fontSize: 16 }}>🔥</span>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1 }}>{readStats.streak}</div>
+                        <div style={{ fontSize: 10, color: T.textTertiary, letterSpacing: ".04em", textTransform: "uppercase" }}>day streak</div>
+                      </div>
+                    </div>
+                  )}
+                  {totalUnread > 0 && (
+                    <button onClick={() => onNavigate?.("inbox")} style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: "inherit" }}>
+                      <span style={{ fontSize: 16 }}>📬</span>
+                      <div style={{ textAlign: "left" }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: T.accent, lineHeight: 1 }}>{totalUnread > 999 ? `${Math.floor(totalUnread/1000)}k+` : totalUnread}</div>
+                        <div style={{ fontSize: 10, color: T.textTertiary, letterSpacing: ".04em", textTransform: "uppercase" }}>unread</div>
+                      </div>
+                    </button>
+                  )}
+                  {savedCount > 0 && (
+                    <button onClick={() => onNavigate?.("readlater")} style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: "inherit" }}>
+                      <span style={{ fontSize: 16 }}>⭐</span>
+                      <div style={{ textAlign: "left" }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1 }}>{savedCount}</div>
+                        <div style={{ fontSize: 10, color: T.textTertiary, letterSpacing: ".04em", textTransform: "uppercase" }}>saved</div>
+                      </div>
+                    </button>
+                  )}
+                  {readStats?.allTime > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}` }}>
+                      <span style={{ fontSize: 16 }}>📚</span>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1 }}>{readStats.allTime}</div>
+                        <div style={{ fontSize: 10, color: T.textTertiary, letterSpacing: ".04em", textTransform: "uppercase" }}>all-time reads</div>
+                      </div>
+                    </div>
+                  )}
+                  {/* Folder unread pills */}
+                  {folders.filter(f => folderUnread(f) > 0).map(folder => {
+                    const dot = FCOLS[folder.color] || "#8A9099";
+                    const unread = folderUnread(folder);
+                    return (
+                      <button key={folder.id}
+                        onClick={() => onNavigate?.(`folder:${folder.id}`)}
+                        style={{ display: "flex", alignItems: "center", gap: 8, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: "inherit" }}
+                      >
+                        <span style={{ width: 8, height: 8, borderRadius: 2, background: dot, flexShrink: 0 }} />
+                        <div style={{ textAlign: "left" }}>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1 }}>{unread}</div>
+                          <div style={{ fontSize: 10, color: T.textTertiary, letterSpacing: ".04em", textTransform: "uppercase", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 80 }}>{folder.name}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                  {/* Top sources */}
+                  {topSources.length > 0 && !isMobile && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}`, marginLeft: "auto" }}>
+                      <div>
+                        <div style={{ fontSize: 10, color: T.textTertiary, letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 4 }}>Top sources</div>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {topSources.map(([name, count]) => (
+                            <span key={name} style={{ fontSize: 11, fontWeight: 600, color: T.textSecondary }}>
+                              {name.split(/[./]/).slice(-2)[0]} <span style={{ color: T.accent }}>{count}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Bento Grid */}
               {items.length > 0 && (

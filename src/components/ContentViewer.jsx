@@ -3,7 +3,7 @@ import { useSwipe } from "../hooks/useSwipe.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { Button, Spinner } from "./UI";
-import { fetchArticleContent, summarizeContent, parseYouTubeUrl } from "../lib/fetchers";
+import { fetchArticleContent, summarizeContent, parseYouTubeUrl, fetchYouTubeTranscript } from "../lib/fetchers";
 import SelectionToolbar, { HIGHLIGHT_COLORS } from "./SelectionToolbar";
 import NotePanel from "./NotePanel";
 import HighlightsDrawer from "./HighlightsDrawer";
@@ -447,8 +447,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
         {/* ── YouTube ── */}
         {yt.isYouTube && (
-          <div style={{ maxWidth: "var(--reader-line-width)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "40px 32px 120px", width: "100%" }}>
-            <YouTubeView item={item} videoId={yt.videoId} summary={summary} summarizing={summarizing} onSummarize={handleSummarize} T={T} isMobile={isMobile} />
+          <div style={{ maxWidth: "min(1100px, 96vw)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "32px 40px 120px", width: "100%" }}>
+            <YouTubeView item={item} videoId={yt.videoId} summary={summary} summarizing={summarizing} onSummarize={handleSummarize} onHighlight={handleHighlight} T={T} isMobile={isMobile} />
           </div>
         )}
 
@@ -861,77 +861,201 @@ function parseChapters(text) {
   return chapters;
 }
 
-function YouTubeView({ item, videoId, summary, summarizing, onSummarize, T, isMobile }) {
+function fmtSecs(s) {
+  const t = Math.floor(s);
+  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), sec = t % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+  return `${m}:${String(sec).padStart(2, "0")}`;
+}
+
+function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighlight, T, isMobile }) {
   const [showDesc, setShowDesc] = useState(false);
+  const [iframeSrc, setIframeSrc] = useState(`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`);
+  const [transcript, setTranscript] = useState(null); // null = loading, [] = unavailable, [...] = lines
+  const [transcriptLoading, setTranscriptLoading] = useState(true);
+  const [activeLineIdx, setActiveLineIdx] = useState(-1);
+  const [pendingHighlight, setPendingHighlight] = useState(null); // { text, lineIdx }
+  const transcriptRef = useRef(null);
+
   const desc = item?.description || item?.fullText || "";
   const chapters = parseChapters(desc);
-  const ytEmbed = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+
+  useEffect(() => {
+    setTranscriptLoading(true);
+    fetchYouTubeTranscript(videoId).then(lines => {
+      setTranscript(lines.length > 0 ? lines : []);
+    }).catch(() => setTranscript([])).finally(() => setTranscriptLoading(false));
+  }, [videoId]);
+
+  function seekTo(secs) {
+    setIframeSrc(`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&start=${Math.floor(secs)}&autoplay=1`);
+    setActiveLineIdx(-1);
+  }
+
+  // Transcript text selection → highlight
+  function handleTranscriptMouseUp() {
+    const sel = window.getSelection();
+    const text = sel?.toString().trim();
+    if (!text || text.length < 3) { setPendingHighlight(null); return; }
+    setPendingHighlight({ text });
+  }
+
+  async function commitHighlight(color) {
+    if (!pendingHighlight || !onHighlight) return;
+    await onHighlight({ passage: pendingHighlight.text, color, position: 0 });
+    setPendingHighlight(null);
+    window.getSelection()?.removeAllRanges();
+  }
+
+  const hasTranscript = Array.isArray(transcript) && transcript.length > 0;
 
   return (
     <div>
-      {/* Video player */}
-      <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, aspectRatio: "16/9", background: "#000" }}>
-        <iframe src={ytEmbed} title="YouTube video"
-          style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-      </div>
+      {/* Main layout: video + transcript side-by-side on desktop */}
+      <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexDirection: isMobile ? "column" : "row" }}>
 
-      {/* Title + meta */}
-      <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3, fontFamily: "var(--reader-font-family)" }}>
-        {item.title}
-      </h1>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-        {item.source && <span style={{ fontSize: 12, fontWeight: 600, color: T.accent }}>{item.source}</span>}
-        {item.date && <span style={{ fontSize: 12, color: T.textTertiary }}>{new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>}
-        <a href={item.url} target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 11, color: T.textTertiary, marginLeft: "auto", textDecoration: "none" }}>
-          ↗ Open on YouTube
-        </a>
-      </div>
-
-      {/* AI Summary */}
-      <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} summaryStyle="keypoints" T={T} />
-
-      {/* Chapters */}
-      {chapters.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.textTertiary, textTransform: "uppercase", marginBottom: 10 }}>
-            Chapters ({chapters.length})
+        {/* Video column */}
+        <div style={{ flex: isMobile ? "1" : "0 0 62%", minWidth: 0 }}>
+          <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 16, aspectRatio: "16/9", background: "#000" }}>
+            <iframe src={iframeSrc} title="YouTube video"
+              style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {chapters.map((ch, i) => (
-              <a key={i}
-                href={`https://www.youtube.com/watch?v=${videoId}&t=${ch.secs}s`}
-                target="_blank" rel="noopener noreferrer"
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 8, textDecoration: "none", transition: "background .15s" }}
-                onMouseEnter={e => e.currentTarget.style.background = T.surface}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-              >
-                <span style={{ fontSize: 11, fontFamily: "monospace", color: T.accent, minWidth: 38 }}>{ch.time}</span>
-                <span style={{ fontSize: 13, color: T.textSecondary }}>{ch.label}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* Description */}
-      {desc && (
-        <div>
-          <button onClick={() => setShowDesc(v => !v)} style={{
-            background: "none", border: "none", cursor: "pointer",
-            fontSize: 12, fontWeight: 600, color: T.textSecondary, padding: 0, fontFamily: "inherit",
-            display: "flex", alignItems: "center", gap: 6, marginBottom: 10,
-          }}>
-            {showDesc ? "▲" : "▼"} {showDesc ? "Hide" : "Show"} description
-          </button>
-          {showDesc && (
-            <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.8, whiteSpace: "pre-wrap", background: T.surface, borderRadius: 10, padding: "14px 16px" }}>
-              {desc}
+          {/* Title + meta */}
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3, fontFamily: "var(--reader-font-family)" }}>
+            {item.title}
+          </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+            {item.source && <span style={{ fontSize: 12, fontWeight: 600, color: T.accent }}>{item.source}</span>}
+            {item.date && <span style={{ fontSize: 12, color: T.textTertiary }}>{new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>}
+            <a href={item.url} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 11, color: T.textTertiary, marginLeft: "auto", textDecoration: "none" }}>
+              ↗ YouTube
+            </a>
+          </div>
+
+          {/* AI Summary */}
+          <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} summaryStyle="keypoints" T={T} />
+
+          {/* Chapters */}
+          {chapters.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.textTertiary, textTransform: "uppercase", marginBottom: 8 }}>
+                Chapters ({chapters.length})
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                {chapters.map((ch, i) => (
+                  <button key={i}
+                    onClick={() => seekTo(ch.secs)}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px", borderRadius: 8, background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left", transition: "background .15s", width: "100%" }}
+                    onMouseEnter={e => e.currentTarget.style.background = T.surface}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  >
+                    <span style={{ fontSize: 11, fontFamily: "monospace", color: T.accent, minWidth: 38 }}>{ch.time}</span>
+                    <span style={{ fontSize: 13, color: T.textSecondary }}>{ch.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Description (collapsible) */}
+          {desc && (
+            <div style={{ marginBottom: 8 }}>
+              <button onClick={() => setShowDesc(v => !v)} style={{
+                background: "none", border: "none", cursor: "pointer",
+                fontSize: 12, fontWeight: 600, color: T.textSecondary, padding: 0, fontFamily: "inherit",
+                display: "flex", alignItems: "center", gap: 6, marginBottom: 8,
+              }}>
+                {showDesc ? "▲" : "▼"} {showDesc ? "Hide" : "Show"} description
+              </button>
+              {showDesc && (
+                <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.8, whiteSpace: "pre-wrap", background: T.surface, borderRadius: 10, padding: "12px 14px" }}>
+                  {desc}
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+
+        {/* Transcript panel */}
+        <div style={{ flex: isMobile ? "1" : "0 0 36%", minWidth: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.textTertiary, textTransform: "uppercase" }}>
+              Transcript
+            </span>
+            {transcriptLoading && <span style={{ fontSize: 11, color: T.textTertiary }}>loading…</span>}
+            {!transcriptLoading && !hasTranscript && <span style={{ fontSize: 11, color: T.textTertiary }}>not available</span>}
+            {hasTranscript && <span style={{ fontSize: 11, color: T.textTertiary }}>{transcript.length} lines · select text to highlight</span>}
+          </div>
+
+          {hasTranscript && (
+            <div
+              ref={transcriptRef}
+              onMouseUp={handleTranscriptMouseUp}
+              style={{
+                flex: 1, overflowY: "auto",
+                maxHeight: isMobile ? 320 : 520,
+                background: T.surface,
+                borderRadius: 10,
+                padding: "10px 4px",
+                fontSize: 13,
+                lineHeight: 1.65,
+                position: "relative",
+              }}
+            >
+              {/* Pending highlight toolbar */}
+              {pendingHighlight && (
+                <div style={{
+                  position: "sticky", top: 0, zIndex: 10,
+                  display: "flex", gap: 6, padding: "6px 10px",
+                  background: T.card, borderRadius: 8, marginBottom: 6,
+                  boxShadow: "0 2px 12px rgba(0,0,0,.15)",
+                  alignItems: "center",
+                }}>
+                  <span style={{ fontSize: 11, color: T.textSecondary, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    Highlight: "{pendingHighlight.text.slice(0, 40)}{pendingHighlight.text.length > 40 ? "…" : ""}"
+                  </span>
+                  {["yellow", "green", "blue", "pink"].map(color => (
+                    <button key={color} onClick={() => commitHighlight(color)}
+                      style={{ width: 18, height: 18, borderRadius: "50%", border: "2px solid transparent", cursor: "pointer",
+                        background: color === "yellow" ? "#FFD700" : color === "green" ? "#86EFAC" : color === "blue" ? "#93C5FD" : "#F9A8D4",
+                        transition: "border-color .1s",
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = T.text}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = "transparent"}
+                    />
+                  ))}
+                  <button onClick={() => setPendingHighlight(null)}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, fontSize: 14, lineHeight: 1 }}>×</button>
+                </div>
+              )}
+              {transcript.map((line, i) => (
+                <div
+                  key={i}
+                  onClick={() => { seekTo(line.start); setActiveLineIdx(i); }}
+                  style={{
+                    display: "flex", gap: 8, padding: "3px 10px",
+                    borderRadius: 6, cursor: "pointer",
+                    background: activeLineIdx === i ? T.accentSurface : "transparent",
+                    transition: "background .1s",
+                  }}
+                  onMouseEnter={e => { if (activeLineIdx !== i) e.currentTarget.style.background = T.surface2; }}
+                  onMouseLeave={e => { if (activeLineIdx !== i) e.currentTarget.style.background = "transparent"; }}
+                >
+                  <span style={{ fontSize: 10, fontFamily: "monospace", color: T.accent, minWidth: 36, flexShrink: 0, paddingTop: 2, userSelect: "none" }}>
+                    {fmtSecs(line.start)}
+                  </span>
+                  <span style={{ color: activeLineIdx === i ? T.accent : T.textSecondary, flex: 1 }}>
+                    {line.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

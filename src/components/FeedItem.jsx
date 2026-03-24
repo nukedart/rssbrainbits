@@ -299,7 +299,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Card view item ────────────────────────────────────────────
-function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, isRead, cardSize = "md" }) {
+function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, cardSize = "md" }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -322,6 +322,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
             borderRadius: 12, overflow: "hidden", cursor: "pointer",
             transition: "background .15s",
             display: "flex", flexDirection: "column",
+            height: "100%",
           }}
         >
           {/* Hero image */}
@@ -358,7 +359,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
           </div>
 
           {/* Content */}
-          <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", flex: 1 }}>
+          <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
             {/* Source + date */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
               {favicon && (
@@ -407,15 +408,18 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, isSelected, 
               )}
             </div>
 
-            {/* Actions */}
-            <div style={{ display: "flex", gap: 6, marginTop: "auto" }} onClick={e => e.stopPropagation()}>
-              <ActionBtn icon="📖" label="Read" onClick={onClick} T={T} small />
-              <ActionBtn icon="⭐" label="Star" onClick={onSave} T={T} small />
-              <ActionBtn icon="🔖" label="Save" onClick={onReadLater} T={T} small />
-              <div style={{ marginLeft: "auto" }}>
-                <ActionBtn icon="↗" title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} small />
+            {/* Actions — hover only on desktop */}
+            {(hovered && !isMobile) && (
+              <div style={{ display: "flex", gap: 2, marginTop: "auto", paddingTop: 4 }} onClick={e => e.stopPropagation()}>
+                {item.isPodcast && <ActionBtn icon={<Ic.Play />} title="Play" onClick={() => {}} T={T} />}
+                <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
+                <ActionBtn icon={<Ic.Star />} title="Star" onClick={onSave} T={T} />
+                <ActionBtn icon={<Ic.Clock />} title="Save for later" onClick={onReadLater} T={T} />
+                <div style={{ marginLeft: "auto" }}>
+                  <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}

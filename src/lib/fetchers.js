@@ -92,6 +92,34 @@ async function proxiedFetch(targetUrl) {
   return result;
 }
 
+// ── YouTube Transcript ────────────────────────────────────────
+// Fetches auto-generated captions from YouTube's timedtext API.
+// Returns [{ start: number, dur: number, text: string }] or [] on failure.
+export async function fetchYouTubeTranscript(videoId) {
+  if (!videoId) return [];
+  const urls = [
+    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en&fmt=srv3`,
+    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en-US&fmt=srv3`,
+    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en`,
+  ];
+  for (const url of urls) {
+    try {
+      const text = await proxiedFetch(url);
+      if (!text?.trim()) continue;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, "text/xml");
+      const nodes = Array.from(doc.querySelectorAll("text, s"));
+      if (!nodes.length) continue;
+      return nodes.map(n => ({
+        start: parseFloat(n.getAttribute("start") || n.getAttribute("t") || "0") / (n.getAttribute("t") ? 1000 : 1),
+        dur:   parseFloat(n.getAttribute("dur")   || n.getAttribute("d") || "2")  / (n.getAttribute("d") ? 1000 : 1),
+        text:  (n.textContent || "").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#39;/g,"'").replace(/&quot;/g,'"').trim(),
+      })).filter(l => l.text);
+    } catch { /* try next */ }
+  }
+  return [];
+}
+
 // ── RSS Feed ──────────────────────────────────────────────────
 // Always returns { title, items } — unwraps the cache envelope internally.
 export async function fetchRSSFeed(feedUrl, { forceRefresh = false } = {}) {
