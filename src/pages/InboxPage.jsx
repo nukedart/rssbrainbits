@@ -120,7 +120,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   }, [user]);
 
   useEffect(() => {
-    const rssFeeds = feeds.filter((f) => f.type === "rss" || f.type === "podcast");
+    // Include youtube feeds — they use the same RSS fetch path
+    const rssFeeds = feeds.filter((f) => f.type === "rss" || f.type === "podcast" || f.type === "youtube");
     if (!rssFeeds.length) { setAllItems([]); setLoadingItems(false); return; }
 
     setFeedErrors({});
@@ -142,9 +143,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       }
 
       function mergeAndSort(newItems) {
-        newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item }); }); // keep original url, dedup by normalised key
+        newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item }); });
         const sorted = [...itemMap.values()].sort((a, b) => new Date(b.date) - new Date(a.date));
-        // Count genuinely new articles (not seen in previous fetch)
         if (prevItemUrlsRef.current.size > 0) {
           const newCount = sorted.filter(i => !prevItemUrlsRef.current.has(i.url)).length;
           if (newCount > 0) setNewArticleCount(n => n + newCount);
@@ -153,13 +153,31 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         setLoadingItems(false);
       }
 
+      // ── Instant paint: synchronously seed itemMap from localStorage cache ──
+      // This means users with any cached data see articles on the very first render,
+      // with no loading spinner, while stale feeds refresh in the background.
+      if (!forceRefresh) {
+        rssFeeds.forEach(feed => {
+          const cached = getCachedFeed(feed.url);
+          if (cached?.data?.items) {
+            cached.data.items.forEach(item => {
+              if (item.url) itemMap.set(normaliseUrl(item.url), { ...item, feedId: feed.id, source: feed.name || cached.data.title, fetchFullContent: !!feed.fetch_full_content, type: feed.type || "rss" });
+            });
+          }
+        });
+        if (itemMap.size > 0) {
+          setAllItems([...itemMap.values()].sort((a, b) => new Date(b.date) - new Date(a.date)));
+          setLoadingItems(false);
+        }
+      }
+
       setFeedLoading(Object.fromEntries(rssFeeds.map(f => [f.id, true])));
-      setLoadingItems(true);
+      // Only show global spinner if we have nothing to show yet
+      if (itemMap.size === 0) setLoadingItems(true);
 
       await Promise.allSettled(
         rssFeeds.map(async (feed) => {
           try {
-            // fetchRSSFeed returns { title, items } — from cache or network
             const data = await fetchRSSFeed(feed.url, { forceRefresh });
             if (!data?.items?.length) throw new Error("No items in feed");
             const items = data.items.map((item) => ({
@@ -167,7 +185,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               feedId: feed.id,
               source: feed.name || data.title,
               fetchFullContent: !!feed.fetch_full_content,
-              type:   "rss",
+              type: feed.type || "rss",
             }));
             mergeAndSort(items);
             setFeedErrors(prev => { const n = { ...prev }; delete n[feed.id]; return n; });
@@ -792,18 +810,22 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                     ))}
                   </div>
                 </div>
-                <div style={{ padding: "6px 12px 10px" }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Size</div>
-                  <div style={{ display: "flex", gap: 4 }}>
-                    {[{ size: "sm", label: "S" }, { size: "md", label: "M" }, { size: "lg", label: "L" }].map(({ size, label }) => (
-                      <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} style={{
-                        flex: 1, padding: "5px 0", borderRadius: 8, border: "none",
-                        background: cardSize === size ? T.accentSurface : T.surface,
-                        color: cardSize === size ? T.accent : T.textSecondary,
-                        cursor: "pointer", fontSize: 12, fontWeight: cardSize === size ? 700 : 400,
-                        fontFamily: "inherit", transition: "all .12s",
-                      }}>{label}</button>
-                    ))}
+                <div style={{ padding: "6px 12px 12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em" }}>Size</div>
+                    <span style={{ fontSize: 11, color: T.accent, fontWeight: 600 }}>
+                      {cardSize === "sm" ? "Small" : cardSize === "md" ? "Medium" : "Large"}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 10, color: T.textTertiary, fontWeight: 500 }}>S</span>
+                    <input
+                      type="range" min={1} max={3} step={1}
+                      value={cardSize === "sm" ? 1 : cardSize === "md" ? 2 : 3}
+                      onChange={e => { const s = ["sm","md","lg"][e.target.value - 1]; setCardSize(s); localStorage.setItem("fb-cardsize", s); }}
+                      style={{ flex: 1, accentColor: T.accent, cursor: "pointer", height: 4 }}
+                    />
+                    <span style={{ fontSize: 10, color: T.textTertiary, fontWeight: 500 }}>L</span>
                   </div>
                 </div>
               </div>

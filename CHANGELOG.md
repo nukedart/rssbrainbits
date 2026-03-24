@@ -3,6 +3,17 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.39.0] — 2026-03-24
+
+### Fixed
+- **YouTube feeds now load in inbox** — `type: "youtube"` was excluded from the feed fetch loop; feeds were added correctly but never appeared in the inbox. Fixed by including youtube alongside rss/podcast in the fetch filter.
+- **Instant article rendering** — inbox now synchronously pre-seeds items from localStorage cache before any async work, eliminating the loading spinner for users with cached data. Fresh fetches update items in the background without blocking the UI.
+
+### Changed
+- **Size control is now a drag slider** — replaced the S/M/L buttons in the View Options menu with a smooth range slider. Shows the current size label (Small / Medium / Large) as you drag.
+
+---
+
 ## [1.38.0] — 2026-03-24
 
 ### Added
