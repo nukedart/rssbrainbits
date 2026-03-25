@@ -3,6 +3,40 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.0] — 2026-03-25
+
+### Mobile — Reeder-style overhaul
+- **Feed drawer → bottom sheet** — slides up from the bottom with a drag handle to dismiss; rounded top corners, blur backdrop; Settings moved inside the sheet
+- **Bottom nav** — replaced Settings tab with Today; new tab order: Feeds · Inbox · + · Today · Saved. Filled/outlined icon pair for active state (matches iOS SF Symbol convention)
+- **Inbox toolbar** — on mobile shows only: title/badge, Unread/All toggle, Search, Add. AI digest, refresh (use pull-to-refresh), view picker, and source filter are hidden
+- **Default view mode on mobile** — changed from cards to list (more readable, larger tap targets)
+- **Add button** on mobile toolbar is slightly taller (34px) for easier tap
+
+### Feed filter UX
+- **3 tabs → 2 tabs** — removed "Read" tab, kept "Unread" (default) and "All". Read history lives in the History page
+- **Default filter changed to "Unread"** — you see new articles immediately on open, not everything
+
+### Today page — daily brief dashboard
+- **Stats header** — 3 cards: total articles, unread count, estimated reading time remaining
+- **Progress bar** — shows % read with "All done ✓" completion state in green
+- **Source chips** — at-a-glance breakdown of which sources published today and how many
+- **Hero article** — first unread article (preferring one with an image) featured prominently above the list
+- **Article list** — compact items below the fold, unchanged in split-view desktop mode
+
+### Read-on-scroll
+- Changed from "mark when 90% visible" to **mark when item passes the top of the viewport** (bottom edge exits above the scroll window) — matches Reeder / Readwise Reader behaviour
+
+### Folder persistence fix
+- `setFeedFolder` now uses `.select().single()` so silent RLS failures are detected and thrown rather than silently swallowed
+- Rollback on failure restores the original `folder_id` (was incorrectly setting `undefined`)
+
+### Article parsing improvements
+- **Site-specific selectors** for makeuseof.com, 9to5mac.com, 9to5google.com, electrek.co, appleinsider.com, macrumors.com, The Verge, Ars Technica, Wired, TechCrunch, Engadget — tried first before generic selectors
+- **Noise removal** refactored to a single `querySelectorAll` call (was N×M loop) — measurably faster on long articles
+- Added `author-box`, `bio-box`, `newsletter-signup`, `related-posts` selectors for WordPress / MakeUseOf cleanup
+
+---
+
 ## [1.45.0] — 2026-03-25
 
 ### Added

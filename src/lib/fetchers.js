@@ -366,65 +366,93 @@ export async function fetchArticleContent(articleUrl) {
     try { image = new URL(rawImage, articleUrl).href; } catch { image = rawImage; }
   }
 
+  // ── Site-specific overrides (fastest path — checked before generic selectors) ──
+  const hostname = (() => { try { return new URL(articleUrl).hostname.replace(/^www\./, ""); } catch { return ""; } })();
+  const SITE_SELECTORS = {
+    "makeuseof.com":    [".article-body", ".article-content", ".content-writer-content", ".content__item"],
+    "9to5mac.com":      [".article-content", ".post-content", ".entry-content"],
+    "9to5google.com":   [".article-content", ".post-content", ".entry-content"],
+    "electrek.co":      [".article-content", ".post-content", ".entry-content"],
+    "appleinsider.com": [".article-body", ".review-body", ".news-article"],
+    "macrumors.com":    [".article-content", ".post-content"],
+    "theverge.com":     [".duet--article--article-body-component", "[data-component='article-body']"],
+    "arstechnica.com":  [".article-content.post-page", "#article-guts", ".article-content"],
+    "wired.com":        ["[class*='ArticleBodyComponent']", "[class*='article-body']", "article"],
+    "techcrunch.com":   [".article-content", ".entry-content", "article"],
+    "engadget.com":     ["[class*='article-body']", ".o-article__body", "article"],
+  };
+
   // ── Find the best article container ──────────────────────────
-  // Scored selector list — higher = better match
   const SELECTORS = [
     // Standard semantic
-    { sel: "article",                              score: 10 },
-    { sel: "[itemprop='articleBody']",             score: 10 },
-    // 9to5Mac, 9to5Google, Electrek (WordPress VIP)
-    { sel: ".article-content",                     score: 10 },
-    { sel: ".post-content",                        score:  9 },
-    { sel: ".entry-content",                       score:  9 },
-    { sel: ".single-article-content",             score:  9 },
+    "article",
+    "[itemprop='articleBody']",
+    // WordPress / common CMS
+    ".article-content",
+    ".post-content",
+    ".entry-content",
+    ".single-article-content",
     // The Verge, Vox Media
-    { sel: ".duet--article--article-body-component", score: 10 },
-    { sel: "[data-component='article-body']",      score: 10 },
+    ".duet--article--article-body-component",
+    "[data-component='article-body']",
     // Ars Technica
-    { sel: ".article-content.post-page",           score: 10 },
-    { sel: "#article-guts",                        score:  9 },
+    ".article-content.post-page",
+    "#article-guts",
     // General news
-    { sel: ".article-body",                        score:  9 },
-    { sel: ".story-body",                          score:  9 },
-    { sel: ".story-content",                       score:  9 },
-    { sel: ".content-body",                        score:  8 },
-    { sel: ".body-content",                        score:  8 },
-    { sel: "#article-body",                        score:  8 },
-    { sel: ".post-body",                           score:  8 },
-    { sel: ".article__body",                       score:  8 },
+    ".article-body",
+    ".story-body",
+    ".story-content",
+    ".content-body",
+    ".body-content",
+    "#article-body",
+    ".post-body",
+    ".article__body",
     // Substack, Ghost, Medium
-    { sel: ".available-content",                   score:  9 },
-    { sel: ".post",                                score:  7 },
-    { sel: '[role="main"]',                        score:  7 },
-    { sel: "main",                                 score:  6 },
-    { sel: ".content",                             score:  4 },
-    { sel: "body",                                 score:  1 },
+    ".available-content",
+    ".post",
+    '[role="main"]',
+    "main",
+    ".content",
+    "body",
   ];
 
+  // Try site-specific selectors first
   let articleEl = null;
-  for (const { sel } of SELECTORS) {
-    const el = doc.querySelector(sel);
-    if (el) { articleEl = el; break; }
+  const siteSelectors = SITE_SELECTORS[hostname];
+  if (siteSelectors) {
+    for (const sel of siteSelectors) {
+      articleEl = doc.querySelector(sel);
+      if (articleEl) break;
+    }
+  }
+  // Fall back to generic list
+  if (!articleEl) {
+    for (const sel of SELECTORS) {
+      articleEl = doc.querySelector(sel);
+      if (articleEl) break;
+    }
   }
 
-  // Remove noise nodes
-  const NOISE = [
+  // Remove noise nodes — single querySelectorAll call is much faster than iterating
+  const NOISE_SELECTOR = [
     "script","style","noscript","nav","header","footer","aside",
     ".ad",".ads","[class*='advertisement']","[id*='ad-']",
     ".sidebar",".related",".comments",".social",".share",".newsletter",
     ".subscription","[class*='popup']","[class*='banner']",
     "figure.wp-block-embed","iframe",
-    // 9to5Mac / WordPress VIP specific
+    // WordPress / 9to5Mac / MakeUseOf specific
     "[class*='sharedaddy']","[class*='jp-relatedposts']",
     "[class*='wpcnt']","[id*='respond']","[class*='post-nav']",
     "[class*='author-info']","[class*='tags-links']",
+    "[class*='author-box']","[class*='author-bio']",
+    "[class*='related-posts']","[class*='recommended']",
+    // MakeUseOf specific
+    "[class*='mu-ad']","[class*='newsletter-signup']","[class*='bio-box']",
     // Paywall / subscription prompts
     "[class*='paywall']","[class*='subscribe']","[class*='membership']",
     "[class*='piano-']","[class*='tp-']",
-  ];
-  NOISE.forEach((sel) => {
-    try { articleEl?.querySelectorAll(sel).forEach((el) => el.remove()); } catch {}
-  });
+  ].join(",");
+  try { articleEl?.querySelectorAll(NOISE_SELECTOR).forEach(el => el.remove()); } catch {}
 
   // Extract paragraphs in reading order for best quality text
   const paragraphs = articleEl

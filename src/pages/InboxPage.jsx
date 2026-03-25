@@ -39,10 +39,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [openIdx, setOpenIdx]           = useState(-1);
   const [expandedView, setExpandedView] = useState(false);
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
-  const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "card") : (localStorage.getItem("fb-viewmode") || "card"));
+  const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "card"));
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
-  const [readFilter, setReadFilter]     = useState("all"); // "all" | "unread" | "read"
+  const [readFilter, setReadFilter]     = useState("unread"); // "all" | "unread"
   const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
   const [toast, setToast]               = useState(null);
   const [searchResult, setSearchResult]   = useState(null);
@@ -560,6 +560,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   }, [feedErrors]);
 
   // ── Auto-mark-read on scroll ─────────────────────────────
+  // Marks an item as read when it passes the TOP of the viewport — same
+  // behaviour as Reeder, Readwise Reader, and most dedicated RSS readers.
   const observerRef = useRef(null);
   useEffect(() => {
     if (!autoMarkRead) {
@@ -568,14 +570,13 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.9) {
+        // Fire when item has scrolled fully past the top (bottom edge above viewport top)
+        if (!entry.isIntersecting && entry.boundingClientRect.bottom < 0) {
           const url = entry.target.dataset.url;
-          if (url && !readUrls.has(url)) {
-            handleMarkRead(url);
-          }
+          if (url && !readUrls.has(url)) handleMarkRead(url);
         }
       });
-    }, { threshold: 0.9, rootMargin: "0px" });
+    }, { threshold: 0 });
     return () => observerRef.current?.disconnect();
   }, [autoMarkRead, readUrls]);
 
@@ -678,8 +679,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           )}
 
-          {/* Source filter dropdown — only in inbox mode with multiple feeds */}
-          {!searchOpen && filterMode === "all" && feeds.length > 1 && (
+          {/* Source filter dropdown — only in inbox mode with multiple feeds, desktop only */}
+          {!searchOpen && !isMobile && filterMode === "all" && feeds.length > 1 && (
             <div ref={sourceDropRef} style={{ position: "relative", flexShrink: 0 }}>
               <button onClick={() => setSourceDropOpen(v => !v)} style={{
                 display: "flex", alignItems: "center", gap: 5,
@@ -724,12 +725,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Spacer — pushes controls right when title is visible */}
           {!searchOpen && <div style={{ flex: 1 }} />}
 
-          {/* Latest / Unread / Read pill tabs */}
+          {/* All / Unread toggle */}
           {filterMode !== "unread" && !searchOpen && (
             <div style={{ display: "flex", background: T.surface, borderRadius: 100, padding: 2, gap: 0, flexShrink: 0 }}>
-              {[{ label: "Latest", val: "all" }, { label: "Unread", val: "unread" }, { label: "Read", val: "read" }].map(({ label, val }) => (
+              {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }].map(({ label, val }) => (
                 <button key={label} onClick={() => setReadFilter(val)} style={{
-                  padding: "3px 10px", borderRadius: 100, border: "none",
+                  padding: "3px 11px", borderRadius: 100, border: "none",
                   background: readFilter === val ? T.bg : "transparent",
                   color: readFilter === val ? T.text : T.textTertiary,
                   fontWeight: readFilter === val ? 600 : 400,
@@ -784,8 +785,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </svg>
           </button>
 
-          {/* AI Digest button */}
-          {!searchOpen && allItems.length > 0 && (
+          {/* AI Digest button — desktop only */}
+          {!isMobile && !searchOpen && allItems.length > 0 && (
             <button onClick={() => setDigestOpen(true)} title="AI daily digest"
               style={{
                 background: "transparent", border: "none", borderRadius: 8,
@@ -803,8 +804,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </button>
           )}
 
-          {/* Refresh button — SVG icon */}
-          <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} style={{
+          {/* Refresh button — desktop only; mobile uses pull-to-refresh */}
+          {!isMobile && <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} style={{
             background: "transparent", border: "none", borderRadius: 8,
             width: 30, height: 30, cursor: "pointer", flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -816,10 +817,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5"/><path d="M13.5 2.5v3.5h-3.5"/>
             </svg>
-          </button>
+          </button>}
 
-          {/* View options — single icon button with popover */}
-          <div ref={viewMenuRef} style={{ position: "relative", flexShrink: 0 }}>
+          {/* View options — desktop only */}
+          {!isMobile && <div ref={viewMenuRef} style={{ position: "relative", flexShrink: 0 }}>
             <button
               onClick={() => setViewMenuOpen(v => !v)}
               title="View options"
@@ -879,9 +880,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 </div>
               </div>
             )}
-          </div>
+          </div>}
 
-          <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: 30, paddingLeft: 10, paddingRight: 10, flexShrink: 0 }}>
+          <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: isMobile ? 34 : 30, paddingLeft: isMobile ? 14 : 10, paddingRight: isMobile ? 14 : 10, flexShrink: 0 }}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ display:"block" }}><path d="M6 1v10M1 6h10"/></svg>
             {!isMobile && <span style={{ marginLeft: 4, fontSize: 12 }}>Add</span>}
           </Button>
@@ -934,9 +935,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
           {!loadingItems && baseItems.length === 0 && feeds.length > 0 && (
             <EmptyState
-              icon={readFilter === "unread" ? "✅" : readFilter === "read" ? "📭" : "⏳"}
-              title={readFilter === "unread" ? "All caught up!" : readFilter === "read" ? "Nothing read yet" : "Fetching articles…"}
-              subtitle={readFilter === "unread" ? "No unread articles. Switch to Latest to see all." : readFilter === "read" ? "Articles you've read will appear here." : "Loading from your feeds."}
+              icon={readFilter === "unread" ? "✅" : "⏳"}
+              title={readFilter === "unread" ? "All caught up!" : "Fetching articles…"}
+              subtitle={readFilter === "unread" ? "No unread articles. Switch to All to see everything." : "Loading from your feeds."}
             />
           )}
 

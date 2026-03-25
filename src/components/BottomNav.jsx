@@ -1,6 +1,5 @@
 import { useTheme } from "../hooks/useTheme";
 
-// Convert any hex color to rgba — the frosted-glass blur needs transparency
 function hexToRgba(hex, alpha) {
   const h = hex.replace("#", "");
   const r = parseInt(h.slice(0, 2), 16);
@@ -10,19 +9,26 @@ function hexToRgba(hex, alpha) {
 }
 
 const Icons = {
-  Feeds:    () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h12M3 18h8"/></svg>),
-  Notes:    () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 3h16a1 1 0 0 1 1 1v13l-5 5H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M16 17v5M16 17h5"/><path d="M8 9h8M8 13h5"/></svg>),
-  ReadLater:() => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>),
-  Inbox:    () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M2 15h5l2 4h6l2-4h5"/></svg>),
-  Settings: () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg>),
+  Feeds:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h12M3 18h8"/></svg>),
+  Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M2 15h5l2 4h6l2-4h5"/></svg>),
+  Today:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M7 2v4M17 2v4M3 10h18"/><path d="M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2"/></svg>),
+  Saved:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>),
+};
+
+// Filled versions for active state
+const IconsFilled = {
+  Feeds:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h12M3 18h8" strokeWidth="2.2"/></svg>),
+  Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="2" y="2" width="20" height="20" rx="4" opacity=".15"/><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="currentColor" strokeWidth="1.7"/><path d="M2 15h5l2 4h6l2-4h5" fill="none" stroke="currentColor" strokeWidth="1.7"/></svg>),
+  Today:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M7 2v4M17 2v4M3 10h18" strokeWidth="2"/><path d="M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2" strokeWidth="2.2"/></svg>),
+  Saved:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>),
 };
 
 const NAV = [
-  { id:"feeds",     Icon:Icons.Feeds,     label:"Feeds",   special:"feeds" },
-  { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox"    },
-  { id:"add",       Icon:null,            label:"Add"      }, // special center button
-  { id:"readlater", Icon:Icons.ReadLater, label:"Saved"    },
-  { id:"settings",  Icon:Icons.Settings,  label:"Settings" },
+  { id: "feeds",     Icon: Icons.Feeds,     IconFilled: IconsFilled.Feeds,     label: "Feeds",   special: "feeds" },
+  { id: "inbox",     Icon: Icons.Inbox,     IconFilled: IconsFilled.Inbox,     label: "Inbox"   },
+  { id: "add",       Icon: null,            IconFilled: null,                  label: "Add"     },
+  { id: "today",     Icon: Icons.Today,     IconFilled: IconsFilled.Today,     label: "Today"   },
+  { id: "readlater", Icon: Icons.Saved,     IconFilled: IconsFilled.Saved,     label: "Saved"   },
 ];
 
 export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {
@@ -31,18 +37,18 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
   return (
     <nav style={{
       position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 600,
-      // iOS frosted glass blur
-      background: hexToRgba(T.card, 0.88),
-      backdropFilter: "blur(20px) saturate(180%)",
-      WebkitBackdropFilter: "blur(20px) saturate(180%)",
+      background: hexToRgba(T.card, 0.92),
+      backdropFilter: "blur(24px) saturate(180%)",
+      WebkitBackdropFilter: "blur(24px) saturate(180%)",
       borderTop: `0.5px solid ${T.border}`,
       display: "flex", alignItems: "stretch",
       paddingBottom: "env(safe-area-inset-bottom, 16px)",
       paddingLeft: "env(safe-area-inset-left, 0px)",
       paddingRight: "env(safe-area-inset-right, 0px)",
     }}>
-      {NAV.map(({ id, Icon, label }) => {
-        // ── Special: centre Add (+) button ──────────────────────
+      {NAV.map(({ id, Icon, IconFilled, label, special }) => {
+
+        // ── Centre Add (+) button ─────────────────────────────
         if (id === "add") {
           return (
             <button
@@ -51,33 +57,34 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               style={{
                 flex: 1, display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
-                gap: 3, padding: "10px 4px 6px",
+                gap: 4, padding: "8px 4px 6px",
                 border: "none", background: "transparent",
                 cursor: "pointer", fontFamily: "inherit",
                 WebkitTapHighlightColor: "transparent",
-                transition: "transform .1s",
-                position: "relative", minHeight: 52,
+                minHeight: 54,
               }}
-              onTouchStart={e => { e.currentTarget.style.transform = "scale(0.88)"; }}
-              onTouchEnd={e => { e.currentTarget.style.transform = "scale(1)"; }}
+              onTouchStart={e => e.currentTarget.firstChild.style.transform = "scale(0.88)"}
+              onTouchEnd={e => e.currentTarget.firstChild.style.transform = "scale(1)"}
             >
               <span style={{
-                width: 40, height: 40, borderRadius: 13,
-                background: T.accent, color: T.accentText,
+                width: 44, height: 44, borderRadius: 14,
+                background: T.accent, color: "#fff",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: `0 2px 12px ${T.accent}50`,
+                boxShadow: `0 3px 14px ${T.accent}55`,
+                transition: "transform .1s",
               }}>
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M9 2v14M2 9h14"/>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M10 3v14M3 10h14"/>
                 </svg>
               </span>
             </button>
           );
         }
 
-        // ── Feeds drawer trigger ──────────────────────────────────
-        if (id === "feeds") {
+        // ── Feeds drawer trigger ──────────────────────────────
+        if (special === "feeds") {
           const isFeedsActive = active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:");
+          const ActiveIcon = isFeedsActive ? IconFilled : Icon;
           return (
             <button
               key="feeds"
@@ -85,28 +92,25 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               style={{
                 flex: 1, display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
-                gap: 3, padding: "10px 4px 6px",
+                gap: 4, padding: "8px 4px 6px",
                 border: "none", background: "transparent",
                 color: isFeedsActive ? T.accent : T.textTertiary,
                 cursor: "pointer", fontFamily: "inherit",
                 WebkitTapHighlightColor: "transparent",
-                transition: "transform .1s, color .12s",
-                position: "relative", minHeight: 52,
+                minHeight: 54, transition: "color .12s",
               }}
-              onTouchStart={e => { e.currentTarget.style.transform = "scale(0.88)"; }}
-              onTouchEnd={e => { e.currentTarget.style.transform = "scale(1)"; }}
+              onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; }}
+              onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              {isFeedsActive && (
-                <span style={{ position: "absolute", top: 6, width: 32, height: 3, borderRadius: 2, background: T.accent }} />
-              )}
-              <span style={{ display: "flex", marginTop: 6 }}><Icons.Feeds /></span>
+              <ActiveIcon />
               <span style={{ fontSize: 10, fontWeight: isFeedsActive ? 600 : 400, letterSpacing: ".01em" }}>Feeds</span>
             </button>
           );
         }
 
-        // ── Standard nav tab ─────────────────────────────────────
-        const isActive = active === id || (id === "inbox" && (active === "inbox" || active === "today"));
+        // ── Standard nav tab ─────────────────────────────────
+        const isActive = active === id || (id === "inbox" && active === "inbox");
+        const ActiveIcon = isActive ? IconFilled : Icon;
         return (
           <button
             key={id}
@@ -114,48 +118,34 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             style={{
               flex: 1, display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center",
-              gap: 3, padding: "10px 4px 6px",
+              gap: 4, padding: "8px 4px 6px",
               border: "none", background: "transparent",
               color: isActive ? T.accent : T.textTertiary,
               cursor: "pointer", fontFamily: "inherit",
               WebkitTapHighlightColor: "transparent",
-              transition: "transform .1s, color .12s",
-              position: "relative", minHeight: 52,
+              minHeight: 54, transition: "color .12s",
             }}
-            onTouchStart={e => { e.currentTarget.style.transform = "scale(0.88)"; }}
-            onTouchEnd={e => { e.currentTarget.style.transform = "scale(1)"; }}
+            onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; }}
+            onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
           >
-            {/* Active pill indicator */}
-            {isActive && (
-              <span style={{
-                position: "absolute", top: 6,
-                width: 32, height: 3, borderRadius: 2,
-                background: T.accent,
-              }} />
-            )}
-
-            <span style={{ display: "flex", position: "relative", marginTop: 6 }}>
-              <Icon />
+            <span style={{ position: "relative", display: "flex" }}>
+              <ActiveIcon />
               {id === "inbox" && unreadCount > 0 && (
                 <span style={{
-                  position: "absolute", top: -4, right: -7,
+                  position: "absolute", top: -3, right: -8,
                   background: T.accent, color: "#fff",
                   fontSize: 9, fontWeight: 700, lineHeight: 1,
                   padding: "2px 4px", borderRadius: 8,
                   minWidth: 14, textAlign: "center",
-                  boxShadow: "0 1px 4px rgba(0,0,0,.2)",
+                  boxShadow: "0 1px 4px rgba(0,0,0,.25)",
                 }}>
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
             </span>
-
-            <span style={{
-              fontSize: 10, fontWeight: isActive ? 600 : 400,
-              letterSpacing: ".01em",
-              transform: isActive ? "scale(1.05)" : "scale(1)",
-              transition: "transform .15s",
-            }}>{label}</span>
+            <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 400, letterSpacing: ".01em" }}>
+              {label}
+            </span>
           </button>
         );
       })}

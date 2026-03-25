@@ -579,7 +579,9 @@ export async function deleteFolder(id) {
 }
 
 export async function setFeedFolder(feedId, folderId) {
-  const { error } = await supabase
-    .from("feeds").update({ folder_id: folderId }).eq("id", feedId);
+  const { data, error } = await supabase
+    .from("feeds").update({ folder_id: folderId }).eq("id", feedId).select().single();
   if (error) throw error;
+  if (!data) throw new Error("Feed folder update was blocked — check RLS policy.");
+  return data;
 }

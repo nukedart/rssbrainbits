@@ -127,12 +127,15 @@ function AppShell() {
   }
 
   async function handleMoveFeedToFolder(feedId, folderId) {
+    // Capture original for rollback
+    const original = feeds.find(f => f.id === feedId);
     setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: folderId } : f));
     try {
       await setFeedFolder(feedId, folderId);
     } catch (err) {
       console.error("setFeedFolder failed:", err);
-      setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: undefined } : f));
+      // Restore original folder_id (not undefined)
+      setFeeds(prev => prev.map(f => f.id === feedId ? { ...f, folder_id: original?.folder_id ?? null } : f));
     }
   }
 
