@@ -148,20 +148,20 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
           <path d="M3 10l5 5 9-9"/>
         </svg>
       </div>
-      {/* Revealed action buttons (left swipe) */}
+      {/* Revealed action buttons (left-swipe → right side, iOS Mail style) */}
       <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: ACTION_W, display: "flex" }}>
         <button onClick={e => { e.stopPropagation(); haptic(); onMarkRead?.(); close(); }}
-          style={{ flex: 1, border: "none", background: isRead ? "#8A9099" : "#2F6FED", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+          style={{ flex: 1, border: "none", background: isRead ? "#636366" : "#007AFF", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
           {isRead ? <Ic.Unread /> : <Ic.Read />}
           {isRead ? "Unread" : "Read"}
         </button>
         <button onClick={e => { e.stopPropagation(); haptic(); onReadLater?.(); close(); }}
-          style={{ flex: 1, border: "none", background: "#AA8439", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+          style={{ flex: 1, border: "none", background: "#FF9500", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
           <Ic.Clock />
           Later
         </button>
         <button onClick={e => { e.stopPropagation(); haptic(); onSave?.(); close(); }}
-          style={{ flex: 1, border: "none", background: "#accfae", color: "#03210b", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+          style={{ flex: 1, border: "none", background: "#34C759", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
           <Ic.Star />
           Star
         </button>
@@ -243,6 +243,28 @@ function ListThumb({ item, cardSize, T }) {
   );
 }
 
+// ── Square image thumbnail for mobile rows ────────────────────
+function MobileThumb({ item, T }) {
+  const ph = sourcePlaceholder(item.source);
+  const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
+  const src = yt.isYouTube
+    ? `https://img.youtube.com/vi/${yt.videoId}/mqdefault.jpg`
+    : item.image || null;
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) return null;  // no image = no thumb, text fills full width
+  return (
+    <div style={{
+      width: 84, height: 84, borderRadius: 10, flexShrink: 0,
+      overflow: "hidden", background: T.surface2,
+    }}>
+      <img src={src} alt="" loading="lazy"
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        onError={() => setFailed(true)}
+      />
+    </div>
+  );
+}
+
 // ── List view item (Things 3 task-row pattern) ───────────────
 function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, cardSize = "md" }) {
   const { T } = useTheme();
@@ -250,7 +272,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   const [hovered, setHovered] = useState(false);
   const favicon = faviconUrl(item.url);
 
-  // ── Mobile: iOS-style full-width row with clear hierarchy ──
+  // ── Mobile: iOS-style row — text left, square image right ──
   if (isMobile) {
     return (
       <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
@@ -258,31 +280,22 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           <div
             onClick={swiped ? close : onClick}
             style={{
-              display: "flex", alignItems: "flex-start", gap: 14,
-              padding: "14px 16px",
+              display: "flex", alignItems: "flex-start", gap: 12,
+              padding: "13px 16px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : "transparent",
               borderBottom: `0.5px solid ${T.border}`,
             }}
           >
-            {/* Thumbnail */}
-            <ListThumb item={item} cardSize="lg" T={T} />
-
-            {/* Text block */}
+            {/* Text LEFT */}
             <div style={{ flex: 1, minWidth: 0 }}>
               {/* Source + unread dot + date */}
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
                 {!isRead && (
                   <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent, flexShrink: 0 }} />
                 )}
-                {favicon && (
-                  <img src={favicon} alt="" width={13} height={13}
-                    style={{ borderRadius: 3, opacity: 0.85, flexShrink: 0 }}
-                    onError={e => { e.target.style.display = "none"; }} />
-                )}
                 <span style={{
-                  fontSize: 12, fontWeight: 600,
-                  color: T.accent,
+                  fontSize: 12, fontWeight: 600, color: T.accent,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
                 }}>
                   {item.source}
@@ -316,6 +329,9 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                   : item.description ? readingTime(item.description) : null}
               </div>
             </div>
+
+            {/* Square image RIGHT */}
+            <MobileThumb item={item} T={T} />
           </div>
         )}
       </SwipeRow>
