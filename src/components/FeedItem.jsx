@@ -136,18 +136,20 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
 
   return (
     <div style={{ position: "relative", overflow: "hidden" }}>
-      {/* Left-side green mark-read reveal (right swipe) */}
-      <div style={{
-        position: "absolute", left: 0, top: 0, bottom: 0, width: Math.max(rightX, 0),
-        background: "#27AE60",
-        display: "flex", alignItems: "center", paddingLeft: 16,
-        overflow: "hidden",
-      }}>
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-          style={{ opacity: Math.min(revealProgress * 2, 1), transform: `scale(${0.5 + revealProgress * 0.5})`, flexShrink: 0 }}>
-          <path d="M3 10l5 5 9-9"/>
-        </svg>
-      </div>
+      {/* Left-side green mark-read reveal (right swipe) — only mounted when dragging */}
+      {rightX > 0 && (
+        <div style={{
+          position: "absolute", left: 0, top: 0, bottom: 0, width: rightX,
+          background: "#27AE60",
+          display: "flex", alignItems: "center", paddingLeft: 16,
+          overflow: "hidden",
+        }}>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            style={{ opacity: Math.min(revealProgress * 2, 1), transform: `scale(${0.5 + revealProgress * 0.5})`, flexShrink: 0 }}>
+            <path d="M3 10l5 5 9-9"/>
+          </svg>
+        </div>
+      )}
       {/* Revealed action buttons (left-swipe → right side, iOS Mail style) */}
       <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: ACTION_W, display: "flex" }}>
         <button onClick={e => { e.stopPropagation(); haptic(); onMarkRead?.(); close(); }}
@@ -283,7 +285,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               display: "flex", alignItems: "flex-start", gap: 12,
               padding: "13px 16px",
               cursor: "pointer",
-              background: isSelected ? T.accentSurface : "transparent",
+              background: isSelected ? T.accentSurface : T.bg,
               borderBottom: `0.5px solid ${T.border}`,
             }}
           >
