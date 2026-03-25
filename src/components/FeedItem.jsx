@@ -248,10 +248,84 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
-  const vPad = cardSize === "sm" ? (isMobile ? "9px 14px" : "7px 16px") : cardSize === "lg" ? "14px 20px" : (isMobile ? "12px 16px" : "12px 18px");
+  const favicon = faviconUrl(item.url);
 
+  // ── Mobile: iOS-style full-width row with clear hierarchy ──
+  if (isMobile) {
+    return (
+      <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
+        {({ swiped, close } = {}) => (
+          <div
+            onClick={swiped ? close : onClick}
+            style={{
+              display: "flex", alignItems: "flex-start", gap: 14,
+              padding: "14px 16px",
+              cursor: "pointer",
+              background: isSelected ? T.accentSurface : "transparent",
+              borderBottom: `0.5px solid ${T.border}`,
+            }}
+          >
+            {/* Thumbnail */}
+            <ListThumb item={item} cardSize="lg" T={T} />
+
+            {/* Text block */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* Source + unread dot + date */}
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
+                {!isRead && (
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent, flexShrink: 0 }} />
+                )}
+                {favicon && (
+                  <img src={favicon} alt="" width={13} height={13}
+                    style={{ borderRadius: 3, opacity: 0.85, flexShrink: 0 }}
+                    onError={e => { e.target.style.display = "none"; }} />
+                )}
+                <span style={{
+                  fontSize: 12, fontWeight: 600,
+                  color: T.accent,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
+                }}>
+                  {item.source}
+                </span>
+                {item.date && (
+                  <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>
+                    {formatDate(item.date)}
+                  </span>
+                )}
+              </div>
+
+              {/* Title */}
+              <div style={{
+                fontFamily: "var(--reader-font-family)",
+                fontSize: 16,
+                fontWeight: isRead ? 400 : 600,
+                color: isRead ? T.textSecondary : T.text,
+                lineHeight: 1.35,
+                overflow: "hidden", display: "-webkit-box",
+                WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
+                letterSpacing: "-.01em",
+                marginBottom: 6,
+              }}>
+                {item.title}
+              </div>
+
+              {/* Reading time / podcast duration */}
+              <div style={{ fontSize: 12, color: T.textTertiary }}>
+                {item.isPodcast && item.audioDuration
+                  ? `▶ ${item.audioDuration}`
+                  : item.description ? readingTime(item.description) : null}
+              </div>
+            </div>
+          </div>
+        )}
+      </SwipeRow>
+    );
+  }
+
+  // ── Desktop layout ─────────────────────────────────────────
+  const vPad = cardSize === "sm" ? "7px 16px" : cardSize === "lg" ? "14px 20px" : "12px 18px";
   return (
-    <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
+    <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={false}>
       {({ swiped, close } = {}) => (
         <div
           onClick={swiped ? close : onClick}
@@ -282,7 +356,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               color: isRead ? T.textTertiary : T.text,
               lineHeight: 1.35,
               overflow: "hidden", textOverflow: "ellipsis",
-              whiteSpace: (isMobile || cardSize !== "sm") ? "normal" : "nowrap",
+              whiteSpace: cardSize !== "sm" ? "normal" : "nowrap",
               display: "-webkit-box", WebkitLineClamp: cardSize === "lg" ? 3 : 2, WebkitBoxOrient: "vertical",
               letterSpacing: "-.01em",
               marginBottom: 4,
@@ -295,8 +369,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 1 }}>
-              {faviconUrl(item.url) && (
-                <img src={faviconUrl(item.url)} alt="" width={12} height={12}
+              {favicon && (
+                <img src={favicon} alt="" width={12} height={12}
                   style={{ borderRadius: 2, opacity: 0.75, flexShrink: 0 }}
                   onError={e => { e.target.style.display = "none"; }} />
               )}
@@ -309,8 +383,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 
           {/* Right: hover actions or unread dot */}
           <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
-            {/* Hover actions */}
-            {hovered && !isMobile && (
+            {hovered && (
               <div style={{ display: "flex", gap: 0, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                 {item.isPodcast && onPlayPodcast && (
                   <ActionBtn icon={<Ic.Play />} title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
@@ -321,9 +394,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                 <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
               </div>
             )}
-
-            {/* Unread indicator dot (non-hover, desktop only) */}
-            {!hovered && !isMobile && !isRead && (
+            {!hovered && !isRead && (
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.accent, flexShrink: 0, opacity: 0.9 }} />
             )}
           </div>
