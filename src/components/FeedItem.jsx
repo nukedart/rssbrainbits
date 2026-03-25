@@ -79,14 +79,19 @@ function ActionBtn({ icon, title, onClick, T }) {
 }
 
 // ── Swipe wrapper — only active on mobile ─────────────────────
-// Wraps a row and exposes 3 action buttons on swipe-left
+// Left-swipe: reveals Read / Later / Star action buttons
+// Right-swipe: directly marks read (green flash + haptic)
 function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobile }) {
-  const ACTION_W = 140;
+  const ACTION_W  = 140;
+  const RIGHT_SNAP = 64;   // px to drag right before snapping to mark-read
   const [swipeX, setSwipeX] = useState(0);
   const [swiped, setSwiped]  = useState(false);
+  const [rightX, setRightX] = useState(0);
   const touchRef = useRef(null);
 
   if (!isMobile) return <>{typeof children === "function" ? children({ swiped: false, close: () => {} }) : children}</>;
+
+  function haptic() { try { navigator.vibrate?.(8); } catch {} }
 
   function onTouchStart(e) {
     touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -99,44 +104,74 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
     if (dx < 0) {
       e.preventDefault();
       setSwipeX(Math.max(dx, -ACTION_W));
+      setRightX(0);
     } else if (swiped && dx > 0) {
+      // Close the left panel
       e.preventDefault();
       setSwipeX(Math.min(0, -ACTION_W + dx));
+    } else if (!swiped && dx > 0) {
+      // Right swipe — mark-read reveal
+      e.preventDefault();
+      setRightX(Math.min(dx, RIGHT_SNAP + 16));
     }
   }
   function onTouchEnd() {
     touchRef.current = null;
-    if (swipeX < -ACTION_W / 2) { setSwipeX(-ACTION_W); setSwiped(true); }
-    else { setSwipeX(0); setSwiped(false); }
+    if (rightX >= RIGHT_SNAP) {
+      haptic();
+      onMarkRead?.();
+      setRightX(0);
+      setSwipeX(0);
+      setSwiped(false);
+    } else if (swipeX < -ACTION_W / 2) {
+      setSwipeX(-ACTION_W); setSwiped(true);
+    } else {
+      setSwipeX(0); setSwiped(false);
+    }
+    setRightX(0);
   }
   function close() { setSwipeX(0); setSwiped(false); }
 
+  const revealProgress = Math.min(rightX / RIGHT_SNAP, 1);
+
   return (
     <div style={{ position: "relative", overflow: "hidden" }}>
-      {/* Revealed action buttons */}
+      {/* Left-side green mark-read reveal (right swipe) */}
+      <div style={{
+        position: "absolute", left: 0, top: 0, bottom: 0, width: Math.max(rightX, 0),
+        background: "#27AE60",
+        display: "flex", alignItems: "center", paddingLeft: 16,
+        overflow: "hidden",
+      }}>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          style={{ opacity: Math.min(revealProgress * 2, 1), transform: `scale(${0.5 + revealProgress * 0.5})`, flexShrink: 0 }}>
+          <path d="M3 10l5 5 9-9"/>
+        </svg>
+      </div>
+      {/* Revealed action buttons (left swipe) */}
       <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: ACTION_W, display: "flex" }}>
-        <button onClick={e => { e.stopPropagation(); onMarkRead?.(); close(); }}
+        <button onClick={e => { e.stopPropagation(); haptic(); onMarkRead?.(); close(); }}
           style={{ flex: 1, border: "none", background: isRead ? "#8A9099" : "#2F6FED", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
           {isRead ? <Ic.Unread /> : <Ic.Read />}
           {isRead ? "Unread" : "Read"}
         </button>
-        <button onClick={e => { e.stopPropagation(); onReadLater?.(); close(); }}
+        <button onClick={e => { e.stopPropagation(); haptic(); onReadLater?.(); close(); }}
           style={{ flex: 1, border: "none", background: "#AA8439", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
           <Ic.Clock />
           Later
         </button>
-        <button onClick={e => { e.stopPropagation(); onSave?.(); close(); }}
+        <button onClick={e => { e.stopPropagation(); haptic(); onSave?.(); close(); }}
           style={{ flex: 1, border: "none", background: "#accfae", color: "#03210b", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
           <Ic.Star />
           Star
         </button>
       </div>
-      {/* Sliding row */}
+      {/* Sliding row — translates for both left and right swipe */}
       <div
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        style={{ transform: `translateX(${swipeX}px)`, transition: touchRef.current ? "none" : "transform .25s cubic-bezier(.25,.46,.45,.94)", position: "relative", zIndex: 1 }}
+        style={{ transform: `translateX(${swipeX + rightX}px)`, transition: touchRef.current ? "none" : "transform .25s cubic-bezier(.25,.46,.45,.94)", position: "relative", zIndex: 1 }}
       >
         {typeof children === "function" ? children({ swiped, close }) : children}
       </div>

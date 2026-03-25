@@ -157,6 +157,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
   // ── Save ───────────────────────────────────────────────────
   async function handleSave() {
+    try { navigator.vibrate?.(8); } catch {}
     await saveItem(user.id, { ...item, summary });
     setSaved(true);
   }
@@ -183,6 +184,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
   // ── Share ─────────────────────────────────────────────────
   async function handleShare() {
+    try { navigator.vibrate?.(8); } catch {}
     const title = content?.title || item.title || "Article";
     const url   = item.url;
     if (navigator.share) {

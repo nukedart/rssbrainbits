@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.1] — 2026-03-25
+
+### Changes since v1.44.3
+- v1.46.0 — mobile Reeder overhaul + Today dashboard + UX fixes
+- v1.45.0 — Today page + article-linked notes
+
+---
+
 ## [1.46.0] — 2026-03-25
 
 ### Mobile — Reeder-style overhaul
