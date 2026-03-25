@@ -1,4 +1,5 @@
 // ── Content fetchers ──────────────────────────────────────────
+import { Readability } from "@mozilla/readability";
 import { getCachedFeed, setCachedFeed } from "./feedCache.js";
 import { getAnthropicKey } from "./apiKeys.js";
 
@@ -343,20 +344,10 @@ export async function fetchArticleContent(articleUrl) {
   base.href  = articleUrl;
   doc.head.appendChild(base);
 
-  // Meta fields
-  const title = (
-    doc.querySelector("meta[property='og:title']")?.getAttribute("content") ||
-    doc.querySelector("h1")?.textContent ||
-    doc.querySelector("title")?.textContent ||
-    "Article"
-  ).trim();
-
-  const description = (
-    doc.querySelector("meta[property='og:description']")?.getAttribute("content") ||
-    doc.querySelector("meta[name='description']")?.getAttribute("content") ||
-    ""
-  ).trim();
-
+  // Meta fields (og/twitter tags — present even if Readability wins)
+  const ogTitle = doc.querySelector("meta[property='og:title']")?.getAttribute("content");
+  const ogDesc  = doc.querySelector("meta[property='og:description']")?.getAttribute("content") ||
+                  doc.querySelector("meta[name='description']")?.getAttribute("content") || "";
   const rawImage =
     doc.querySelector("meta[property='og:image']")?.getAttribute("content") ||
     doc.querySelector("meta[name='twitter:image']")?.getAttribute("content") ||
@@ -366,7 +357,45 @@ export async function fetchArticleContent(articleUrl) {
     try { image = new URL(rawImage, articleUrl).href; } catch { image = rawImage; }
   }
 
-  // ── Site-specific overrides (fastest path — checked before generic selectors) ──
+  // ── Try Readability first ─────────────────────────────────────
+  let readabilityResult = null;
+  try {
+    // Readability mutates the document, so clone it
+    const docClone = doc.cloneNode(true);
+    readabilityResult = new Readability(docClone).parse();
+  } catch { /* fall through */ }
+
+  if (readabilityResult?.content && readabilityResult.textContent?.trim().length > 200) {
+    const title       = (ogTitle || readabilityResult.title || "Article").trim();
+    const description = ogDesc.trim() || readabilityResult.excerpt?.trim() || "";
+    let   bodyText    = readabilityResult.textContent.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim().slice(0, 15000);
+
+    // Post-process Readability HTML: fix relative URLs and open links externally
+    const tmp = parser.parseFromString(readabilityResult.content, "text/html");
+    tmp.querySelectorAll("img[src]").forEach(img => {
+      try { img.setAttribute("src", new URL(img.getAttribute("src"), articleUrl).href); } catch {}
+      img.removeAttribute("width"); img.removeAttribute("height");
+    });
+    tmp.querySelectorAll("a[href]").forEach(a => {
+      try { a.setAttribute("href", new URL(a.getAttribute("href"), articleUrl).href); } catch {}
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener noreferrer");
+    });
+    const bodyHtml = tmp.body.innerHTML;
+
+    return { title, description, image, url: articleUrl, bodyText, bodyHtml };
+  }
+
+  // ── Fallback: manual DOM extraction ──────────────────────────
+  const title = (
+    ogTitle ||
+    doc.querySelector("h1")?.textContent ||
+    doc.querySelector("title")?.textContent ||
+    "Article"
+  ).trim();
+  const description = ogDesc.trim();
+
+  // Site-specific overrides (fastest path — checked before generic selectors)
   const hostname = (() => { try { return new URL(articleUrl).hostname.replace(/^www\./, ""); } catch { return ""; } })();
   const SITE_SELECTORS = {
     "makeuseof.com":    [".article-body", ".article-content", ".content-writer-content", ".content__item"],
@@ -382,117 +411,69 @@ export async function fetchArticleContent(articleUrl) {
     "engadget.com":     ["[class*='article-body']", ".o-article__body", "article"],
   };
 
-  // ── Find the best article container ──────────────────────────
   const SELECTORS = [
-    // Standard semantic
-    "article",
-    "[itemprop='articleBody']",
-    // WordPress / common CMS
-    ".article-content",
-    ".post-content",
-    ".entry-content",
-    ".single-article-content",
-    // The Verge, Vox Media
-    ".duet--article--article-body-component",
-    "[data-component='article-body']",
-    // Ars Technica
-    ".article-content.post-page",
-    "#article-guts",
-    // General news
-    ".article-body",
-    ".story-body",
-    ".story-content",
-    ".content-body",
-    ".body-content",
-    "#article-body",
-    ".post-body",
-    ".article__body",
-    // Substack, Ghost, Medium
-    ".available-content",
-    ".post",
-    '[role="main"]',
-    "main",
-    ".content",
-    "body",
+    "article", "[itemprop='articleBody']",
+    ".article-content", ".post-content", ".entry-content", ".single-article-content",
+    ".duet--article--article-body-component", "[data-component='article-body']",
+    ".article-content.post-page", "#article-guts",
+    ".article-body", ".story-body", ".story-content", ".content-body", ".body-content",
+    "#article-body", ".post-body", ".article__body",
+    ".available-content", ".post", '[role="main"]', "main", ".content", "body",
   ];
 
-  // Try site-specific selectors first
   let articleEl = null;
   const siteSelectors = SITE_SELECTORS[hostname];
   if (siteSelectors) {
-    for (const sel of siteSelectors) {
-      articleEl = doc.querySelector(sel);
-      if (articleEl) break;
-    }
+    for (const sel of siteSelectors) { articleEl = doc.querySelector(sel); if (articleEl) break; }
   }
-  // Fall back to generic list
   if (!articleEl) {
-    for (const sel of SELECTORS) {
-      articleEl = doc.querySelector(sel);
-      if (articleEl) break;
-    }
+    for (const sel of SELECTORS) { articleEl = doc.querySelector(sel); if (articleEl) break; }
   }
 
-  // Remove noise nodes — single querySelectorAll call is much faster than iterating
   const NOISE_SELECTOR = [
     "script","style","noscript","nav","header","footer","aside",
     ".ad",".ads","[class*='advertisement']","[id*='ad-']",
     ".sidebar",".related",".comments",".social",".share",".newsletter",
     ".subscription","[class*='popup']","[class*='banner']",
     "figure.wp-block-embed","iframe",
-    // WordPress / 9to5Mac / MakeUseOf specific
     "[class*='sharedaddy']","[class*='jp-relatedposts']",
     "[class*='wpcnt']","[id*='respond']","[class*='post-nav']",
     "[class*='author-info']","[class*='tags-links']",
     "[class*='author-box']","[class*='author-bio']",
     "[class*='related-posts']","[class*='recommended']",
-    // MakeUseOf specific
     "[class*='mu-ad']","[class*='newsletter-signup']","[class*='bio-box']",
-    // Paywall / subscription prompts
     "[class*='paywall']","[class*='subscribe']","[class*='membership']",
     "[class*='piano-']","[class*='tp-']",
   ].join(",");
   try { articleEl?.querySelectorAll(NOISE_SELECTOR).forEach(el => el.remove()); } catch {}
 
-  // Extract paragraphs in reading order for best quality text
   const paragraphs = articleEl
     ? Array.from(articleEl.querySelectorAll("p, h2, h3, h4, li, blockquote"))
         .map((el) => el.textContent.replace(/\s+/g, " ").trim())
         .filter((t) => t.length > 20)
     : [];
 
-  // Use paragraph extraction if we got enough; fall back to full innerText
   let bodyText = "";
   if (paragraphs.length >= 3) {
     bodyText = paragraphs.join("\n\n");
   } else {
     bodyText = (articleEl?.innerText || articleEl?.textContent || "")
-      .replace(/[ \t]+/g, " ")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
+      .replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
   }
-
-  // Cap at 15k chars (enough for a full long-form article)
   bodyText = bodyText.slice(0, 15000);
 
-  // ── Build sanitized HTML for the formatted reader view ───────
-  // Keeps headings, bold, italic, lists, images, code blocks, links.
-  // Strips all event handlers and fixes relative URLs.
   let bodyHtml = null;
   if (articleEl) {
     const clone = articleEl.cloneNode(true);
-    // Strip event handlers
     clone.querySelectorAll("*").forEach(node => {
       for (const attr of Array.from(node.attributes)) {
         if (attr.name.startsWith("on")) node.removeAttribute(attr.name);
       }
     });
-    // Fix relative image URLs + constrain size
     clone.querySelectorAll("img[src]").forEach(img => {
       try { img.setAttribute("src", new URL(img.getAttribute("src"), articleUrl).href); } catch {}
       img.removeAttribute("width"); img.removeAttribute("height");
     });
-    // Fix relative anchor hrefs + open externally
     clone.querySelectorAll("a[href]").forEach(a => {
       try { a.setAttribute("href", new URL(a.getAttribute("href"), articleUrl).href); } catch {}
       a.setAttribute("target", "_blank");

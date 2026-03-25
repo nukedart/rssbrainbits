@@ -350,6 +350,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           style={{
+            position: "relative",
             display: "flex", alignItems: "center", gap: 12,
             padding: vPad,
             margin: "0 6px",
@@ -365,7 +366,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             : <div style={{ width:26, height:26, flexShrink:0, borderRadius:7, background:hovered?T.accentSurface:T.surface, display:"flex", alignItems:"center", justifyContent:"center", color:hovered?T.accent:T.textTertiary, transition:"all .15s" }}><ContentTypeIcon item={item} /></div>
           }
 
-          {/* Text block */}
+          {/* Text block — layout never changes */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontFamily: cardSize !== "sm" ? "var(--reader-font-family)" : "inherit",
@@ -399,23 +400,23 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             </div>
           </div>
 
-          {/* Right: hover actions or unread dot */}
-          <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
-            {hovered && (
-              <div style={{ display: "flex", gap: 0, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                {item.isPodcast && onPlayPodcast && (
-                  <ActionBtn icon={<Ic.Play />} title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
-                )}
-                <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
-                <ActionBtn icon={<Ic.Star />} title="Star" onClick={onSave} T={T} />
-                <ActionBtn icon={<Ic.Clock />} title="Save" onClick={onReadLater} T={T} />
-                <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
-              </div>
-            )}
-            {!hovered && !isRead && (
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.accent, flexShrink: 0, opacity: 0.9 }} />
-            )}
-          </div>
+          {/* Unread dot — absolute so it doesn't affect layout */}
+          {!isRead && !hovered && (
+            <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", width: 6, height: 6, borderRadius: "50%", background: T.accent, pointerEvents: "none" }} />
+          )}
+
+          {/* Action buttons — absolute overlay, right-aligned, never shifts layout */}
+          {hovered && (
+            <div style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", display: "flex", gap: 0, background: T.bg, borderRadius: 8, boxShadow: `0 1px 6px rgba(0,0,0,.1)` }} onClick={e => e.stopPropagation()}>
+              {item.isPodcast && onPlayPodcast && (
+                <ActionBtn icon={<Ic.Play />} title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
+              )}
+              <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
+              <ActionBtn icon={<Ic.Clock />} title="Save for later" onClick={onReadLater} T={T} />
+              <ActionBtn icon={<Ic.Star />} title="Star" onClick={onSave} T={T} />
+              <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
+            </div>
+          )}
         </div>
       )}
     </SwipeRow>
@@ -442,6 +443,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           style={{
+            position: "relative",
             background: isSelected ? T.accentSurface : hovered ? T.surface : T.card,
             borderRadius: 12, overflow: "hidden", cursor: "pointer",
             transition: "background .15s",
@@ -532,19 +534,20 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               )}
             </div>
 
-            {/* Actions — hover only on desktop */}
-            {(hovered && !isMobile) && (
-              <div style={{ display: "flex", gap: 2, marginTop: "auto", paddingTop: 4 }} onClick={e => e.stopPropagation()}>
-                {item.isPodcast && <ActionBtn icon={<Ic.Play />} title="Play" onClick={() => {}} T={T} />}
-                <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
-                <ActionBtn icon={<Ic.Star />} title="Star" onClick={onSave} T={T} />
-                <ActionBtn icon={<Ic.Clock />} title="Save for later" onClick={onReadLater} T={T} />
-                <div style={{ marginLeft: "auto" }}>
-                  <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* Action buttons — absolute overlay at card bottom, desktop hover only */}
+          {hovered && !isMobile && (
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", alignItems: "center", padding: "6px 8px", background: T.surface, borderTop: `1px solid ${T.border}` }} onClick={e => e.stopPropagation()}>
+              {item.isPodcast && onPlayPodcast && <ActionBtn icon={<Ic.Play />} title="Play" onClick={() => onPlayPodcast(item)} T={T} />}
+              <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
+              <ActionBtn icon={<Ic.Clock />} title="Save for later" onClick={onReadLater} T={T} />
+              <ActionBtn icon={<Ic.Star />} title="Star" onClick={onSave} T={T} />
+              <div style={{ marginLeft: "auto" }}>
+                <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </SwipeRow>

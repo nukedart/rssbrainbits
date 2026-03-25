@@ -960,7 +960,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             baseItems.map((item, i) => (
               <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={i < 20 ? { animation: `fadeInUp .18s ease both`, animationDelay: `${i * 20}ms` } : {}}>
               <FeedItem item={item} viewMode="list" cardSize={isMobile ? "sm" : cardSize}
-                isSelected={openItem ? openItem?.url === item.url : cursorIdx === i}
+                isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
                 isRead={readUrls.has(item.url)}
                 onClick={() => { setCursorIdx(i); if (item.isPodcast && item.audioUrl && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}
                 onSave={() => handleSaveItem(item)}

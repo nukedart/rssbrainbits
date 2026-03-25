@@ -3,9 +3,20 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.6] — 2026-03-25
+
+### Changes since v1.46.5
+- Readability integration, mobile swipe fix, and hover action overlay improvements (see v1.46.5)
+
+---
+
 ## [1.46.5] — 2026-03-25
 
 ### Changes since v1.46.4
+- Integrated `@mozilla/readability` into `fetchArticleContent` as the primary extraction path, with the existing manual DOM parser as fallback
+- Fixed mobile feed list: first item no longer shows action buttons without swiping (cursor-based selection was incorrectly applied on mobile)
+- Feed item hover actions no longer shift layout — action buttons now appear as absolute overlays (list: right-aligned pill, card: bottom bar) so text and formatting are unchanged
+- Desktop action buttons use consistent icon set (Read/Unread, Save for later, Star, Open original) matching mobile swipe actions; card Play button now correctly calls `onPlayPodcast`
 
 ---
 
