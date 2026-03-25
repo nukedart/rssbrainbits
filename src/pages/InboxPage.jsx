@@ -39,7 +39,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [openIdx, setOpenIdx]           = useState(-1);
   const [expandedView, setExpandedView] = useState(false);
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
-  const [viewMode, setViewMode]         = useState(() => localStorage.getItem("fb-viewmode") || "card");
+  const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "card") : (localStorage.getItem("fb-viewmode") || "card"));
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
   const [readFilter, setReadFilter]     = useState("all"); // "all" | "unread" | "read"
@@ -500,7 +500,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     setTimeout(() => setToast(null), 2000);
   }
 
-  function toggleViewMode(mode) { setViewMode(mode); localStorage.setItem("fb-viewmode", mode); }
+  function toggleViewMode(mode) { setViewMode(mode); localStorage.setItem(isMobile ? "fb-viewmode-mobile" : "fb-viewmode", mode); }
 
   useEffect(() => {
     if (!viewMenuOpen) return;
