@@ -16,6 +16,7 @@ import { identify, track } from "./lib/analytics";
 // ── Lazy page chunks — each becomes a separate JS file ────────
 const InboxPage      = lazy(() => import("./pages/InboxPage"));
 const HomePage       = lazy(() => import("./pages/HomePage"));
+const TodayPage      = lazy(() => import("./pages/TodayPage"));
 const NotesPage      = lazy(() => import("./components/NotesPage"));
 const AnalyticsPage  = lazy(() => import("./pages/AnalyticsPage"));
 
@@ -207,7 +208,7 @@ function AppShell() {
     switch (page) {
       case "home":         return <HomePage feeds={feeds} folders={folders} feedUnreadCounts={feedUnreadCounts} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
       case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} forceOpenSearch={forceOpenSearch} onForcedSearchClose={() => setForceOpenSearch(false)} />;
-      case "today":        return <InboxPage filterMode="today" onUnreadCount={setUnreadCount} folders={folders} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
+      case "today":        return <TodayPage feeds={feeds} onPlayPodcast={setPodcastItem} />;
       case "readlater":    return <ReadLaterPage />;
       case "history":      return <HistoryPage />;
       case "stats":        return <StatsPage />;

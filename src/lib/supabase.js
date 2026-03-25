@@ -216,12 +216,29 @@ export async function getNotes(userId) {
   return data || [];
 }
 
-export async function createNote(userId, { title = "Untitled Note", body = "", tags = [], color = "teal" } = {}) {
-  const { data, error } = await supabase
-    .from("notes").insert({ user_id: userId, title, body, tags, color })
+export async function createNote(userId, { title = "Untitled Note", body = "", tags = [], color = "teal", article_url = null, article_title = null } = {}) {
+  const record = { user_id: userId, title, body, tags, color };
+  if (article_url) { record.article_url = article_url; record.article_title = article_title; }
+  let { data, error } = await supabase
+    .from("notes").insert(record)
     .select().single();
+  // Column may not exist for users who haven't run the migration — retry without it
+  if (error?.message?.includes("article_url")) {
+    ({ data, error } = await supabase
+      .from("notes").insert({ user_id: userId, title, body, tags, color })
+      .select().single());
+  }
   if (error) throw error;
   return data;
+}
+
+export async function getNotesByArticle(userId, articleUrl) {
+  const { data, error } = await supabase
+    .from("notes").select("*")
+    .eq("user_id", userId).eq("article_url", articleUrl)
+    .order("updated_at", { ascending: false });
+  if (error) return []; // column may not exist yet
+  return data || [];
 }
 
 export async function updateNote(noteId, updates) {

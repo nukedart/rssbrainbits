@@ -16,20 +16,27 @@ const ContentViewerLazy = lazy(() => import("./ContentViewer"));
 
 // ── Setup SQL shown when notes table is missing ───────────────
 const SETUP_SQL = `CREATE TABLE IF NOT EXISTS public.notes (
-  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  title      TEXT NOT NULL DEFAULT 'Untitled Note',
-  body       TEXT NOT NULL DEFAULT '',
-  tags       TEXT[] NOT NULL DEFAULT '{}',
-  color      TEXT DEFAULT 'teal',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title         TEXT NOT NULL DEFAULT 'Untitled Note',
+  body          TEXT NOT NULL DEFAULT '',
+  tags          TEXT[] NOT NULL DEFAULT '{}',
+  color         TEXT DEFAULT 'teal',
+  article_url   TEXT DEFAULT NULL,
+  article_title TEXT DEFAULT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own notes" ON public.notes
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE INDEX IF NOT EXISTS notes_user_updated
   ON public.notes(user_id, updated_at DESC);`;
+
+// ── Migration SQL for existing notes tables ───────────────────
+const MIGRATION_SQL = `ALTER TABLE public.notes
+  ADD COLUMN IF NOT EXISTS article_url   TEXT DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS article_title TEXT DEFAULT NULL;`;
 
 // ── Card accent colours per note.color ───────────────────────
 const NOTE_COLORS = {
@@ -54,7 +61,7 @@ function fmtDate(iso) {
 }
 
 // ── NoteCard ──────────────────────────────────────────────────
-function NoteCard({ note, onOpen, T, featured, isMobile }) {
+function NoteCard({ note, onOpen, onReread, T, featured, isMobile }) {
   const col = NOTE_COLORS[note.color] || NOTE_COLORS.teal;
   const px = featured ? 28 : 20;
   const preview = (note.body || "").replace(/\n+/g, " ").slice(0, featured ? 220 : 120);
@@ -107,6 +114,20 @@ function NoteCard({ note, onOpen, T, featured, isMobile }) {
       {/* Featured: word count */}
       {featured && words > 0 && (
         <div style={{ fontSize: 11, color: T.textTertiary, marginBottom: 14 }}>{words} words</div>
+      )}
+
+      {/* Article link */}
+      {note.article_url && onReread && (
+        <div onClick={e => { e.stopPropagation(); onReread({ url: note.article_url, title: note.article_title, source: "" }); }}
+          style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, padding: "5px 8px", background: "rgba(0,0,0,.06)", borderRadius: 7, cursor: "pointer" }}
+          title="Re-read source article"
+        >
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, flexShrink: 0 }}>From</span>
+          <span style={{ fontSize: 11, color: T.textSecondary, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {note.article_title || note.article_url}
+          </span>
+          <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>↗</span>
+        </div>
       )}
 
       {/* Colour strip */}
@@ -382,9 +403,24 @@ function NoteEditor({ note, onClose, onSave, onDelete, T, isMobile }) {
 
           {/* Session label */}
           {!zenMode && (
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 22 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: note?.article_url ? 14 : 22 }}>
               <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".16em", color: T.textTertiary }}>Focused Session</span>
               <span style={{ fontSize: 12, color: T.textTertiary }}>{dateStr}</span>
+            </div>
+          )}
+
+          {/* Article context */}
+          {!zenMode && note?.article_url && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22, padding: "9px 14px", background: T.surface, borderRadius: 10, border: `1px solid ${T.border}` }}>
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".1em", color: T.textTertiary, flexShrink: 0 }}>From</span>
+              <span style={{ fontSize: 12, color: T.textSecondary, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {note.article_title || note.article_url}
+              </span>
+              <a href={note.article_url} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 12, color: T.accent, textDecoration: "none", flexShrink: 0, fontWeight: 500 }}
+                onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
+                onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
+              >Re-read ↗</a>
             </div>
           )}
 
@@ -485,6 +521,9 @@ export default function NotesPage() {
   const [editorNote, setEditorNote] = useState(null);
   const [viewingItem, setViewingItem] = useState(null);
   const [sqlCopied, setSqlCopied]   = useState(false);
+  const [migrationNeeded, setMigrationNeeded] = useState(false);
+  const [migrationOpen, setMigrationOpen]     = useState(false);
+  const [migCopied, setMigCopied]             = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -499,7 +538,13 @@ export default function NotesPage() {
       getAllHighlights(user.id),
       isPro ? getAllArticleTags(user.id) : Promise.resolve([]),
     ])
-      .then(([n, h, t]) => { setNotes(n); setHighlights(h); setArticleTags(t); })
+      .then(([n, h, t]) => {
+        setNotes(n); setHighlights(h); setArticleTags(t);
+        // Detect if article_url column is missing (migration needed)
+        if (n.length > 0 && !Object.prototype.hasOwnProperty.call(n[0], "article_url")) {
+          setMigrationNeeded(true);
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user]);
@@ -671,6 +716,31 @@ export default function NotesPage() {
           </div>
         </div>
 
+        {/* ── Migration banner ── */}
+        {migrationNeeded && !setupNeeded && (
+          <div style={{ borderBottom: `1px solid ${T.border}`, padding: "10px 24px", background: T.surface, display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <span style={{ fontSize: 12, color: T.textSecondary, flex: 1 }}>
+              ✦ Enable article-linked notes by upgrading your notes table.
+            </span>
+            <button onClick={() => setMigrationOpen(v => !v)}
+              style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 7, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: T.accent, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
+              {migrationOpen ? "Hide SQL" : "Show SQL"}
+            </button>
+            {migrationOpen && (
+              <button onClick={async () => { await copyToClipboard(MIGRATION_SQL); setMigCopied(true); setTimeout(() => setMigCopied(false), 2000); }}
+                style={{ background: T.accentSurface, border: `1px solid ${T.accent}`, borderRadius: 7, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: T.accent, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
+                {migCopied ? "✓ Copied" : "Copy SQL"}
+              </button>
+            )}
+          </div>
+        )}
+        {migrationNeeded && migrationOpen && (
+          <div style={{ borderBottom: `1px solid ${T.border}`, padding: "10px 24px", flexShrink: 0 }}>
+            <pre style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 14px", fontSize: 11, color: T.textSecondary, lineHeight: 1.7, overflowX: "auto", whiteSpace: "pre-wrap", margin: 0 }}>{MIGRATION_SQL}</pre>
+            <p style={{ fontSize: 12, color: T.textTertiary, margin: "6px 0 0" }}>Run in your Supabase Dashboard → SQL Editor, then refresh.</p>
+          </div>
+        )}
+
         {/* ── Content ── */}
         <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "16px 14px 90px" : "20px 24px 48px" }}>
 
@@ -710,7 +780,7 @@ export default function NotesPage() {
               <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", gap: 14, alignItems: "start" }}>
                 {fn.map((note, i) => (
                   <div key={note.id} style={{ gridColumn: !isMobile && i === 0 ? "1 / -1" : undefined }}>
-                    <NoteCard note={note} onOpen={setEditorNote} T={T} featured={!isMobile && i === 0} isMobile={isMobile} />
+                    <NoteCard note={note} onOpen={setEditorNote} onReread={setViewingItem} T={T} featured={!isMobile && i === 0} isMobile={isMobile} />
                   </div>
                 ))}
               </div>

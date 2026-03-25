@@ -3,6 +3,18 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.45.0] — 2026-03-25
+
+### Added
+- **Today page** — dedicated focused daily digest replacing the filtered inbox view. Shows a date header, reading progress bar (X / N read), and a clean editorial article list. Articles fade and show a ✓ when read. Desktop: split-pane list + inline reader. Mobile: full-screen reader on tap.
+- **Article-linked notes** — notes can now be attached to the article you're reading. "Note" button in the ContentViewer toolbar opens an article notes panel (side drawer on desktop, bottom sheet on mobile) showing existing notes and a quick-create form. Notes panel auto-opens in create mode when empty.
+- **Note count badge** — "Note" button in the article toolbar shows a count badge when notes exist on that article.
+- **Article context in Notes library** — NoteCards linked to an article show a "From" chip with the article title and a Re-read ↗ link.
+- **Article context in Note editor** — NoteEditor shows the source article title and a Re-read ↗ link at the top when the note is article-linked.
+- **Notes table migration** — NotesPage detects if the `article_url`/`article_title` columns are missing and shows a one-click SQL migration prompt. Updated `SETUP_SQL` includes the new columns for fresh installs.
+
+---
+
 ## [1.44.3] — 2026-03-24
 
 ### Changes since v1.44.2
