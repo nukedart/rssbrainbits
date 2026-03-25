@@ -716,9 +716,9 @@ const WORKER_BASE = import.meta.env.VITE_PROXY_URL || null;
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || null;
 
 const SUMMARY_PROMPTS = {
-  keypoints: `Summarize the following article in 3–5 clear bullet points. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
+  keypoints: `Summarize the following article in 3–5 clear bullet points capturing the key ideas and facts. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
   brief: `Give a 1–2 sentence TL;DR of the following article. Write in plain text only — no markdown, no formatting.`,
-  detailed: `Summarize the following article in 6–8 detailed bullet points covering all key ideas, data, and conclusions. Write in plain text only. Each bullet must start with "•" and be a complete sentence.`,
+  actions: `Extract 3–5 concrete action items or takeaways from the following article — things the reader should do, consider, or remember. Write in plain text only. Each item must start with "•" and be a direct, actionable sentence starting with a verb.`,
 };
 
 export async function summarizeContent(text, title, style = "keypoints") {
@@ -783,7 +783,7 @@ export async function summarizeContent(text, title, style = "keypoints") {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: style === "detailed" ? 1500 : 800,
+        max_tokens: style === "actions" ? 1000 : 800,
         messages: [{
           role: "user",
           content: `You are a reading assistant. ${prompt}\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 6000)}`,

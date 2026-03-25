@@ -34,7 +34,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   // AI summary
   const [summary, setSummary]         = useState(null);
   const [summarizing, setSummarizing] = useState(false);
-  const [summaryStyle, setSummaryStyle] = useState("keypoints"); // keypoints | brief | detailed
+  const [summaryStyle, setSummaryStyle] = useState("keypoints"); // keypoints | brief | actions
 
   // Highlights
   const [highlights, setHighlights]   = useState([]);
@@ -764,8 +764,8 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
 // ── SummaryBlock ──────────────────────────────────────────────
 const SUMMARY_STYLES = [
   { id: "keypoints", label: "Key Points" },
-  { id: "brief",     label: "Brief" },
-  { id: "detailed",  label: "Detailed" },
+  { id: "brief",     label: "Brief"      },
+  { id: "actions",   label: "Actions"    },
 ];
 
 const SparkleIcon = ({ size = 13, style }) => (
@@ -775,8 +775,9 @@ const SparkleIcon = ({ size = 13, style }) => (
 );
 
 function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypoints", onStyleChange, T }) {
-  if (summary) {
-    const bullets = summary
+  // ── Post-summary: result card with format switcher at bottom ──
+  if (summary || summarizing) {
+    const bullets = (summary || "")
       .split("\n")
       .map(l => l.trim())
       .filter(l => l.length > 0)
@@ -798,24 +799,21 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
         marginBottom: 32,
         marginTop: 8,
       }}>
+        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
           <SparkleIcon size={12} style={{ color: T.accent, flexShrink: 0 }} />
-          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: T.accent, flex: 1 }}>AI Summary</span>
-          {/* Style tabs inline — pill style matching summarize button */}
-          <div style={{ display: "flex", gap: 3 }}>
-            {SUMMARY_STYLES.map(s => (
-              <button key={s.id} onClick={() => { onStyleChange?.(s.id); onSummarize?.(s.id); }} style={{
-                padding: "3px 10px", borderRadius: 100,
-                border: `1px solid ${summaryStyle === s.id ? T.accent : T.border}`,
-                background: "transparent",
-                color: summaryStyle === s.id ? T.accent : T.textTertiary,
-                fontSize: 10, fontWeight: summaryStyle === s.id ? 700 : 400,
-                cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
-              }}>{s.label}</button>
-            ))}
-          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: T.accent }}>
+            AI Summary
+          </span>
         </div>
-        {bullets.length > 0 ? (
+
+        {/* Content */}
+        {summarizing ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", color: T.textTertiary }}>
+            <SparkleIcon size={12} style={{ opacity: 0.5, animation: "spin 1.2s linear infinite" }} />
+            <span style={{ fontSize: 13 }}>Summarizing…</span>
+          </div>
+        ) : bullets.length > 0 ? (
           <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 9 }}>
             {bullets.map((point, i) => (
               <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -827,51 +825,50 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
         ) : (
           <div style={{ fontSize: 14, color: T.text, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{summary}</div>
         )}
+
+        {/* Format switcher — bottom of card, only when content exists */}
+        {!summarizing && (
+          <div style={{ display: "flex", gap: 6, marginTop: 16, paddingTop: 14, borderTop: `1px solid ${T.border}` }}>
+            {SUMMARY_STYLES.map(s => (
+              <button key={s.id}
+                onClick={() => { onStyleChange?.(s.id); onSummarize?.(s.id); }}
+                style={{
+                  padding: "4px 12px", borderRadius: 100,
+                  border: `1px solid ${summaryStyle === s.id ? T.accent : T.border}`,
+                  background: summaryStyle === s.id ? T.accentSurface : "transparent",
+                  color: summaryStyle === s.id ? T.accent : T.textTertiary,
+                  fontSize: 11, fontWeight: summaryStyle === s.id ? 600 : 400,
+                  cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
+                }}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
 
-  // ── Pre-summary: centered pill ──────────────────────────────
+  // ── Pre-summary: single button ────────────────────────────
   return (
     <div style={{ textAlign: "center", padding: "24px 0 28px" }}>
-      {/* Style selector — pill tabs matching main summarize button */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 4, marginBottom: 14 }}>
-        {SUMMARY_STYLES.map(s => (
-          <button key={s.id} onClick={() => onStyleChange?.(s.id)} style={{
-            padding: "5px 14px", borderRadius: 100,
-            border: `1px solid ${summaryStyle === s.id ? T.accent : T.border}`,
-            background: "transparent",
-            color: summaryStyle === s.id ? T.accent : T.textTertiary,
-            fontSize: 11, fontWeight: summaryStyle === s.id ? 700 : 400,
-            cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
-          }}>{s.label}</button>
-        ))}
-      </div>
-      {/* Pill button */}
       <button
         onClick={() => onSummarize?.(summaryStyle)}
         disabled={summarizing}
         style={{
           display: "inline-flex", alignItems: "center", gap: 8,
-          padding: "10px 26px",
-          borderRadius: 100,
+          padding: "10px 26px", borderRadius: 100,
           border: `1px solid ${T.borderStrong || T.border}`,
-          background: "transparent",
-          color: T.text,
-          fontSize: 11,
-          fontWeight: 700,
-          fontFamily: "inherit",
-          letterSpacing: ".1em",
-          textTransform: "uppercase",
-          cursor: summarizing ? "default" : "pointer",
-          opacity: summarizing ? 0.6 : 1,
-          transition: "border-color .2s, color .2s",
+          background: "transparent", color: T.text,
+          fontSize: 11, fontWeight: 700, fontFamily: "inherit",
+          letterSpacing: ".1em", textTransform: "uppercase",
+          cursor: "pointer", transition: "border-color .2s, color .2s",
         }}
-        onMouseEnter={e => { if (!summarizing) { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}}
-        onMouseLeave={e => { if (!summarizing) { e.currentTarget.style.borderColor = T.borderStrong || T.border; e.currentTarget.style.color = T.text; }}}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = T.borderStrong || T.border; e.currentTarget.style.color = T.text; }}
       >
         <SparkleIcon size={12} />
-        {summarizing ? "Summarizing…" : "Summarize with AI"}
+        Summarize
       </button>
     </div>
   );
