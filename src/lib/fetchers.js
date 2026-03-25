@@ -447,7 +447,33 @@ export async function fetchArticleContent(articleUrl) {
   // Cap at 15k chars (enough for a full long-form article)
   bodyText = bodyText.slice(0, 15000);
 
-  return { title, description, image, url: articleUrl, bodyText };
+  // ── Build sanitized HTML for the formatted reader view ───────
+  // Keeps headings, bold, italic, lists, images, code blocks, links.
+  // Strips all event handlers and fixes relative URLs.
+  let bodyHtml = null;
+  if (articleEl) {
+    const clone = articleEl.cloneNode(true);
+    // Strip event handlers
+    clone.querySelectorAll("*").forEach(node => {
+      for (const attr of Array.from(node.attributes)) {
+        if (attr.name.startsWith("on")) node.removeAttribute(attr.name);
+      }
+    });
+    // Fix relative image URLs + constrain size
+    clone.querySelectorAll("img[src]").forEach(img => {
+      try { img.setAttribute("src", new URL(img.getAttribute("src"), articleUrl).href); } catch {}
+      img.removeAttribute("width"); img.removeAttribute("height");
+    });
+    // Fix relative anchor hrefs + open externally
+    clone.querySelectorAll("a[href]").forEach(a => {
+      try { a.setAttribute("href", new URL(a.getAttribute("href"), articleUrl).href); } catch {}
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener noreferrer");
+    });
+    bodyHtml = clone.innerHTML;
+  }
+
+  return { title, description, image, url: articleUrl, bodyText, bodyHtml };
 }
 
 // ── YouTube ───────────────────────────────────────────────────
@@ -712,8 +738,11 @@ export async function summarizeContent(text, title, style = "keypoints") {
     }
   }
 
-  // ── Tier 3: Direct browser call (dev/fallback only) ─────────────
-  const key = getAnthropicKey();
+  // ── Tier 3: Direct browser call — env key first, then user's saved key ──
+  // VITE_ANTHROPIC_KEY can be set as a build-time env var so users don't need
+  // to enter their own key. For multi-user apps prefer the Supabase edge function
+  // (Tier 2) since VITE_ vars are visible in the JS bundle.
+  const key = import.meta.env.VITE_ANTHROPIC_KEY || getAnthropicKey();
   if (!key) return "AI summarization is temporarily unavailable. Please try again later.";
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {

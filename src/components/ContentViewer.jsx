@@ -557,12 +557,38 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
               {/* Article body */}
               <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em" }}>
-                <HighlightedText
-                  text={content.bodyText}
-                  highlights={highlights}
-                  onClickHighlight={setActiveNote}
-                  bionic={readerPrefs.bionic}
-                />
+                {content.bodyHtml && !readerPrefs.bionic ? (
+                  <>
+                    <style>{`
+                      .fb-article-body h1,.fb-article-body h2,.fb-article-body h3,.fb-article-body h4{margin:1.4em 0 .5em;font-weight:700;line-height:1.3}
+                      .fb-article-body h1{font-size:1.5em}.fb-article-body h2{font-size:1.25em}.fb-article-body h3{font-size:1.1em}.fb-article-body h4{font-size:1em}
+                      .fb-article-body p{margin:0 0 1em}.fb-article-body p:first-child{margin-top:0}
+                      .fb-article-body ul,.fb-article-body ol{margin:0 0 1em;padding-left:1.6em}
+                      .fb-article-body li{margin-bottom:.35em}
+                      .fb-article-body img{max-width:100%;height:auto;border-radius:8px;margin:1em 0;display:block}
+                      .fb-article-body a{color:var(--accent,#4f8ef7);text-decoration:underline;text-underline-offset:2px}
+                      .fb-article-body blockquote{border-left:3px solid currentColor;margin:1em 0;padding:.5em 1em;opacity:.75}
+                      .fb-article-body code{background:rgba(128,128,128,.15);border-radius:3px;padding:.1em .35em;font-family:ui-monospace,monospace;font-size:.88em}
+                      .fb-article-body pre{background:rgba(128,128,128,.12);border-radius:8px;padding:1em;overflow-x:auto;margin:0 0 1em}
+                      .fb-article-body pre code{background:none;padding:0}
+                      .fb-article-body figure{margin:1em 0}.fb-article-body figcaption{font-size:.85em;opacity:.6;margin-top:.3em}
+                      .fb-article-body table{border-collapse:collapse;width:100%;margin:0 0 1em;font-size:.9em}
+                      .fb-article-body th,.fb-article-body td{border:1px solid rgba(128,128,128,.25);padding:.4em .7em;text-align:left}
+                      .fb-article-body mark{border-radius:3px;padding:1px 0;cursor:pointer}
+                    `}</style>
+                    <div
+                      className="fb-article-body"
+                      dangerouslySetInnerHTML={{ __html: injectHtmlHighlights(content.bodyHtml, highlights, HIGHLIGHT_COLORS) }}
+                    />
+                  </>
+                ) : (
+                  <HighlightedText
+                    text={content.bodyText}
+                    highlights={highlights}
+                    onClickHighlight={setActiveNote}
+                    bionic={readerPrefs.bionic}
+                  />
+                )}
               </div>
 
               {/* Selection toolbar */}
@@ -623,6 +649,24 @@ function classifyArticleError(msg = "") {
   if (msg.includes("Invalid") || msg.includes("parse"))
     return "Couldn't parse the page content.";
   return msg || "Something went wrong loading this article.";
+}
+
+// ── HTML highlight injection ───────────────────────────────────
+// Wraps matched passage text in <mark> elements inside HTML strings.
+// Simple regex approach — works for most articles; skips passages that
+// straddle tag boundaries (rare in practice).
+function injectHtmlHighlights(html, highlights, colorDefs) {
+  if (!highlights?.length) return html;
+  let result = html;
+  for (const h of highlights) {
+    const colorDef = colorDefs.find(c => c.id === h.color) || colorDefs[0];
+    const esc = h.passage.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    result = result.replace(
+      new RegExp(esc, "g"),
+      `<mark style="background:${colorDef.bg};border-radius:3px;padding:1px 0;cursor:pointer">${h.passage}</mark>`
+    );
+  }
+  return result;
 }
 
 // ── HighlightedText — clean version without TTS word spans ───

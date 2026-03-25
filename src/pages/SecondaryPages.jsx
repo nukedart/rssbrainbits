@@ -823,28 +823,6 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         <FeedHealthCard T={T} user={user} feeds={appFeeds} />
         <DataPrivacyCard T={T} user={user} />
 
-        {/* Database migrations */}
-        <Card title="Database Migrations" T={T}>
-          <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 12, lineHeight: 1.6 }}>
-            Run these SQL statements in <strong style={{ color: T.textSecondary }}>Supabase → SQL Editor</strong> if any features are missing.
-          </div>
-          {[
-            { label: "Read timestamps (reading stats)", sql: "ALTER TABLE read_items ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ DEFAULT NOW();" },
-            { label: "Feed folders table", sql: "CREATE TABLE IF NOT EXISTS feed_folders (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, name TEXT NOT NULL, color TEXT DEFAULT 'gray', position INTEGER DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW()); ALTER TABLE feed_folders ENABLE ROW LEVEL SECURITY; CREATE POLICY \"own folders\" ON feed_folders FOR ALL USING (auth.uid() = user_id);" },
-            { label: "Folder column on feeds", sql: "ALTER TABLE feeds ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES feed_folders(id) ON DELETE SET NULL;" },
-            { label: "Full content flag on feeds", sql: "ALTER TABLE feeds ADD COLUMN IF NOT EXISTS fetch_full_content BOOLEAN DEFAULT FALSE;" },
-            { label: "Smart feed scoping", sql: "ALTER TABLE smart_feeds ADD COLUMN IF NOT EXISTS feed_ids TEXT[] DEFAULT NULL;" },
-          ].map(({ label, sql }) => (
-            <div key={label} style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: T.text, marginBottom: 4 }}>{label}</div>
-              <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                <code style={{ flex: 1, fontSize: 10, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "6px 10px", color: T.textSecondary, lineHeight: 1.5, wordBreak: "break-all", display: "block" }}>{sql}</code>
-                <button onClick={() => { navigator.clipboard?.writeText(sql); }}
-                  style={{ flexShrink: 0, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", fontSize: 11, color: T.textSecondary, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Copy</button>
-              </div>
-            </div>
-          ))}
-        </Card>
 
         {/* Admin — analytics shortcut */}
         {user?.user_metadata?.is_admin && onNavigate && (

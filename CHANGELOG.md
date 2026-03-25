@@ -3,6 +3,31 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.44.2] — 2026-03-24
+
+### Changes since v1.28.9
+- v1.44.1 — fix list view M/L size: both were mapping to lg
+- v1.44.0 — YouTube wider + transcript, folder hover actions, home stats, card polish
+- v1.43.0 — podcast fix, mobile feed drawer, manage feeds polish
+- v1.42.0 — Reeder-style folder sidebar + quick wins batch
+- v1.41.0 — S/M/L restored, uniform list cards, favicon image placeholder
+- v1.40.0 — fix inbox (getCachedFeed import) + Poppins/Cormorant/Merriweather fonts
+- v1.39.0 — YouTube feed fix + instant cache render + drag size slider
+- v1.38.0 — Source Dashboard: Collections tab + YouTube tag fix + color badges
+- v1.37.0 — centered Add Source button + Latest/Unread/Read filter tabs
+- v1.36.0 — YouTube channel support: folder, per-feed routing, proper subscribe
+- move version to About section in Settings
+- chore: fix .gitignore — remove node_modules, supabase/.temp, .DS_Store from tracking
+- v1.36.0 — Source Dashboard, Add Source button, mobile/desktop UX + DB optimizations
+- v1.35.0 — Notes Library + Editor + Supabase notes CRUD
+- v1.34.0 — Notes page overhaul + mobile UX polish
+- v1.33.0 — pill style tabs, folders fix, tags Pro gate
+- v1.32.0 — fix Pro plan being wiped by OAuth re-login
+- v1.31.0 — editorial reader redesign
+- v1.30.0 — stitch view, API key restore, CF Worker style support, UX overhaul
+
+---
+
 ## [1.41.0] — 2026-03-24
 
 ### Changed
