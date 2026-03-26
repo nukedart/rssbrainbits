@@ -12,13 +12,14 @@ import {
   saveItem, addHighlight, getHighlights, updateHighlightNote, deleteHighlight,
   getArticleTags, addArticleTag, deleteArticleTag, getAllTags,
   getReadingProgress, setReadingProgress, getNotesByArticle,
+  getAiUsageToday, incrementAiUsage,
 } from "../lib/supabase";
 import ArticleNotesPanel from "./ArticleNotesPanel";
 import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
-import { isProUser } from "../lib/plan";
+import { isProUser, PLANS } from "../lib/plan";
 
 export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false, currentIdx = -1, totalCount = 0, onExpand }) {
   const { T } = useTheme();
@@ -223,13 +224,32 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     const text = content?.bodyText || item?.description || "";
     if (!text) return;
     const useStyle = style || summaryStyle;
+
+    // Free-tier daily limit check
+    if (user && !isProUser(user)) {
+      const dailyLimit = PLANS.free.aiSummaries;
+      try {
+        const usedToday = await getAiUsageToday(user.id);
+        if (usedToday >= dailyLimit) {
+          setSummary(`You've used all ${dailyLimit} free AI summaries for today. Upgrade to Pro for unlimited summaries.`);
+          return;
+        }
+      } catch { /* non-fatal — allow the summary if the check fails */ }
+    }
+
     setSummarizing(true);
     track("ai_summary_triggered", { source: item?.source, style: useStyle });
     const result = await summarizeContent(text, content?.title || item?.title, useStyle);
     setSummary(result);
     setSummarizing(false);
+
+    // Increment usage counter for free users
+    if (user && !isProUser(user) && result && !result.startsWith("You've used")) {
+      try { await incrementAiUsage(user.id); } catch { /* non-fatal */ }
+    }
+
     // Auto-save the article when a summary is generated
-    if (user && result && !result.startsWith("AI summarization")) {
+    if (user && result && !result.startsWith("AI summarization") && !result.startsWith("You've used")) {
       try { await saveItem(user.id, { ...item, summary: result }); setSaved(true); } catch { /* silent */ }
     }
   }

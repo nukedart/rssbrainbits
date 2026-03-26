@@ -3,6 +3,15 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.7] — 2026-03-25
+
+### Changes since v1.46.6
+- AI summary daily limit enforced for free users (5/day via `ai_usage` Supabase table + atomic RPC)
+- Landing page added at `/landing.html` — hero, features grid, pricing comparison, footer
+- Supabase migration: `ai_usage` table + `increment_ai_usage` RPC function
+
+---
+
 ## [1.46.6] — 2026-03-25
 
 ### Changes since v1.46.5

@@ -585,3 +585,28 @@ export async function setFeedFolder(feedId, folderId) {
   if (!data) throw new Error("Feed folder update was blocked — check RLS policy.");
   return data;
 }
+
+// ── AI usage (daily rate limit for free users) ────────────────
+// Returns today's summary count for the user.
+export async function getAiUsageToday(userId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from("ai_usage")
+    .select("count")
+    .eq("user_id", userId)
+    .eq("date", today)
+    .maybeSingle();
+  return data?.count ?? 0;
+}
+
+// Atomically increments today's count (upsert).
+// Returns the new count.
+export async function incrementAiUsage(userId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase.rpc("increment_ai_usage", {
+    p_user_id: userId,
+    p_date: today,
+  });
+  if (error) throw error;
+  return data;
+}
