@@ -9,6 +9,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-27 | v1.46.15 | Polish | Fixed hardcoded `color:"#fff"` on Add button and unread badge — use `T.accentText` token for correct contrast on all themes | `BottomNav.jsx:72,139` | — |
 | 2026-03-27 | v1.46.16 | Nav | Fixed "All Items" label in MobileFeedDrawer — now reads "Inbox" matching Sidebar and BottomNav | `MobileFeedDrawer.jsx:258` | — |
 | 2026-03-27 | v1.46.17 | Polish | Replaced clock icon with bookmark for "Saved" in Sidebar — matches BottomNav icon and label | `Sidebar.jsx:12` | — |
+| 2026-03-27 | v1.46.18 | Nav | Added "Home" as first Sidebar nav item — dashboard had no return path after navigating away | `Sidebar.jsx:13,330` | — |
 
 ---
 

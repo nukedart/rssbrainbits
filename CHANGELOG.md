@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.18] — 2026-03-27
+
+- [Nav] Added "Home" as first Sidebar nav item — dashboard page was the default desktop landing but had no return path once navigated away
+
 ## [1.46.17] — 2026-03-27
 
 - [Polish] Replaced clock icon with bookmark icon for "Saved" in Sidebar — matches BottomNav's bookmark and the "Saved" label, consistent visual metaphor across desktop and mobile
