@@ -69,7 +69,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             >
               <span style={{
                 width: 44, height: 44, borderRadius: 14,
-                background: T.accent, color: "#fff",
+                background: T.accent, color: T.accentText,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 boxShadow: `0 3px 14px ${T.accent}55`,
                 transition: "transform .1s",
@@ -136,7 +136,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               {id === "inbox" && unreadCount > 0 && (
                 <span style={{
                   position: "absolute", top: -3, right: -8,
-                  background: T.accent, color: "#fff",
+                  background: T.accent, color: T.accentText,
                   fontSize: 9, fontWeight: 700, lineHeight: 1,
                   padding: "2px 4px", borderRadius: 8,
                   minWidth: 14, textAlign: "center",

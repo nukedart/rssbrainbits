@@ -6,6 +6,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 |------|---------|------|--------|-------|-------------|
 | 2026-03-27 | v1.46.13 | Nav | Renamed sidebar label "All Items" → "Inbox" to match mobile nav | `Sidebar.jsx:329` | — |
 | 2026-03-27 | v1.46.14 | Nav | Added `onTouchCancel` to all 3 BottomNav button types — fixes buttons stuck dimmed after scroll gesture | `BottomNav.jsx:66,103,131` | — |
+| 2026-03-27 | v1.46.15 | Polish | Fixed hardcoded `color:"#fff"` on Add button and unread badge — use `T.accentText` token for correct contrast on all themes | `BottomNav.jsx:72,139` | — |
 
 ---
 

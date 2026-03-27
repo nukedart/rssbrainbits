@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.15] — 2026-03-27
+
+- [Polish] Fixed hardcoded `color: "#fff"` on BottomNav Add button and unread badge — now uses `T.accentText` token for correct contrast across all three themes (Nocturne accent is light sage, white text had ~1.5:1 contrast ratio)
+
 ## [1.46.14] — 2026-03-27
 
 - [Nav] Added `onTouchCancel` to all BottomNav button types — fixes buttons getting stuck in a dimmed state when a scroll gesture cancels a tap
