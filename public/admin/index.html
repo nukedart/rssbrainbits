@@ -4,38 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>BrainBits Admin</title>
+<title>Feedbox Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0E1117;--surface:#161B22;--surface2:#21262D;--card:#1C2128;
-  --border:rgba(255,255,255,.08);--text:#E6EDF3;--t2:#8B949E;--t3:#484F58;
-  --teal:#58D5C4;--teal-dk:#3FBFAF;--danger:#F85149;--warn:#E3B341;
-  --green:#3FB950;--purple:#A371F7;--blue:#58A6FF;--r:10px;
+  --bg:#111417;--surface:#1A1E21;--surface2:#222629;--card:#1E2326;
+  --border:rgba(255,255,255,.07);--text:#E8EAEC;--t2:#9AA3AB;--t3:#5A6369;
+  --teal:#65D5C4;--teal-dk:#4BBFAF;--danger:#EF4444;--warn:#F59E0B;
+  --green:#22C55E;--purple:#8B5CF6;--r:10px;
 }
-html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;background:var(--bg);
+html,body{height:100%;font-family:'DM Sans','Inter',system-ui,sans-serif;background:var(--bg);
   color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
 
 /* ── LAYOUT ──────────────────────────────────────────── */
 #app{display:flex;height:100vh}
 
 /* Sidebar */
-.sb{width:224px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+.sb{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
     display:flex;flex-direction:column;padding:20px 12px}
-.sb-logo{display:flex;align-items:center;gap:10px;padding:4px 8px;margin-bottom:24px}
-.sb-logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--teal),var(--purple));
-               border-radius:8px;display:flex;align-items:center;justify-content:center;
-               font-size:14px;font-weight:800;color:#0E1117;flex-shrink:0;letter-spacing:-.03em}
+.sb-logo{display:flex;align-items:center;gap:9px;padding:4px 8px;margin-bottom:24px}
+.sb-logo-mark{width:28px;height:28px;background:var(--teal);border-radius:7px;
+               display:flex;align-items:center;justify-content:center;
+               font-size:13px;font-weight:800;color:#111417;flex-shrink:0}
 .sb-title{font-size:14px;font-weight:700;color:var(--text)}
-.sb-subtitle{font-size:10px;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.sb-subtitle{font-size:10px;color:var(--t3);letter-spacing:.05em;text-transform:uppercase}
 .sb-nav{display:flex;flex-direction:column;gap:2px;flex:1}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;
           cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);
           border:none;background:transparent;text-align:left;width:100%;
           transition:all .12s;font-family:inherit}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:rgba(88,213,196,.1);color:var(--teal)}
+.nav-item.active{background:rgba(101,213,196,.1);color:var(--teal)}
 .nav-item svg{flex-shrink:0;opacity:.7}
 .nav-item.active svg{opacity:1}
 .nav-divider{height:1px;background:var(--border);margin:10px 0}
@@ -65,11 +65,14 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
 
 /* ── CARDS & GRIDS ────────────────────────────────────── */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+     padding:18px 20px}
 .kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
            color:var(--t3);margin-bottom:8px}
 .kpi-value{font-size:32px;font-weight:800;line-height:1;letter-spacing:-.02em}
 .kpi-sub{font-size:11px;color:var(--t3);margin-top:5px}
+.kpi-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;
+           padding:2px 7px;border-radius:20px;margin-top:6px}
 
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
       overflow:hidden;margin-bottom:16px}
@@ -85,12 +88,14 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
 /* ── BAR CHART ────────────────────────────────────────── */
 .bar-chart{display:flex;align-items:flex-end;gap:3px;height:80px;padding:0 2px}
 .bar{flex:1;border-radius:3px 3px 0 0;min-height:2px;transition:height .3s ease;cursor:default}
-.bar-axis{display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--t3)}
+.bar-axis{display:flex;justify-content:space-between;margin-top:6px;
+          font-size:10px;color:var(--t3)}
 
 /* ── TABLE ────────────────────────────────────────────── */
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;
-        letter-spacing:.07em;color:var(--t3);padding:8px 14px;border-bottom:1px solid var(--border)}
+        letter-spacing:.07em;color:var(--t3);padding:8px 14px;
+        border-bottom:1px solid var(--border)}
 .tbl td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03);
         color:var(--t2);vertical-align:middle}
 .tbl tr:last-child td{border:none}
@@ -100,11 +105,12 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
 /* ── BADGES ───────────────────────────────────────────── */
 .badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;
        padding:2px 8px;border-radius:20px;letter-spacing:.04em}
-.badge-pro{background:rgba(88,213,196,.15);color:var(--teal)}
+.badge-pro{background:rgba(101,213,196,.15);color:var(--teal)}
 .badge-free{background:rgba(255,255,255,.06);color:var(--t3)}
-.badge-up{background:rgba(63,185,80,.12);color:var(--green)}
-.badge-down{background:rgba(248,81,73,.12);color:var(--danger)}
-.badge-set{background:rgba(63,185,80,.12);color:var(--green)}
+.badge-up{background:rgba(34,197,94,.12);color:var(--green)}
+.badge-down{background:rgba(239,68,68,.12);color:var(--danger)}
+.badge-warn{background:rgba(245,158,11,.12);color:var(--warn)}
+.badge-set{background:rgba(34,197,94,.12);color:var(--green)}
 .badge-unset{background:rgba(255,255,255,.06);color:var(--t3)}
 
 /* ── FUNNEL ───────────────────────────────────────────── */
@@ -148,19 +154,20 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
               align-items:center;justify-content:center;z-index:100}
 .login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;
            padding:36px;width:360px;text-align:center}
-.login-logo{width:44px;height:44px;background:linear-gradient(135deg,var(--teal),var(--purple));
-            border-radius:12px;display:flex;align-items:center;justify-content:center;
-            font-size:20px;font-weight:800;color:#0E1117;margin:0 auto 18px;letter-spacing:-.03em}
+.login-logo{width:40px;height:40px;background:var(--teal);border-radius:10px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:18px;font-weight:800;color:#111417;margin:0 auto 18px}
 .login-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
 .login-sub{font-size:13px;color:var(--t3);margin-bottom:28px}
 .login-input{width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--border);
              background:var(--surface2);color:var(--text);font-size:14px;
-             font-family:inherit;outline:none;margin-bottom:10px;transition:border-color .15s}
+             font-family:inherit;outline:none;margin-bottom:10px;
+             transition:border-color .15s}
 .login-input:focus{border-color:var(--teal)}
 .login-btn{width:100%;padding:12px;border-radius:8px;border:none;
-           background:var(--teal);color:#0E1117;font-size:14px;font-weight:700;
+           background:var(--teal);color:#111417;font-size:14px;font-weight:700;
            cursor:pointer;font-family:inherit;transition:all .15s;margin-bottom:10px}
-.login-btn:hover{background:#6BE0D0}
+.login-btn:hover{background:#7ADDD0}
 .login-btn:disabled{opacity:.5;cursor:not-allowed}
 .login-msg{font-size:12px;color:var(--t3);min-height:18px}
 .login-msg.ok{color:var(--teal)}
@@ -170,69 +177,72 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
 .empty{padding:40px;text-align:center;color:var(--t3);font-size:13px}
 
 /* ── ERROR ────────────────────────────────────────────── */
-.error-card{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);
+.error-card{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
   border-radius:var(--r);padding:20px 22px;margin-bottom:16px}
 .error-title{font-size:13px;font-weight:700;color:var(--danger);margin-bottom:6px}
 .error-body{font-size:12px;color:var(--t2);line-height:1.6}
-.warn-banner{background:rgba(227,179,65,.08);border:1px solid rgba(227,179,65,.25);
+.error-code{font-family:monospace;font-size:11px;background:var(--surface2);
+  border-radius:6px;padding:8px 12px;margin-top:10px;color:var(--t3);
+  word-break:break-all;white-space:pre-wrap}
+.warn-banner{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);
   border-radius:8px;padding:10px 14px;font-size:12px;color:var(--warn);
   margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
 /* ── AI SETTINGS ──────────────────────────────────────── */
-.ai-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0}
+.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .model-card{background:var(--surface2);border:2px solid var(--border);border-radius:var(--r);
-            padding:20px;cursor:pointer;transition:all .15s;position:relative}
-.model-card:hover{border-color:rgba(88,213,196,.3);background:#252C35}
-.model-card.selected{border-color:var(--teal);background:rgba(88,213,196,.06)}
-.model-card-check{position:absolute;top:14px;right:14px;width:18px;height:18px;
+            padding:18px;cursor:pointer;transition:all .15s;position:relative}
+.model-card:hover{border-color:rgba(101,213,196,.35)}
+.model-card.selected{border-color:var(--teal);background:rgba(101,213,196,.05)}
+.model-card-check{position:absolute;top:12px;right:12px;width:18px;height:18px;
                   border-radius:50%;border:2px solid var(--border);display:flex;
                   align-items:center;justify-content:center;transition:all .15s}
 .model-card.selected .model-card-check{background:var(--teal);border-color:var(--teal)}
 .model-card-check svg{display:none}
 .model-card.selected .model-card-check svg{display:block}
-.model-provider{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
-                color:var(--t3);margin-bottom:6px}
-.model-name{font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px}
+.model-provider{font-size:10px;font-weight:700;text-transform:uppercase;
+                letter-spacing:.08em;color:var(--t3);margin-bottom:5px}
+.model-name{font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px}
 .model-desc{font-size:11px;color:var(--t2);line-height:1.5;margin-bottom:10px}
-.model-stats{display:flex;gap:12px;flex-wrap:wrap}
+.model-stats{display:flex;gap:10px;flex-wrap:wrap}
 .model-stat{font-size:10px;color:var(--t3)}
 .model-stat span{color:var(--text);font-weight:600}
-.model-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;
-             padding:2px 8px;border-radius:20px;margin-top:8px}
-.model-badge-cheaper{background:rgba(63,185,80,.12);color:var(--green)}
-.model-badge-default{background:rgba(88,213,196,.12);color:var(--teal)}
+.model-chip{display:inline-flex;align-items:center;font-size:10px;font-weight:700;
+            padding:2px 8px;border-radius:20px;margin-top:8px}
+.model-chip-default{background:rgba(101,213,196,.12);color:var(--teal)}
+.model-chip-cheaper{background:rgba(34,197,94,.12);color:var(--green)}
 
-.key-section{padding:18px}
+.key-rows{padding:18px}
 .key-row{margin-bottom:16px}
 .key-row:last-child{margin-bottom:0}
-.key-label{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;font-weight:600;color:var(--t2)}
-.key-input-wrap{display:flex;gap:8px}
+.key-label{display:flex;align-items:center;gap:8px;margin-bottom:7px;
+           font-size:12px;font-weight:600;color:var(--t2)}
+.key-wrap{display:flex;gap:8px}
 .key-input{flex:1;padding:10px 14px;border-radius:8px;border:1px solid var(--border);
-           background:var(--surface2);color:var(--text);font-size:13px;font-family:monospace;
-           outline:none;transition:border-color .15s}
+           background:var(--surface2);color:var(--text);font-size:13px;
+           font-family:monospace;outline:none;transition:border-color .15s}
 .key-input:focus{border-color:var(--teal)}
-.key-input::placeholder{color:var(--t3);font-family:inherit}
-.btn-clear-key{padding:10px 14px;border-radius:8px;border:1px solid var(--border);
-               background:transparent;color:var(--t2);font-size:12px;cursor:pointer;
-               font-family:inherit;transition:all .12s;white-space:nowrap}
-.btn-clear-key:hover{border-color:var(--danger);color:var(--danger)}
+.key-input::placeholder{color:var(--t3);font-family:'DM Sans','Inter',system-ui,sans-serif}
+.btn-clear{padding:10px 14px;border-radius:8px;border:1px solid var(--border);
+           background:transparent;color:var(--t2);font-size:12px;cursor:pointer;
+           font-family:inherit;transition:all .12s;white-space:nowrap}
+.btn-clear:hover{border-color:var(--danger);color:var(--danger)}
 .key-hint{font-size:11px;color:var(--t3);margin-top:5px}
+.key-security-note{background:rgba(101,213,196,.06);border:1px solid rgba(101,213,196,.15);
+                   border-radius:8px;padding:12px 14px;font-size:11px;color:var(--t2);
+                   line-height:1.6;margin-bottom:16px}
+.key-security-note strong{color:var(--teal)}
 
-.ai-actions{padding:0 18px 18px;display:flex;align-items:center;gap:12px}
-.btn-save{padding:10px 24px;border-radius:8px;border:none;background:var(--teal);
-          color:#0E1117;font-size:13px;font-weight:700;cursor:pointer;
+.ai-save-bar{padding:0 18px 18px;display:flex;align-items:center;gap:12px}
+.btn-save{padding:9px 22px;border-radius:8px;border:none;background:var(--teal);
+          color:#111417;font-size:13px;font-weight:700;cursor:pointer;
           font-family:inherit;transition:all .15s}
-.btn-save:hover{background:#6BE0D0}
+.btn-save:hover{background:#7ADDD0}
 .btn-save:disabled{opacity:.5;cursor:not-allowed}
-.save-msg{font-size:12px;min-height:16px}
-.save-msg.ok{color:var(--teal)}
-.save-msg.err{color:var(--danger)}
-
-.cost-note{font-size:11px;color:var(--t3);background:var(--surface2);
-           border-radius:8px;padding:10px 14px;line-height:1.6}
-.cost-note strong{color:var(--t2)}
+.save-status{font-size:12px;min-height:16px}
+.save-status.ok{color:var(--teal)}
+.save-status.err{color:var(--danger)}
 </style>
 </head>
 <body>
@@ -240,8 +250,8 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
 <!-- Login screen -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">BB</div>
-    <div class="login-title">BrainBits Admin</div>
+    <div class="login-logo">F</div>
+    <div class="login-title">Feedbox Admin</div>
     <div class="login-sub">Sign in with your admin account</div>
     <input id="login-email" class="login-input" type="email" placeholder="you@example.com" />
     <input id="login-pass" class="login-input" type="password" placeholder="Password" />
@@ -254,9 +264,9 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
 <div id="app" style="display:none">
   <div class="sb">
     <div class="sb-logo">
-      <div class="sb-logo-mark">BB</div>
+      <div class="sb-logo-mark">F</div>
       <div>
-        <div class="sb-title">BrainBits</div>
+        <div class="sb-title">Feedbox</div>
         <div class="sb-subtitle">Admin</div>
       </div>
     </div>
@@ -284,7 +294,7 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
       </button>
       <div class="nav-divider"></div>
       <button class="nav-item" data-section="ai-settings">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
         AI Settings
       </button>
     </nav>
@@ -371,45 +381,61 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
 
       <!-- AI SETTINGS -->
       <div id="section-ai-settings" class="section">
+
         <!-- Usage KPIs -->
-        <div class="ai-kpi-grid" id="ai-kpi-grid">
-          <div class="kpi"><div class="kpi-label">Summaries today</div><div class="kpi-value" id="ai-today">—</div></div>
-          <div class="kpi"><div class="kpi-label">This week</div><div class="kpi-value" id="ai-week">—</div></div>
-          <div class="kpi"><div class="kpi-label">This month</div><div class="kpi-value" id="ai-month">—</div></div>
-          <div class="kpi"><div class="kpi-label">Unique users</div><div class="kpi-value" id="ai-users">—</div></div>
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">Summaries today</div>
+            <div class="kpi-value" id="ai-kpi-today">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">This week</div>
+            <div class="kpi-value" id="ai-kpi-week">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">This month</div>
+            <div class="kpi-value" id="ai-kpi-month">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Unique users</div>
+            <div class="kpi-value" id="ai-kpi-users">—</div>
+          </div>
         </div>
 
         <div class="two-col">
           <!-- Model picker -->
           <div class="card">
-            <div class="card-header"><div class="card-title">AI Model</div><div id="current-model-label" style="font-size:11px;color:var(--t3)">Loading…</div></div>
+            <div class="card-header">
+              <div class="card-title">AI Model</div>
+              <div id="active-model-label" style="font-size:11px;color:var(--t3)">Loading…</div>
+            </div>
             <div class="card-body">
               <div class="model-grid">
-                <div class="model-card selected" id="model-card-anthropic" onclick="selectModel('anthropic')">
+                <div class="model-card selected" id="model-anthropic" onclick="selectModel('anthropic')">
                   <div class="model-card-check">
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#0E1117" stroke-width="2" stroke-linecap="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#111417" stroke-width="2.2" stroke-linecap="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
                   </div>
                   <div class="model-provider">Anthropic</div>
                   <div class="model-name">Claude Haiku</div>
-                  <div class="model-desc">Fast, intelligent, and cost-effective. Optimized for summarization tasks.</div>
+                  <div class="model-desc">Fast and smart. Optimized for summarization at low cost.</div>
                   <div class="model-stats">
-                    <div class="model-stat">Input <span>$0.80/M</span></div>
-                    <div class="model-stat">Output <span>$4.00/M</span></div>
+                    <div class="model-stat">In <span>$0.80/M</span></div>
+                    <div class="model-stat">Out <span>$4.00/M</span></div>
                   </div>
-                  <div class="model-badge model-badge-default">Current default</div>
+                  <div class="model-chip model-chip-default">Current default</div>
                 </div>
-                <div class="model-card" id="model-card-openai" onclick="selectModel('openai')">
+                <div class="model-card" id="model-openai" onclick="selectModel('openai')">
                   <div class="model-card-check">
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#0E1117" stroke-width="2" stroke-linecap="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#111417" stroke-width="2.2" stroke-linecap="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
                   </div>
                   <div class="model-provider">OpenAI</div>
                   <div class="model-name">GPT-4o mini</div>
-                  <div class="model-desc">Ultra-low cost alternative with strong summarization performance.</div>
+                  <div class="model-desc">Ultra-low cost with strong summarization performance.</div>
                   <div class="model-stats">
-                    <div class="model-stat">Input <span>$0.15/M</span></div>
-                    <div class="model-stat">Output <span>$0.60/M</span></div>
+                    <div class="model-stat">In <span>$0.15/M</span></div>
+                    <div class="model-stat">Out <span>$0.60/M</span></div>
                   </div>
-                  <div class="model-badge model-badge-cheaper">~5× cheaper</div>
+                  <div class="model-chip model-chip-cheaper">~5× cheaper</div>
                 </div>
               </div>
             </div>
@@ -417,9 +443,9 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
 
           <!-- Cost estimate -->
           <div class="card">
-            <div class="card-header"><div class="card-title">Estimated cost</div></div>
+            <div class="card-header"><div class="card-title">Estimated cost — 30 days</div></div>
             <div class="card-body">
-              <div id="cost-estimate" class="cost-note">
+              <div id="cost-estimate" style="font-size:12px;color:var(--t2);line-height:1.8">
                 Loading usage data…
               </div>
             </div>
@@ -430,45 +456,50 @@ html,body{height:100%;font-family:'Inter','DM Sans',system-ui,sans-serif;backgro
         <div class="card">
           <div class="card-header">
             <div class="card-title">API Keys</div>
-            <div style="font-size:11px;color:var(--t3)">Stored securely server-side</div>
+            <div style="font-size:11px;color:var(--t3)">Stored server-side in app_secrets</div>
           </div>
-          <div class="key-section">
+          <div class="key-rows">
+            <div class="key-security-note">
+              <strong>Where are keys stored?</strong> Keys you enter here are saved to the <code>app_secrets</code> Supabase table, which has admin-only Row Level Security — no other user can read them.<br>
+              For maximum security, set keys as <strong>Edge Function secrets</strong> instead: <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">supabase secrets set ANTHROPIC_API_KEY=sk-ant-…</code> — they're encrypted at rest and never queryable.
+            </div>
             <div class="key-row">
               <div class="key-label">
                 Anthropic API Key
-                <span class="badge badge-unset" id="anthropic-key-badge">NO KEY</span>
+                <span class="badge badge-unset" id="badge-anthropic">NO KEY</span>
               </div>
-              <div class="key-input-wrap">
-                <input id="anthropic-key-input" class="key-input" type="password" placeholder="sk-ant-api03-…" autocomplete="off" />
-                <button class="btn-clear-key" onclick="clearKey('anthropic_api_key', 'anthropic-key-badge', 'anthropic-key-input')">Clear</button>
+              <div class="key-wrap">
+                <input id="input-anthropic" class="key-input" type="password" placeholder="sk-ant-api03-…" autocomplete="off" />
+                <button class="btn-clear" onclick="clearKey('anthropic_api_key','badge-anthropic','input-anthropic')">Clear</button>
               </div>
-              <div class="key-hint">Used when AI model is set to Claude Haiku. Leave blank to keep existing key.</div>
+              <div class="key-hint">Used when model is set to Claude Haiku. Leave blank to keep the existing key.</div>
             </div>
             <div class="key-row">
               <div class="key-label">
                 OpenAI API Key
-                <span class="badge badge-unset" id="openai-key-badge">NO KEY</span>
+                <span class="badge badge-unset" id="badge-openai">NO KEY</span>
               </div>
-              <div class="key-input-wrap">
-                <input id="openai-key-input" class="key-input" type="password" placeholder="sk-proj-…" autocomplete="off" />
-                <button class="btn-clear-key" onclick="clearKey('openai_api_key', 'openai-key-badge', 'openai-key-input')">Clear</button>
+              <div class="key-wrap">
+                <input id="input-openai" class="key-input" type="password" placeholder="sk-proj-…" autocomplete="off" />
+                <button class="btn-clear" onclick="clearKey('openai_api_key','badge-openai','input-openai')">Clear</button>
               </div>
-              <div class="key-hint">Used when AI model is set to GPT-4o mini. Leave blank to keep existing key.</div>
+              <div class="key-hint">Used when model is set to GPT-4o mini. Leave blank to keep the existing key.</div>
             </div>
           </div>
-          <div class="ai-actions">
-            <button class="btn-save" id="save-ai-btn" onclick="saveAiSettings()">Save settings</button>
-            <div class="save-msg" id="save-msg"></div>
+          <div class="ai-save-bar">
+            <button class="btn-save" id="btn-save-ai" onclick="saveAiSettings()">Save settings</button>
+            <div class="save-status" id="save-status"></div>
           </div>
         </div>
-      </div>
+
+      </div><!-- /ai-settings -->
     </div>
   </div>
 </div>
 
 <script>
 // ── Config ────────────────────────────────────────────────────
-const ADMIN_VERSION = "2.0.0";
+const ADMIN_VERSION = "1.24.5";
 const SUPABASE_URL  = "https://nmkwbsmdskqqgzsdxray.supabase.co";
 const SUPABASE_ANON = "sb_publishable_AssEJ7QqgKD1ChcedMfUrw_iEy2cYY1";
 const ADMIN_FN_URL  = `${SUPABASE_URL}/functions/v1/admin-stats`;
@@ -478,7 +509,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 // ── State ─────────────────────────────────────────────────────
 let dashData = null;
 let currentProvider = "anthropic";
-let aiSettingsLoaded = false;
+let aiLoaded = false;
 
 // ── Auth ──────────────────────────────────────────────────────
 async function init() {
@@ -531,14 +562,9 @@ document.getElementById("refresh-btn").addEventListener("click", loadDashboard);
 
 // ── Navigation ────────────────────────────────────────────────
 const TITLES = {
-  overview: "Overview",
-  users: "Users",
-  subscriptions: "Subscriptions",
-  analytics: "Analytics",
-  activity: "Activity",
-  "ai-settings": "AI Settings",
+  overview:"Overview", users:"Users", subscriptions:"Subscriptions",
+  analytics:"Analytics", activity:"Activity", "ai-settings":"AI Settings",
 };
-
 document.querySelectorAll(".nav-item").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
@@ -547,7 +573,7 @@ document.querySelectorAll(".nav-item").forEach(btn => {
     const sec = btn.dataset.section;
     document.getElementById(`section-${sec}`).classList.add("active");
     document.getElementById("section-title").textContent = TITLES[sec] || sec;
-    if (sec === "ai-settings" && !aiSettingsLoaded) loadAiSettings();
+    if (sec === "ai-settings" && !aiLoaded) loadAiSettings();
   });
 });
 
@@ -609,8 +635,7 @@ async function loadDashboard() {
     return;
   }
 
-  // Populate AI usage KPIs if AI Settings section was visited
-  if (data.aiUsage) updateAiUsageKpis(data.aiUsage);
+  if (data.aiUsage) populateAiKpis(data.aiUsage);
 
   clearTimeout(autoRefreshTimer);
   autoRefreshTimer = setTimeout(loadDashboard, 5 * 60 * 1000);
@@ -668,12 +693,12 @@ function showLoadError(edgeErr, fallbackErr) {
   if (!overlay) {
     overlay = document.createElement("div");
     overlay.id = "error-overlay";
-    overlay.style.cssText = "position:fixed;inset:0;background:rgba(14,17,23,.92);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px";
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(17,20,23,.92);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px";
     document.body.appendChild(overlay);
   }
   overlay.innerHTML = `
-    <div style="background:var(--surface);border:1px solid rgba(248,81,73,.3);border-radius:16px;padding:32px;max-width:480px;width:100%">
-      <div style="font-size:16px;font-weight:700;color:var(--danger);margin-bottom:10px">Failed to load data</div>
+    <div style="background:var(--surface);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:32px;max-width:480px;width:100%">
+      <div style="font-size:16px;font-weight:700;color:var(--danger);margin-bottom:10px">⚠ Failed to load data</div>
       <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px">
         Both the edge function and direct Supabase queries failed.<br><br>
         <strong style="color:var(--text)">Likely causes:</strong>
@@ -689,8 +714,8 @@ function showLoadError(edgeErr, fallbackErr) {
       </div>
       <div style="display:flex;gap:10px">
         <button onclick="document.getElementById('error-overlay').remove();loadDashboard()"
-          style="flex:1;padding:10px;background:var(--teal);color:#0E1117;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
-          Retry
+          style="flex:1;padding:10px;background:var(--teal);color:#111417;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          ↺ Retry
         </button>
         <button onclick="document.getElementById('error-overlay').remove()"
           style="padding:10px 16px;background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">
@@ -739,7 +764,7 @@ function eventDot(event) {
   const colors = {
     article_opened:"var(--teal)", ai_summary_triggered:"var(--purple)",
     upgrade_initiated:"var(--green)", plan_limit_hit:"var(--danger)",
-    feed_added:"var(--warn)", article_highlighted:"var(--blue)",
+    feed_added:"var(--warn)", article_highlighted:"#2F6FED",
     search_performed:"#EC4899",
   };
   return colors[event] || "var(--t3)";
@@ -752,7 +777,6 @@ function renderAll(d) {
   renderSubscriptions(d.subscriptions);
   renderAnalytics(d.analytics);
   renderActivity(d.recentActivity);
-  if (d.aiUsage) updateAiUsageKpis(d.aiUsage);
 }
 
 function renderOverview(d) {
@@ -867,154 +891,123 @@ function renderActivity(activity) {
 }
 
 // ── AI Settings ───────────────────────────────────────────────
-function updateAiUsageKpis(aiUsage) {
-  if (!aiUsage) return;
-  document.getElementById("ai-today").textContent = fmt(aiUsage.totalSummariesToday ?? aiUsage.today ?? 0);
-  document.getElementById("ai-week").textContent  = fmt(aiUsage.totalSummaries7d   ?? aiUsage.week  ?? 0);
-  document.getElementById("ai-month").textContent = fmt(aiUsage.totalSummaries30d  ?? aiUsage.month ?? 0);
-  document.getElementById("ai-users").textContent = fmt(aiUsage.uniqueUsers ?? "—");
-  updateCostEstimate(aiUsage);
+function populateAiKpis(aiUsage) {
+  document.getElementById("ai-kpi-today").textContent = fmt(aiUsage.totalSummariesToday ?? 0);
+  document.getElementById("ai-kpi-week").textContent  = fmt(aiUsage.totalSummaries7d   ?? 0);
+  document.getElementById("ai-kpi-month").textContent = fmt(aiUsage.totalSummaries30d  ?? 0);
+  document.getElementById("ai-kpi-users").textContent = fmt(aiUsage.uniqueUsers        ?? "—");
+  refreshCostEstimate(aiUsage.totalSummaries30d ?? 0);
 }
 
-function updateCostEstimate(aiUsage) {
-  const month = aiUsage.totalSummaries30d ?? aiUsage.month ?? 0;
-  // ~300 input tokens + ~150 output tokens per summary (rough estimate)
-  const inputTokens  = month * 300;
-  const outputTokens = month * 150;
-  const anthropicCost = ((inputTokens * 0.80) + (outputTokens * 4.00)) / 1_000_000;
-  const openaiCost    = ((inputTokens * 0.15) + (outputTokens * 0.60)) / 1_000_000;
-  const selectedCost  = currentProvider === "openai" ? openaiCost : anthropicCost;
-
-  document.getElementById("cost-estimate").innerHTML = `
-    <strong>${month.toLocaleString()} summaries</strong> generated this month<br><br>
-    <strong>Estimated cost (30d):</strong><br>
-    &nbsp;Claude Haiku &nbsp;&nbsp; <strong style="color:var(--text)">$${anthropicCost.toFixed(4)}</strong><br>
-    &nbsp;GPT-4o mini &nbsp;&nbsp; <strong style="color:var(--green)">$${openaiCost.toFixed(4)}</strong><br><br>
-    <strong style="color:var(--teal)">Current selection: ~$${selectedCost.toFixed(4)}/month</strong><br>
-    <span style="color:var(--t3);font-size:10px">Based on ~300 input + ~150 output tokens per summary</span>
-  `;
+function refreshCostEstimate(monthCount) {
+  const inp = monthCount * 300, out = monthCount * 150;
+  const cAnth = ((inp * 0.80) + (out * 4.00)) / 1_000_000;
+  const cOai  = ((inp * 0.15) + (out * 0.60)) / 1_000_000;
+  const active = currentProvider === "openai" ? cOai : cAnth;
+  document.getElementById("cost-estimate").innerHTML =
+    `<strong style="color:var(--text)">${monthCount.toLocaleString()} summaries</strong> this month<br><br>` +
+    `Claude Haiku &nbsp;<strong style="color:var(--text)">$${cAnth.toFixed(4)}</strong><br>` +
+    `GPT-4o mini &nbsp;&nbsp;<strong style="color:var(--green)">$${cOai.toFixed(4)}</strong><br><br>` +
+    `<strong style="color:var(--teal)">Active selection: ~$${active.toFixed(4)}/mo</strong><br>` +
+    `<span style="color:var(--t3);font-size:10px">~300 in + ~150 out tokens per summary</span>`;
 }
 
 function selectModel(provider) {
   currentProvider = provider;
-  document.getElementById("model-card-anthropic").classList.toggle("selected", provider === "anthropic");
-  document.getElementById("model-card-openai").classList.toggle("selected",    provider === "openai");
-  document.getElementById("current-model-label").textContent =
+  document.getElementById("model-anthropic").classList.toggle("selected", provider === "anthropic");
+  document.getElementById("model-openai").classList.toggle("selected",    provider === "openai");
+  document.getElementById("active-model-label").textContent =
     provider === "anthropic" ? "Claude Haiku active" : "GPT-4o mini active";
-  if (dashData?.aiUsage) updateCostEstimate(dashData.aiUsage);
+  const month = parseInt(document.getElementById("ai-kpi-month").textContent.replace(/,/g,"")) || 0;
+  refreshCostEstimate(month);
 }
 
-async function loadAiSettings() {
-  aiSettingsLoaded = true;
-
-  // Load provider preference
-  try {
-    const { data } = await sb.from("app_config").select("value").eq("key", "ai_provider").maybeSingle();
-    if (data?.value) selectModel(data.value);
-    else selectModel("anthropic");
-  } catch(e) {
-    console.warn("Could not load ai_provider:", e);
-    selectModel("anthropic");
-  }
-
-  // Check if API keys are set (select only 'key' col, not 'value', to avoid leaking)
-  try {
-    const { data: secrets } = await sb.from("app_secrets").select("key");
-    const keys = (secrets || []).map(s => s.key);
-    setKeyBadge("anthropic-key-badge", keys.includes("anthropic_api_key"));
-    setKeyBadge("openai-key-badge",    keys.includes("openai_api_key"));
-  } catch(e) {
-    console.warn("Could not load app_secrets:", e);
-  }
-
-  // Load AI usage if dashboard data not yet loaded
-  if (!dashData?.aiUsage) {
-    try {
-      const ago30 = new Date(); ago30.setDate(ago30.getDate() - 30);
-      const ago7  = new Date(); ago7.setDate(ago7.getDate() - 7);
-      const todayStr = new Date().toISOString().slice(0, 10);
-
-      const { data: usageRows } = await sb
-        .from("ai_usage")
-        .select("user_id, created_at")
-        .gte("created_at", ago30.toISOString());
-
-      if (usageRows) {
-        const month = usageRows.length;
-        const week  = usageRows.filter(r => r.created_at >= ago7.toISOString()).length;
-        const today = usageRows.filter(r => r.created_at.slice(0,10) === todayStr).length;
-        const uniqueUsers = new Set(usageRows.map(r => r.user_id).filter(Boolean)).size;
-        updateAiUsageKpis({ totalSummaries30d: month, totalSummaries7d: week, totalSummariesToday: today, uniqueUsers });
-      }
-    } catch(e) {
-      console.warn("Could not load ai_usage:", e);
-    }
-  } else {
-    updateAiUsageKpis(dashData.aiUsage);
-  }
-}
-
-function setKeyBadge(badgeId, isSet) {
-  const el = document.getElementById(badgeId);
+function setKeyBadge(id, isSet) {
+  const el = document.getElementById(id);
   if (!el) return;
-  if (isSet) {
-    el.textContent = "KEY SET";
-    el.className = "badge badge-set";
-  } else {
-    el.textContent = "NO KEY";
-    el.className = "badge badge-unset";
-  }
+  el.textContent = isSet ? "KEY SET" : "NO KEY";
+  el.className = "badge " + (isSet ? "badge-set" : "badge-unset");
 }
 
 async function clearKey(secretKey, badgeId, inputId) {
+  if (!confirm("Remove this API key from the database?")) return;
   const { error } = await sb.from("app_secrets").delete().eq("key", secretKey);
-  if (error) { alert("Failed to clear key: " + error.message); return; }
+  if (error) { alert("Error: " + error.message); return; }
   document.getElementById(inputId).value = "";
   setKeyBadge(badgeId, false);
 }
 
+async function loadAiSettings() {
+  aiLoaded = true;
+
+  // Provider preference
+  try {
+    const { data } = await sb.from("app_config").select("value").eq("key", "ai_provider").maybeSingle();
+    selectModel(data?.value || "anthropic");
+  } catch { selectModel("anthropic"); }
+
+  // Key existence (read only key names, not values)
+  try {
+    const { data } = await sb.from("app_secrets").select("key");
+    const keys = (data || []).map(r => r.key);
+    setKeyBadge("badge-anthropic", keys.includes("anthropic_api_key"));
+    setKeyBadge("badge-openai",    keys.includes("openai_api_key"));
+  } catch(e) { console.warn("app_secrets:", e); }
+
+  // AI usage stats (fallback direct query if dashData not yet loaded)
+  if (dashData?.aiUsage) {
+    populateAiKpis(dashData.aiUsage);
+  } else {
+    try {
+      const ago30 = new Date(); ago30.setDate(ago30.getDate() - 30);
+      const ago7  = new Date(); ago7.setDate(ago7.getDate() - 7);
+      const today = new Date().toISOString().slice(0, 10);
+      const { data: rows } = await sb.from("ai_usage").select("user_id, created_at").gte("created_at", ago30.toISOString());
+      if (rows) {
+        populateAiKpis({
+          totalSummaries30d:  rows.length,
+          totalSummaries7d:   rows.filter(r => r.created_at >= ago7.toISOString()).length,
+          totalSummariesToday: rows.filter(r => r.created_at.slice(0,10) === today).length,
+          uniqueUsers: new Set(rows.map(r => r.user_id).filter(Boolean)).size,
+        });
+      }
+    } catch(e) { console.warn("ai_usage fallback:", e); }
+  }
+}
+
 async function saveAiSettings() {
-  const btn = document.getElementById("save-ai-btn");
-  const msg = document.getElementById("save-msg");
+  const btn = document.getElementById("btn-save-ai");
+  const msg = document.getElementById("save-status");
   btn.disabled = true;
-  msg.textContent = "Saving…";
-  msg.className = "save-msg";
+  msg.textContent = "Saving…"; msg.className = "save-status";
 
   try {
-    // Save provider preference
-    const { error: provErr } = await sb.from("app_config")
+    const { error: e1 } = await sb.from("app_config")
       .upsert({ key: "ai_provider", value: currentProvider }, { onConflict: "key" });
-    if (provErr) throw provErr;
+    if (e1) throw e1;
 
-    // Save Anthropic key if provided
-    const anthKey = document.getElementById("anthropic-key-input").value.trim();
-    if (anthKey) {
-      const { error } = await sb.from("app_secrets")
-        .upsert({ key: "anthropic_api_key", value: anthKey }, { onConflict: "key" });
+    const anthVal = document.getElementById("input-anthropic").value.trim();
+    if (anthVal) {
+      const { error } = await sb.from("app_secrets").upsert({ key: "anthropic_api_key", value: anthVal }, { onConflict: "key" });
       if (error) throw error;
-      document.getElementById("anthropic-key-input").value = "";
-      setKeyBadge("anthropic-key-badge", true);
+      document.getElementById("input-anthropic").value = "";
+      setKeyBadge("badge-anthropic", true);
     }
 
-    // Save OpenAI key if provided
-    const oaiKey = document.getElementById("openai-key-input").value.trim();
-    if (oaiKey) {
-      const { error } = await sb.from("app_secrets")
-        .upsert({ key: "openai_api_key", value: oaiKey }, { onConflict: "key" });
+    const oaiVal = document.getElementById("input-openai").value.trim();
+    if (oaiVal) {
+      const { error } = await sb.from("app_secrets").upsert({ key: "openai_api_key", value: oaiVal }, { onConflict: "key" });
       if (error) throw error;
-      document.getElementById("openai-key-input").value = "";
-      setKeyBadge("openai-key-badge", true);
+      document.getElementById("input-openai").value = "";
+      setKeyBadge("badge-openai", true);
     }
 
-    msg.textContent = "Saved successfully";
-    msg.className = "save-msg ok";
+    msg.textContent = "Saved ✓"; msg.className = "save-status ok";
     setTimeout(() => { msg.textContent = ""; }, 3000);
   } catch(e) {
-    msg.textContent = "Error: " + (e.message || "Unknown error");
-    msg.className = "save-msg err";
-  } finally {
-    btn.disabled = false;
-  }
+    msg.textContent = "Error: " + (e.message || "Unknown");
+    msg.className = "save-status err";
+  } finally { btn.disabled = false; }
 }
 
 // ── Boot ──────────────────────────────────────────────────────
