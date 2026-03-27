@@ -243,7 +243,7 @@ export default function MobileFeedDrawer({
             style={{
               background:T.accent, border:"none", borderRadius:10,
               padding:"7px 14px", cursor:"pointer",
-              color:"#fff", fontSize:13, fontWeight:700,
+              color:T.accentText, fontSize:13, fontWeight:700,
               display:"flex", alignItems:"center", gap:6,
               WebkitTapHighlightColor:"transparent",
             }}

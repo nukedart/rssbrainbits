@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.20] — 2026-03-27
+
+- [Polish] Fixed hardcoded `color:"#fff"` on MobileFeedDrawer Add Source button — use `T.accentText` token for correct contrast on Nocturne theme (sage accent needs dark text)
+
 ## [1.46.19] — 2026-03-27
 
 - [Nav] Added "History" to Sidebar nav — page existed in router but was unreachable from any nav surface
