@@ -3,6 +3,17 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.9] — 2026-03-27
+
+### Changes since v1.46.8
+- **Admin AI Settings** — API key input fields added directly in the panel; keys stored in new `app_secrets` Supabase table (admin-only RLS, no browser/localStorage exposure)
+- **Model picker** — shows KEY SET / NO KEY badge per provider; saving updates both the active provider and whichever keys were entered
+- **`summarize` Edge Function** — rewired to read provider from `app_config` and API key from `app_secrets` (falls back to env secrets); now supports both Claude Haiku and GPT-4o-mini server-side
+- **Supabase migration** — `app_secrets` table with admin-only read+write RLS policy
+- All three Supabase deployments run: `admin-stats`, `summarize` (both `--no-verify-jwt`), and `app_secrets` migration
+
+---
+
 ## [1.46.8] — 2026-03-27
 
 ### Changes since v1.46.7

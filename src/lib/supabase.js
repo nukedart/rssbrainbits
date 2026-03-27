@@ -629,3 +629,28 @@ export async function setAppConfig(key, value) {
     .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
   if (error) throw error;
 }
+
+// ── App secrets (admin-only API key storage) ──────────────────
+// Keys are stored server-side, readable only by admin sessions.
+// The summarize Edge Function reads them via service role.
+
+export async function getAppSecret(key) {
+  const { data } = await supabase
+    .from("app_secrets")
+    .select("value")
+    .eq("key", key)
+    .maybeSingle();
+  return data?.value ?? null;
+}
+
+export async function setAppSecret(key, value) {
+  if (!value?.trim()) {
+    const { error } = await supabase.from("app_secrets").delete().eq("key", key);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from("app_secrets")
+      .upsert({ key, value: value.trim(), updated_at: new Date().toISOString() }, { onConflict: "key" });
+    if (error) throw error;
+  }
+}

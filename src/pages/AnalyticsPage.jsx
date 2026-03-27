@@ -8,7 +8,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
 import { Spinner } from "../components/UI";
-import { getAppConfig, setAppConfig } from "../lib/supabase";
+import { getAppConfig, setAppConfig, getAppSecret, setAppSecret } from "../lib/supabase";
 
 // ── Helpers ───────────────────────────────────────────────────
 function isoDate(d) { return d.toISOString().slice(0, 10); }
@@ -140,21 +140,27 @@ const MODELS = {
 
 function AISettingsTab({ T }) {
   const [provider, setProviderState] = useState("anthropic");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [configLoading, setConfigLoading] = useState(true);
+  const [keys, setKeys] = useState({ anthropic: "", openai: "" });
+  const [keySet, setKeySet]  = useState({ anthropic: false, openai: false });
+  const [saving, setSaving]  = useState(false);
+  const [saved, setSaved]    = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [usageData, setUsageData] = useState(null);
   const [usageLoading, setUsageLoading] = useState(true);
 
   useEffect(() => {
     async function init() {
-      // Load provider from Supabase (source of truth)
       try {
-        const val = await getAppConfig("ai_provider");
-        if (val) setProviderState(val);
+        const [providerVal, anthKey, oaiKey] = await Promise.all([
+          getAppConfig("ai_provider"),
+          getAppSecret("anthropic_api_key"),
+          getAppSecret("openai_api_key"),
+        ]);
+        if (providerVal) setProviderState(providerVal);
+        setKeySet({ anthropic: !!anthKey, openai: !!oaiKey });
       } catch {}
-      setLoading(false);
+      setConfigLoading(false);
     }
     init();
     loadUsage();
@@ -168,46 +174,49 @@ function AISettingsTab({ T }) {
       const { data } = await supabase
         .from("ai_usage")
         .select("user_id, date, count")
-        .gte("date", since.toISOString().slice(0, 10))
-        .order("date", { ascending: false });
+        .gte("date", since.toISOString().slice(0, 10));
       setUsageData(data || []);
-    } catch {
-      setUsageData([]);
-    } finally {
-      setUsageLoading(false);
-    }
+    } catch { setUsageData([]); }
+    finally { setUsageLoading(false); }
   }
 
   async function save() {
     setSaving(true);
     setSaveError(null);
     try {
-      await setAppConfig("ai_provider", provider);
+      const ops = [setAppConfig("ai_provider", provider)];
+      if (keys.anthropic) ops.push(setAppSecret("anthropic_api_key", keys.anthropic));
+      if (keys.openai)    ops.push(setAppSecret("openai_api_key",    keys.openai));
+      await Promise.all(ops);
+      // Refresh key status after save
+      const [anthKey, oaiKey] = await Promise.all([
+        getAppSecret("anthropic_api_key"),
+        getAppSecret("openai_api_key"),
+      ]);
+      setKeySet({ anthropic: !!anthKey, openai: !!oaiKey });
+      setKeys({ anthropic: "", openai: "" });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
-      setSaveError(err.message || "Save failed");
+      setSaveError(err.message || "Save failed — check admin permissions");
     } finally {
       setSaving(false);
     }
   }
 
-  // Aggregate usage stats
-  const today = new Date().toISOString().slice(0, 10);
+  const today   = new Date().toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
   const totalToday  = usageData?.filter(r => r.date === today).reduce((s, r) => s + r.count, 0) ?? 0;
   const totalWeek   = usageData?.filter(r => r.date >= weekAgo).reduce((s, r) => s + r.count, 0) ?? 0;
   const totalMonth  = usageData?.reduce((s, r) => s + r.count, 0) ?? 0;
   const uniqueUsers = new Set(usageData?.map(r => r.user_id) ?? []).size;
-  const activeModel = MODELS[provider];
+  const activeModel = MODELS[provider] || MODELS.anthropic;
   const estCost = (activeModel.costPerSummary * totalMonth).toFixed(4);
 
-  const code = (text) => (
-    <code style={{ background: T.surface2, padding: "2px 7px", borderRadius: 5,
-      fontFamily: "monospace", fontSize: 11, color: T.text, wordBreak: "break-all" }}>
-      {text}
-    </code>
-  );
+  const KEY_META = {
+    anthropic: { label: "Anthropic API Key", placeholder: "sk-ant-api03-…" },
+    openai:    { label: "OpenAI API Key",    placeholder: "sk-…" },
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -215,110 +224,107 @@ function AISettingsTab({ T }) {
       {/* Usage stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         <Stat label="Summaries Today" value={usageLoading ? "…" : totalToday} color={T.accent} />
-        <Stat label="This Week" value={usageLoading ? "…" : totalWeek} />
-        <Stat label="This Month" value={usageLoading ? "…" : totalMonth} sub={`${uniqueUsers} user${uniqueUsers !== 1 ? "s" : ""}`} />
+        <Stat label="This Week"       value={usageLoading ? "…" : totalWeek} />
+        <Stat label="This Month"      value={usageLoading ? "…" : totalMonth}
+          sub={`${uniqueUsers} user${uniqueUsers !== 1 ? "s" : ""}`} />
         <Stat label="Est. Cost (30d)" value={usageLoading ? "…" : `$${estCost}`}
           sub={`at ${activeModel.name} rates`} color={T.warning} />
       </div>
 
-      {/* Provider selector */}
+      {/* Model picker + API keys in one card */}
       <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
         <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700,
           color: T.textSecondary, textTransform: "uppercase", letterSpacing: ".07em" }}>
-          Active AI Model
-          {loading && <span style={{ fontWeight: 400, marginLeft: 8 }}>loading…</span>}
+          AI Model &amp; API Keys
+          {configLoading && <span style={{ fontWeight: 400, marginLeft: 8, color: T.textTertiary }}>loading…</span>}
         </div>
-        <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+
+        {/* Model selector */}
+        <div style={{ padding: "16px 20px 12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {Object.values(MODELS).map(m => {
             const active = provider === m.id;
+            const isSet  = keySet[m.id];
             return (
               <button key={m.id} onClick={() => setProviderState(m.id)} style={{
                 background: active ? T.accentSurface : T.surface2,
                 border: `2px solid ${active ? T.accent : T.border}`,
-                borderRadius: 12, padding: "14px 16px", cursor: "pointer", fontFamily: "inherit",
-                textAlign: "left", transition: "all .15s",
+                borderRadius: 12, padding: "14px 16px", cursor: "pointer",
+                fontFamily: "inherit", textAlign: "left", transition: "all .15s",
               }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: active ? T.accent : T.text }}>{m.name}</div>
-                  <div style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
-                    background: active ? T.accent : T.border,
-                    color: active ? "#fff" : T.textTertiary }}>
-                    {active ? "ACTIVE" : m.provider}
+                  <div style={{ display: "flex", gap: 5 }}>
+                    {active && (
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 20,
+                        background: T.accent, color: "#fff" }}>ACTIVE</span>
+                    )}
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 20,
+                      background: isSet ? `${T.success}22` : `${T.danger}18`,
+                      color: isSet ? T.success : T.danger }}>
+                      {isSet ? "KEY SET" : "NO KEY"}
+                    </span>
                   </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 3, fontSize: 11, color: T.textSecondary }}>
-                  <span>In: {m.input}</span>
-                  <span>Out: {m.output}</span>
-                  <span style={{ color: T.textTertiary, marginTop: 2 }}>
-                    ~${(m.costPerSummary * 1000).toFixed(3)} per 1,000 summaries
-                  </span>
+                <div style={{ fontSize: 11, color: T.textSecondary }}>
+                  {m.input} in · {m.output} out
+                </div>
+                <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 2 }}>
+                  ~${(m.costPerSummary * 1000).toFixed(3)} / 1k summaries
                 </div>
               </button>
             );
           })}
         </div>
-        <div style={{ padding: "12px 20px", borderTop: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10 }}>
-          <button onClick={save} disabled={saving || loading} style={{
+
+        {/* API key inputs — one per provider */}
+        <div style={{ padding: "0 20px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+          {Object.values(MODELS).map(m => {
+            const meta = KEY_META[m.id];
+            return (
+              <div key={m.id}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: T.text, marginBottom: 5 }}>
+                  {meta.label}
+                  {keySet[m.id] && (
+                    <span style={{ fontSize: 11, fontWeight: 400, color: T.success, marginLeft: 8 }}>
+                      ✓ saved — enter new key to replace
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  value={keys[m.id]}
+                  onChange={e => setKeys(k => ({ ...k, [m.id]: e.target.value }))}
+                  placeholder={keySet[m.id] ? "••••••••••••••••••••" : meta.placeholder}
+                  autoComplete="off"
+                  style={{
+                    width: "100%", boxSizing: "border-box", padding: "9px 12px",
+                    background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 8,
+                    fontSize: 13, color: T.text, fontFamily: "monospace", outline: "none",
+                    fontWeight: keys[m.id] ? 400 : 300,
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Save */}
+        <div style={{ padding: "12px 20px 16px", borderTop: `1px solid ${T.border}`,
+          display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={save} disabled={saving || configLoading} style={{
             background: saved ? T.success : T.accent, border: "none",
-            borderRadius: 8, padding: "8px 20px", fontSize: 13, fontWeight: 600, color: "#fff",
-            cursor: saving || loading ? "not-allowed" : "pointer", fontFamily: "inherit",
-            opacity: saving || loading ? 0.7 : 1, transition: "background .2s",
+            borderRadius: 8, padding: "9px 22px", fontSize: 13, fontWeight: 600, color: "#fff",
+            cursor: saving || configLoading ? "not-allowed" : "pointer", fontFamily: "inherit",
+            opacity: saving || configLoading ? 0.7 : 1, transition: "background .2s",
           }}>
-            {saving ? "Saving…" : saved ? "Saved!" : "Save provider"}
+            {saving ? "Saving…" : saved ? "Saved!" : "Save"}
           </button>
           {saveError && <span style={{ fontSize: 12, color: T.danger }}>{saveError}</span>}
-          <span style={{ fontSize: 11, color: T.textTertiary }}>
-            Stored in Supabase — applies to all users
-          </span>
-        </div>
-      </div>
-
-      {/* API key setup instructions */}
-      <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
-        <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700,
-          color: T.textSecondary, textTransform: "uppercase", letterSpacing: ".07em" }}>
-          API Key Setup
-        </div>
-        <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.6 }}>
-            API keys are stored as <strong style={{ color: T.text }}>server-side secrets</strong> — never in the database or browser.
-            Set them once via CLI; the Worker and Edge Function pick them up automatically.
-          </div>
-
-          {/* Cloudflare Worker */}
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 8 }}>
-              Cloudflare Worker (Tier 1 — recommended)
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {Object.values(MODELS).map(m => (
-                <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 11, color: T.textTertiary, width: 110, flexShrink: 0 }}>{m.name}:</span>
-                  {code(m.wranglerCmd)}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Supabase Edge Function */}
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 8 }}>
-              Supabase Edge Function (Tier 2 — fallback)
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {Object.values(MODELS).map(m => (
-                <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 11, color: T.textTertiary, width: 110, flexShrink: 0 }}>{m.name}:</span>
-                  {code(m.supabaseCmd)}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ fontSize: 11, color: T.textTertiary, background: T.surface2, padding: "8px 12px",
-            borderRadius: 8, lineHeight: 1.6 }}>
-            After updating secrets, redeploy: {code("npx wrangler deploy")} or {code("supabase functions deploy summarize")}
-          </div>
+          {!saveError && (
+            <span style={{ fontSize: 11, color: T.textTertiary }}>
+              Keys stored in Supabase (admin-only) · Provider applies to all users
+            </span>
+          )}
         </div>
       </div>
 
