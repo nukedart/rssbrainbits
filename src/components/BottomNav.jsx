@@ -54,6 +54,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             <button
               key="add"
               onClick={onAdd}
+              aria-label="Add feed"
               style={{
                 flex: 1, display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
@@ -90,6 +91,8 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             <button
               key="feeds"
               onClick={onOpenFeeds}
+              aria-label="Open feeds list"
+              aria-expanded={false}
               style={{
                 flex: 1, display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
@@ -117,6 +120,8 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
           <button
             key={id}
             onClick={() => onNavigate(id)}
+            aria-label={label}
+            aria-current={isActive ? "page" : undefined}
             style={{
               flex: 1, display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center",

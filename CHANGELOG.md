@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.25] — 2026-03-27
+
+- [UX] Added aria-label and aria-current to all BottomNav buttons — Add button was completely invisible to screen readers; nav tabs now correctly announce active page
+
 ## [1.46.24] — 2026-03-27
 
 - [Polish] Fixed hardcoded `#e53e3e` on feed error badge in InboxPage — now uses T.danger token so it renders as theme-appropriate red/peach across all three themes

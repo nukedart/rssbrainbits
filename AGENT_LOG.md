@@ -16,6 +16,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-27 | v1.46.22 | Polish | Replaced ⚙ emoji with SVG Analytics icon on Sidebar admin button — crisp retina rendering, consistent with icon system | `Sidebar.jsx:14,536` | — |
 | 2026-03-27 | v1.46.23 | Polish | Fixed hardcoded `#03210b` in NotesPage and ArticleNotesPanel — use T.accentText for correct contrast on all themes | `NotesPage.jsx:675, ArticleNotesPanel.jsx:146` | — |
 | 2026-03-27 | v1.46.24 | Polish | Fixed hardcoded `#e53e3e` on feed error badge in InboxPage — now uses T.danger token | `InboxPage.jsx:641` | — |
+| 2026-03-27 | v1.46.25 | UX | Added aria-label + aria-current to all BottomNav buttons — Add button was invisible to screen readers | `BottomNav.jsx:55,92,120` | — |
 
 ---
 
