@@ -514,6 +514,30 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
           })}
         </div>
 
+        {/* Admin panel link — only shown to admin users */}
+        {user?.user_metadata?.is_admin && (
+          <button
+            onClick={() => onNavigate("analytics")}
+            title={collapsed ? "Admin" : undefined}
+            style={{
+              display:"flex", alignItems:"center", gap: collapsed?0:7,
+              justifyContent: collapsed?"center":"flex-start",
+              padding: collapsed?"6px 0":"6px 10px", borderRadius:8, border:"none",
+              background: active==="analytics" ? T.surface : "transparent",
+              cursor:"pointer", fontFamily:"inherit", transition:"background .15s", width:"100%",
+            }}
+            onMouseEnter={e => { if (active!=="analytics") e.currentTarget.style.background=T.surface; }}
+            onMouseLeave={e => { if (active!=="analytics") e.currentTarget.style.background="transparent"; }}
+          >
+            <span style={{ fontSize:13, lineHeight:1, flexShrink:0, opacity: active==="analytics"?1:0.5 }}>⚙</span>
+            {!collapsed && (
+              <span style={{ fontSize:11.5, fontWeight:600, color: active==="analytics"?T.accent:T.textSecondary }}>
+                Admin
+              </span>
+            )}
+          </button>
+        )}
+
         {/* Settings / avatar row */}
         <div style={{ display:"flex", alignItems:"center", gap:3, marginTop:2 }}>
           <button onClick={() => onNavigate("settings")}

@@ -50,7 +50,11 @@ function AppShell() {
   const { isMobile } = useBreakpoint();
 
   // ── ALL state at the top — no hooks after conditional returns ──
-  const [page, setPage]             = useState(() => window.innerWidth < 768 ? "inbox" : "home");
+  const [page, setPage]             = useState(() => {
+    // Support /#admin direct URL
+    if (window.location.hash === "#admin") return "analytics";
+    return window.innerWidth < 768 ? "inbox" : "home";
+  });
   const [unreadCount, setUnreadCount] = useState(0);
   const [smartFeeds, setSmartFeeds]   = useState([]);
   const [editingSF, setEditingSF]     = useState(null);
@@ -97,6 +101,9 @@ function AppShell() {
 
   function navigateTo(p) {
     track("page_navigated", { page: p });
+    // Keep /#admin in the URL when on the admin panel, clear it otherwise
+    if (p === "analytics") window.location.hash = "admin";
+    else if (window.location.hash === "#admin") history.replaceState(null, "", window.location.pathname);
     setPage(p);
   }
 

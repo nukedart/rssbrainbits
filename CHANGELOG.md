@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.10] — 2026-03-27
+
+### Changes since v1.46.9
+- **`rss.brainbits.us/#admin` URL** — direct link to the admin panel now works; hash is set/cleared automatically when navigating in/out
+- **Admin link in Sidebar** — admin users see an "Admin" shortcut at the bottom of the sidebar (above Settings); no longer need to dig through Settings to find it
+
+---
+
 ## [1.46.9] — 2026-03-27
 
 ### Changes since v1.46.8
