@@ -3,17 +3,19 @@
  * ────────────────────────────────────────────────────────
  * Two endpoints:
  *   GET  ?url=...        → CORS proxy for RSS feeds
- *   POST /summarize      → AI article summary via Claude Haiku
+ *   POST /summarize      → AI article summary (Claude Haiku or GPT-4o-mini)
  *
  * Secrets (set via `wrangler secret put` or Dashboard):
- *   ANTHROPIC_API_KEY    → required for /summarize
+ *   ANTHROPIC_API_KEY    → for Claude Haiku summarization
+ *   OPENAI_API_KEY       → for GPT-4o-mini summarization
  *
  * Free tier: 100,000 requests/day, 10ms CPU/request — plenty for RSS.
  *
  * Deploy:
  *   1. npx wrangler login
  *   2. npx wrangler secret put ANTHROPIC_API_KEY
- *   3. npx wrangler deploy
+ *   3. npx wrangler secret put OPENAI_API_KEY   (optional, for GPT-4o-mini)
+ *   4. npx wrangler deploy
  *   OR paste into Cloudflare Dashboard → Workers → Create Worker
  *
  * After deploy, set VITE_PROXY_URL=https://feedbox-proxy.<your-subdomain>.workers.dev
@@ -49,17 +51,16 @@ export default {
   },
 };
 
+// ── Shared prompts ────────────────────────────────────────────
+const PROMPTS = {
+  keypoints: `Summarize the following article in 3–5 clear bullet points. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
+  brief:     `Give a 1–2 sentence TL;DR of the following article. Write in plain text only — no markdown, no formatting.`,
+  detailed:  `Summarize the following article in 6–8 detailed bullet points covering all key ideas, data, and conclusions. Write in plain text only. Each bullet must start with "•" and be a complete sentence.`,
+};
+
 // ── AI Summarizer ─────────────────────────────────────────────
 async function handleSummarize(request, env, origin) {
   const headers = corsHeaders(origin);
-
-  // Validate API key is configured
-  if (!env.ANTHROPIC_API_KEY) {
-    return new Response(
-      JSON.stringify({ error: "ANTHROPIC_API_KEY not configured on worker" }),
-      { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
-    );
-  }
 
   // Parse request body
   let body;
@@ -72,7 +73,7 @@ async function handleSummarize(request, env, origin) {
     );
   }
 
-  const { text, title, style = "keypoints" } = body;
+  const { text, title, style = "keypoints", provider = "anthropic" } = body;
   if (!text) {
     return new Response(
       JSON.stringify({ error: "Missing 'text' field" }),
@@ -80,11 +81,20 @@ async function handleSummarize(request, env, origin) {
     );
   }
 
-  const PROMPTS = {
-    keypoints: `Summarize the following article in 3–5 clear bullet points. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
-    brief:     `Give a 1–2 sentence TL;DR of the following article. Write in plain text only — no markdown, no formatting.`,
-    detailed:  `Summarize the following article in 6–8 detailed bullet points covering all key ideas, data, and conclusions. Write in plain text only. Each bullet must start with "•" and be a complete sentence.`,
-  };
+  if (provider === "openai") {
+    return handleOpenAISummarize(env, origin, headers, text, title, style);
+  }
+  return handleAnthropicSummarize(env, origin, headers, text, title, style);
+}
+
+async function handleAnthropicSummarize(env, origin, headers, text, title, style) {
+  if (!env.ANTHROPIC_API_KEY) {
+    return new Response(
+      JSON.stringify({ error: "ANTHROPIC_API_KEY not configured on worker" }),
+      { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
+    );
+  }
+
   const prompt = PROMPTS[style] || PROMPTS.keypoints;
   const maxTokens = style === "detailed" ? 1500 : 800;
 
@@ -107,10 +117,9 @@ async function handleSummarize(request, env, origin) {
     });
 
     const data = await response.json();
-
     if (!response.ok) {
       return new Response(
-        JSON.stringify({ error: data.error?.message || "Anthropic API error", status: response.status }),
+        JSON.stringify({ error: data.error?.message || "Anthropic API error" }),
         { status: 502, headers: { ...headers, "Content-Type": "application/json" } }
       );
     }
@@ -122,7 +131,56 @@ async function handleSummarize(request, env, origin) {
     );
   } catch (err) {
     return new Response(
-      JSON.stringify({ error: `Summarization failed: ${err.message}` }),
+      JSON.stringify({ error: `Anthropic summarization failed: ${err.message}` }),
+      { status: 502, headers: { ...headers, "Content-Type": "application/json" } }
+    );
+  }
+}
+
+async function handleOpenAISummarize(env, origin, headers, text, title, style) {
+  if (!env.OPENAI_API_KEY) {
+    return new Response(
+      JSON.stringify({ error: "OPENAI_API_KEY not configured on worker" }),
+      { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
+    );
+  }
+
+  const prompt = PROMPTS[style] || PROMPTS.keypoints;
+  const maxTokens = style === "detailed" ? 1500 : 800;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        max_tokens: maxTokens,
+        messages: [
+          { role: "system", content: "You are a reading assistant." },
+          { role: "user", content: `${prompt}\n\nTitle: "${title || "Untitled"}"\n\nArticle:\n${text.slice(0, 6000)}` },
+        ],
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return new Response(
+        JSON.stringify({ error: data.error?.message || "OpenAI API error" }),
+        { status: 502, headers: { ...headers, "Content-Type": "application/json" } }
+      );
+    }
+
+    const summary = data.choices?.[0]?.message?.content || "Could not generate summary.";
+    return new Response(
+      JSON.stringify({ summary }),
+      { status: 200, headers: { ...headers, "Content-Type": "application/json", "Cache-Control": "no-store" } }
+    );
+  } catch (err) {
+    return new Response(
+      JSON.stringify({ error: `OpenAI summarization failed: ${err.message}` }),
       { status: 502, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }

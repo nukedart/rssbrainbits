@@ -95,6 +95,20 @@ Deno.serve(async (req) => {
     email: allUsers.find(u => u.id === e.user_id)?.email || "unknown",
   }));
 
+  // ── AI usage (last 30d) ───────────────────────────────────
+  const { data: aiUsageRows } = await adminClient
+    .from("ai_usage")
+    .select("user_id, date, count")
+    .gte("date", ago30.toISOString().slice(0, 10));
+
+  const aiRows = aiUsageRows || [];
+  const totalSummaries30d = aiRows.reduce((s, r) => s + r.count, 0);
+  const aiUsersCount      = new Set(aiRows.map(r => r.user_id)).size;
+  const todayStr = now.toISOString().slice(0, 10);
+  const totalSummariesToday = aiRows.filter(r => r.date === todayStr).reduce((s, r) => s + r.count, 0);
+  const weekAgoStr = ago7.toISOString().slice(0, 10);
+  const totalSummaries7d = aiRows.filter(r => r.date >= weekAgoStr).reduce((s, r) => s + r.count, 0);
+
   // ── Analytics events (last 30d) ───────────────────────────
   const { data: aEvents } = await adminClient
     .from("analytics_events")
@@ -164,6 +178,10 @@ Deno.serve(async (req) => {
       uniqueUsers30d, uniqueUsers7d, uniqueUsersToday,
       dauChart, eventsChart, topEvents,
       funnel: { limitHits, upgradeClicked, upgrades: upgrades30d },
+    },
+    aiUsage: {
+      totalSummaries30d, totalSummaries7d, totalSummariesToday,
+      uniqueUsers: aiUsersCount,
     },
     recentActivity,
   }), {

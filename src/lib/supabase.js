@@ -610,3 +610,22 @@ export async function incrementAiUsage(userId) {
   if (error) throw error;
   return data;
 }
+
+// ── App config (admin-controlled, server-side settings) ───────
+// Read a config value. Returns null if key doesn't exist.
+export async function getAppConfig(key) {
+  const { data } = await supabase
+    .from("app_config")
+    .select("value")
+    .eq("key", key)
+    .maybeSingle();
+  return data?.value ?? null;
+}
+
+// Upsert a config value. Admin-only via RLS.
+export async function setAppConfig(key, value) {
+  const { error } = await supabase
+    .from("app_config")
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+  if (error) throw error;
+}

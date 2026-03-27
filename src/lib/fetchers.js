@@ -1,7 +1,7 @@
 // ── Content fetchers ──────────────────────────────────────────
 import { Readability } from "@mozilla/readability";
 import { getCachedFeed, setCachedFeed } from "./feedCache.js";
-import { getAnthropicKey } from "./apiKeys.js";
+import { getAnthropicKey, getOpenAIKey, getAiProvider, setAiProvider } from "./apiKeys.js";
 
 // Own Cloudflare Worker proxy — fast, free, private, no rate limits.
 // Set VITE_PROXY_URL in .env.local and GitHub secrets after deploying.
@@ -696,6 +696,30 @@ export async function discoverFeed(pageUrl) {
 const WORKER_BASE = import.meta.env.VITE_PROXY_URL || null;
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || null;
 
+// Cache the active provider per page load.
+// Source of truth is Supabase app_config; localStorage is the fallback.
+let _providerCache = null;
+async function resolveAiProvider() {
+  if (_providerCache) return _providerCache;
+  try {
+    const { supabase } = await import("./supabase.js");
+    const { data } = await supabase
+      .from("app_config")
+      .select("value")
+      .eq("key", "ai_provider")
+      .maybeSingle();
+    if (data?.value) {
+      _providerCache = data.value;
+      setAiProvider(data.value); // keep localStorage in sync
+      return _providerCache;
+    }
+  } catch {
+    // Not authenticated or table doesn't exist yet — fall through
+  }
+  _providerCache = getAiProvider();
+  return _providerCache;
+}
+
 const SUMMARY_PROMPTS = {
   keypoints: `Summarize the following article in 3–5 clear bullet points capturing the key ideas and facts. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
   brief: `Give a 1–2 sentence TL;DR of the following article. Write in plain text only — no markdown, no formatting.`,
@@ -704,7 +728,8 @@ const SUMMARY_PROMPTS = {
 
 export async function summarizeContent(text, title, style = "keypoints") {
   const prompt = SUMMARY_PROMPTS[style] || SUMMARY_PROMPTS.keypoints;
-  const payload = { text: text.slice(0, 6000), title: title || "Untitled", style };
+  const provider = await resolveAiProvider(); // 'anthropic' | 'openai'
+  const payload = { text: text.slice(0, 6000), title: title || "Untitled", style, provider };
 
   // ── Tier 1: Cloudflare Worker (API key stored as Worker secret) ──
   if (WORKER_BASE) {
@@ -747,10 +772,35 @@ export async function summarizeContent(text, title, style = "keypoints") {
     }
   }
 
-  // ── Tier 3: Direct browser call — env key first, then user's saved key ──
-  // VITE_ANTHROPIC_KEY can be set as a build-time env var so users don't need
-  // to enter their own key. For multi-user apps prefer the Supabase edge function
-  // (Tier 2) since VITE_ vars are visible in the JS bundle.
+  // ── Tier 3: Direct browser call — branches on active provider ──
+  if (provider === "openai") {
+    const key = import.meta.env.VITE_OPENAI_KEY || getOpenAIKey();
+    if (!key) return "AI summarization is temporarily unavailable. Please try again later.";
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          max_tokens: style === "actions" ? 1000 : 800,
+          messages: [
+            { role: "system", content: "You are a reading assistant." },
+            { role: "user", content: `${prompt}\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 6000)}` },
+          ],
+        }),
+      });
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || "Could not generate summary.";
+    } catch (err) {
+      console.error("Summarization error (OpenAI):", err);
+      return "Summarization failed. Please try again.";
+    }
+  }
+
+  // Anthropic (default)
   const key = import.meta.env.VITE_ANTHROPIC_KEY || getAnthropicKey();
   if (!key) return "AI summarization is temporarily unavailable. Please try again later.";
   try {
@@ -774,7 +824,7 @@ export async function summarizeContent(text, title, style = "keypoints") {
     const data = await response.json();
     return data.content?.[0]?.text || "Could not generate summary.";
   } catch (err) {
-    console.error("Summarization error:", err);
+    console.error("Summarization error (Anthropic):", err);
     return "Summarization failed. Please try again.";
   }
 }

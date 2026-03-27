@@ -17,3 +17,24 @@ export function setAnthropicKey(key) {
     localStorage.removeItem(LS_PREFIX + "anthropic");
   }
 }
+
+export function getOpenAIKey() {
+  return localStorage.getItem(LS_PREFIX + "openai") || "";
+}
+
+export function setOpenAIKey(key) {
+  if (key?.trim()) {
+    localStorage.setItem(LS_PREFIX + "openai", key.trim());
+  } else {
+    localStorage.removeItem(LS_PREFIX + "openai");
+  }
+}
+
+// Active AI provider: 'anthropic' (Claude Haiku) | 'openai' (GPT-4o-mini)
+export function getAiProvider() {
+  return localStorage.getItem(LS_PREFIX + "provider") || "anthropic";
+}
+
+export function setAiProvider(provider) {
+  localStorage.setItem(LS_PREFIX + "provider", provider);
+}

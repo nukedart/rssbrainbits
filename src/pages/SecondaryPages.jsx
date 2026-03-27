@@ -15,7 +15,7 @@ import { feedsToOPML, downloadFile } from "../lib/exportUtils";
 import { getCachedFeed, cacheAge, invalidateCachedFeed } from "../lib/feedCache";
 import { getPlan, getPlanName, PLANS } from "../lib/plan";
 import { track } from "../lib/analytics";
-import { getAnthropicKey, setAnthropicKey } from "../lib/apiKeys";
+import { getAnthropicKey, setAnthropicKey, getOpenAIKey, setOpenAIKey } from "../lib/apiKeys";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -742,16 +742,26 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         {/* AI Integration */}
         <Card title="AI Integration" T={T}>
           <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 12, lineHeight: 1.6 }}>
-            AI summaries are powered by Anthropic Claude. Add your own API key as a personal fallback — used only if the app's built-in summarization is unavailable.
+            Add a personal fallback API key — used only if the app's built-in summarization is unavailable. Stored locally in your browser only.
           </div>
           <ApiKeyInput
             label="Anthropic API Key"
             placeholder="sk-ant-api03-…"
-            hint="Stored locally in your browser only. Never sent to our servers."
+            hint="Personal fallback for Claude Haiku. Stored in browser only."
             getValue={getAnthropicKey}
             setValue={setAnthropicKey}
             T={T}
           />
+          <div style={{ marginTop: 10 }}>
+            <ApiKeyInput
+              label="OpenAI API Key"
+              placeholder="sk-…"
+              hint="Personal fallback for GPT-4o-mini. Stored in browser only."
+              getValue={getOpenAIKey}
+              setValue={setOpenAIKey}
+              T={T}
+            />
+          </div>
         </Card>
 
         {/* Reading Stats */}
@@ -836,8 +846,8 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
             onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; }}
           >
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>Analytics Dashboard</div>
-              <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Admin · User metrics, DAU, events</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>Admin Panel</div>
+              <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Analytics · AI settings · API keys</div>
             </div>
             <span style={{ color: T.textTertiary, fontSize: 16 }}>›</span>
           </button>

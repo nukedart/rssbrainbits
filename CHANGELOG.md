@@ -3,6 +3,21 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.8] — 2026-03-27
+
+### Changes since v1.46.7
+- **Admin panel** — Analytics page now has tabs: Analytics and AI Settings
+- **Dual AI provider support** — Admin can switch between Claude Haiku 4.5 (Anthropic) and GPT-4o-mini (OpenAI) from the admin panel; ~4× cheaper with GPT-4o-mini
+- **Secure provider storage** — Active AI provider stored in Supabase `app_config` table (admin-only write, applies to all users); API keys remain exclusively in Cloudflare Worker / Supabase Edge Function secrets — never in DB or browser
+- **AI usage tracking** — Admin AI Settings tab shows summaries today / 7d / 30d, unique users, and estimated cost at active model rates
+- **admin-stats edge function** — Fixed 401 Invalid JWT by deploying with `--no-verify-jwt`; now returns AI usage totals alongside user/analytics data
+- **Cloudflare Worker** — Extended to support OpenAI (`OPENAI_API_KEY` secret) alongside Anthropic; provider routed via request payload
+- **Supabase migration** — `app_config` table + admin read policy for `ai_usage` (admins see all users' rows)
+- **User settings** — Added OpenAI personal fallback key input alongside existing Anthropic key
+- Admin panel label updated: "Analytics Dashboard" → "Admin Panel" with subtitle listing all sections
+
+---
+
 ## [1.46.7] — 2026-03-25
 
 ### Changes since v1.46.6
