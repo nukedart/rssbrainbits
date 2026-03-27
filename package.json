@@ -1,6 +1,6 @@
 {
   "name": "feedbox",
-  "version": "1.46.11",
+  "version": "1.46.12",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,13 @@
     "deploy:major": "bash deploy.sh major",
     "deploy:dry": "bash deploy.sh --dry-run",
     "deploy:local": "bash deploy.sh --local",
-    "sync": "bash sync.sh"
+    "sync": "bash sync.sh",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "analyze": "npm run build && open dist/stats.html",
+    "perf": "node scripts/lighthouse.mjs",
+    "perf:live": "node scripts/lighthouse.mjs --live"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
@@ -22,7 +28,15 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.3.1"
+    "@vitest/coverage-v8": "^4.1.2",
+    "jsdom": "^29.0.1",
+    "lighthouse": "^12.8.2",
+    "playwright": "^1.58.2",
+    "rollup-plugin-visualizer": "^7.0.1",
+    "vite": "^5.3.1",
+    "vitest": "^4.1.2"
   }
 }

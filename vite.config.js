@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { visualizer } from "rollup-plugin-visualizer";
 
 const pkg = JSON.parse(readFileSync("./package.json", "utf8"));
 
@@ -13,7 +14,10 @@ const pkg = JSON.parse(readFileSync("./package.json", "utf8"));
 const base = process.env.VITE_BASE_PATH || "/";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    visualizer({ filename: "dist/stats.html", open: false, gzipSize: true, brotliSize: true }),
+  ],
   base,
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
