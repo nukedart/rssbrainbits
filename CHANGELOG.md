@@ -3,6 +3,20 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.8] — 2026-03-27
+
+### Changes since v1.46.5
+- v1.46.11 — /admin is a real URL via Vite multi-page build
+- v1.46.10 — Admin panel direct URL + sidebar shortcut
+- v1.46.9 — Admin panel API key inputs + secure server-side key storage
+- v1.46.8 — Admin panel: dual AI provider (Claude Haiku / GPT-4o-mini), secure key management
+- Add SWIFT_REBUILD.md — iOS/macOS universal app rebuild guide
+- Add LAUNCH.md — Stripe config, production checklist, user acquisition playbook
+- v1.46.7 — AI usage enforcement + landing page
+- v1.46.6 — Readability, mobile swipe fix, hover action overlays
+
+---
+
 ## [1.46.11] — 2026-03-27
 
 ### Changes since v1.46.10

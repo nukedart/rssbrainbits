@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedbox — Your calm reading space</title>
+  <meta name="description" content="RSS, podcasts, and YouTube in one clean reader. AI summaries, highlights, smart feeds. Free to start." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #121416;
+      --surface:  #1a1c1e;
+      --border:   rgba(66,72,65,0.25);
+      --text:     #f1f1f1;
+      --muted:    #c2c8bf;
+      --dim:      #737971;
+      --accent:   #accfae;
+      --accentbg: rgba(172,207,174,0.08);
+      --card:     #1e2022;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: rgba(18,20,22,.92);
+      backdrop-filter: blur(12px); z-index: 100;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -.02em;
+    }
+    .nav-logo img { height: 26px; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { font-size: 14px; color: var(--muted); }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .btn-primary {
+      background: var(--accent); color: #03210b;
+      padding: 8px 18px; border-radius: 9px;
+      font-size: 14px; font-weight: 600;
+      transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: 0.88; text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 96px 24px 72px;
+      max-width: 720px; margin: 0 auto;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--accentbg); border: 1px solid rgba(172,207,174,.2);
+      color: var(--accent); font-size: 12px; font-weight: 600;
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 28px;
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 58px);
+      font-weight: 800; letter-spacing: -.03em;
+      line-height: 1.1; margin-bottom: 20px;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p {
+      font-size: 18px; color: var(--muted);
+      max-width: 520px; margin: 0 auto 36px;
+      line-height: 1.65;
+    }
+    .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-large {
+      background: var(--accent); color: #03210b;
+      padding: 13px 28px; border-radius: 12px;
+      font-size: 15px; font-weight: 700;
+      transition: opacity .15s; display: inline-block;
+    }
+    .btn-large:hover { opacity: 0.88; text-decoration: none; }
+    .btn-ghost {
+      background: var(--surface); color: var(--text);
+      padding: 13px 28px; border-radius: 12px; border: 1px solid var(--border);
+      font-size: 15px; font-weight: 600;
+      transition: background .15s; display: inline-block;
+    }
+    .btn-ghost:hover { background: #25282a; text-decoration: none; }
+    .hero-note { font-size: 12px; color: var(--dim); margin-top: 16px; }
+
+    /* ── Features ── */
+    .section { padding: 80px 24px; max-width: 1080px; margin: 0 auto; }
+    .section-label {
+      font-size: 12px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(26px, 4vw, 36px); font-weight: 800;
+      letter-spacing: -.02em; margin-bottom: 48px; color: var(--text);
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+    }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--accentbg); border: 1px solid rgba(172,207,174,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; margin-bottom: 16px;
+    }
+    .feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    .feature-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* ── Pricing ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px; max-width: 720px; margin: 0 auto;
+    }
+    .pricing-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 32px;
+    }
+    .pricing-card.featured {
+      border-color: rgba(172,207,174,.35);
+      background: linear-gradient(135deg, #1e2022, #1a2022);
+    }
+    .plan-badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      background: var(--accentbg); color: var(--accent);
+      border: 1px solid rgba(172,207,174,.2);
+      padding: 3px 10px; border-radius: 20px; margin-bottom: 20px;
+    }
+    .plan-price {
+      font-size: 40px; font-weight: 800; letter-spacing: -.03em;
+      color: var(--text); margin-bottom: 4px;
+    }
+    .plan-price span { font-size: 16px; font-weight: 400; color: var(--dim); }
+    .plan-desc { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+    .plan-features { list-style: none; margin-bottom: 28px; }
+    .plan-features li {
+      font-size: 14px; color: var(--muted);
+      padding: 7px 0; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    .plan-features li::before { content: "✓"; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+    .plan-features li.dim::before { content: "–"; color: var(--dim); }
+    .plan-features li.dim { color: var(--dim); }
+    .plan-cta {
+      display: block; width: 100%; text-align: center;
+      padding: 12px; border-radius: 11px;
+      font-size: 14px; font-weight: 600;
+    }
+    .plan-cta.solid { background: var(--accent); color: #03210b; }
+    .plan-cta.solid:hover { opacity: 0.88; text-decoration: none; }
+    .plan-cta.outline {
+      border: 1.5px solid var(--border); color: var(--muted);
+      background: transparent;
+    }
+    .plan-cta.outline:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 13px; color: var(--dim);
+    }
+    footer a { color: var(--dim); }
+    footer a:hover { color: var(--muted); }
+    footer .footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+
+    @media (max-width: 600px) {
+      nav { padding: 14px 18px; }
+      .hero { padding: 60px 18px 48px; }
+      .section { padding: 56px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-logo">
+      <img src="/feedbox-logo.png" alt="Feedbox" onerror="this.style.display='none'" />
+      Feedbox
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/" class="btn-primary">Sign in</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">Now with AI summaries</div>
+    <h1>Your calm<br /><span>reading space</span></h1>
+    <p>RSS, podcasts, and YouTube in one focused reader. No algorithm, no noise — just the content you choose.</p>
+    <div class="hero-cta">
+      <a href="/" class="btn-large">Start for free →</a>
+      <a href="#pricing" class="btn-ghost">See pricing</a>
+    </div>
+    <p class="hero-note">Free plan available · No credit card required</p>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-label">Features</div>
+    <div class="section-title">Everything you need to read well</div>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">📰</div>
+        <h3>RSS, podcasts &amp; YouTube</h3>
+        <p>Add any RSS feed, podcast, or YouTube channel. All your content in one place, in the order it was published.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">✨</div>
+        <h3>AI summaries</h3>
+        <p>Get the key points of any article in seconds. Three styles: key points, brief overview, or action items.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📖</div>
+        <h3>Clean reader view</h3>
+        <p>Full article text extracted and displayed in a beautiful, distraction-free reading view. No ads, no clutter.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Smart feeds</h3>
+        <p>Create keyword-based feeds that filter across all your sources. Follow topics, not just publications.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🖊</div>
+        <h3>Highlights &amp; notes</h3>
+        <p>Highlight passages and attach notes to articles. Your highlights are saved and searchable forever.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Works everywhere</h3>
+        <p>Optimized for both desktop and mobile. Swipe to archive on mobile, keyboard shortcuts on desktop.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="section-label">Pricing</div>
+    <div class="section-title" style="text-align:center">Simple, honest pricing</div>
+    <div class="pricing-grid">
+
+      <div class="pricing-card">
+        <div class="plan-badge">Free</div>
+        <div class="plan-price">$0 <span>/ month</span></div>
+        <div class="plan-desc">Everything you need to get started.</div>
+        <ul class="plan-features">
+          <li>Up to 10 feeds</li>
+          <li>5 AI summaries per day</li>
+          <li>3 smart feeds</li>
+          <li>2 folders</li>
+          <li>25 saved articles</li>
+          <li>Highlights</li>
+          <li class="dim">Full-text reader view</li>
+          <li class="dim">Reading stats</li>
+          <li class="dim">Unlimited everything</li>
+        </ul>
+        <a href="/" class="plan-cta outline">Get started free</a>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="plan-badge">Pro</div>
+        <div class="plan-price">$9 <span>/ month</span></div>
+        <div class="plan-desc">For serious readers. Cancel anytime.</div>
+        <ul class="plan-features">
+          <li>Unlimited feeds</li>
+          <li>Unlimited AI summaries</li>
+          <li>Unlimited smart feeds</li>
+          <li>Unlimited folders</li>
+          <li>Unlimited saved articles</li>
+          <li>Highlights &amp; notes</li>
+          <li>Full-text reader view</li>
+          <li>Reading stats</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="/" class="plan-cta solid">Upgrade to Pro →</a>
+      </div>
+
+    </div>
+    <p style="text-align:center; font-size:13px; color:var(--dim); margin-top:20px;">
+      Secure checkout via Stripe · Cancel anytime from your account settings
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="/">Sign in</a>
+      <a href="/terms.html">Terms of Service</a>
+      <a href="/privacy.html">Privacy Policy</a>
+    </div>
+    <p>© 2026 Feedbox. Made for people who read.</p>
+  </footer>
+
+</body>
+</html>
