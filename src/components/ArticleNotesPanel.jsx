@@ -143,7 +143,7 @@ function PanelContent({ articleTitle, notes, creating, setCreating, newTitle, se
             />
             <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
               <button onClick={onCreate} disabled={saving || (!newTitle.trim() && !newBody.trim())}
-                style={{ background: T.accent, border: "none", borderRadius: 7, padding: "5px 16px", fontSize: 12, fontWeight: 600, color: "#03210b", cursor: "pointer", fontFamily: "inherit", opacity: saving ? 0.6 : 1 }}>
+                style={{ background: T.accent, border: "none", borderRadius: 7, padding: "5px 16px", fontSize: 12, fontWeight: 600, color: T.accentText, cursor: "pointer", fontFamily: "inherit", opacity: saving ? 0.6 : 1 }}>
                 {saving ? "Saving…" : "Save"}
               </button>
               <button onClick={() => { setCreating(false); }}

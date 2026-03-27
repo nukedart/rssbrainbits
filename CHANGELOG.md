@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.23] — 2026-03-27
+
+- [Polish] Fixed hardcoded `#03210b` (Nocturne accentText) in NotesPage and ArticleNotesPanel — New Note and Save buttons now use T.accentText, correct on all three themes
+
 ## [1.46.22] — 2026-03-27
 
 - [Polish] Replaced ⚙ emoji with SVG bar-chart icon on Sidebar admin analytics button — crisp on retina, consistent with the rest of the icon system

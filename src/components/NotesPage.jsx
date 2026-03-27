@@ -672,7 +672,7 @@ export default function NotesPage() {
               )}
               {/* + New Note */}
               <button onClick={handleNewNote} disabled={setupNeeded}
-                style={{ display: "flex", alignItems: "center", gap: 5, background: T.accent, border: "none", borderRadius: 10, padding: isMobile ? "8px 12px" : "7px 14px", fontSize: 13, fontWeight: 600, color: "#03210b", cursor: setupNeeded ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: setupNeeded ? 0.4 : 1, WebkitTapHighlightColor: "transparent", flexShrink: 0 }}
+                style={{ display: "flex", alignItems: "center", gap: 5, background: T.accent, border: "none", borderRadius: 10, padding: isMobile ? "8px 12px" : "7px 14px", fontSize: 13, fontWeight: 600, color: T.accentText, cursor: setupNeeded ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: setupNeeded ? 0.4 : 1, WebkitTapHighlightColor: "transparent", flexShrink: 0 }}
               >
                 <span style={{ fontSize: 16, lineHeight: 1, fontWeight: 400 }}>+</span>
                 {!isMobile && "New Note"}
