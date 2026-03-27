@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.22] — 2026-03-27
+
+- [Polish] Replaced ⚙ emoji with SVG bar-chart icon on Sidebar admin analytics button — crisp on retina, consistent with the rest of the icon system
+
 ## [1.46.21] — 2026-03-27
 
 - [Polish] Fixed hardcoded Nocturne accent color (#accfae) in NotesPage TagCard tag pills and divider — now uses T.accent/T.accentSurface/T.accentText tokens so tags render correctly on all three themes

@@ -13,6 +13,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-27 | v1.46.19 | Nav | Added "History" to Sidebar nav — page existed in router but was unreachable from any nav surface | `Sidebar.jsx:14,334` | — |
 | 2026-03-27 | v1.46.20 | Polish | Fixed `color:"#fff"` on MobileFeedDrawer Add Source button — use `T.accentText` for correct Nocturne contrast | `MobileFeedDrawer.jsx:246` | — |
 | 2026-03-27 | v1.46.21 | Polish | Fixed hardcoded Nocturne #accfae in NotesPage TagCard — tag pills and divider now use T.accent tokens across all themes | `NotesPage.jsx:284-290` | — |
+| 2026-03-27 | v1.46.22 | Polish | Replaced ⚙ emoji with SVG Analytics icon on Sidebar admin button — crisp retina rendering, consistent with icon system | `Sidebar.jsx:14,536` | — |
 
 ---
 
