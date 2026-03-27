@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { readFileSync } from "fs";
+import { resolve } from "path";
 
 const pkg = JSON.parse(readFileSync("./package.json", "utf8"));
 
@@ -20,6 +21,10 @@ export default defineConfig({
   build: {
     outDir: "dist",
     rollupOptions: {
+      input: {
+        main:  resolve(__dirname, "index.html"),
+        admin: resolve(__dirname, "admin/index.html"),
+      },
       output: {
         manualChunks(id) {
           if (id.includes("node_modules/react-dom") || id.includes("node_modules/react/")) return "vendor-react";

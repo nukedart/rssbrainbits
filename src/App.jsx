@@ -51,8 +51,8 @@ function AppShell() {
 
   // ── ALL state at the top — no hooks after conditional returns ──
   const [page, setPage]             = useState(() => {
-    // Support /#admin direct URL
-    if (window.location.hash === "#admin") return "analytics";
+    // admin/index.html sets this global to open the admin panel directly
+    if (window.__FB_INITIAL_PAGE__) return window.__FB_INITIAL_PAGE__;
     return window.innerWidth < 768 ? "inbox" : "home";
   });
   const [unreadCount, setUnreadCount] = useState(0);
@@ -101,9 +101,6 @@ function AppShell() {
 
   function navigateTo(p) {
     track("page_navigated", { page: p });
-    // Keep /#admin in the URL when on the admin panel, clear it otherwise
-    if (p === "analytics") window.location.hash = "admin";
-    else if (window.location.hash === "#admin") history.replaceState(null, "", window.location.pathname);
     setPage(p);
   }
 

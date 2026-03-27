@@ -3,6 +3,16 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.11] — 2026-03-27
+
+### Changes since v1.46.10
+- **`rss.brainbits.us/admin` is now a real URL** — Vite multi-page build generates `dist/admin/index.html` that loads the full React app pre-navigated to the admin panel
+- Removed old standalone static admin page (`public/admin/index.html`) — replaced by the React-based admin panel
+- Removed `/#admin` hash routing in favour of the dedicated page entry point
+- `admin/index.html` sets `window.__FB_INITIAL_PAGE__ = "analytics"` before React mounts; App.jsx reads it to set the initial page
+
+---
+
 ## [1.46.10] — 2026-03-27
 
 ### Changes since v1.46.9
