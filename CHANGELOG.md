@@ -5,13 +5,13 @@ Format: `## [version] — YYYY-MM-DD`
 
 ## [1.46.14] — 2026-03-27
 
-### Changes since v1.46.13
+- [Nav] Added `onTouchCancel` to all BottomNav button types — fixes buttons getting stuck in a dimmed state when a scroll gesture cancels a tap
 
 ---
 
 ## [1.46.13] — 2026-03-27
 
-### Changes since v1.46.12
+- [Nav] Renamed sidebar label "All Items" → "Inbox" to match mobile nav label — consistent language across all screen sizes
 
 ---
 

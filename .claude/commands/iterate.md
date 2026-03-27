@@ -28,15 +28,37 @@ Make the change. Keep diffs minimal. Do not refactor surrounding code.
 Run `npm test`. All tests must pass before proceeding.
 If a test fails: revert your change and pick a different issue.
 
-**Step 5 — Deploy**
+**Step 5 — Write changelog entry**
+Before deploying, write a `## [Unreleased]` section at the top of CHANGELOG.md (after the header block, before the first versioned entry). The deploy script will promote it to the real version number automatically.
+
+Format:
+```
+## [Unreleased]
+
+- [Area] Brief description of what changed and why it improves the app
+```
+
+Area is one of: Nav, Polish, Perf, Fix, Feature
+
+Also append a new row to AGENT_LOG.md in this format:
+```
+| YYYY-MM-DD | v[next] | [Area] | [One-line description] | `File.jsx:line` | — |
+```
+Use today's date. The version will be the current version + 1 patch (check package.json).
+
+**Step 6 — Deploy**
 Run `npm run deploy`. Report the version number deployed.
 
-**Step 6 — Log**
+**Step 7 — Log**
 Report back:
 - What was changed (file + line range)
 - Why it improves the app
-- Token cost so far this session (`/cost` if available)
 - What you'd tackle next
+- Remind the user: "Run `/cost` to see this session's token spend, then note it in AGENT_LOG.md"
+
+## Pausing and resuming
+When stopping for the day, all state is in git — no special cleanup needed.
+When resuming, check `git log --oneline -5` and `AGENT_LOG.md` to understand what was done last.
 
 ## Token budget guidance
 - Read files only when you need them — not speculatively
