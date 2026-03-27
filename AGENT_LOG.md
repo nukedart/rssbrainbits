@@ -8,6 +8,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-27 | v1.46.14 | Nav | Added `onTouchCancel` to all 3 BottomNav button types — fixes buttons stuck dimmed after scroll gesture | `BottomNav.jsx:66,103,131` | — |
 | 2026-03-27 | v1.46.15 | Polish | Fixed hardcoded `color:"#fff"` on Add button and unread badge — use `T.accentText` token for correct contrast on all themes | `BottomNav.jsx:72,139` | — |
 | 2026-03-27 | v1.46.16 | Nav | Fixed "All Items" label in MobileFeedDrawer — now reads "Inbox" matching Sidebar and BottomNav | `MobileFeedDrawer.jsx:258` | — |
+| 2026-03-27 | v1.46.17 | Polish | Replaced clock icon with bookmark for "Saved" in Sidebar — matches BottomNav icon and label | `Sidebar.jsx:12` | — |
 
 ---
 

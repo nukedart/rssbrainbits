@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.17] — 2026-03-27
+
+- [Polish] Replaced clock icon with bookmark icon for "Saved" in Sidebar — matches BottomNav's bookmark and the "Saved" label, consistent visual metaphor across desktop and mobile
+
 ## [1.46.16] — 2026-03-27
 
 - [Nav] Fixed "All Items" label in MobileFeedDrawer — now reads "Inbox" to match Sidebar and BottomNav labels
