@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.9] — 2026-03-27
+
+### Changes since v1.46.8
+- Restore and enhance standalone admin panel at public/admin/
+
+---
+
 ## [1.46.8] — 2026-03-27
 
 ### Changes since v1.46.5
