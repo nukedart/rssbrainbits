@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.21] — 2026-03-27
+
+- [Polish] Fixed hardcoded Nocturne accent color (#accfae) in NotesPage TagCard tag pills and divider — now uses T.accent/T.accentSurface/T.accentText tokens so tags render correctly on all three themes
+
 ## [1.46.20] — 2026-03-27
 
 - [Polish] Fixed hardcoded `color:"#fff"` on MobileFeedDrawer Add Source button — use `T.accentText` token for correct contrast on Nocturne theme (sage accent needs dark text)

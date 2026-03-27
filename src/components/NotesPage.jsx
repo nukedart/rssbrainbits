@@ -281,13 +281,13 @@ function TagCard({ title, url, tags, onSearch, onReread, T }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
         {tags.map(tag => (
           <span key={tag} onClick={() => onSearch(tag)}
-            style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(172,207,174,0.12)", color: "#accfae", border: "1px solid rgba(172,207,174,0.18)", fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "background .12s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#accfae"; e.currentTarget.style.color = "#03210b"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(172,207,174,0.12)"; e.currentTarget.style.color = "#accfae"; }}
+            style={{ padding: "3px 10px", borderRadius: 20, background: T.accentSurface, color: T.accent, border: `1px solid ${T.accent}28`, fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "background .12s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = T.accentText; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
           >#{tag}</span>
         ))}
       </div>
-      <div style={{ height: 3, background: "#accfae", margin: "0 -20px" }} />
+      <div style={{ height: 3, background: T.accent, margin: "0 -20px" }} />
     </div>
   );
 }
