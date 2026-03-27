@@ -65,6 +65,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               }}
               onTouchStart={e => e.currentTarget.firstChild.style.transform = "scale(0.88)"}
               onTouchEnd={e => e.currentTarget.firstChild.style.transform = "scale(1)"}
+              onTouchCancel={e => e.currentTarget.firstChild.style.transform = "scale(1)"}
             >
               <span style={{
                 width: 44, height: 44, borderRadius: 14,
@@ -101,6 +102,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               }}
               onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; }}
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
+              onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
               <ActiveIcon />
               <span style={{ fontSize: 10, fontWeight: isFeedsActive ? 600 : 400, letterSpacing: ".01em" }}>Feeds</span>
@@ -127,6 +129,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             }}
             onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; }}
             onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
+            onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >
             <span style={{ position: "relative", display: "flex" }}>
               <ActiveIcon />
