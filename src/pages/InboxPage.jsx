@@ -638,7 +638,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                     title={`${Object.keys(feedErrors).length} feed error${Object.keys(feedErrors).length > 1 ? "s" : ""} — click for details`}
                     style={{
                       width: 17, height: 17, borderRadius: "50%", border: "none",
-                      background: "#e53e3e", color: "#fff", cursor: "pointer",
+                      background: T.danger, color: "#fff", cursor: "pointer",
                       fontSize: 10, fontWeight: 700, fontFamily: "inherit",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       flexShrink: 0,

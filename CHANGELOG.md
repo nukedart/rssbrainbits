@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.24] — 2026-03-27
+
+- [Polish] Fixed hardcoded `#e53e3e` on feed error badge in InboxPage — now uses T.danger token so it renders as theme-appropriate red/peach across all three themes
+
 ## [1.46.23] — 2026-03-27
 
 - [Polish] Fixed hardcoded `#03210b` (Nocturne accentText) in NotesPage and ArticleNotesPanel — New Note and Save buttons now use T.accentText, correct on all three themes

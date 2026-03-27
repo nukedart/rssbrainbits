@@ -15,6 +15,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-27 | v1.46.21 | Polish | Fixed hardcoded Nocturne #accfae in NotesPage TagCard — tag pills and divider now use T.accent tokens across all themes | `NotesPage.jsx:284-290` | — |
 | 2026-03-27 | v1.46.22 | Polish | Replaced ⚙ emoji with SVG Analytics icon on Sidebar admin button — crisp retina rendering, consistent with icon system | `Sidebar.jsx:14,536` | — |
 | 2026-03-27 | v1.46.23 | Polish | Fixed hardcoded `#03210b` in NotesPage and ArticleNotesPanel — use T.accentText for correct contrast on all themes | `NotesPage.jsx:675, ArticleNotesPanel.jsx:146` | — |
+| 2026-03-27 | v1.46.24 | Polish | Fixed hardcoded `#e53e3e` on feed error badge in InboxPage — now uses T.danger token | `InboxPage.jsx:641` | — |
 
 ---
 
