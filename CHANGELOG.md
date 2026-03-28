@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.35] — 2026-03-28
+
+- [UX] Added "Start Reading" / "Continue Reading" CTA to Today header — launches a guided reading session from the first unread article using the existing next/prev queue; turns Today from a passive list into an actionable reading session
+
 ## [1.46.34] — 2026-03-28
 
 - [Nav] Removed Home and History from Sidebar nav — cleaner 5-item list focused on daily workflow

@@ -110,6 +110,7 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
 
   // First unread article with an image → hero
   const heroItem = items.find(i => !readUrls.has(i.url) && i.image) || items.find(i => !readUrls.has(i.url));
+  const firstUnreadIdx = items.findIndex(i => !readUrls.has(i.url));
 
   const showSplit = !isMobile && openItem;
 
@@ -136,6 +137,7 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
             progress={progress}
             unreadMinutes={unreadMinutes}
             loading={loading}
+            onStartReading={firstUnreadIdx >= 0 ? () => openByIdx(firstUnreadIdx) : null}
           />
         )}
 
@@ -290,7 +292,7 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
 }
 
 // ── Brief header dashboard ──────────────────────────────────────
-function BriefHeader({ T, isMobile, dateLabel, total, readCount, progress, unreadMinutes, loading }) {
+function BriefHeader({ T, isMobile, dateLabel, total, readCount, progress, unreadMinutes, loading, onStartReading }) {
   const unread = total - readCount;
 
   function fmtTime(min) {
@@ -325,6 +327,33 @@ function BriefHeader({ T, isMobile, dateLabel, total, readCount, progress, unrea
               : <span style={{ color: T.accent, fontWeight: 600 }}>All {total} articles read ✓</span>
             }
           </div>
+
+          {/* Start Reading CTA */}
+          {onStartReading && (
+            <button
+              onClick={onStartReading}
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                background: T.accent, color: T.accentText,
+                border: "none", borderRadius: 10,
+                padding: isMobile ? "11px 20px" : "10px 18px",
+                fontSize: 14, fontWeight: 700, cursor: "pointer",
+                fontFamily: "inherit", letterSpacing: "-.01em",
+                marginBottom: 16, width: "100%", justifyContent: "center",
+                boxShadow: `0 2px 12px ${T.accent}44`,
+                transition: "opacity .12s, transform .1s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+              onTouchStart={e => e.currentTarget.style.transform = "scale(0.97)"}
+              onTouchEnd={e => e.currentTarget.style.transform = "scale(1)"}
+              onTouchCancel={e => e.currentTarget.style.transform = "scale(1)"}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2.5a1 1 0 0 1 1.447-.894l9 4.5a1 1 0 0 1 0 1.788l-9 4.5A1 1 0 0 1 3 11.5v-9z"/></svg>
+              {readCount > 0 ? "Continue Reading" : "Start Reading"}
+            </button>
+          )}
+
           <div style={{ height: 3, background: T.surface2, borderRadius: 2, overflow: "hidden" }}>
             <div style={{
               height: "100%", width: `${progress}%`,
