@@ -218,7 +218,7 @@ function HighlightCard({ highlight, onDelete, onEdit, onReread, T, isMobile }) {
             style={{ width: "100%", boxSizing: "border-box", background: T.surface2, border: `1.5px solid ${T.accent}`, borderRadius: 7, padding: "7px 10px", fontSize: 12, color: T.text, fontFamily: "inherit", outline: "none", resize: "none", minHeight: 50 }}
           />
           <div style={{ display: "flex", gap: 5, marginTop: 5 }}>
-            <button onClick={saveNote} style={{ background: T.accent, border: "none", borderRadius: 5, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+            <button onClick={saveNote} style={{ background: T.accent, border: "none", borderRadius: 5, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: T.accentText, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
             <button onClick={() => setEditing(false)} style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 5, padding: "3px 8px", fontSize: 11, color: T.textSecondary, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
           </div>
         </div>

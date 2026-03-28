@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.33] — 2026-03-28
+
+- [Polish] Fixed hardcoded `color:"#fff"` on 5 remaining T.accent elements — ACTIVE badge and Save button in AnalyticsPage, Read badge in TodayPage, Save note button in NotesPage, and onboarding checkmark now all use T.accentText
+
 ## [1.46.32] — 2026-03-27
 
 - [Feature] Spaced repetition Daily Review — new Review page surfaces highlights due for re-reading using SM-2 scheduling stored in localStorage; Again/Good/Easy buttons advance the schedule; accessible from Sidebar nav

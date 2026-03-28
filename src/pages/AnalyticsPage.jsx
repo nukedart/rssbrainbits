@@ -256,7 +256,7 @@ function AISettingsTab({ T }) {
                   <div style={{ display: "flex", gap: 5 }}>
                     {active && (
                       <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 20,
-                        background: T.accent, color: "#fff" }}>ACTIVE</span>
+                        background: T.accent, color: T.accentText }}>ACTIVE</span>
                     )}
                     <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 20,
                       background: isSet ? `${T.success}22` : `${T.danger}18`,
@@ -313,7 +313,7 @@ function AISettingsTab({ T }) {
           display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={save} disabled={saving || configLoading} style={{
             background: saved ? T.success : T.accent, border: "none",
-            borderRadius: 8, padding: "9px 22px", fontSize: 13, fontWeight: 600, color: "#fff",
+            borderRadius: 8, padding: "9px 22px", fontSize: 13, fontWeight: 600, color: saved ? "#fff" : T.accentText,
             cursor: saving || configLoading ? "not-allowed" : "pointer", fontFamily: "inherit",
             opacity: saving || configLoading ? 0.7 : 1, transition: "background .2s",
           }}>

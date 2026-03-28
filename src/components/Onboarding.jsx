@@ -106,7 +106,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   flexShrink: 0, transition: "all .12s",
                 }}>
-                  {isSelected && <span style={{ color: "#fff", fontSize: 12, lineHeight: 1 }}>✓</span>}
+                  {isSelected && <span style={{ color: T.accentText, fontSize: 12, lineHeight: 1 }}>✓</span>}
                 </div>
               </div>
             );

@@ -416,7 +416,7 @@ function HeroCard({ item, isRead, onClick, T }) {
           {isRead && (
             <div style={{
               position: "absolute", top: 10, right: 10,
-              fontSize: 10, fontWeight: 700, color: "#fff",
+              fontSize: 10, fontWeight: 700, color: T.accentText,
               background: T.accent, padding: "2px 8px", borderRadius: 100,
             }}>✓ Read</div>
           )}

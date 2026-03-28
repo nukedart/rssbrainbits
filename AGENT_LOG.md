@@ -24,6 +24,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-27 | v1.46.30 | Polish | Fixed hardcoded `color:"#fff"` on 3 accent buttons in InboxPage — New articles banner, Add Feed CTA, and Retry button now use T.accentText | `InboxPage.jsx:903,1090,1307` | — |
 | 2026-03-27 | v1.46.31 | Feature | AI-suggested tags on article open — Haiku suggests 3–5 tags as one-tap pills in the tags bar for Pro users | `fetchers.js:832, ContentViewer.jsx:50,113,468` | — |
 | 2026-03-27 | v1.46.32 | Feature | Spaced repetition Daily Review — SM-2 scheduling in localStorage, Review page with Again/Good/Easy buttons, added to Sidebar nav | `ReviewPage.jsx:1-175, App.jsx:21,222, Sidebar.jsx:17,341` | — |
+| 2026-03-28 | v1.46.33 | Polish | Fixed last 5 hardcoded `color:"#fff"` on T.accent elements — AnalyticsPage ACTIVE badge + Save button, TodayPage read badge, NotesPage Save button, Onboarding checkmark | `AnalyticsPage.jsx:259,316, TodayPage.jsx:419, NotesPage.jsx:221, Onboarding.jsx:109` | — |
 
 ---
 
