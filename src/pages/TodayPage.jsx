@@ -165,13 +165,27 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
 
         {!loading && items.length === 0 && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
-            <div style={{ fontSize: 36, marginBottom: 14 }}>🌅</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: T.text, marginBottom: 6, fontFamily: "var(--reader-font-family)", fontStyle: "italic" }}>
-              All caught up
-            </div>
-            <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6 }}>
-              No new articles in the last 24 hours.
-            </div>
+            {feeds.length === 0 ? (
+              <>
+                <div style={{ fontSize: 36, marginBottom: 14 }}>📡</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: T.text, marginBottom: 6, fontFamily: "var(--reader-font-family)", fontStyle: "italic" }}>
+                  No feeds added yet
+                </div>
+                <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6, maxWidth: 280 }}>
+                  Add RSS feeds, podcasts, or YouTube channels and Today will show a daily digest of what's new.
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 36, marginBottom: 14 }}>🌅</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: T.text, marginBottom: 6, fontFamily: "var(--reader-font-family)", fontStyle: "italic" }}>
+                  Quiet day
+                </div>
+                <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6, maxWidth: 280 }}>
+                  No new articles from your feeds in the last 24 hours. Check back later or add more feeds.
+                </div>
+              </>
+            )}
           </div>
         )}
 

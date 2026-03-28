@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.28] — 2026-03-27
+
+- [UX] Improved TodayPage empty state — new users (no feeds) now see a setup prompt instead of confusing "no new articles" message; existing users with a quiet day see "Quiet day" with context
+
 ## [1.46.27] — 2026-03-27
 
 - [UX] Moved Admin button directly below Sources in Sidebar — groups management tools together, separates admin actions from theme/settings controls
