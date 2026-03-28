@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.32] — 2026-03-27
+
+- [Feature] Spaced repetition Daily Review — new Review page surfaces highlights due for re-reading using SM-2 scheduling stored in localStorage; Again/Good/Easy buttons advance the schedule; accessible from Sidebar nav
+
 ## [1.46.31] — 2026-03-27
 
 - [Feature] AI-suggested tags on article open — when content loads for a Pro user, Haiku suggests 3–5 tags shown as one-tap pills in the tags bar; clicking a pill instantly applies the tag
