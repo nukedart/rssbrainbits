@@ -116,7 +116,7 @@ export function ReadLaterPage() {
                 style={{ flex:1, background:T.surface, border:`1.5px solid ${T.accent}`, borderRadius:10, padding:"10px 14px", fontSize:13, color:T.text, fontFamily:"inherit", outline:"none" }}
               />
               <button onClick={handleAddUrl} disabled={!addUrl.trim() || addLoading}
-                style={{ background:T.accent, border:"none", borderRadius:10, padding:"10px 18px", cursor:"pointer", fontSize:13, fontWeight:600, color:"#fff", fontFamily:"inherit", flexShrink:0, opacity:(!addUrl.trim()||addLoading)?0.5:1 }}>
+                style={{ background:T.accent, border:"none", borderRadius:10, padding:"10px 18px", cursor:"pointer", fontSize:13, fontWeight:600, color:T.accentText, fontFamily:"inherit", flexShrink:0, opacity:(!addUrl.trim()||addLoading)?0.5:1 }}>
                 {addLoading ? "Saving…" : "Save"}
               </button>
               <button onClick={() => { setShowAdd(false); setAddUrl(""); setAddError(""); }}
@@ -447,7 +447,7 @@ function PlanCard({ T, user, feedCount, planName }) {
             {isPro ? "Unlimited feeds · Unlimited AI summaries · Priority support" : `${feedCount}/10 feeds · 5 AI summaries/day · 3 smart feeds`}
           </div>
         </div>
-        {isPro && <span style={{ fontSize:11, fontWeight:700, background:T.accent, color:"#fff", padding:"2px 10px", borderRadius:20 }}>ACTIVE</span>}
+        {isPro && <span style={{ fontSize:11, fontWeight:700, background:T.accent, color:T.accentText, padding:"2px 10px", borderRadius:20 }}>ACTIVE</span>}
       </div>
 
       {/* Feature comparison */}
@@ -611,7 +611,7 @@ function NotificationsCard({ T }) {
           <div style={{ fontSize: 12, color: s.color, marginTop: 2 }}>{s.text}</div>
         </div>
         {permission === "default" && (
-          <button onClick={handleEnable} style={{ background: T.accent, color: "#fff", border: "none", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>Enable</button>
+          <button onClick={handleEnable} style={{ background: T.accent, color: T.accentText, border: "none", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>Enable</button>
         )}
         {permission === "granted" && (
           <button onClick={handleTest} style={{ background: T.surface2, color: T.textSecondary, border: `1px solid ${T.border}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>Test</button>
@@ -824,7 +824,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
             downloadFile(xml, "feedbox-subscriptions.opml", "text/x-opml");
           }} style={{
             background: T.accent, border: "none", borderRadius: 9, padding: "9px 18px",
-            cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#fff", fontFamily: "inherit",
+            cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.accentText, fontFamily: "inherit",
           }}>↓ Export OPML</button>
         </Card>
 
@@ -1685,7 +1685,7 @@ function DataPrivacyCard({ T, user }) {
       <div style={{ marginBottom:16 }}>
         <div style={{ fontSize:11, fontWeight:700, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".06em", marginBottom:8 }}>Export your data</div>
         <p style={{ fontSize:12, color:T.textSecondary, margin:"0 0 10px", lineHeight:1.5 }}>Downloads a JSON file with all your history, saved articles, highlights, tags, and feed list.</p>
-        <button onClick={handleExportAll} disabled={exporting} style={{ background:T.accent, border:"none", borderRadius:9, padding:"9px 18px", cursor:"pointer", fontSize:13, fontWeight:600, color:"#fff", fontFamily:"inherit", opacity:exporting?0.6:1 }}>
+        <button onClick={handleExportAll} disabled={exporting} style={{ background:T.accent, border:"none", borderRadius:9, padding:"9px 18px", cursor:"pointer", fontSize:13, fontWeight:600, color:T.accentText, fontFamily:"inherit", opacity:exporting?0.6:1 }}>
           {exporting ? "Exporting…" : "⬇ Download all data"}
         </button>
       </div>

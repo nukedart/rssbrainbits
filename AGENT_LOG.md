@@ -20,6 +20,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-27 | v1.46.26 | UX | Added aria-label + aria-current to Sidebar NavItem and collapse/expand toggle buttons | `Sidebar.jsx:51-52,368,375` | — |
 | 2026-03-27 | v1.46.27 | UX | Moved Admin button directly below Sources in Sidebar — groups management tools together | `Sidebar.jsx:484` | — |
 | 2026-03-27 | v1.46.28 | UX | Improved TodayPage empty state — differentiates no-feeds (setup prompt) from quiet-feeds (reassurance) | `TodayPage.jsx:166` | — |
+| 2026-03-27 | v1.46.29 | Polish | Fixed hardcoded `color:"#fff"` on 5 accent buttons in SecondaryPages — Add feed, PRO badge, Enable notifications, Export OPML, Export All now use T.accentText | `SecondaryPages.jsx:119,450,614,827,1688` | — |
 
 ---
 

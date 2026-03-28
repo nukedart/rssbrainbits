@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.29] — 2026-03-27
+
+- [Polish] Fixed hardcoded `color:"#fff"` on 5 accent buttons in SecondaryPages — Add feed, PRO badge, Enable notifications, Export OPML, and Export All now use T.accentText for correct contrast on all themes
+
 ## [1.46.28] — 2026-03-27
 
 - [UX] Improved TodayPage empty state — new users (no feeds) now see a setup prompt instead of confusing "no new articles" message; existing users with a quiet day see "Quiet day" with context
