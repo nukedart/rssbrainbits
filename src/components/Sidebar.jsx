@@ -48,6 +48,8 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
     <button
       onClick={() => onNavigate(id)}
       title={collapsed ? label : undefined}
+      aria-label={label}
+      aria-current={isActive ? "page" : undefined}
       style={{
         display:"flex", alignItems:"center",
         gap: collapsed ? 0 : 9,
@@ -362,14 +364,14 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
           </div>
         )}
         {!isTablet && !collapsed && (
-          <button onClick={onToggle} title="Collapse sidebar"
+          <button onClick={onToggle} title="Collapse sidebar" aria-label="Collapse sidebar"
             style={{ width:20, height:20, borderRadius:5, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.textTertiary, fontSize:13, fontFamily:"inherit", transition:"all .12s" }}
             onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
             onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
           >‹</button>
         )}
         {!isTablet && collapsed && (
-          <button onClick={onToggle} title="Expand sidebar"
+          <button onClick={onToggle} title="Expand sidebar" aria-label="Expand sidebar"
             style={{ position:"absolute", right:4, top:16, width:20, height:20, borderRadius:5, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.textTertiary, fontSize:13, fontFamily:"inherit", transition:"all .12s" }}
             onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
             onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}

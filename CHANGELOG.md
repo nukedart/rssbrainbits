@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.26] — 2026-03-27
+
+- [UX] Added aria-label and aria-current to Sidebar nav items and collapse/expand toggle — collapsed sidebar was inaccessible to screen readers; title attribute alone is not announced by assistive tech
+
 ## [1.46.25] — 2026-03-27
 
 - [UX] Added aria-label and aria-current to all BottomNav buttons — Add button was completely invisible to screen readers; nav tabs now correctly announce active page
