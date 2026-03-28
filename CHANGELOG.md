@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.30] — 2026-03-27
+
+- [Polish] Fixed hardcoded `color:"#fff"` on 3 accent buttons in InboxPage — "New articles" banner, Add Feed CTA, and Retry button now use T.accentText for correct contrast on all themes
+
 ## [1.46.29] — 2026-03-27
 
 - [Polish] Fixed hardcoded `color:"#fff"` on 5 accent buttons in SecondaryPages — Add feed, PRO badge, Enable notifications, Export OPML, and Export All now use T.accentText for correct contrast on all themes

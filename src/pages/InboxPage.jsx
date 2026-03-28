@@ -900,7 +900,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             <button
               onClick={() => { setNewArticleCount(0); listRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }}
               style={{
-                width: "100%", border: "none", background: T.accent, color: "#fff",
+                width: "100%", border: "none", background: T.accent, color: T.accentText,
                 padding: "10px 16px", cursor: "pointer", fontFamily: "inherit",
                 fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center",
                 justifyContent: "center", gap: 7, transition: "opacity .15s",
@@ -1087,7 +1087,7 @@ function OnboardingCard({ onAddFeed, onQuickAdd, T }) {
 
       {/* CTA */}
       <button onClick={onAddFeed} style={{
-        display: "block", width: "100%", padding: "13px 0", background: T.accent, color: "#fff",
+        display: "block", width: "100%", padding: "13px 0", background: T.accent, color: T.accentText,
         border: "none", borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: "pointer",
         fontFamily: "inherit", letterSpacing: "-.01em", marginBottom: 24,
         boxShadow: "0 2px 12px rgba(47,111,237,.25)", transition: "opacity .15s",
@@ -1304,7 +1304,7 @@ function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, o
           </div>
           {onRetry && (
             <button onClick={e => { e.stopPropagation(); onRetry(); setShowError(false); }}
-              style={{ background: T.accent, border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#fff", fontFamily: "inherit" }}>
+              style={{ background: T.accent, border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, color: T.accentText, fontFamily: "inherit" }}>
               Retry
             </button>
           )}
