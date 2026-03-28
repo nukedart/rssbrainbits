@@ -332,11 +332,9 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
   const uncategorized = feeds.filter(f => !f.folder_id);
 
   const TOP_NAV = [
-    { id:"home",      Icon:Icons.Home,      label:"Home",        badge: 0 },
     { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox",       badge: unreadCount },
     { id:"today",     Icon:Icons.Today,     label:"Today",       badge: 0 },
     { id:"readlater", Icon:Icons.ReadLater, label:"Saved",       badge: 0 },
-    { id:"history",   Icon:Icons.History,   label:"History",     badge: 0 },
     { id:"notes",     Icon:Icons.Notes,     label:"Notes",       badge: 0 },
     { id:"review",    Icon:Icons.Review,    label:"Review",      badge: 0 },
   ];

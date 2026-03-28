@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.34] — 2026-03-28
+
+- [Nav] Removed Home and History from Sidebar nav — cleaner 5-item list focused on daily workflow
+- [Feature] Revamped Today view — replaced 3-column stat grid + source chips with a clean single-line stat; articles now grouped by source with section headers, giving a newspaper front-page feel
+
 ## [1.46.33] — 2026-03-28
 
 - [Polish] Fixed hardcoded `color:"#fff"` on 5 remaining T.accent elements — ACTIVE badge and Save button in AnalyticsPage, Read badge in TodayPage, Save note button in NotesPage, and onboarding checkmark now all use T.accentText

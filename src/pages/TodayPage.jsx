@@ -90,11 +90,18 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
   const progress     = items.length > 0 ? Math.round((readCount / items.length) * 100) : 0;
   const unreadMinutes = unreadCount * AVG_READ_MIN;
 
-  // Unique sources with counts
-  const sourceCounts = useMemo(() => {
+  // Group articles by source, ordered by most-recent article in each group
+  const groups = useMemo(() => {
+    if (!items.length) return [];
     const map = {};
-    items.forEach(i => { if (i.source) map[i.source] = (map[i.source] || 0) + 1; });
-    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+    items.forEach(i => {
+      const src = i.source || "Other";
+      if (!map[src]) map[src] = [];
+      map[src].push(i);
+    });
+    return Object.entries(map)
+      .map(([source, arts]) => ({ source, arts }))
+      .sort((a, b) => new Date(b.arts[0]?.date || 0) - new Date(a.arts[0]?.date || 0));
   }, [items]);
 
   const dateLabel = new Date().toLocaleDateString("en-US", {
@@ -128,7 +135,6 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
             readCount={readCount}
             progress={progress}
             unreadMinutes={unreadMinutes}
-            sourceCounts={sourceCounts}
             loading={loading}
           />
         )}
@@ -190,7 +196,7 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
         )}
 
         {!loading && items.length > 0 && (
-          <div style={{ padding: showSplit ? "0 0 40px" : isMobile ? "0 0 100px" : "0 0 40px" }}>
+          <div style={{ paddingBottom: isMobile ? 100 : 40 }}>
 
             {/* Hero / featured — only when not split-view */}
             {!showSplit && heroItem && (
@@ -202,31 +208,52 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
               />
             )}
 
-            {/* Section divider */}
-            {!showSplit && (
-              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 24px 4px", marginTop: 8 }}>
-                <div style={{ flex: 1, height: 1, background: T.border }} />
-                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: T.textTertiary }}>
-                  All articles
-                </span>
-                <div style={{ flex: 1, height: 1, background: T.border }} />
-              </div>
-            )}
-
-            {items.map((item, i) => {
-              if (!showSplit && item.url === heroItem?.url) return null;
+            {/* Source-grouped article list */}
+            {!showSplit && groups.map(({ source, arts }) => {
+              const visibleArts = arts.filter(a => a.url !== heroItem?.url);
+              if (!visibleArts.length) return null;
               return (
-                <TodayItem
-                  key={item.url || i}
-                  item={item}
-                  isSelected={openItem?.url === item.url}
-                  isRead={readUrls.has(item.url)}
-                  compact={showSplit}
-                  onClick={() => openByIdx(i)}
-                  T={T}
-                />
+                <div key={source}>
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "12px 22px 6px",
+                    borderBottom: `1px solid ${T.border}`,
+                    marginTop: 4,
+                  }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: T.textTertiary }}>
+                      {source}
+                    </span>
+                    <span style={{ fontSize: 10, color: T.textTertiary }}>
+                      {visibleArts.length} {visibleArts.length === 1 ? "article" : "articles"}
+                    </span>
+                  </div>
+                  {visibleArts.map(item => (
+                    <TodayItem
+                      key={item.url}
+                      item={item}
+                      isSelected={openItem?.url === item.url}
+                      isRead={readUrls.has(item.url)}
+                      compact={false}
+                      onClick={() => openByIdx(items.indexOf(item))}
+                      T={T}
+                    />
+                  ))}
+                </div>
               );
             })}
+
+            {/* Compact list in split-view (no grouping needed) */}
+            {showSplit && items.map((item, i) => (
+              <TodayItem
+                key={item.url || i}
+                item={item}
+                isSelected={openItem?.url === item.url}
+                isRead={readUrls.has(item.url)}
+                compact={true}
+                onClick={() => openByIdx(i)}
+                T={T}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -263,7 +290,7 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
 }
 
 // ── Brief header dashboard ──────────────────────────────────────
-function BriefHeader({ T, isMobile, dateLabel, total, readCount, progress, unreadMinutes, sourceCounts, loading }) {
+function BriefHeader({ T, isMobile, dateLabel, total, readCount, progress, unreadMinutes, loading }) {
   const unread = total - readCount;
 
   function fmtTime(min) {
@@ -278,7 +305,6 @@ function BriefHeader({ T, isMobile, dateLabel, total, readCount, progress, unrea
       borderBottom: `1px solid ${T.border}`,
       flexShrink: 0,
     }}>
-      {/* Date + title */}
       <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".16em", color: T.accent, textTransform: "uppercase", marginBottom: 6 }}>
         {dateLabel}
       </div>
@@ -286,78 +312,28 @@ function BriefHeader({ T, isMobile, dateLabel, total, readCount, progress, unrea
         fontFamily: "var(--reader-font-family)", fontStyle: "italic",
         fontSize: isMobile ? 38 : 52,
         fontWeight: 700, lineHeight: 1.05, color: T.text,
-        margin: "0 0 20px", letterSpacing: "-.02em",
+        margin: "0 0 16px", letterSpacing: "-.02em",
       }}>
         Today
       </h1>
 
-      {/* Stats row */}
       {!loading && total > 0 && (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 18 }}>
-            <StatCard value={total} label="articles" T={T} />
-            <StatCard value={unread} label="unread" accent T={T} />
-            <StatCard value={fmtTime(unreadMinutes)} label="to read" T={T} />
+          <div style={{ fontSize: 13, color: T.textSecondary, marginBottom: 12 }}>
+            {unread > 0
+              ? <><span style={{ color: T.text, fontWeight: 600 }}>{unread} unread</span>{` · ~${fmtTime(unreadMinutes)} to read`}</>
+              : <span style={{ color: T.accent, fontWeight: 600 }}>All {total} articles read ✓</span>
+            }
           </div>
-
-          {/* Progress bar */}
-          <div style={{ marginBottom: sourceCounts.length > 0 ? 16 : 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary }}>Progress</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: progress === 100 ? T.accent : T.textTertiary }}>
-                {progress === 100 ? "All done ✓" : `${progress}%`}
-              </span>
-            </div>
-            <div style={{ height: 6, background: T.surface2, borderRadius: 3, overflow: "hidden" }}>
-              <div style={{
-                height: "100%", width: `${progress}%`,
-                background: progress === 100 ? "#22C55E" : T.accent,
-                borderRadius: 3, transition: "width .4s ease",
-              }} />
-            </div>
+          <div style={{ height: 3, background: T.surface2, borderRadius: 2, overflow: "hidden" }}>
+            <div style={{
+              height: "100%", width: `${progress}%`,
+              background: progress === 100 ? "#22C55E" : T.accent,
+              borderRadius: 2, transition: "width .4s ease",
+            }} />
           </div>
-
-          {/* Source chips */}
-          {sourceCounts.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
-              {sourceCounts.slice(0, 8).map(([source, count]) => (
-                <div key={source} style={{
-                  display: "flex", alignItems: "center", gap: 5,
-                  padding: "3px 10px", borderRadius: 100,
-                  background: T.surface, border: `1px solid ${T.border}`,
-                  fontSize: 11,
-                }}>
-                  <span style={{ color: T.textSecondary, fontWeight: 500 }}>{source}</span>
-                  <span style={{ color: T.textTertiary, fontWeight: 600 }}>{count}</span>
-                </div>
-              ))}
-              {sourceCounts.length > 8 && (
-                <div style={{ padding: "3px 10px", borderRadius: 100, background: T.surface, border: `1px solid ${T.border}`, fontSize: 11, color: T.textTertiary }}>
-                  +{sourceCounts.length - 8} more
-                </div>
-              )}
-            </div>
-          )}
         </>
       )}
-    </div>
-  );
-}
-
-// ── Stat card ──────────────────────────────────────────────────
-function StatCard({ value, label, accent, T }) {
-  return (
-    <div style={{
-      background: accent ? T.accentSurface : T.surface,
-      borderRadius: 12, padding: "12px 14px",
-      border: `1px solid ${accent ? T.accent + "30" : T.border}`,
-    }}>
-      <div style={{ fontSize: 22, fontWeight: 800, color: accent ? T.accent : T.text, letterSpacing: "-.02em", lineHeight: 1 }}>
-        {value}
-      </div>
-      <div style={{ fontSize: 11, color: accent ? T.accent : T.textTertiary, marginTop: 3, fontWeight: 500 }}>
-        {label}
-      </div>
     </div>
   );
 }
