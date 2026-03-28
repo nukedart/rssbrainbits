@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.27] — 2026-03-27
+
+- [UX] Moved Admin button directly below Sources in Sidebar — groups management tools together, separates admin actions from theme/settings controls
+
 ## [1.46.26] — 2026-03-27
 
 - [UX] Added aria-label and aria-current to Sidebar nav items and collapse/expand toggle — collapsed sidebar was inaccessible to screen readers; title attribute alone is not announced by assistive tech

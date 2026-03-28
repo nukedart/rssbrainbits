@@ -35,6 +35,26 @@ Type these in the chat to trigger focused agent workflows:
 | `/polish` | Visual audit: hardcoded colors, spacing, radius, theme consistency |
 | `/ux` | UX/UI improvement loop: tap targets, accessibility, empty states, micro-interactions |
 
+## Changelog rule (MANDATORY — applies to every code change)
+
+**Before every `npm run deploy`, you MUST write a `## [Unreleased]` entry at the top of `CHANGELOG.md`** (after the header block, before the first versioned entry). The deploy script promotes it to the real version number automatically.
+
+Format:
+```
+## [Unreleased]
+
+- [Area] What changed and why it improves the app
+```
+
+Area tags: `Nav`, `Polish`, `Perf`, `Fix`, `Feature`, `UX`, `Security`
+
+This applies to ALL changes — whether made via `/iterate`, `/ux`, or any manual edit. No deploy without a changelog entry.
+
+Also append a row to `AGENT_LOG.md`:
+```
+| YYYY-MM-DD | v[next] | [Area] | [One-line description] | `File.jsx:line` | — |
+```
+
 ## Token efficiency rules (agent must follow)
 
 - **Read files only when needed** — use Grep to find patterns before opening files

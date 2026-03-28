@@ -488,6 +488,32 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
           active={active} onNavigate={onNavigate} collapsed={collapsed} T={T}
         />
 
+        {/* Admin panel link — only shown to admin users */}
+        {user?.user_metadata?.is_admin && (
+          <button
+            onClick={() => onNavigate("analytics")}
+            title={collapsed ? "Admin" : undefined}
+            aria-label="Admin"
+            aria-current={active==="analytics" ? "page" : undefined}
+            style={{
+              display:"flex", alignItems:"center", gap: collapsed?0:7,
+              justifyContent: collapsed?"center":"flex-start",
+              padding: collapsed?"6px 0":"6px 10px", borderRadius:8, border:"none",
+              background: active==="analytics" ? T.surface : "transparent",
+              cursor:"pointer", fontFamily:"inherit", transition:"background .15s", width:"100%",
+            }}
+            onMouseEnter={e => { if (active!=="analytics") e.currentTarget.style.background=T.surface; }}
+            onMouseLeave={e => { if (active!=="analytics") e.currentTarget.style.background="transparent"; }}
+          >
+            <span style={{ color: active==="analytics"?T.accent:T.textTertiary, display:"flex", flexShrink:0 }}><Icons.Analytics /></span>
+            {!collapsed && (
+              <span style={{ fontSize:11.5, fontWeight:600, color: active==="analytics"?T.accent:T.textSecondary }}>
+                Admin
+              </span>
+            )}
+          </button>
+        )}
+
         {/* Add Source */}
         <button
           onClick={onAddSource}
@@ -520,30 +546,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
             );
           })}
         </div>
-
-        {/* Admin panel link — only shown to admin users */}
-        {user?.user_metadata?.is_admin && (
-          <button
-            onClick={() => onNavigate("analytics")}
-            title={collapsed ? "Admin" : undefined}
-            style={{
-              display:"flex", alignItems:"center", gap: collapsed?0:7,
-              justifyContent: collapsed?"center":"flex-start",
-              padding: collapsed?"6px 0":"6px 10px", borderRadius:8, border:"none",
-              background: active==="analytics" ? T.surface : "transparent",
-              cursor:"pointer", fontFamily:"inherit", transition:"background .15s", width:"100%",
-            }}
-            onMouseEnter={e => { if (active!=="analytics") e.currentTarget.style.background=T.surface; }}
-            onMouseLeave={e => { if (active!=="analytics") e.currentTarget.style.background="transparent"; }}
-          >
-            <span style={{ color: active==="analytics"?T.accent:T.textTertiary, display:"flex", flexShrink:0 }}><Icons.Analytics /></span>
-            {!collapsed && (
-              <span style={{ fontSize:11.5, fontWeight:600, color: active==="analytics"?T.accent:T.textSecondary }}>
-                Admin
-              </span>
-            )}
-          </button>
-        )}
 
         {/* Settings / avatar row */}
         <div style={{ display:"flex", alignItems:"center", gap:3, marginTop:2 }}>

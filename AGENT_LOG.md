@@ -18,6 +18,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-27 | v1.46.24 | Polish | Fixed hardcoded `#e53e3e` on feed error badge in InboxPage — now uses T.danger token | `InboxPage.jsx:641` | — |
 | 2026-03-27 | v1.46.25 | UX | Added aria-label + aria-current to all BottomNav buttons — Add button was invisible to screen readers | `BottomNav.jsx:55,92,120` | — |
 | 2026-03-27 | v1.46.26 | UX | Added aria-label + aria-current to Sidebar NavItem and collapse/expand toggle buttons | `Sidebar.jsx:51-52,368,375` | — |
+| 2026-03-27 | v1.46.27 | UX | Moved Admin button directly below Sources in Sidebar — groups management tools together | `Sidebar.jsx:484` | — |
 
 ---
 
