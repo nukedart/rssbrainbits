@@ -3,7 +3,7 @@ import { useSwipe } from "../hooks/useSwipe.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { Button, Spinner } from "./UI";
-import { fetchArticleContent, summarizeContent, parseYouTubeUrl, fetchYouTubeTranscript } from "../lib/fetchers";
+import { fetchArticleContent, summarizeContent, suggestTags, parseYouTubeUrl, fetchYouTubeTranscript } from "../lib/fetchers";
 import SelectionToolbar, { HIGHLIGHT_COLORS } from "./SelectionToolbar";
 import NotePanel from "./NotePanel";
 import HighlightsDrawer from "./HighlightsDrawer";
@@ -50,6 +50,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const [tags, setTags]         = useState([]);
   const [allTags, setAllTags]   = useState([]);
   const [showTags, setShowTags] = useState(false);
+  const [suggestedTags, setSuggestedTags] = useState([]);
+  const suggestedUrlRef = useRef(null); // tracks which URL we've already suggested for
 
   // Reader preferences
   const [readerPrefs, setReaderPrefsState] = useState(() => getReaderPrefs());
@@ -100,6 +102,16 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
       .catch((e) => setError(classifyArticleError(e.message)))
       .finally(() => setLoading(false));
   }, [item?.url, retryKey]);
+
+  // ── AI tag suggestions — fire once per URL when content loads ─
+  useEffect(() => {
+    if (!content?.bodyText || !item?.url || !user) return;
+    if (!isProUser(user)) return;
+    if (suggestedUrlRef.current === item.url) return; // already suggested
+    suggestedUrlRef.current = item.url;
+    setSuggestedTags([]); // clear stale suggestions from previous article
+    suggestTags(content.bodyText, content.title || item.title).then(setSuggestedTags).catch(() => {});
+  }, [content, item?.url, user]);
 
   // ── Load highlights + tags ─────────────────────────────────
   useEffect(() => {
@@ -466,7 +478,23 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           <div style={{ maxWidth: 680, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, marginBottom: 8 }}>Tags</div>
             {isProUser(user) ? (
-              <TagsInput tags={tags} onAdd={handleAddTag} onRemove={handleRemoveTag} allTags={allTags} />
+              <>
+                <TagsInput tags={tags} onAdd={handleAddTag} onRemove={handleRemoveTag} allTags={allTags} />
+                {suggestedTags.filter(t => !tags.includes(t)).length > 0 && (
+                  <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary }}>Suggested</span>
+                    {suggestedTags.filter(t => !tags.includes(t)).map(tag => (
+                      <button
+                        key={tag}
+                        onClick={() => { handleAddTag(tag); setSuggestedTags(prev => prev.filter(t => t !== tag)); }}
+                        style={{ fontSize: 11, padding: "3px 9px", borderRadius: 20, border: `1px dashed ${T.accent}`, background: T.accentSurface, color: T.accent, cursor: "pointer", fontFamily: "inherit" }}
+                      >
+                        + {tag}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
               <div style={{ fontSize: 12, color: T.textSecondary, display: "flex", alignItems: "center", gap: 10 }}>
                 <span>Article tags are a Pro feature.</span>

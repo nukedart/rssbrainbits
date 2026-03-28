@@ -828,3 +828,39 @@ export async function summarizeContent(text, title, style = "keypoints") {
     return "Summarization failed. Please try again.";
   }
 }
+
+const TAG_PROMPT = `Suggest 3–5 concise tags for this article. Tags must be lowercase, 1–3 words, specific topics (not generic words like "article" or "news"). Return ONLY a comma-separated list of tags, nothing else.`;
+
+export async function suggestTags(text, title) {
+  const provider = await resolveAiProvider();
+  const body = `${TAG_PROMPT}\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 2000)}`;
+
+  const parse = (raw) =>
+    (raw || "").split(",").map(t => t.trim().toLowerCase().replace(/^["'\s]+|["'\s]+$/g, "")).filter(t => t.length > 1 && t.length < 40).slice(0, 5);
+
+  if (provider === "openai") {
+    const key = import.meta.env.VITE_OPENAI_KEY || getOpenAIKey();
+    if (!key) return [];
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
+        body: JSON.stringify({ model: "gpt-4o-mini", max_tokens: 60, messages: [{ role: "user", content: body }] }),
+      });
+      const data = await res.json();
+      return parse(data.choices?.[0]?.message?.content);
+    } catch { return []; }
+  }
+
+  const key = import.meta.env.VITE_ANTHROPIC_KEY || getAnthropicKey();
+  if (!key) return [];
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 60, messages: [{ role: "user", content: body }] }),
+    });
+    const data = await res.json();
+    return parse(data.content?.[0]?.text);
+  } catch { return []; }
+}

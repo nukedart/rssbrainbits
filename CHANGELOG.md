@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.31] — 2026-03-27
+
+- [Feature] AI-suggested tags on article open — when content loads for a Pro user, Haiku suggests 3–5 tags shown as one-tap pills in the tags bar; clicking a pill instantly applies the tag
+
 ## [1.46.30] — 2026-03-27
 
 - [Polish] Fixed hardcoded `color:"#fff"` on 3 accent buttons in InboxPage — "New articles" banner, Add Feed CTA, and Retry button now use T.accentText for correct contrast on all themes

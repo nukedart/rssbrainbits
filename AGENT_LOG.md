@@ -22,6 +22,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-27 | v1.46.28 | UX | Improved TodayPage empty state — differentiates no-feeds (setup prompt) from quiet-feeds (reassurance) | `TodayPage.jsx:166` | — |
 | 2026-03-27 | v1.46.29 | Polish | Fixed hardcoded `color:"#fff"` on 5 accent buttons in SecondaryPages — Add feed, PRO badge, Enable notifications, Export OPML, Export All now use T.accentText | `SecondaryPages.jsx:119,450,614,827,1688` | — |
 | 2026-03-27 | v1.46.30 | Polish | Fixed hardcoded `color:"#fff"` on 3 accent buttons in InboxPage — New articles banner, Add Feed CTA, and Retry button now use T.accentText | `InboxPage.jsx:903,1090,1307` | — |
+| 2026-03-27 | v1.46.31 | Feature | AI-suggested tags on article open — Haiku suggests 3–5 tags as one-tap pills in the tags bar for Pro users | `fetchers.js:832, ContentViewer.jsx:50,113,468` | — |
 
 ---
 

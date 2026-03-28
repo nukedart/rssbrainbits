@@ -34,6 +34,7 @@ Type these in the chat to trigger focused agent workflows:
 | `/nav` | Navigation UX audit: consistency, coverage, mobile overflow, labels |
 | `/polish` | Visual audit: hardcoded colors, spacing, radius, theme consistency |
 | `/ux` | UX/UI improvement loop: tap targets, accessibility, empty states, micro-interactions |
+| `/features` | Competitive analysis: compares Feedbox vs top RSS apps, produces prioritized feature backlog |
 
 ## Changelog rule (MANDATORY — applies to every code change)
 
