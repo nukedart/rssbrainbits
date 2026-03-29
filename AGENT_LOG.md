@@ -29,6 +29,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-28 | v1.46.35 | UX | Added "Start Reading"/"Continue Reading" CTA to Today header — opens first unread article and guides user through the queue | `TodayPage.jsx:113,130,293,320` | — |
 | 2026-03-28 | v1.46.36 | Polish | Added `dangerText` token to all 3 themes — Distilled danger (#ffb4ab) made white text unreadable; UI.jsx, InboxPage, SecondaryPages now use T.dangerText | `tokens.js:51,76, UI.jsx:32, InboxPage.jsx:641, SecondaryPages.jsx:1706` | — |
 | 2026-03-29 | v1.46.37 | Polish | Fixed 4 hardcoded `color:"#fff"` on T.accent elements in SecondaryPages — PRO badges (×2), Export button, Save button now use T.accentText | `SecondaryPages.jsx:301,485,690,1758` | — |
+| 2026-03-29 | v1.46.38 | Feature | Notecard theme tagging on highlights — "+ theme" pills in HighlightsDrawer, tags[] column in DB schema, updateHighlightTags helper | `HighlightsDrawer.jsx:1-20,70-95, ContentViewer.jsx:12,152, supabase.js:167, supabase-schema.sql:48` | — |
 
 ---
 

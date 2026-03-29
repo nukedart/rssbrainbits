@@ -165,6 +165,11 @@ export async function updateHighlightNote(highlightId, note) {
   if (error) throw error;
 }
 
+export async function updateHighlightTags(highlightId, tags) {
+  const { error } = await supabase.from("highlights").update({ tags }).eq("id", highlightId);
+  if (error) throw error;
+}
+
 export async function deleteHighlight(highlightId) {
   const { error } = await supabase.from("highlights").delete().eq("id", highlightId);
   if (error) throw error;

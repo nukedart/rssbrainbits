@@ -9,7 +9,7 @@ import NotePanel from "./NotePanel";
 import HighlightsDrawer from "./HighlightsDrawer";
 import TagsInput from "./TagsInput";
 import {
-  saveItem, addHighlight, getHighlights, updateHighlightNote, deleteHighlight,
+  saveItem, addHighlight, getHighlights, updateHighlightNote, updateHighlightTags, deleteHighlight,
   getArticleTags, addArticleTag, deleteArticleTag, getAllTags,
   getReadingProgress, setReadingProgress, getNotesByArticle,
   getAiUsageToday, incrementAiUsage,
@@ -147,6 +147,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   async function handleSaveNote(highlightId, note) {
     await updateHighlightNote(highlightId, note);
     setHighlights((prev) => prev.map((h) => (h.id === highlightId ? { ...h, note } : h)));
+  }
+
+  async function handleUpdateHighlightTags(highlightId, tags) {
+    setHighlights((prev) => prev.map((h) => (h.id === highlightId ? { ...h, tags } : h)));
+    await updateHighlightTags(highlightId, tags).catch(console.error);
   }
 
   async function handleDeleteHighlight(highlightId) {
@@ -699,6 +704,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         <HighlightsDrawer highlights={highlights}
           articleTitle={content?.title || item?.title}
           articleUrl={item?.url}
+          onUpdateTags={handleUpdateHighlightTags}
           onSelectHighlight={(h) => { setActiveNote(h); setShowDrawer(false); }}
           onClose={() => setShowDrawer(false)} />
       )}

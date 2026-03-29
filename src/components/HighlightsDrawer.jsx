@@ -3,9 +3,24 @@ import { useTheme } from "../hooks/useTheme";
 import { HIGHLIGHT_COLORS } from "./SelectionToolbar";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 
-export default function HighlightsDrawer({ highlights, onSelectHighlight, onClose, articleTitle, articleUrl }) {
+export default function HighlightsDrawer({ highlights, onSelectHighlight, onClose, onUpdateTags, articleTitle, articleUrl }) {
   const { T } = useTheme();
   const [feedback, setFeedback] = useState(null);
+  const [editingTagId, setEditingTagId] = useState(null);
+  const [tagInput, setTagInput] = useState("");
+
+  function commitTag(h) {
+    const tag = tagInput.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+    if (tag && !(h.tags || []).includes(tag)) {
+      onUpdateTags(h.id, [...(h.tags || []), tag]);
+    }
+    setTagInput("");
+    setEditingTagId(null);
+  }
+
+  function removeTag(h, tag) {
+    onUpdateTags(h.id, (h.tags || []).filter(t => t !== tag));
+  }
 
   async function handleExport(asFile) {
     const md = highlightsToMarkdown(highlights, articleTitle, articleUrl);
@@ -71,6 +86,29 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
                       <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, background: T.surface, borderRadius: 8, padding: "7px 10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{h.note}</div>
                     ) : (
                       <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 4 }}>Tap to add a note</div>
+                    )}
+                    {onUpdateTags && (
+                      <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8, alignItems: "center" }}>
+                        {(h.tags || []).map(tag => (
+                          <span key={tag} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 600, padding: "2px 7px 2px 8px", borderRadius: 20, background: T.accentSurface, color: T.accent, border: `1px solid ${T.accent}44` }}>
+                            {tag}
+                            <button onClick={() => removeTag(h, tag)} style={{ background: "none", border: "none", cursor: "pointer", color: T.accent, padding: 0, lineHeight: 1, fontSize: 12, display: "flex", alignItems: "center" }}>×</button>
+                          </span>
+                        ))}
+                        {editingTagId === h.id ? (
+                          <input
+                            autoFocus
+                            value={tagInput}
+                            onChange={e => setTagInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === "Enter") commitTag(h); if (e.key === "Escape") { setTagInput(""); setEditingTagId(null); } }}
+                            onBlur={() => { commitTag(h); }}
+                            placeholder="theme…"
+                            style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20, border: `1px dashed ${T.accent}`, background: T.accentSurface, color: T.text, outline: "none", width: 72, fontFamily: "inherit" }}
+                          />
+                        ) : (
+                          <button onClick={() => setEditingTagId(h.id)} style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20, border: `1px dashed ${T.border}`, background: "transparent", color: T.textTertiary, cursor: "pointer", fontFamily: "inherit" }}>+ theme</button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

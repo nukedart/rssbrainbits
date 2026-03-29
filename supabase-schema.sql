@@ -47,9 +47,12 @@ CREATE TABLE IF NOT EXISTS highlights (
   note          TEXT,
   color         TEXT NOT NULL DEFAULT 'yellow',
   position      INTEGER DEFAULT 0,
+  tags          TEXT[] DEFAULT '{}',
   created_at    TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS highlights_user_article_idx ON highlights(user_id, article_url);
+-- Migration (run once if table already exists):
+-- ALTER TABLE highlights ADD COLUMN IF NOT EXISTS tags text[] DEFAULT '{}';
 
 -- ── Article Tags ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS article_tags (
