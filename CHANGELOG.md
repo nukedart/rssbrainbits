@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.41] — 2026-03-29
+
+- [UX] Added Review and Cards to MobileFeedDrawer nav — both pages were unreachable on mobile after being added to the Sidebar in v1.46.39; mobile users can now access the full notecard system (highlight → tag → review → browse cards)
+
 ## [1.46.40] — 2026-03-29
 
 - [Polish] Fixed 8 remaining hardcoded `color:"#fff"` on T.accent elements — PRO badge, Upgrade button (PlanGate), Save folder button (FolderModal), Add keyword (SmartFeedModal), Add source icon (AddModal), Generate digest (DigestModal), Install app (PWAInstallBanner), Subscribe button (Onboarding) now all use T.accentText
