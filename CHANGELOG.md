@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.39] — 2026-03-29
+
+- [Feature] Cards page — theme-first browser for tagged highlights (Ryan Holiday notecard system); bucket view groups captures by theme with count, drill-in shows full card list with passage, note, source, and cross-theme tag links; accessible from Sidebar nav
+
 ## [1.46.38] — 2026-03-29
 
 - [Feature] Notecard theme tagging on highlights — each highlight in the drawer now shows tag pills and a "+ theme" button to categorize captures by idea (e.g. "stoicism", "leadership") independent of the source article; the schema adds a `tags text[]` column to highlights (migration: `ALTER TABLE highlights ADD COLUMN IF NOT EXISTS tags text[] DEFAULT '{}'`)
