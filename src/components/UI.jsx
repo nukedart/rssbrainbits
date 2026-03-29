@@ -29,7 +29,7 @@ export function Button({ children, onClick, variant = "primary", size = "md", di
     primary:   { background: T.accent,   color: T.accentText },
     secondary: { background: T.surface2, color: T.text, border: `1px solid ${T.border}` },
     ghost:     { background: "transparent", color: T.textSecondary },
-    danger:    { background: T.danger,   color: "#fff" },
+    danger:    { background: T.danger,   color: T.dangerText },
   };
   return (
     <button onClick={disabled ? undefined : onClick}

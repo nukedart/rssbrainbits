@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.36] — 2026-03-29
+
+- [Polish] Added `dangerText` token to all three themes — Distilled's danger color (#ffb4ab, light pink) made white text unreadable; UI.jsx Button danger variant, InboxPage error badge, and SecondaryPages delete account button now use T.dangerText for correct contrast on every theme
+
 ## [1.46.35] — 2026-03-28
 
 - [UX] Added "Start Reading" / "Continue Reading" CTA to Today header — launches a guided reading session from the first unread article using the existing next/prev queue; turns Today from a passive list into an actionable reading session

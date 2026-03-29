@@ -1703,7 +1703,7 @@ function DataPrivacyCard({ T, user }) {
             onBlur={e => e.target.style.borderColor=T.border}
           />
           <button onClick={handleDeleteAccount} disabled={deleteConfirm.toLowerCase() !== "delete my account" || deleting}
-            style={{ background: deleteConfirm.toLowerCase()==="delete my account" ? T.danger : T.surface2, border:"none", borderRadius:9, padding:"8px 16px", cursor:"pointer", fontSize:13, fontWeight:600, color: deleteConfirm.toLowerCase()==="delete my account" ? "#fff" : T.textTertiary, fontFamily:"inherit", transition:"all .2s", flexShrink:0 }}>
+            style={{ background: deleteConfirm.toLowerCase()==="delete my account" ? T.danger : T.surface2, border:"none", borderRadius:9, padding:"8px 16px", cursor:"pointer", fontSize:13, fontWeight:600, color: deleteConfirm.toLowerCase()==="delete my account" ? T.dangerText : T.textTertiary, fontFamily:"inherit", transition:"all .2s", flexShrink:0 }}>
             {deleting ? "Deleting…" : "Delete"}
           </button>
         </div>
