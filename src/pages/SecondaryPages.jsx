@@ -298,7 +298,7 @@ export function StatsPage() {
 
           {/* Plan badge */}
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ fontSize:11, fontWeight:700, background: planName==="pro" ? T.accent : T.surface2, color: planName==="pro" ? "#fff" : T.textTertiary, padding:"2px 10px", borderRadius:20, letterSpacing:".05em" }}>
+            <span style={{ fontSize:11, fontWeight:700, background: planName==="pro" ? T.accent : T.surface2, color: planName==="pro" ? T.accentText : T.textTertiary, padding:"2px 10px", borderRadius:20, letterSpacing:".05em" }}>
               {planName.toUpperCase()}
             </span>
             {planName !== "pro" && (
@@ -482,7 +482,7 @@ function PlanCard({ T, user, feedCount, planName }) {
         <button onClick={handleUpgrade} disabled={loading} style={{
           width:"100%", padding:"12px 0", borderRadius:12, border:"none",
           background: loading ? T.surface2 : T.accent,
-          color: loading ? T.textTertiary : "#fff",
+          color: loading ? T.textTertiary : T.accentText,
           fontSize:14, fontWeight:700, cursor: loading ? "wait" : "pointer",
           fontFamily:"inherit", transition:"all .2s",
           display:"flex", alignItems:"center", justifyContent:"center", gap:8,
@@ -687,7 +687,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
                   fontSize: 10, fontWeight: 700, letterSpacing: ".06em", padding: "2px 7px",
                   borderRadius: 20, flexShrink: 0,
                   background: planName === "Pro" ? T.accent : T.surface2,
-                  color: planName === "Pro" ? "#fff" : T.textTertiary,
+                  color: planName === "Pro" ? T.accentText : T.textTertiary,
                   border: `1px solid ${planName === "Pro" ? T.accent : T.border}`,
                 }}>{planName === "Pro" ? "⚡ PRO" : "FREE"}</span>
               </div>
@@ -1755,7 +1755,7 @@ function ApiKeyInput({ label, placeholder, hint, getValue, setValue, T }) {
           background: saved ? T.green?.bg || T.accentSurface : T.accent,
           border: "none", borderRadius: 9, padding: "8px 14px",
           cursor: "pointer", fontSize: 12, fontWeight: 700,
-          color: saved ? T.green?.text || T.accentText : "#fff", fontFamily: "inherit",
+          color: saved ? T.green?.text || T.accentText : T.accentText, fontFamily: "inherit",
           flexShrink: 0, transition: "all .2s",
         }}>{saved ? "✓ Saved" : "Save"}</button>
       </div>

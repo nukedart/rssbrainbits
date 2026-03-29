@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.37] — 2026-03-29
+
+- [Polish] Fixed 4 remaining hardcoded `color:"#fff"` on T.accent-background elements in SecondaryPages — PRO plan badges (×2), the OPML Export button, and the Save article button now use T.accentText for correct contrast on all themes
+
 ## [1.46.36] — 2026-03-29
 
 - [Polish] Added `dangerText` token to all three themes — Distilled's danger color (#ffb4ab, light pink) made white text unreadable; UI.jsx Button danger variant, InboxPage error badge, and SecondaryPages delete account button now use T.dangerText for correct contrast on every theme
