@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.42] — 2026-03-29
+
+- [Polish] Fixed hardcoded `#22C55E` on Today progress bar — 100% completion state now uses T.success token so it renders correctly on Distilled and Light themes
+
 ## [1.46.41] — 2026-03-29
 
 - [UX] Added Review and Cards to MobileFeedDrawer nav — both pages were unreachable on mobile after being added to the Sidebar in v1.46.39; mobile users can now access the full notecard system (highlight → tag → review → browse cards)

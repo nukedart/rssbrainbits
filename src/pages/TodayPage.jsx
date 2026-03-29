@@ -357,7 +357,7 @@ function BriefHeader({ T, isMobile, dateLabel, total, readCount, progress, unrea
           <div style={{ height: 3, background: T.surface2, borderRadius: 2, overflow: "hidden" }}>
             <div style={{
               height: "100%", width: `${progress}%`,
-              background: progress === 100 ? "#22C55E" : T.accent,
+              background: progress === 100 ? T.success : T.accent,
               borderRadius: 2, transition: "width .4s ease",
             }} />
           </div>
