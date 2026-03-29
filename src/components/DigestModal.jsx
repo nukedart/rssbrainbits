@@ -101,7 +101,7 @@ export default function DigestModal({ items = [], onClose }) {
             style={{
               flex: 1, padding: "10px 0", borderRadius: 10, border: "none",
               background: loading ? T.surface2 : T.accent,
-              color: loading ? T.textTertiary : "#fff",
+              color: loading ? T.textTertiary : T.accentText,
               fontSize: 13, fontWeight: 600, cursor: loading ? "wait" : "pointer",
               fontFamily: "inherit", transition: "background .15s",
             }}

@@ -31,6 +31,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-29 | v1.46.37 | Polish | Fixed 4 hardcoded `color:"#fff"` on T.accent elements in SecondaryPages — PRO badges (×2), Export button, Save button now use T.accentText | `SecondaryPages.jsx:301,485,690,1758` | — |
 | 2026-03-29 | v1.46.38 | Feature | Notecard theme tagging on highlights — "+ theme" pills in HighlightsDrawer, tags[] column in DB schema, updateHighlightTags helper | `HighlightsDrawer.jsx:1-20,70-95, ContentViewer.jsx:12,152, supabase.js:167, supabase-schema.sql:48` | — |
 | 2026-03-29 | v1.46.39 | Feature | Cards page — theme-first notecard browser; bucket grid + drill-in card list; Cards icon + nav item in Sidebar | `CardsPage.jsx:1-145, App.jsx:23,225, Sidebar.jsx:18,340` | — |
+| 2026-03-29 | v1.46.40 | Polish | Fixed 8 hardcoded `color:"#fff"` on T.accent elements across modals/components — PlanGate, FolderModal, SmartFeedModal, AddModal, DigestModal, PWAInstallBanner, Onboarding | `PlanGate.jsx:53,63, FolderModal.jsx:105, SmartFeedModal.jsx:114, AddModal.jsx:158, DigestModal.jsx:104, PWAInstallBanner.jsx:99, Onboarding.jsx:126` | — |
 
 ---
 

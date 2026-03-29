@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.40] — 2026-03-29
+
+- [Polish] Fixed 8 remaining hardcoded `color:"#fff"` on T.accent elements — PRO badge, Upgrade button (PlanGate), Save folder button (FolderModal), Add keyword (SmartFeedModal), Add source icon (AddModal), Generate digest (DigestModal), Install app (PWAInstallBanner), Subscribe button (Onboarding) now all use T.accentText
+
 ## [1.46.39] — 2026-03-29
 
 - [Feature] Cards page — theme-first browser for tagged highlights (Ryan Holiday notecard system); bucket view groups captures by theme with count, drill-in shows full card list with passage, note, source, and cross-theme tag links; accessible from Sidebar nav

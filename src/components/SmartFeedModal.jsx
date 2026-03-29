@@ -111,7 +111,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
               onFocus={e => { e.target.style.borderColor = T.accent; }}
               onBlur={e => { e.target.style.borderColor = T.border; }}
             />
-            <button onClick={addKeyword} style={{ background: T.accent, border: "none", borderRadius: 9, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#fff", fontFamily: "inherit" }}>
+            <button onClick={addKeyword} style={{ background: T.accent, border: "none", borderRadius: 9, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: T.accentText, fontFamily: "inherit" }}>
               Add
             </button>
           </div>

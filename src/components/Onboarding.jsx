@@ -123,7 +123,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
           <button onClick={handleSubscribe} disabled={selected.size === 0 || loading} style={{
             flex: 2, padding: "11px 0", borderRadius: 12, border: "none",
             background: selected.size > 0 ? T.accent : T.surface2,
-            color: selected.size > 0 ? "#fff" : T.textTertiary,
+            color: selected.size > 0 ? T.accentText : T.textTertiary,
             fontSize: 14, fontWeight: 700, cursor: selected.size > 0 ? "pointer" : "default",
             fontFamily: "inherit", transition: "all .2s",
           }}>

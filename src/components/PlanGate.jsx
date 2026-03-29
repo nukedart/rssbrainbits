@@ -50,7 +50,7 @@ export default function PlanGate({ user, resource, currentCount, children }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: 18 }}>⚡</span>
         <span style={{ fontSize: 13, fontWeight: 700, color: T.accentText }}>Pro feature</span>
-        <span style={{ marginLeft: "auto", fontSize: 11, background: T.accent, color: "#fff", padding: "2px 8px", borderRadius: 20, fontWeight: 700 }}>PRO</span>
+        <span style={{ marginLeft: "auto", fontSize: 11, background: T.accent, color: T.accentText, padding: "2px 8px", borderRadius: 20, fontWeight: 700 }}>PRO</span>
       </div>
       <p style={{ fontSize: 12, color: T.textSecondary, margin: 0, lineHeight: 1.5 }}>{reason}</p>
       {error && <p style={{ fontSize: 11, color: T.danger, margin: 0 }}>{error}</p>}
@@ -60,7 +60,7 @@ export default function PlanGate({ user, resource, currentCount, children }) {
         style={{
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           background: loading ? T.surface2 : T.accent,
-          color: loading ? T.textTertiary : "#fff",
+          color: loading ? T.textTertiary : T.accentText,
           borderRadius: 9, padding: "8px 16px", fontSize: 13, fontWeight: 600,
           border: "none", cursor: loading ? "wait" : "pointer",
           fontFamily: "inherit", marginTop: 2,

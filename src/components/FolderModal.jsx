@@ -102,7 +102,7 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
           <button onClick={onClose} style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 9, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.textSecondary, fontFamily: "inherit" }}>
             Cancel
           </button>
-          <button onClick={handleSave} disabled={!name.trim()} style={{ background: name.trim() ? T.accent : T.surface2, border: "none", borderRadius: 9, padding: "9px 18px", cursor: name.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 600, color: name.trim() ? "#fff" : T.textTertiary, fontFamily: "inherit", transition: "all .15s" }}>
+          <button onClick={handleSave} disabled={!name.trim()} style={{ background: name.trim() ? T.accent : T.surface2, border: "none", borderRadius: 9, padding: "9px 18px", cursor: name.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 600, color: name.trim() ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "all .15s" }}>
             {isNew ? "Create folder" : "Save"}
           </button>
         </div>

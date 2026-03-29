@@ -96,7 +96,7 @@ export default function PWAInstallBanner() {
         </div>
       ) : (
         <button onClick={install} style={{
-          width: "100%", padding: "12px 0", background: T.accent, color: "#fff",
+          width: "100%", padding: "12px 0", background: T.accent, color: T.accentText,
           border: "none", borderRadius: 12, fontSize: 14, fontWeight: 700,
           cursor: "pointer", fontFamily: "inherit", letterSpacing: "-.01em",
           WebkitTapHighlightColor: "transparent",

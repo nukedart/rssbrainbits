@@ -155,7 +155,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: T.accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, marginRight: 12, color: "#fff", fontWeight: 700 }}>+</div>
+          <div style={{ width: 34, height: 34, borderRadius: 9, background: T.accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, marginRight: 12, color: T.accentText, fontWeight: 700 }}>+</div>
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: T.text, margin: 0 }}>Add to Feedbox</h2>
             <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>RSS, YouTube, podcast, article, or X</div>
