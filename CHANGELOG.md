@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.73] — 2026-03-30
+
+- [Nav] BottomNav hides on scroll-down and reappears on scroll-up — gives back 54px of content while reading the feed list; resets on page navigation
+
 ## [1.46.72] — 2026-03-30
 
 - [UX] Remove borderBottom from skeleton loading rows — skeletons now match the no-divider treatment of real feed items, eliminating the border flash on content load

@@ -897,6 +897,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           onTouchStart={isMobile ? handlePTRStart : undefined}
           onTouchMove={isMobile ? handlePTRMove : undefined}
           onTouchEnd={isMobile ? handlePTREnd : undefined}
+          onScroll={isMobile ? (e => {
+            const el = e.currentTarget;
+            const top = el.scrollTop;
+            const prev = el._lastScrollTop ?? 0;
+            el._lastScrollTop = top;
+            if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
+            if (Math.abs(top - prev) < 4) return;
+            window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
+          }) : undefined}
           style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 80px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "80px" : undefined, WebkitOverflowScrolling: "touch" }}>
           {/* New articles banner — shown after a background refresh detects new items */}
           {newArticleCount > 0 && !loadingItems && (

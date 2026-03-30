@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
 
 function hexToRgba(hex, alpha) {
@@ -37,6 +38,16 @@ const NAV = [
 
 export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {
   const { T } = useTheme();
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const handler = e => setHidden(e.detail === "down");
+    window.addEventListener("fb-nav-dir", handler);
+    return () => window.removeEventListener("fb-nav-dir", handler);
+  }, []);
+
+  // Always show when navigating to a new page
+  useEffect(() => { setHidden(false); }, [active]);
 
   return (
     <nav style={{
@@ -45,6 +56,8 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
       backdropFilter: "blur(24px) saturate(180%)",
       WebkitBackdropFilter: "blur(24px) saturate(180%)",
       borderTop: `0.5px solid ${T.border}`,
+      transform: hidden ? "translateY(100%)" : "translateY(0)",
+      transition: "transform .25s ease",
       display: "flex", alignItems: "stretch",
       paddingBottom: "env(safe-area-inset-bottom, 16px)",
       paddingLeft: "env(safe-area-inset-left, 0px)",
