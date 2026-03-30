@@ -287,7 +287,6 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               padding: "13px 16px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
-              borderBottom: `0.5px solid ${T.border}`,
             }}
           >
             {/* Text LEFT */}

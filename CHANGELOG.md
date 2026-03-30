@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.68] — 2026-03-30
+
+- [Polish] Remove borderBottom divider from mobile list-view items — whitespace alone separates rows (matches desktop); reduces visual noise on the most-used screen per "no decorative chrome" principle
+
 ## [1.46.67] — 2026-03-30
 
 - [Nav] Add Review to mobile BottomNav (replacing Today) — Review is a primary screen per product vision but was inaccessible on mobile; reorders nav to match Inbox → Cards → Review priority
