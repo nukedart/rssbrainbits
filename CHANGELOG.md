@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [Perf] Lazy-load LoginPage — removes it from the eager main bundle; authenticated returning users never load this chunk, trimming ~3–5 kB gz from TTI
+
 ## [1.46.68] — 2026-03-30
 
 - [Polish] Remove borderBottom divider from mobile list-view items — whitespace alone separates rows (matches desktop); reduces visual noise on the most-used screen per "no decorative chrome" principle

@@ -4,7 +4,6 @@ import { ThemeProvider, useTheme } from "./hooks/useTheme";
 import { Spinner, ErrorBoundary } from "./components/UI";
 import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
-import LoginPage from "./pages/LoginPage";
 import PWAInstallBanner from "./components/PWAInstallBanner";
 import { useBreakpoint } from "./hooks/useBreakpoint.js";
 import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
@@ -14,6 +13,7 @@ import { checkLimit } from "./lib/plan";
 import { identify, track } from "./lib/analytics";
 
 // ── Lazy page chunks — each becomes a separate JS file ────────
+const LoginPage      = lazy(() => import("./pages/LoginPage"));
 const InboxPage      = lazy(() => import("./pages/InboxPage"));
 const TodayPage      = lazy(() => import("./pages/TodayPage"));
 const AnalyticsPage  = lazy(() => import("./pages/AnalyticsPage"));
@@ -183,7 +183,7 @@ function AppShell() {
     );
   }
 
-  if (user === null) return <LoginPage />;
+  if (user === null) return <Suspense fallback={<PageSpinner T={T} />}><LoginPage /></Suspense>;
 
   // ── Page routing ───────────────────────────────────────────
   function renderPage() {
