@@ -4,7 +4,6 @@ import { ThemeProvider, useTheme } from "./hooks/useTheme";
 import { Spinner, ErrorBoundary } from "./components/UI";
 import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
-import PWAInstallBanner from "./components/PWAInstallBanner";
 import { useBreakpoint } from "./hooks/useBreakpoint.js";
 import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
          getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder,
@@ -29,6 +28,7 @@ const StatsPage      = lazy(() => lazySecondary().then(m => ({ default: m.StatsP
 const ManageFeedsPage = lazy(() => lazySecondary().then(m => ({ default: m.ManageFeedsPage })));
 
 // ── Lazy modals/overlays — only load when first opened ────────
+const PWAInstallBanner = lazy(() => import("./components/PWAInstallBanner"));
 const SmartFeedModal = lazy(() => import("./components/SmartFeedModal"));
 const FolderModal    = lazy(() => import("./components/FolderModal"));
 const PodcastPlayer      = lazy(() => import("./components/PodcastPlayer"));
@@ -323,7 +323,7 @@ function AppShell() {
         </Suspense>
       )}
 
-      <PWAInstallBanner />
+      <Suspense fallback={null}><PWAInstallBanner /></Suspense>
 
       {editingFolder && (
         <Suspense fallback={null}>

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.71] — 2026-03-30
+
+- [Perf] Lazy-load PWAInstallBanner — removes it from the eager main bundle; it fires only on `beforeinstallprompt`, so most users never trigger it
+
 ## [1.46.70] — 2026-03-30
 
 - [Perf] Add canonical link to index.html — missing `<link rel="canonical">` was causing Lighthouse SEO score of 0.91; should bring it to 1.0
