@@ -596,7 +596,7 @@ function NotificationsCard({ T }) {
 
   const STATUS = {
     granted:     { text: "Enabled — you'll get alerts for new articles", color: T.accent },
-    denied:      { text: "Blocked in browser — enable in site settings", color: "#e53e3e" },
+    denied:      { text: "Blocked in browser — enable in site settings", color: T.danger },
     default:     { text: "Not yet enabled", color: T.textTertiary },
     unsupported: { text: "Not supported in this browser", color: T.textTertiary },
   };
@@ -1293,7 +1293,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
           </div>
           <button onClick={onAddSource}
             style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = T.accentText; }}
             onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
           >
             <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>

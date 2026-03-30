@@ -485,7 +485,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
         {/* Sources (manage-feeds) with error badge */}
         <NavItem
           id="manage-feeds" Icon={Icons.Sources} label="Sources"
-          badge={feedErrorCount} badgeColor="#e53e3e"
+          badge={feedErrorCount} badgeColor={T.danger}
           active={active} onNavigate={onNavigate} collapsed={collapsed} T={T}
         />
 
@@ -529,7 +529,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
             fontSize:11.5, fontWeight:600, letterSpacing:".01em",
             transition:"background .15s, color .15s, box-shadow .15s",
           }}
-          onMouseEnter={e => { e.currentTarget.style.background=T.accent; e.currentTarget.style.color="#fff"; e.currentTarget.style.boxShadow=`0 2px 10px ${T.accent}44`; }}
+          onMouseEnter={e => { e.currentTarget.style.background=T.accent; e.currentTarget.style.color=T.accentText; e.currentTarget.style.boxShadow=`0 2px 10px ${T.accent}44`; }}
           onMouseLeave={e => { e.currentTarget.style.background=T.accentSurface; e.currentTarget.style.color=T.accent; e.currentTarget.style.boxShadow="none"; }}
         >
           <Icons.Plus />

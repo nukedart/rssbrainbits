@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.53] — 2026-03-30
+
+- [Polish] Fixed 7 hardcoded colors from /polish audit — FolderModal delete button, Sidebar error badge + hover, DigestModal error bg, SecondaryPages notification status + 2 hover buttons, AnalyticsPage save button now all use T.danger/T.accentText tokens across all three themes
+
 ## [1.46.52] — 2026-03-30
 
 - [Feature] Readwise-style daily review — fixed critical bug (passage field was "text", showed undefined); 5-card daily sessions; swipe right = Got it / left = Forgot; tags + annotation shown on card; "Forgot / Got it / Easy" labels; serif passage typography; animated swipe feedback

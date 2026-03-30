@@ -94,7 +94,7 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
             </button>
           )}
           {confirmDelete && (
-            <button onClick={() => onDelete(folder.id)} style={{ background: "#FEE2E2", border: "1px solid #F87171", borderRadius: 9, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#991B1B", fontFamily: "inherit" }}>
+            <button onClick={() => onDelete(folder.id)} style={{ background: `${T.danger}22`, border: `1px solid ${T.danger}`, borderRadius: 9, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
               Confirm delete
             </button>
           )}

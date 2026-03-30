@@ -68,7 +68,7 @@ export default function DigestModal({ items = [], onClose }) {
             </div>
           )}
           {error && (
-            <div style={{ fontSize: 13, color: T.danger || "#e53e3e", background: `rgba(229,62,62,.1)`, borderRadius: 10, padding: "12px 14px", lineHeight: 1.6 }}>
+            <div style={{ fontSize: 13, color: T.danger, background: `${T.danger}18`, borderRadius: 10, padding: "12px 14px", lineHeight: 1.6 }}>
               {error}
             </div>
           )}

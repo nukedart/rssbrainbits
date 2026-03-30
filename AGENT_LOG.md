@@ -43,6 +43,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.49 | Nav | Replaced "Saved" with "Cards" in BottomNav — completes the mobile reading loop (Inbox → highlight → Cards) | `BottomNav.jsx:15,23,31` | — |
 | 2026-03-30 | v1.46.51 | Fix | Highlight toolbar position — changed to `position: fixed` so it always appears above selected text regardless of reader scroll position | `SelectionToolbar.jsx:31,62` | — |
 | 2026-03-30 | v1.46.52 | Feature | Readwise-style review — fixed passage field bug, 5-card daily limit, swipe gestures, tags + annotation on card, natural button labels | `ReviewPage.jsx:1-230` | — |
+| 2026-03-30 | v1.46.53 | Polish | Fixed 7 hardcoded colors from /polish audit — FolderModal, Sidebar, DigestModal, SecondaryPages, AnalyticsPage now use T.danger/T.accentText | `FolderModal.jsx:97, Sidebar.jsx:488,532, DigestModal.jsx:71, SecondaryPages.jsx:599,1296,1404, AnalyticsPage.jsx:316` | — |
 
 ---
 
