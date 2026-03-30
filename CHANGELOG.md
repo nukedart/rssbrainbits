@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.43] — 2026-03-29
+
+- [Perf] Lazy-load ContentViewer within InboxPage — static import was causing the 14 kB gz article reader chunk to download immediately on InboxPage load; now deferred until user first opens an article, reducing initial parse/exec work on the critical path
+
 ## [1.46.42] — 2026-03-29
 
 - [Polish] Fixed hardcoded `#22C55E` on Today progress bar — 100% completion state now uses T.success token so it renders correctly on Distilled and Light themes

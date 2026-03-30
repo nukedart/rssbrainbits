@@ -7,7 +7,7 @@ import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem,
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChannelRSS } from "../lib/fetchers";
 import { getCachedFeed, invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem from "../components/FeedItem";
-import ContentViewer from "../components/ContentViewer";
+const ContentViewer = lazy(() => import("../components/ContentViewer"));
 import AddModal from "../components/AddModal";
 import { Button, EmptyState, Spinner } from "../components/UI";
 import PlanGate from "../components/PlanGate";
@@ -987,41 +987,53 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       {/* ── Right panel — shown on desktop when an article is open ── */}
       {!isMobile && openItem && !expandedView && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: `1px solid ${T.border}` }}>
+          <Suspense fallback={null}>
+            <ContentViewer
+              inline={true}
+              item={openItem}
+              onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+              onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+              onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+              currentIdx={openIdx}
+              totalCount={baseItems.length}
+              onExpand={() => setExpandedView(true)}
+            />
+          </Suspense>
+        </div>
+      )}
+      {/* ── Full-screen expanded view (desktop) ── */}
+      {!isMobile && openItem && expandedView && (
+        <Suspense fallback={null}>
           <ContentViewer
-            inline={true}
+            item={openItem}
+            onClose={() => setExpandedView(false)}
+            onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+            onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+            currentIdx={openIdx}
+            totalCount={baseItems.length}
+          />
+        </Suspense>
+      )}
+
+      {showAdd && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} onSaveForLater={handleSaveForLater} />}
+      {/* Mobile: ContentViewer as full-screen overlay */}
+      {openItem && isMobile && (
+        <Suspense fallback={null}>
+          <ContentViewer
             item={openItem}
             onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
             onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
             onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
             currentIdx={openIdx}
             totalCount={baseItems.length}
-            onExpand={() => setExpandedView(true)}
           />
-        </div>
+        </Suspense>
       )}
-      {/* ── Full-screen expanded view (desktop) ── */}
-      {!isMobile && openItem && expandedView && (
-        <ContentViewer
-          item={openItem}
-          onClose={() => setExpandedView(false)}
-          onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
-          onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
-          currentIdx={openIdx}
-          totalCount={baseItems.length}
-        />
+      {searchResult && (
+        <Suspense fallback={null}>
+          <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />
+        </Suspense>
       )}
-
-      {showAdd && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} onSaveForLater={handleSaveForLater} />}
-      {/* Mobile: ContentViewer as full-screen overlay */}
-      {openItem && isMobile && <ContentViewer
-        item={openItem}
-        onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
-        onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
-        onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
-        currentIdx={openIdx}
-        totalCount={baseItems.length}
-      />}
-      {searchResult && <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />}
       {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
       {digestOpen && (
         <Suspense fallback={null}>

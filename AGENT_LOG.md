@@ -34,6 +34,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-29 | v1.46.40 | Polish | Fixed 8 hardcoded `color:"#fff"` on T.accent elements across modals/components — PlanGate, FolderModal, SmartFeedModal, AddModal, DigestModal, PWAInstallBanner, Onboarding | `PlanGate.jsx:53,63, FolderModal.jsx:105, SmartFeedModal.jsx:114, AddModal.jsx:158, DigestModal.jsx:104, PWAInstallBanner.jsx:99, Onboarding.jsx:126` | — |
 | 2026-03-29 | v1.46.41 | UX | Added Review and Cards to MobileFeedDrawer — both pages were unreachable on mobile; completes notecard system mobile parity | `MobileFeedDrawer.jsx:270-275` | — |
 | 2026-03-29 | v1.46.42 | Polish | Fixed hardcoded `#22C55E` on Today progress bar — 100% state now uses T.success for correct color on all themes | `TodayPage.jsx:360` | — |
+| 2026-03-29 | v1.46.43 | Perf | Lazy-load ContentViewer in InboxPage — defers 14 kB gz reader chunk until first article open instead of loading with InboxPage | `InboxPage.jsx:10,988-1024` | — |
 
 ---
 
