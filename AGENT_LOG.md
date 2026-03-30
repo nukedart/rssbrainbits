@@ -56,6 +56,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.63 | Feature | Cards inline editing — click annotation to edit in place, × to remove tags, inline input to add tags | `CardsPage.jsx:17-41,99-179` | — |
 | 2026-03-30 | v1.46.64 | Fix | isRSSUrl matches query-param feed URLs (?rss=1, ?format=rss, ?type=rss) — Slickdeals-style feeds no longer misdetected as articles | `fetchers.js:561` | — |
 | 2026-03-30 | v1.46.65 | Feature | Articles-per-feed limit defaults to 20 (was 80), configurable 10/20/50 in Settings → Reading | `fetchers.js:190-193,156,202, SecondaryPages.jsx:728` | — |
+| 2026-03-30 | v1.46.66 | Fix | RSS image/description extraction — nodeName iteration replaces unreliable CSS namespace selectors; description falls back to content:encoded | `fetchers.js:268,281-329` | — |
 
 ---
 

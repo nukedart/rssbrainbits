@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.66] — 2026-03-30
+
+- [Fix] RSS image and description extraction — replaced unreliable CSS-escaped namespace selectors (media\\:content) with nodeName/localName iteration; description now falls back to content:encoded when description element is missing; fixes blank cards on BBC, WordPress, Substack, and most major feeds
+
 ## [1.46.65] — 2026-03-30
 
 - [Feature] Articles-per-feed limit — default reduced to 20 (was 80), user-configurable to 10/20/50 in Settings → Reading; faster feeds, less noise

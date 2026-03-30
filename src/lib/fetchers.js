@@ -265,7 +265,7 @@ function parseRSSItem(item, isAtom) {
   return {
     title:       item.querySelector("title")?.textContent?.trim() || "Untitled",
     url:         item.querySelector("link")?.textContent?.trim() || "",
-    description: stripHtml(descRaw).slice(0, 400),
+    description: (stripHtml(descRaw) || stripHtml(contentEncoded || "")).slice(0, 400),
     fullText:    bodyRaw,
     date:        normaliseDate(item.querySelector("pubDate, date")?.textContent),
     author:      item.querySelector("author, creator")?.textContent?.trim()
@@ -279,49 +279,54 @@ function parseRSSItem(item, isAtom) {
 }
 
 function extractItemImage(item) {
-  // 1. media:content (most common in modern feeds — BBC, NYT, tech blogs)
-  const mediaContent = item.querySelector("media\\:content, media\\:thumbnail");
-  if (mediaContent?.getAttribute("url")) return mediaContent.getAttribute("url");
+  // Use nodeName/localName checks — querySelector with CSS-escaped namespace prefixes
+  // (media\\:content) is unreliable across browsers when parsing XML documents.
+  const allEls = Array.from(item.querySelectorAll("*"));
+  const byName = (...names) => allEls.find(el => names.includes(el.nodeName) || names.includes(el.localName));
 
-  // 2. Generic "content" or "thumbnail" elements (some feed parsers drop the namespace)
-  const genericMedia = item.querySelector("content[url], thumbnail[url]");
-  if (genericMedia?.getAttribute("url")) return genericMedia.getAttribute("url");
+  // 1. media:content / media:thumbnail (BBC, NYT, YouTube, most modern feeds)
+  const media = byName("media:content", "media:thumbnail");
+  if (media?.getAttribute("url")) return media.getAttribute("url");
+
+  // 2. Any element with a "url" attribute and image-like localName
+  const genericMedia = allEls.find(el =>
+    (el.localName === "content" || el.localName === "thumbnail") && el.getAttribute("url")
+  );
+  if (genericMedia) return genericMedia.getAttribute("url");
 
   // 3. enclosure with image MIME type (podcasts, photoblogs)
-  const enclosure = item.querySelector("enclosure");
+  const enclosure = byName("enclosure");
   if (enclosure?.getAttribute("type")?.startsWith("image")) return enclosure.getAttribute("url");
 
-  // 4. Parse the raw description/content HTML to find the first <img src>
-  //    This catches WordPress, Substack, Ghost, Medium, and most CMS feeds
+  // 4. Parse description/content:encoded HTML to find first <img src>
+  //    Catches WordPress, Substack, Ghost, Medium, and most CMS feeds
+  const encodedEl = allEls.find(el => el.localName === "encoded" || el.nodeName === "content:encoded");
   const rawDesc =
     item.querySelector("description")?.textContent ||
-    item.querySelector("content\\:encoded")?.textContent ||
+    encodedEl?.textContent ||
     item.querySelector("summary")?.textContent ||
     item.querySelector("content")?.textContent || "";
 
   if (rawDesc) {
-    // Try parsing as HTML to find img tags properly
     const parser = new DOMParser();
     const descDoc = parser.parseFromString(rawDesc, "text/html");
     const firstImg = descDoc.querySelector("img[src]");
     if (firstImg) {
       const src = firstImg.getAttribute("src");
-      // Skip tracking pixels and tiny images (1x1, spacers)
       if (src && !src.includes("tracking") && !src.includes("pixel") &&
           !src.includes("spacer") && src.length > 10) {
         return src;
       }
     }
-    // Fallback regex for malformed HTML in CDATA sections
     const imgMatch = rawDesc.match(/<img[^>]+src=["']([^"']{20,})["']/i);
     if (imgMatch?.[1]) return imgMatch[1];
   }
 
   // 5. itunes:image href (podcasts)
-  const itunesImg = item.querySelector("image");
+  const itunesImg = byName("itunes:image", "image");
   if (itunesImg?.getAttribute("href")) return itunesImg.getAttribute("href");
 
-  // 6. Check for og: meta inside item XML (some Atom feeds embed this)
+  // 6. og:image meta embedded in Atom items
   const ogImage = item.querySelector("[property='og:image']");
   if (ogImage?.getAttribute("content")) return ogImage.getAttribute("content");
 
