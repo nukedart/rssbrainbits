@@ -49,6 +49,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.56 | Nav | Removed "Add Source" pill from sidebar bottom; moved theme toggles inline with user/shortcuts row — cleaner footer, + icon in Feeds header is sufficient | `Sidebar.jsx:518-578` | — |
 | 2026-03-30 | v1.46.57 | Nav | Floating FAB (Things 3-style), smart feeds above feed list, starred articles show yellow filled star, CLAUDE.md token efficiency mandate | `App.jsx:266, Sidebar.jsx:399-466, FeedItem.jsx:52-70,416,545, InboxPage.jsx:6,44,128,476` | — |
 | 2026-03-30 | v1.46.58 | UX | Added global :focus-visible keyboard focus rings — overrides inline outline:none with !important so keyboard users always have a visible indicator | `index.css:171` | — |
+| 2026-03-30 | v1.46.59 | Fix | Desktop now opens to Inbox — Home had no sidebar nav entry; users were stranded on a page with no return path | `App.jsx:57` | — |
 
 ---
 

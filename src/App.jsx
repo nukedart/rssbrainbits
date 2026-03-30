@@ -54,7 +54,7 @@ function AppShell() {
   const [page, setPage]             = useState(() => {
     // admin/index.html sets this global to open the admin panel directly
     if (window.__FB_INITIAL_PAGE__) return window.__FB_INITIAL_PAGE__;
-    return window.innerWidth < 768 ? "inbox" : "home";
+    return "inbox";
   });
   const [unreadCount, setUnreadCount] = useState(0);
   const [smartFeeds, setSmartFeeds]   = useState([]);

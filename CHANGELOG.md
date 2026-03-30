@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.59] — 2026-03-30
+
+- [Fix] Desktop now opens to Inbox instead of Home — Home has no sidebar nav entry so users were stranded on a page with no return path; Inbox is the correct primary destination on all screen sizes
+
 ## [1.46.58] — 2026-03-30
 
 - [UX] Added global :focus-visible keyboard focus rings — every button and link now shows a 2px outline when navigated by keyboard; inline outline:none styles no longer suppress focus for keyboard users
