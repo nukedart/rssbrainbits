@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.44] — 2026-03-29
+
+- [Perf] Non-blocking Google Fonts load — changed from render-blocking `<link rel="stylesheet">` to `rel="preload"` + onload swap; eliminates the ~773ms render-blocking penalty Lighthouse flagged, improving FCP and LCP
+
 ## [1.46.43] — 2026-03-29
 
 - [Perf] Lazy-load ContentViewer within InboxPage — static import was causing the 14 kB gz article reader chunk to download immediately on InboxPage load; now deferred until user first opens an article, reducing initial parse/exec work on the critical path
