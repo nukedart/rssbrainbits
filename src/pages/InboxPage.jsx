@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react"
 import { useTheme } from "../hooks/useTheme";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
-import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem,
+import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem, getSaved,
          addReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed } from "../lib/supabase";
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChannelRSS } from "../lib/fetchers";
 import { getCachedFeed, invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
@@ -42,6 +42,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "card"));
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
+  const [savedUrls, setSavedUrls]       = useState(new Set());
   const [readFilter, setReadFilter]     = useState("unread"); // "all" | "unread"
   const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
   const [toast, setToast]               = useState(null);
@@ -128,6 +129,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       setReadUrls(urls);
       try { localStorage.setItem(cacheKey, JSON.stringify([...urls])); } catch {}
     }).catch(console.error);
+    getSaved(user.id).then(items => setSavedUrls(new Set(items.map(i => i.url)))).catch(() => {});
   }, [user]);
 
   useEffect(() => {
@@ -474,6 +476,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
   async function handleSaveItem(item) {
     await saveItem(user.id, { ...item });
+    setSavedUrls(prev => { const next = new Set(prev); next.add(item.url); return next; });
     showToast("⭐ Starred");
   }
 
@@ -950,6 +953,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   isRead={readUrls.has(item.url)}
                   onClick={() => { if (item.isPodcast && item.audioUrl && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}
                   onSave={() => handleSaveItem(item)}
+                  isSaved={savedUrls.has(item.url)}
                   onReadLater={() => handleReadLater(item)}
                   onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
                   onPlayPodcast={onPlayPodcast}

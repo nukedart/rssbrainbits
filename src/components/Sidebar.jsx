@@ -396,6 +396,25 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
       {/* ── Feed tree (scrollable) ── */}
       <div style={{ flex:1, minHeight:0, overflowY:"auto", padding: collapsed?"4px":"4px 6px", display:"flex", flexDirection:"column" }}>
 
+        {/* Smart feeds — shown above regular feeds */}
+        {smartFeeds.length > 0 && (
+          <>
+            {!collapsed && (
+              <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", flexShrink:0 }}>
+                <span style={{ flex:1, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Smart</span>
+                <button onClick={onAddSmartFeed} title="New smart feed"
+                  style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
+                  onMouseEnter={e => e.currentTarget.style.color=T.accent}
+                  onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
+                ><Icons.Plus /></button>
+              </div>
+            )}
+            {smartFeeds.map(sf => (
+              <SmartRow key={sf.id} sf={sf} active={active} onNavigate={onNavigate} onEdit={onEditSmartFeed} collapsed={collapsed} T={T} />
+            ))}
+          </>
+        )}
+
         {/* Feeds section header */}
         {!collapsed && (
           <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", flexShrink:0 }}>
@@ -405,11 +424,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
               onMouseEnter={e => e.currentTarget.style.color=T.accent}
               onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
             ><Icons.Folder /></button>
-            <button onClick={onAddSource} title="Add feed"
-              style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
-              onMouseEnter={e => e.currentTarget.style.color=T.accent}
-              onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-            ><Icons.Plus /></button>
           </div>
         )}
 
@@ -442,25 +456,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
             )}
             {uncategorized.map(feed => (
               <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} T={T} />
-            ))}
-          </>
-        )}
-
-        {/* Smart feeds */}
-        {smartFeeds.length > 0 && (
-          <>
-            {!collapsed && (
-              <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", marginTop:4, flexShrink:0 }}>
-                <span style={{ flex:1, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Smart</span>
-                <button onClick={onAddSmartFeed} title="New smart feed"
-                  style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
-                  onMouseEnter={e => e.currentTarget.style.color=T.accent}
-                  onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-                ><Icons.Plus /></button>
-              </div>
-            )}
-            {smartFeeds.map(sf => (
-              <SmartRow key={sf.id} sf={sf} active={active} onNavigate={onNavigate} onEdit={onEditSmartFeed} collapsed={collapsed} T={T} />
             ))}
           </>
         )}

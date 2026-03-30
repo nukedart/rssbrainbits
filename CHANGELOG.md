@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.57] — 2026-03-30
+
+- [Nav] Floating FAB replaces sidebar Add Source button — Things 3-style fixed "+" on desktop bottom-right; smart feeds moved above feed list in sidebar; star icon turns yellow (filled) when an article is starred
+
 ## [1.46.56] — 2026-03-30
 
 - [Nav] Removed "Add Source" pill button from sidebar bottom — + icon in Feeds header already handles this; moved theme toggles (Sun/Moon) inline with user row next to shortcuts button for a less cluttered footer

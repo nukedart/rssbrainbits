@@ -264,6 +264,18 @@ function AppShell() {
           </ErrorBoundary>
         </div>
         {isMobile && <BottomNav active={page} onNavigate={navigateTo} onAdd={handleGlobalAdd} unreadCount={unreadCount} onOpenFeeds={() => setMobileDrawerOpen(true)} />}
+        {!isMobile && (
+          <button onClick={handleGlobalAdd} title="Add source" aria-label="Add source" style={{
+            position:"fixed", right:20, bottom:20, width:44, height:44, borderRadius:"50%",
+            background:T.accent, color:T.accentText, border:"none", cursor:"pointer",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            boxShadow:`0 4px 16px ${T.accent}55`, fontSize:22, fontFamily:"inherit",
+            transition:"transform .15s, box-shadow .15s", zIndex:100,
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform="scale(1.08)"; e.currentTarget.style.boxShadow=`0 6px 20px ${T.accent}77`; }}
+            onMouseLeave={e => { e.currentTarget.style.transform="scale(1)"; e.currentTarget.style.boxShadow=`0 4px 16px ${T.accent}55`; }}
+          >+</button>
+        )}
       </div>
 
       {editingSF && (

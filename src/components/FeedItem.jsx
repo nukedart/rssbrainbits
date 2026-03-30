@@ -49,14 +49,15 @@ function sourcePlaceholder(source) {
 const Ic = {
   Read:     () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 8C3.2 4.2 5.4 2.8 8 2.8S12.8 4.2 14.5 8C12.8 11.8 10.6 13.2 8 13.2S3.2 11.8 1.5 8z"/><circle cx="8" cy="8" r="2.3"/></svg>,
   Unread:   () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 8C3.2 4.2 5.4 2.8 8 2.8S12.8 4.2 14.5 8C12.8 11.8 10.6 13.2 8 13.2S3.2 11.8 1.5 8z"/><circle cx="8" cy="8" r="2.3" fill="currentColor"/></svg>,
-  Star:     () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1.5l1.76 3.58 3.95.57-2.86 2.79.68 3.94L8 10.35l-3.53 1.03.68-3.94L2.29 5.65l3.95-.57L8 1.5z"/></svg>,
+  Star:       () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1.5l1.76 3.58 3.95.57-2.86 2.79.68 3.94L8 10.35l-3.53 1.03.68-3.94L2.29 5.65l3.95-.57L8 1.5z"/></svg>,
+  StarFilled: () => <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" stroke="none"><path d="M8 1.5l1.76 3.58 3.95.57-2.86 2.79.68 3.94L8 10.35l-3.53 1.03.68-3.94L2.29 5.65l3.95-.57L8 1.5z"/></svg>,
   Clock:    () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.2"/></svg>,
   External: () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2.5h4.5V7M9.5 6.5l4-4M7 3H3.5A1 1 0 0 0 2.5 4v8.5A1 1 0 0 0 3.5 13.5H12A1 1 0 0 0 13 12.5V9"/></svg>,
   Play:     () => <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" stroke="none"><path d="M4 2.8l9 5.2-9 5.2V2.8z"/></svg>,
 };
 
 // ── Ghost action button (hover controls, no border/bg) ────────
-function ActionBtn({ icon, title, onClick, T }) {
+function ActionBtn({ icon, title, onClick, T, color }) {
   function handleClick(e) {
     e.stopPropagation();
     onClick?.(e);
@@ -66,7 +67,7 @@ function ActionBtn({ icon, title, onClick, T }) {
       background: "transparent", border: "none", borderRadius: 7,
       width: 28, height: 28,
       cursor: "pointer",
-      color: T.textTertiary, fontFamily: "inherit",
+      color: color || T.textTertiary, fontFamily: "inherit",
       display: "flex", alignItems: "center", justifyContent: "center",
       transition: "color .1s, background .1s",
     }}
@@ -268,7 +269,7 @@ function MobileThumb({ item, T }) {
 }
 
 // ── List view item (Things 3 task-row pattern) ───────────────
-function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, cardSize = "md" }) {
+function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md" }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -413,7 +414,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               )}
               <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
               <ActionBtn icon={<Ic.Clock />} title="Save for later" onClick={onReadLater} T={T} />
-              <ActionBtn icon={<Ic.Star />} title="Star" onClick={onSave} T={T} />
+              <ActionBtn icon={isSaved ? <Ic.StarFilled /> : <Ic.Star />} title={isSaved ? "Starred" : "Star"} onClick={onSave} T={T} color={isSaved ? "#F59E0B" : undefined} />
               <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
             </div>
           )}
@@ -424,7 +425,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Card view item ────────────────────────────────────────────
-function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, cardSize = "md" }) {
+function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md" }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -542,7 +543,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {item.isPodcast && onPlayPodcast && <ActionBtn icon={<Ic.Play />} title="Play" onClick={() => onPlayPodcast(item)} T={T} />}
               <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
               <ActionBtn icon={<Ic.Clock />} title="Save for later" onClick={onReadLater} T={T} />
-              <ActionBtn icon={<Ic.Star />} title="Star" onClick={onSave} T={T} />
+              <ActionBtn icon={isSaved ? <Ic.StarFilled /> : <Ic.Star />} title={isSaved ? "Starred" : "Star"} onClick={onSave} T={T} color={isSaved ? "#F59E0B" : undefined} />
               <div style={{ marginLeft: "auto" }}>
                 <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
               </div>
@@ -555,9 +556,9 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Public export ─────────────────────────────────────────────
-export default function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false }) {
+export default function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false }) {
   if (viewMode === "card") {
-    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} cardSize={cardSize} />;
+    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} />;
   }
-  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} cardSize={cardSize} />;
+  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} />;
 }

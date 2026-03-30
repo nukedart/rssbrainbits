@@ -77,14 +77,19 @@ Also append a row to `AGENT_LOG.md`:
 | YYYY-MM-DD | v[next] | [Area] | [One-line description] | `File.jsx:line` | — |
 ```
 
-## Token efficiency rules (agent must follow)
+## Token efficiency rules (MANDATORY — applies to every agent and session)
 
-- **Read files only when needed** — use Grep to find patterns before opening files
-- **Prefer Edit over Write** — sends only the diff, not the full file
-- **One issue per iteration** — no compound PRs
-- **Always run `npm test` before deploying** — catch regressions early
-- **Check `scripts/perf-history.json`** before performance work to know baseline
-- After each session, note the `/cost` value in the session summary
+Minimize token usage at every step. This directly reduces Claude Pro consumption.
+
+- **Grep before Read** — always search for a pattern before opening a file; never read speculatively
+- **Read only the lines you need** — use `offset` + `limit` on large files; never read a whole file to find one function
+- **Prefer Edit over Write** — Edit sends only the diff; Write sends the full file
+- **Parallel tool calls** — when reads are independent, fire them in one message
+- **One issue per iteration** — no compound diffs; small changes are easier to verify and cheaper to reason about
+- **Always run `npm test` before deploying** — a failed deploy wastes tokens on a retry cycle
+- **Skip preamble in responses** — lead with action, not explanation; no restating what the user said
+- **Check `scripts/perf-history.json`** before perf work to avoid re-measuring baselines
+- After each session, note the `/cost` value in AGENT_LOG.md
 
 ## Architecture
 
