@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.74] — 2026-03-30
+
+- [Polish] Fade-in animation on page navigation — adding `key={page}` to the page wrapper remounts it on navigation, triggering a 150ms opacity fadeIn; pages feel spatial rather than instant
+
 ## [1.46.73] — 2026-03-30
 
 - [Nav] BottomNav hides on scroll-down and reappears on scroll-up — gives back 54px of content while reading the feed list; resets on page navigation

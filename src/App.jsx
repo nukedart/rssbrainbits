@@ -254,7 +254,7 @@ function AppShell() {
         onAddSource={handleGlobalAdd}
       />
       <div style={{ flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column" }}>
-        <div style={{ flex: 1, overflow: "hidden", paddingBottom: isMobile ? 62 : 0, display: "flex", flexDirection: "column" }}>
+        <div key={page} style={{ flex: 1, overflow: "hidden", paddingBottom: isMobile ? 62 : 0, display: "flex", flexDirection: "column", animation: "fadeIn .15s ease" }}>
           <ErrorBoundary>
             <Suspense fallback={<PageSpinner T={T} />}>
               {renderPage()}
