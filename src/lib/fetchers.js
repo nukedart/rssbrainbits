@@ -310,15 +310,21 @@ function extractItemImage(item) {
   if (rawDesc) {
     const parser = new DOMParser();
     const descDoc = parser.parseFromString(rawDesc, "text/html");
-    const firstImg = descDoc.querySelector("img[src]");
-    if (firstImg) {
-      const src = firstImg.getAttribute("src");
-      if (src && !src.includes("tracking") && !src.includes("pixel") &&
-          !src.includes("spacer") && src.length > 10) {
-        return src;
+    // Try all imgs — skip data: placeholders used by lazy-load libraries
+    const imgs = Array.from(descDoc.querySelectorAll("img"));
+    for (const img of imgs) {
+      // Prefer real src; fall back to data-src / data-lazy-src for lazy-loaded images
+      const src = img.getAttribute("src") || "";
+      const lazySrc = img.getAttribute("data-src") || img.getAttribute("data-lazy-src") ||
+                      img.getAttribute("data-original") || img.getAttribute("data-srcset")?.split(" ")[0] || "";
+      const candidate = (!src.startsWith("data:") && src.length > 10) ? src : lazySrc;
+      if (candidate && !candidate.startsWith("data:") && !candidate.includes("tracking") &&
+          !candidate.includes("pixel") && !candidate.includes("spacer") && candidate.length > 10) {
+        return candidate;
       }
     }
-    const imgMatch = rawDesc.match(/<img[^>]+src=["']([^"']{20,})["']/i);
+    // Regex fallback — exclude data: URIs
+    const imgMatch = rawDesc.match(/<img[^>]+src=["']((?!data:)[^"']{20,})["']/i);
     if (imgMatch?.[1]) return imgMatch[1];
   }
 

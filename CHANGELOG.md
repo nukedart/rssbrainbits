@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.75] — 2026-03-30
+
+- [Fix] RSS image extraction: skip data: URI placeholders from lazy-load libraries; check data-src/data-lazy-src/data-original fallback attributes; scan all imgs in description (not just first); fixes blank thumbnails on SlickDeals and other sites using lazy-loading in RSS descriptions
+
 ## [1.46.74] — 2026-03-30
 
 - [Polish] Fade-in animation on page navigation — adding `key={page}` to the page wrapper remounts it on navigation, triggering a 150ms opacity fadeIn; pages feel spatial rather than instant

@@ -65,6 +65,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.72 | UX | Remove borderBottom from skeleton rows — skeleton now matches real feed items (no dividers), eliminates border flash on load | `InboxPage.jsx:1160,1195` | — |
 | 2026-03-30 | v1.46.73 | Nav | BottomNav hides on scroll-down, reappears on scroll-up — 54px more content visible while reading; resets on navigation | `BottomNav.jsx:40-52`, `InboxPage.jsx:897` | — |
 | 2026-03-30 | v1.46.74 | Polish | Fade-in on page navigation — key={page} remounts page wrapper, triggering 150ms fadeIn from index.css | `App.jsx:257` | — |
+| 2026-03-30 | v1.46.75 | Fix | Image extraction: filter data: URI placeholders, check data-src/data-lazy-src, scan all imgs not just first — fixes SlickDeals thumbnails | `fetchers.js:310-323` | — |
 
 ---
 
