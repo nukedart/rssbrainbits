@@ -35,6 +35,10 @@ export default function CardsPage() {
     return Object.entries(map).sort((a, b) => b[1].length - a[1].length);
   }, [highlights]);
 
+  const untagged = useMemo(() =>
+    highlights.filter(h => !(h.tags || []).length),
+  [highlights]);
+
   const totalTagged = useMemo(() =>
     new Set(highlights.filter(h => (h.tags || []).length > 0).map(h => h.id)).size,
   [highlights]);
@@ -47,7 +51,9 @@ export default function CardsPage() {
 
   // ── Card list view (theme selected) ───────────────────────
   if (selectedTheme) {
-    const cards = buckets.find(([t]) => t === selectedTheme)?.[1] || [];
+    const cards = selectedTheme === "__untagged__"
+      ? untagged
+      : buckets.find(([t]) => t === selectedTheme)?.[1] || [];
     return (
       <div style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0 }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 80px" }}>
@@ -57,7 +63,7 @@ export default function CardsPage() {
               cursor: "pointer", color: T.textSecondary, fontSize: 13, fontFamily: "inherit",
             }}>← All themes</button>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: T.text }}>{selectedTheme}</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: T.text }}>{selectedTheme === "__untagged__" ? "Untagged" : selectedTheme}</div>
               <div style={{ fontSize: 12, color: T.textTertiary }}>{cards.length} card{cards.length !== 1 ? "s" : ""}</div>
             </div>
           </div>
@@ -112,12 +118,12 @@ export default function CardsPage() {
           </div>
         </div>
 
-        {buckets.length === 0 ? (
+        {buckets.length === 0 && untagged.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 24px" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🗂️</div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 8 }}>No theme cards yet</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 8 }}>No cards yet</div>
             <div style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.6, maxWidth: 340, margin: "0 auto" }}>
-              Open any article, highlight a passage, then tap "+ theme" in the Highlights drawer to categorize it — like "stoicism" or "leadership".
+              Open any article and highlight a passage. Add a theme tag like "stoicism" or "leadership" in the note panel to create your first card.
             </div>
           </div>
         ) : (
@@ -137,6 +143,22 @@ export default function CardsPage() {
                 <div style={{ fontSize: 12, color: T.textTertiary }}>{cards.length} card{cards.length !== 1 ? "s" : ""}</div>
               </button>
             ))}
+            {untagged.length > 0 && (
+              <button onClick={() => setSelectedTheme("__untagged__")} style={{
+                background: T.card, border: `1px solid ${T.border}`,
+                borderRadius: 14, padding: "18px 16px",
+                cursor: "pointer", textAlign: "left", fontFamily: "inherit",
+                transition: "border-color .12s, background .12s",
+                opacity: 0.7,
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = T.textTertiary; e.currentTarget.style.opacity = "1"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.opacity = "0.7"; }}
+              >
+                <div style={{ fontSize: 22, marginBottom: 10 }}>📌</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.textSecondary, marginBottom: 4 }}>Untagged</div>
+                <div style={{ fontSize: 12, color: T.textTertiary }}>{untagged.length} highlight{untagged.length !== 1 ? "s" : ""}</div>
+              </button>
+            )}
           </div>
         )}
       </div>
