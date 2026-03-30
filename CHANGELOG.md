@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.50] — 2026-03-30
+
+### Changes since v1.46.49
+
+---
+
 ## [1.46.49] — 2026-03-30
 
 - [Nav] Replaced "Saved" with "Cards" in mobile BottomNav — Cards is now the primary output surface (notecard library); Saved is still reachable from the drawer
