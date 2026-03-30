@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.60] — 2026-03-30
+
+- [Fix] Added missing UPDATE RLS policy on feeds table — folder assignment, feed renaming, and feed settings were all silently blocked by Supabase (requires running migration SQL in Supabase dashboard)
+
 ## [1.46.59] — 2026-03-30
 
 - [Fix] Desktop now opens to Inbox instead of Home — Home has no sidebar nav entry so users were stranded on a page with no return path; Inbox is the correct primary destination on all screen sizes

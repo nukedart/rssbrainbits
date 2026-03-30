@@ -77,6 +77,7 @@ ALTER TABLE article_tags ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "own feeds select"   ON feeds FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "own feeds insert"   ON feeds FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "own feeds update"   ON feeds FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "own feeds delete"   ON feeds FOR DELETE USING (auth.uid() = user_id);
 
 CREATE POLICY "own history select" ON history FOR SELECT USING (auth.uid() = user_id);
