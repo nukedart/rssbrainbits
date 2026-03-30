@@ -51,6 +51,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.58 | UX | Added global :focus-visible keyboard focus rings — overrides inline outline:none with !important so keyboard users always have a visible indicator | `index.css:171` | — |
 | 2026-03-30 | v1.46.59 | Fix | Desktop now opens to Inbox — Home had no sidebar nav entry; users were stranded on a page with no return path | `App.jsx:57` | — |
 | 2026-03-30 | v1.46.60 | Fix | Added missing UPDATE RLS policy on feeds table — folder assignment/renaming/settings all silently blocked | `supabase-schema.sql:79` | — |
+| 2026-03-30 | v1.46.61 | Perf | Removed HomePage from bundle — 32KB dead chunk; unreachable since v1.46.34; default route → InboxPage | `App.jsx:18,217,229` | — |
 
 ---
 

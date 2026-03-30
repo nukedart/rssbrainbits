@@ -15,7 +15,6 @@ import { identify, track } from "./lib/analytics";
 
 // ── Lazy page chunks — each becomes a separate JS file ────────
 const InboxPage      = lazy(() => import("./pages/InboxPage"));
-const HomePage       = lazy(() => import("./pages/HomePage"));
 const TodayPage      = lazy(() => import("./pages/TodayPage"));
 const AnalyticsPage  = lazy(() => import("./pages/AnalyticsPage"));
 const ReviewPage     = lazy(() => import("./pages/ReviewPage"));
@@ -214,7 +213,6 @@ function AppShell() {
       return <InboxPage filterMode="youtube-all" ytFeedIds={ytFeeds.map(f => f.id)} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} />;
     }
     switch (page) {
-      case "home":         return <HomePage feeds={feeds} folders={folders} feedUnreadCounts={feedUnreadCounts} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
       case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} forceOpenSearch={forceOpenSearch} onForcedSearchClose={() => setForceOpenSearch(false)} />;
       case "today":        return <TodayPage feeds={feeds} onPlayPodcast={setPodcastItem} />;
       case "readlater":    return <ReadLaterPage />;
@@ -226,7 +224,7 @@ function AppShell() {
       case "analytics":    return <AnalyticsPage />;
       case "settings":     return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} />;
       case "manage-feeds": return <ManageFeedsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFeedDeleted={handleFeedDeleted} onNavigate={navigateTo} onAddFolder={() => setEditingFolder("new")} onFolderUpdate={(id, data) => setFolders(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFolderDeleted={(id) => setFolders(prev => prev.filter(f => f.id !== id))} onAddSource={handleGlobalAdd} />;
-      default:             return <HomePage feeds={feeds} folders={folders} feedUnreadCounts={feedUnreadCounts} onNavigate={navigateTo} onPlayPodcast={setPodcastItem} />;
+      default:             return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} />;
     }
   }
 

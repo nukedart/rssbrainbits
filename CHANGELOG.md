@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.61] — 2026-03-30
+
+- [Perf] Removed HomePage from bundle — 32KB dead chunk eliminated; page had no nav entry since v1.46.34 and is unreachable; default route now falls to InboxPage
+
 ## [1.46.60] — 2026-03-30
 
 - [Fix] Added missing UPDATE RLS policy on feeds table — folder assignment, feed renaming, and feed settings were all silently blocked by Supabase (requires running migration SQL in Supabase dashboard)
