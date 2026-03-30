@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.67] — 2026-03-30
+
+- [Nav] Add Review to mobile BottomNav (replacing Today) — Review is a primary screen per product vision but was inaccessible on mobile; reorders nav to match Inbox → Cards → Review priority
+
 ## [1.46.66] — 2026-03-30
 
 - [Fix] RSS image and description extraction — replaced unreliable CSS-escaped namespace selectors (media\\:content) with nodeName/localName iteration; description now falls back to content:encoded when description element is missing; fixes blank cards on BBC, WordPress, Substack, and most major feeds
