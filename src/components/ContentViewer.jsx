@@ -135,6 +135,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
       passage, color, position,
     });
     setHighlights((prev) => [...prev, newH]);
+    setActiveNote(newH); // open NotePanel immediately — complete the card in one action
     track("article_highlighted", { color, passage_length: passage.length, source: item.source });
   }, [user, item, content]);
 
@@ -676,7 +677,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
       {/* ── Note panel ── */}
       {activeNote && (
-        <NotePanel highlight={activeNote} onSave={handleSaveNote} onDelete={handleDeleteHighlight} onClose={() => setActiveNote(null)} />
+        <NotePanel highlight={activeNote} onSave={handleSaveNote} onDelete={handleDeleteHighlight} onClose={() => setActiveNote(null)} onUpdateTags={handleUpdateHighlightTags} />
       )}
 
       {/* ── Highlights drawer ── */}

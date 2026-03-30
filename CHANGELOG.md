@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.48] — 2026-03-30
+
+- [Feature] Highlight → card in one action: selecting text and picking a color now immediately opens the card panel (passage + annotation + theme tag) instead of silently saving; NotePanel gains inline tag input so a complete notecard is created without leaving the reader
+
 ## [1.46.47] — 2026-03-30
 
 - [Feature] Removed Notes — annotation is now highlight-first; per-highlight notes (NotePanel) remain as the "notecard back"; NotesPage and ArticleNotesPanel deleted from all nav surfaces and reader toolbar; legacy /notes route redirects to Cards
