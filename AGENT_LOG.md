@@ -60,6 +60,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.66 | Fix | RSS image/description extraction — nodeName iteration replaces unreliable CSS namespace selectors; description falls back to content:encoded | `fetchers.js:268,281-329` | — |
 | 2026-03-30 | v1.46.67 | Nav | Added Review to mobile BottomNav (replacing Today) — Review was inaccessible on mobile despite being a primary screen | `BottomNav.jsx:17-28` | — |
 | 2026-03-30 | v1.46.68 | Perf | Lazy-load LoginPage — removed from eager main bundle; authenticated users never load this chunk | `App.jsx:7,17,186` | — |
+| 2026-03-30 | v1.46.70 | Perf | Add canonical link to index.html — fixes Lighthouse SEO score 0.91 → 1.0 | `index.html:23` | — |
 
 ---
 

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.70] — 2026-03-30
+
+- [Perf] Add canonical link to index.html — missing `<link rel="canonical">` was causing Lighthouse SEO score of 0.91; should bring it to 1.0
+
 ## [1.46.69] — 2026-03-30
 
 - [Perf] Lazy-load LoginPage — removes it from the eager main bundle; authenticated returning users never load this chunk, trimming ~3–5 kB gz from TTI
