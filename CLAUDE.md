@@ -2,6 +2,27 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Product Vision
+
+**Feedbox is a personal knowledge curation platform built around annotation as a first-class feature.**
+
+The core philosophy is Ryan Holiday's notecard/Zettelkasten system applied to digital reading:
+- **Highlight** a passage (the source material, like the front of an index card)
+- **Annotate** it with a note in your own words (the back of the card — your synthesis)
+- **Tag** it with a theme/idea (the index system — how cards connect)
+- **Browse by theme** in Cards — not a list of articles but a map of ideas
+- **Review** via spaced repetition — resurface cards you need to remember
+
+**What we took from Readwise/Readwise Reader:** Frictionless highlighting on any device, tag-based knowledge graph, spaced repetition review.
+**What we do better:** Cleaner, calmer interface. Highlighting is the primary action, not a sidebar afterthought.
+
+**Things we do NOT build:**
+- Article-level notes (removed — use highlight annotations instead)
+- Social/sharing features
+- Enterprise features (SSO, teams, audit logs)
+
+The primary screens in priority order: **Inbox → Reader (highlight-first) → Cards → Review → Today**
+
 ## Commands
 
 ```bash

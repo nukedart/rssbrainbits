@@ -17,7 +17,6 @@ import { identify, track } from "./lib/analytics";
 const InboxPage      = lazy(() => import("./pages/InboxPage"));
 const HomePage       = lazy(() => import("./pages/HomePage"));
 const TodayPage      = lazy(() => import("./pages/TodayPage"));
-const NotesPage      = lazy(() => import("./components/NotesPage"));
 const AnalyticsPage  = lazy(() => import("./pages/AnalyticsPage"));
 const ReviewPage     = lazy(() => import("./pages/ReviewPage"));
 const CardsPage      = lazy(() => import("./pages/CardsPage"));
@@ -221,7 +220,7 @@ function AppShell() {
       case "readlater":    return <ReadLaterPage />;
       case "history":      return <HistoryPage />;
       case "stats":        return <StatsPage />;
-      case "notes":        return <NotesPage />;
+      case "notes":        return <CardsPage />; // redirect legacy notes links to Cards
       case "review":       return <ReviewPage />;
       case "cards":        return <CardsPage />;
       case "analytics":    return <AnalyticsPage />;

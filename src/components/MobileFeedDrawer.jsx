@@ -264,10 +264,7 @@ export default function MobileFeedDrawer({
           <NavRow id="readlater" label="Saved" badge={0} active={active} onNavigate={navigate} T={T} icon={
             <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 14l-4-3-4 3V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
           }/>
-          <NavRow id="notes" label="Notes" badge={0} active={active} onNavigate={navigate} T={T} icon={
-            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2h10a1 1 0 0 1 1 1v9l-3 3H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M11 12v3M11 12h3"/><path d="M5 6h6M5 9h4"/></svg>
-          }/>
-          <NavRow id="review" label="Review" badge={0} active={active} onNavigate={navigate} T={T} icon={
+<NavRow id="review" label="Review" badge={0} active={active} onNavigate={navigate} T={T} icon={
             <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13.5 8a5.5 5.5 0 0 1-9.9 3.3M2.5 8a5.5 5.5 0 0 1 9.9-3.3"/><path d="M11.5 4.5l.9-2.1 2.1.9"/><path d="M4.5 11.5l-.9 2.1-2.1-.9"/></svg>
           }/>
           <NavRow id="cards" label="Cards" badge={0} active={active} onNavigate={navigate} T={T} icon={

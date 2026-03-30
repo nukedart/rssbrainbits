@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.47] — 2026-03-30
+
+- [Feature] Removed Notes — annotation is now highlight-first; per-highlight notes (NotePanel) remain as the "notecard back"; NotesPage and ArticleNotesPanel deleted from all nav surfaces and reader toolbar; legacy /notes route redirects to Cards
+
 ## [1.46.46] — 2026-03-30
 
 - [Security] Removed all client-side AI API keys — deleted localStorage key storage, VITE env var paths, and direct browser calls to Anthropic/OpenAI; all AI features now route exclusively through the Cloudflare Worker (server-side secret); added /ask and /tags endpoints to the Worker

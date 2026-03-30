@@ -38,6 +38,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.44 | Perf | Non-blocking Google Fonts — preload+onload swap pattern eliminates ~773ms render-blocking penalty on initial paint | `index.html:10` | — |
 | 2026-03-30 | v1.46.45 | Feature | "Ask about this article" Q&A in AI Summary card — input + answer display below format switcher, calls askQuestion() in fetchers.js | `fetchers.js:832, ContentViewer.jsx:625,845,884` | — |
 | 2026-03-30 | v1.46.46 | Security | Removed all client-side AI API keys — all AI calls now route through Cloudflare Worker only; deleted localStorage key storage, VITE env paths, and direct browser API calls | `fetchers.js:700-894, apiKeys.js, SecondaryPages.jsx:742-764, cloudflare-worker/worker.js` | — |
+| 2026-03-30 | v1.46.47 | Feature | Removed Notes — annotation pivots to highlight-first; NotesPage + ArticleNotesPanel removed; nav updated across Sidebar/BottomNav/MobileFeedDrawer; legacy notes route → Cards | `App.jsx:20,223, Sidebar.jsx:339, MobileFeedDrawer.jsx:267, ContentViewer.jsx:17,45-47,425-437,692-701` | — |
 
 ---
 

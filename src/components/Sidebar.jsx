@@ -336,7 +336,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
     { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox",       badge: unreadCount },
     { id:"today",     Icon:Icons.Today,     label:"Today",       badge: 0 },
     { id:"readlater", Icon:Icons.ReadLater, label:"Saved",       badge: 0 },
-    { id:"notes",     Icon:Icons.Notes,     label:"Notes",       badge: 0 },
     { id:"review",    Icon:Icons.Review,    label:"Review",      badge: 0 },
     { id:"cards",     Icon:Icons.Cards,     label:"Cards",       badge: 0 },
   ];

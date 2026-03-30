@@ -11,10 +11,9 @@ import TagsInput from "./TagsInput";
 import {
   saveItem, addHighlight, getHighlights, updateHighlightNote, updateHighlightTags, deleteHighlight,
   getArticleTags, addArticleTag, deleteArticleTag, getAllTags,
-  getReadingProgress, setReadingProgress, getNotesByArticle,
+  getReadingProgress, setReadingProgress,
   getAiUsageToday, incrementAiUsage,
 } from "../lib/supabase";
-import ArticleNotesPanel from "./ArticleNotesPanel";
 import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
@@ -41,10 +40,6 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const [highlights, setHighlights]   = useState([]);
   const [activeNote, setActiveNote]   = useState(null);
   const [showDrawer, setShowDrawer]   = useState(false);
-
-  // Article notes
-  const [articleNotes, setArticleNotes]       = useState([]);
-  const [showNotesPanel, setShowNotesPanel]   = useState(false);
 
   // Tags
   const [tags, setTags]         = useState([]);
@@ -117,7 +112,6 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   useEffect(() => {
     if (!user || !item?.url) return;
     getHighlights(user.id, item.url).then(setHighlights).catch(console.error);
-    getNotesByArticle(user.id, item.url).then(setArticleNotes).catch(() => {});
     // Load saved reading progress
     getReadingProgress(user.id, item.url).then(prog => {
       setReadProgress(prog);
@@ -428,20 +422,6 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             </div>
           )}
 
-          {/* Note */}
-          <button onClick={() => setShowNotesPanel(v => !v)} title="Notes on this article"
-            style={{ background: showNotesPanel ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: showNotesPanel ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "all .12s", flexShrink: 0, display: "flex", alignItems: "center", gap: 5 }}
-            onMouseEnter={e => { if (!showNotesPanel) { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.textSecondary; } }}
-            onMouseLeave={e => { if (!showNotesPanel) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
-          >
-            Note
-            {articleNotes.length > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, background: showNotesPanel ? T.accent : T.surface2, color: showNotesPanel ? "#03210b" : T.textSecondary, borderRadius: 8, padding: "1px 5px", minWidth: 14, textAlign: "center" }}>
-                {articleNotes.length}
-              </span>
-            )}
-          </button>
-
           {/* Save */}
           <button onClick={handleSave} disabled={saved}
             style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: saved ? "default" : "pointer", fontSize: 12, fontWeight: 600, color: saved ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "all .12s", flexShrink: 0 }}
@@ -709,16 +689,6 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           onClose={() => setShowDrawer(false)} />
       )}
 
-      {/* ── Article notes panel ── */}
-      {showNotesPanel && (
-        <ArticleNotesPanel
-          articleUrl={item?.url}
-          articleTitle={content?.title || item?.title}
-          notes={articleNotes}
-          onNotesChange={setArticleNotes}
-          onClose={() => setShowNotesPanel(false)}
-        />
-      )}
     </div>
   );
 }
