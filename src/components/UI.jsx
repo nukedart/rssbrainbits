@@ -111,27 +111,33 @@ export class ErrorBoundary extends Component {
   render() {
     if (!this.state.hasError) return this.props.children;
     const reload = () => { this.setState({ hasError: false, error: null }); window.location.reload(); };
+    const t = localStorage.getItem("fb-theme") || "Nocturne";
+    const EB = t === "Light"
+      ? { bg: "#f4f2ee", text: "#1a1a1a", muted: "#6b7280", accent: "#4f6f52", accentText: "#ffffff" }
+      : t === "Distilled"
+      ? { bg: "#131315", text: "#e4e2e4", muted: "#8a8a9a", accent: "#aac7ff", accentText: "#003064" }
+      : { bg: "#121416", text: "#f1f1f1", muted: "#c2c8bf", accent: "#accfae", accentText: "#03210b" };
     return (
       <div style={{
         flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
         justifyContent: "center", padding: 32, textAlign: "center",
-        background: "#121416", minHeight: "100dvh", color: "#f1f1f1",
+        background: EB.bg, minHeight: "100dvh", color: EB.text,
       }}>
         <div style={{ fontSize: 36, marginBottom: 16 }}>⚠️</div>
-        <div style={{ fontSize: 18, fontWeight: 600, color: "#f1f1f1", marginBottom: 8 }}>
+        <div style={{ fontSize: 18, fontWeight: 600, color: EB.text, marginBottom: 8 }}>
           Something went wrong
         </div>
-        <div style={{ fontSize: 13, color: "#c2c8bf", maxWidth: 320, lineHeight: 1.6, marginBottom: 24 }}>
+        <div style={{ fontSize: 13, color: EB.muted, maxWidth: 320, lineHeight: 1.6, marginBottom: 24 }}>
           {this.state.error?.message || "An unexpected error occurred."}
         </div>
         <button onClick={reload} style={{
-          background: "#accfae", color: "#03210b", border: "none", borderRadius: 6,
+          background: EB.accent, color: EB.accentText, border: "none", borderRadius: 6,
           padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer",
           fontFamily: "inherit",
         }}>Reload app</button>
         {this.props.onReset && (
           <button onClick={this.props.onReset} style={{
-            background: "transparent", color: "#c2c8bf", border: "none",
+            background: "transparent", color: EB.muted, border: "none",
             fontSize: 12, cursor: "pointer", marginTop: 10, fontFamily: "inherit",
           }}>Try without reloading</button>
         )}

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.55] — 2026-03-30
+
+- [Polish] Fixed ErrorBoundary crash screen hardcoded to Nocturne colors — reads theme from localStorage at render time so Light and Distilled users see correct background, text, and accent colors on error
+
 ## [1.46.54] — 2026-03-30
 
 - [Feature] Added "Untagged" bucket to CardsPage — highlights saved without a theme tag were invisible; now appear as a dedicated bucket so no highlight is ever lost

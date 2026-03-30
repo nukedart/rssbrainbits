@@ -45,6 +45,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.52 | Feature | Readwise-style review — fixed passage field bug, 5-card daily limit, swipe gestures, tags + annotation on card, natural button labels | `ReviewPage.jsx:1-230` | — |
 | 2026-03-30 | v1.46.53 | Polish | Fixed 7 hardcoded colors from /polish audit — FolderModal, Sidebar, DigestModal, SecondaryPages, AnalyticsPage now use T.danger/T.accentText | `FolderModal.jsx:97, Sidebar.jsx:488,532, DigestModal.jsx:71, SecondaryPages.jsx:599,1296,1404, AnalyticsPage.jsx:316` | — |
 | 2026-03-30 | v1.46.54 | Feature | Added "Untagged" bucket to CardsPage — highlights without theme tags were invisible; now browsable in a dedicated bucket | `CardsPage.jsx:38,50,61,115-160` | — |
+| 2026-03-30 | v1.46.55 | Polish | Fixed ErrorBoundary crash screen hardcoded to Nocturne — reads localStorage theme at render time; Light + Distilled users now see correct colors | `UI.jsx:113-138` | — |
 
 ---
 
