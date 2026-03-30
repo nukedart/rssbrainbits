@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.62] — 2026-03-30
+
+- [Polish] Added aria-label to ActionBtn in FeedItem — icon-only article action buttons (star, clock, read, external) now have proper accessible names for screen readers
+
 ## [1.46.61] — 2026-03-30
 
 - [Perf] Removed HomePage from bundle — 32KB dead chunk eliminated; page had no nav entry since v1.46.34 and is unreachable; default route now falls to InboxPage

@@ -63,7 +63,7 @@ function ActionBtn({ icon, title, onClick, T, color }) {
     onClick?.(e);
   }
   return (
-    <button onClick={handleClick} title={title} style={{
+    <button onClick={handleClick} title={title} aria-label={title} style={{
       background: "transparent", border: "none", borderRadius: 7,
       width: 28, height: 28,
       cursor: "pointer",
