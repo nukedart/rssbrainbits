@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.64] — 2026-03-30
+
+- [Fix] isRSSUrl now matches query-param feed URLs like `?rss=1`, `?format=rss`, `?type=rss` — fixes Slickdeals and similar feeds being misdetected as articles
+
 ## [1.46.63] — 2026-03-30
 
 - [Feature] Cards inline editing — click any annotation to edit it in place; tags get × remove buttons and an inline "+ tag" input; all changes saved optimistically to Supabase

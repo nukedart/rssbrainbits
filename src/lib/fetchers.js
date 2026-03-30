@@ -559,7 +559,8 @@ export function isPodcastUrl(url) {
 
 export function isRSSUrl(url) {
   return url.includes("/feed") || url.includes("/rss") || url.includes(".xml") ||
-    url.includes("atom") || url.endsWith("/feed/") || url.includes("feedburner");
+    url.includes("atom") || url.endsWith("/feed/") || url.includes("feedburner") ||
+    url.includes("rss=1") || url.includes("format=rss") || url.includes("type=rss");
 }
 
 // ── X / Twitter ───────────────────────────────────────────────
