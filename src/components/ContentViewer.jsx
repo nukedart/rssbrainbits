@@ -3,7 +3,7 @@ import { useSwipe } from "../hooks/useSwipe.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { Button, Spinner } from "./UI";
-import { fetchArticleContent, summarizeContent, suggestTags, parseYouTubeUrl, fetchYouTubeTranscript } from "../lib/fetchers";
+import { fetchArticleContent, summarizeContent, suggestTags, askQuestion, parseYouTubeUrl, fetchYouTubeTranscript } from "../lib/fetchers";
 import SelectionToolbar, { HIGHLIGHT_COLORS } from "./SelectionToolbar";
 import NotePanel from "./NotePanel";
 import HighlightsDrawer from "./HighlightsDrawer";
@@ -622,7 +622,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             }}>
 
               {/* AI Summarize */}
-              <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} />
+              <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} bodyText={content?.bodyText} articleTitle={content?.title || item?.title} />
 
               {content.description && (
                 <p style={{ fontSize: 16, color: T.textSecondary, lineHeight: 1.7, margin: "0 0 28px", fontStyle: "italic" }}>
@@ -828,7 +828,21 @@ const SparkleIcon = ({ size = 13, style }) => (
   </svg>
 );
 
-function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypoints", onStyleChange, T }) {
+function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypoints", onStyleChange, T, bodyText, articleTitle }) {
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState(null);
+  const [asking, setAsking] = useState(false);
+
+  async function handleAsk() {
+    if (!question.trim() || !bodyText) return;
+    setAsking(true); setAnswer(null);
+    try {
+      const a = await askQuestion(bodyText, articleTitle || "", question.trim());
+      setAnswer(a);
+    } catch { setAnswer("Couldn't get an answer. Check your AI key in Settings."); }
+    finally { setAsking(false); }
+  }
+
   // ── Post-summary: result card with format switcher at bottom ──
   if (summary || summarizing) {
     const bullets = (summary || "")
@@ -897,6 +911,42 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
                 {s.label}
               </button>
             ))}
+          </div>
+        )}
+
+        {/* Ask a question — only when summary exists and bodyText available */}
+        {!summarizing && bodyText && (
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${T.border}` }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                value={question}
+                onChange={e => setQuestion(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && !asking && handleAsk()}
+                placeholder="Ask about this article…"
+                style={{
+                  flex: 1, fontSize: 13, padding: "7px 12px", borderRadius: 8,
+                  border: `1px solid ${T.border}`, background: T.bg, color: T.text,
+                  fontFamily: "inherit", outline: "none",
+                }}
+              />
+              <button
+                onClick={handleAsk}
+                disabled={asking || !question.trim()}
+                style={{
+                  padding: "7px 14px", borderRadius: 8, border: "none",
+                  background: T.accent, color: T.accentText,
+                  fontSize: 12, fontWeight: 600, fontFamily: "inherit",
+                  cursor: asking || !question.trim() ? "default" : "pointer",
+                  opacity: asking || !question.trim() ? 0.5 : 1,
+                  flexShrink: 0,
+                }}
+              >{asking ? "…" : "Ask"}</button>
+            </div>
+            {answer && (
+              <div style={{ marginTop: 10, fontSize: 13, color: T.text, lineHeight: 1.65, padding: "10px 12px", background: T.surface2 || T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
+                {answer}
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.45] — 2026-03-30
+
+- [Feature] "Ask about this article" Q&A in the AI Summary card — after summarizing, users can type any question and get a concise AI answer without leaving the reader
+
 ## [1.46.44] — 2026-03-29
 
 - [Perf] Non-blocking Google Fonts load — changed from render-blocking `<link rel="stylesheet">` to `rel="preload"` + onload swap; eliminates the ~773ms render-blocking penalty Lighthouse flagged, improving FCP and LCP

@@ -829,6 +829,34 @@ export async function summarizeContent(text, title, style = "keypoints") {
   }
 }
 
+export async function askQuestion(text, title, question) {
+  const provider = await resolveAiProvider();
+  const body = `Answer this question about the article concisely (2–4 sentences). Question: "${question}"\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 6000)}`;
+
+  if (provider === "openai") {
+    const key = import.meta.env.VITE_OPENAI_KEY || getOpenAIKey();
+    if (!key) throw new Error("No OpenAI key");
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
+      body: JSON.stringify({ model: "gpt-4o-mini", max_tokens: 200, messages: [{ role: "user", content: body }] }),
+    });
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || "No answer found.";
+  }
+
+  // Anthropic
+  const key = import.meta.env.VITE_ANTHROPIC_API_KEY || getAnthropicKey();
+  if (!key) throw new Error("No Anthropic key");
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+    body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 200, messages: [{ role: "user", content: body }] }),
+  });
+  const data = await res.json();
+  return data.content?.[0]?.text || "No answer found.";
+}
+
 const TAG_PROMPT = `Suggest 3–5 concise tags for this article. Tags must be lowercase, 1–3 words, specific topics (not generic words like "article" or "news"). Return ONLY a comma-separated list of tags, nothing else.`;
 
 export async function suggestTags(text, title) {
