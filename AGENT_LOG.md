@@ -62,6 +62,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.68 | Perf | Lazy-load LoginPage — removed from eager main bundle; authenticated users never load this chunk | `App.jsx:7,17,186` | — |
 | 2026-03-30 | v1.46.70 | Perf | Add canonical link to index.html — fixes Lighthouse SEO score 0.91 → 1.0 | `index.html:23` | — |
 | 2026-03-30 | v1.46.71 | Perf | Lazy-load PWAInstallBanner — removed from eager main bundle; only loads on beforeinstallprompt | `App.jsx:7,32,326` | — |
+| 2026-03-30 | v1.46.72 | UX | Remove borderBottom from skeleton rows — skeleton now matches real feed items (no dividers), eliminates border flash on load | `InboxPage.jsx:1160,1195` | — |
 
 ---
 

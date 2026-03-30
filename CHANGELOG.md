@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.72] — 2026-03-30
+
+- [UX] Remove borderBottom from skeleton loading rows — skeletons now match the no-divider treatment of real feed items, eliminating the border flash on content load
+
 ## [1.46.71] — 2026-03-30
 
 - [Perf] Lazy-load PWAInstallBanner — removes it from the eager main bundle; it fires only on `beforeinstallprompt`, so most users never trigger it

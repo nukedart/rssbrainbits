@@ -1157,7 +1157,7 @@ function SkeletonRow({ delay = 0, T }) {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 12,
-      padding: "10px 16px", borderBottom: `1px solid ${T.border}`,
+      padding: "10px 16px",
       opacity: 0, animation: `fadeIn .3s ease ${delay}ms forwards`,
     }}>
       <div style={{ width: 20, height: 20, borderRadius: 4, background: T.surface2, animation: "shimmer 1.4s infinite", flexShrink: 0 }} />
@@ -1192,7 +1192,7 @@ function SkeletonList({ count = 8, cardSize = "md", viewMode = "list" }) {
   return (
     <div>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: cardSize === "lg" ? "14px 18px" : "10px 16px", borderBottom: `1px solid ${T.border}`, animation: `fadeIn .25s ease both`, animationDelay: `${i * 40}ms` }}>
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: cardSize === "lg" ? "14px 18px" : "10px 16px", animation: `fadeIn .25s ease both`, animationDelay: `${i * 40}ms` }}>
           <div className="skeleton" style={{ width: cardSize === "lg" ? 96 : 60, height: cardSize === "lg" ? 64 : 44, borderRadius: 7, flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="skeleton" style={{ height: 13, width: `${60 + (i % 3) * 15}%`, marginBottom: 7 }} />
