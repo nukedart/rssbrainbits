@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.51] — 2026-03-30
+
+- [Fix] Highlight toolbar now uses `position: fixed` — was `absolute` which caused it to appear far below the selected text after scrolling, since the reader has its own scroll container (window.scrollY is always 0)
+
 ## [1.46.50] — 2026-03-30
 
 ### Changes since v1.46.49

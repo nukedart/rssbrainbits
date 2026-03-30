@@ -28,7 +28,7 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
         const range = selection.getRangeAt(0);
         if (!containerRef.current?.contains(range.commonAncestorContainer)) { setToolbar(null); return; }
         const rect = range.getBoundingClientRect();
-        setToolbar({ x: rect.left + rect.width / 2, y: rect.top + window.scrollY, selectedText: text, range: range.cloneRange() });
+        setToolbar({ x: rect.left + rect.width / 2, y: rect.top, selectedText: text, range: range.cloneRange() });
       }, 10);
     }
 
@@ -59,7 +59,7 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
 
   return (
     <div ref={toolbarRef} style={{
-      position: "absolute", left, top: toolbar.y - 56,
+      position: "fixed", left, top: toolbar.y - 56,
       width: TOOLBAR_W, background: T.card, border: `1px solid ${T.border}`,
       borderRadius: 12, boxShadow: "0 4px 20px rgba(0,0,0,.15)",
       display: "flex", alignItems: "center", justifyContent: "center",
