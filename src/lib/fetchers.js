@@ -153,7 +153,7 @@ async function fetchViaRss2Json(feedUrl) {
 
   return {
     title: json.feed?.title || new URL(feedUrl).hostname,
-    items: (json.items || []).slice(0, 80).map(item => {
+    items: (json.items || []).slice(0, getFeedLimit()).map(item => {
       // rss2json returns thumbnail separately; also try to extract from content
       const image = item.thumbnail && !item.thumbnail.includes("1x1")
         ? item.thumbnail
@@ -187,6 +187,10 @@ function extractImageFromText(html) {
   return src;
 }
 
+export function getFeedLimit() {
+  return parseInt(localStorage.getItem("fb-feed-limit") || "20", 10);
+}
+
 function parseRSS(xmlText, sourceUrl) {
   const parser = new DOMParser();
   const doc    = parser.parseFromString(xmlText, "text/xml");
@@ -199,7 +203,7 @@ function parseRSS(xmlText, sourceUrl) {
 
   return {
     title: feedTitle,
-    items: items.slice(0, 80).map((item) => parseRSSItem(item, isAtom)),
+    items: items.slice(0, getFeedLimit()).map((item) => parseRSSItem(item, isAtom)),
   };
 }
 

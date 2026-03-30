@@ -736,6 +736,23 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Articles are marked read when scrolled past in the list</div>
             </div>
           </label>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: T.text }}>Articles per feed</div>
+              <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Max items loaded from each feed</div>
+            </div>
+            <select
+              defaultValue={localStorage.getItem("fb-feed-limit") || "20"}
+              onChange={e => localStorage.setItem("fb-feed-limit", e.target.value)}
+              style={{
+                fontSize: 13, padding: "5px 10px", borderRadius: 8,
+                border: `1px solid ${T.border}`, background: T.surface,
+                color: T.text, fontFamily: "inherit", cursor: "pointer",
+              }}
+            >
+              {["10", "20", "50"].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
         </Card>
 
         {/* Reading Stats */}

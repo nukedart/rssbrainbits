@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.65] — 2026-03-30
+
+- [Feature] Articles-per-feed limit — default reduced to 20 (was 80), user-configurable to 10/20/50 in Settings → Reading; faster feeds, less noise
+
 ## [1.46.64] — 2026-03-30
 
 - [Fix] isRSSUrl now matches query-param feed URLs like `?rss=1`, `?format=rss`, `?type=rss` — fixes Slickdeals and similar feeds being misdetected as articles

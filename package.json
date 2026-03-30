@@ -1,6 +1,6 @@
 {
   "name": "feedbox",
-  "version": "1.46.64",
+  "version": "1.46.65",
   "private": true,
   "type": "module",
   "scripts": {
