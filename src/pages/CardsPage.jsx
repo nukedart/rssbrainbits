@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { Spinner } from "../components/UI";
-import { getAllHighlights } from "../lib/supabase";
+import { getAllHighlights, updateHighlightNote, updateHighlightTags } from "../lib/supabase";
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 
 export default function CardsPage() {
@@ -14,6 +14,31 @@ export default function CardsPage() {
   const [highlights, setHighlights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState(null);
+  const [editingId, setEditingId] = useState(null);   // which card's note is open
+  const [editNote, setEditNote] = useState("");
+  const [tagInputs, setTagInputs] = useState({});     // highlightId → draft tag string
+
+  async function saveNote(h) {
+    const note = editNote.trim();
+    setHighlights(prev => prev.map(x => x.id === h.id ? { ...x, note } : x));
+    setEditingId(null);
+    try { await updateHighlightNote(h.id, note); } catch {}
+  }
+
+  async function removeTag(h, tag) {
+    const tags = (h.tags || []).filter(t => t !== tag);
+    setHighlights(prev => prev.map(x => x.id === h.id ? { ...x, tags } : x));
+    try { await updateHighlightTags(h.id, tags); } catch {}
+  }
+
+  async function commitTag(h) {
+    const raw = (tagInputs[h.id] || "").trim().toLowerCase();
+    if (!raw) return;
+    const tags = [...new Set([...(h.tags || []), raw])];
+    setHighlights(prev => prev.map(x => x.id === h.id ? { ...x, tags } : x));
+    setTagInputs(prev => ({ ...prev, [h.id]: "" }));
+    try { await updateHighlightTags(h.id, tags); } catch {}
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -70,33 +95,88 @@ export default function CardsPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {cards.map(h => {
               const col = HIGHLIGHT_COLORS.find(c => c.id === h.color) || HIGHLIGHT_COLORS[0];
-              const otherTags = (h.tags || []).filter(t => t !== selectedTheme);
+              const allTags = h.tags || [];
+              const isEditing = editingId === h.id;
               return (
                 <div key={h.id} style={{
-                  background: T.card, borderRadius: 12, border: `1px solid ${T.border}`,
+                  background: T.card, borderRadius: 12,
+                  border: `1px solid ${isEditing ? T.accent : T.border}`,
                   overflow: "hidden", display: "flex",
+                  transition: "border-color .15s",
                 }}>
                   <div style={{ width: 4, background: col.border, flexShrink: 0 }} />
                   <div style={{ padding: "14px 16px", flex: 1 }}>
-                    <div style={{ fontSize: 14, color: T.text, lineHeight: 1.65, fontStyle: "italic", marginBottom: h.note ? 8 : 6 }}>
+                    {/* Passage — always read-only */}
+                    <div style={{ fontSize: 14, color: T.text, lineHeight: 1.65, fontStyle: "italic", marginBottom: 8 }}>
                       "{h.passage}"
                     </div>
-                    {h.note && (
-                      <div style={{ fontSize: 12, color: T.textSecondary, background: T.surface, borderRadius: 8, padding: "7px 10px", marginBottom: 8, lineHeight: 1.5 }}>
-                        {h.note}
+
+                    {/* Note — click to edit */}
+                    {isEditing ? (
+                      <textarea
+                        autoFocus
+                        value={editNote}
+                        onChange={e => setEditNote(e.target.value)}
+                        onBlur={() => saveNote(h)}
+                        onKeyDown={e => { if (e.key === "Escape") { setEditingId(null); } }}
+                        placeholder="Your annotation…"
+                        style={{
+                          width: "100%", boxSizing: "border-box", fontSize: 12, color: T.text,
+                          background: T.surface, border: `1px solid ${T.accent}`, borderRadius: 8,
+                          padding: "7px 10px", marginBottom: 8, lineHeight: 1.5, resize: "vertical",
+                          fontFamily: "inherit", outline: "none", minHeight: 60,
+                        }}
+                      />
+                    ) : (
+                      <div
+                        onClick={() => { setEditingId(h.id); setEditNote(h.note || ""); }}
+                        title="Click to edit annotation"
+                        style={{
+                          fontSize: 12, borderRadius: 8, padding: "7px 10px", marginBottom: 8,
+                          lineHeight: 1.5, cursor: "text", minHeight: 34,
+                          color: h.note ? T.textSecondary : T.textTertiary,
+                          background: h.note ? T.surface : "transparent",
+                          border: `1px dashed ${h.note ? "transparent" : T.border}`,
+                          fontStyle: h.note ? "normal" : "italic",
+                        }}
+                      >
+                        {h.note || "Add an annotation…"}
                       </div>
                     )}
-                    <div style={{ fontSize: 11, color: T.textTertiary }}>{h.article_title || "Untitled"}</div>
-                    {otherTags.length > 0 && (
-                      <div style={{ display: "flex", gap: 4, marginTop: 8, flexWrap: "wrap" }}>
-                        {otherTags.map(t => (
-                          <span key={t} onClick={() => setSelectedTheme(t)} style={{
-                            fontSize: 10, padding: "2px 8px", borderRadius: 20, cursor: "pointer",
-                            background: T.accentSurface, color: T.accent, border: `1px solid ${T.accent}44`,
-                          }}>{t}</span>
-                        ))}
-                      </div>
-                    )}
+
+                    {/* Source */}
+                    <div style={{ fontSize: 11, color: T.textTertiary, marginBottom: allTags.length ? 8 : 0 }}>
+                      {h.article_title || "Untitled"}
+                    </div>
+
+                    {/* Tags — always editable */}
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+                      {allTags.map(t => (
+                        <span key={t} style={{
+                          display: "inline-flex", alignItems: "center", gap: 3,
+                          fontSize: 10, padding: "2px 6px 2px 8px", borderRadius: 20,
+                          background: T.accentSurface, color: T.accent, border: `1px solid ${T.accent}44`,
+                        }}>
+                          <span onClick={() => setSelectedTheme(t)} style={{ cursor: "pointer" }}>{t}</span>
+                          <button onClick={() => removeTag(h, t)} style={{
+                            background: "none", border: "none", cursor: "pointer", color: T.accent,
+                            fontSize: 11, lineHeight: 1, padding: "0 1px", fontFamily: "inherit",
+                          }} aria-label={`Remove tag ${t}`}>×</button>
+                        </span>
+                      ))}
+                      <input
+                        value={tagInputs[h.id] || ""}
+                        onChange={e => setTagInputs(prev => ({ ...prev, [h.id]: e.target.value }))}
+                        onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); commitTag(h); } }}
+                        onBlur={() => commitTag(h)}
+                        placeholder="+ tag"
+                        style={{
+                          fontSize: 10, padding: "2px 6px", borderRadius: 20, border: `1px dashed ${T.border}`,
+                          background: "transparent", color: T.textTertiary, fontFamily: "inherit",
+                          outline: "none", width: 44, minWidth: 0,
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               );

@@ -53,6 +53,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.60 | Fix | Added missing UPDATE RLS policy on feeds table — folder assignment/renaming/settings all silently blocked | `supabase-schema.sql:79` | — |
 | 2026-03-30 | v1.46.61 | Perf | Removed HomePage from bundle — 32KB dead chunk; unreachable since v1.46.34; default route → InboxPage | `App.jsx:18,217,229` | — |
 | 2026-03-30 | v1.46.62 | Polish | Added aria-label to ActionBtn — icon-only article action buttons now have proper accessible names | `FeedItem.jsx:66` | — |
+| 2026-03-30 | v1.46.63 | Feature | Cards inline editing — click annotation to edit in place, × to remove tags, inline input to add tags | `CardsPage.jsx:17-41,99-179` | — |
 
 ---
 

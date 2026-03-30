@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.63] — 2026-03-30
+
+- [Feature] Cards inline editing — click any annotation to edit it in place; tags get × remove buttons and an inline "+ tag" input; all changes saved optimistically to Supabase
+
 ## [1.46.62] — 2026-03-30
 
 - [Polish] Added aria-label to ActionBtn in FeedItem — icon-only article action buttons (star, clock, read, external) now have proper accessible names for screen readers
