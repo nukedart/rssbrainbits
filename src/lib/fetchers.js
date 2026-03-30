@@ -1,7 +1,7 @@
 // ── Content fetchers ──────────────────────────────────────────
 import { Readability } from "@mozilla/readability";
 import { getCachedFeed, setCachedFeed } from "./feedCache.js";
-import { getAnthropicKey, getOpenAIKey, getAiProvider, setAiProvider } from "./apiKeys.js";
+import { getAiProvider } from "./apiKeys.js";
 
 // Own Cloudflare Worker proxy — fast, free, private, no rate limits.
 // Set VITE_PROXY_URL in .env.local and GitHub secrets after deploying.
@@ -697,198 +697,46 @@ const WORKER_BASE = import.meta.env.VITE_PROXY_URL || null;
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || null;
 
 // Cache the active provider per page load.
-// Source of truth is Supabase app_config; localStorage is the fallback.
-let _providerCache = null;
-async function resolveAiProvider() {
-  if (_providerCache) return _providerCache;
-  try {
-    const { supabase } = await import("./supabase.js");
-    const { data } = await supabase
-      .from("app_config")
-      .select("value")
-      .eq("key", "ai_provider")
-      .maybeSingle();
-    if (data?.value) {
-      _providerCache = data.value;
-      setAiProvider(data.value); // keep localStorage in sync
-      return _providerCache;
-    }
-  } catch {
-    // Not authenticated or table doesn't exist yet — fall through
-  }
-  _providerCache = getAiProvider();
-  return _providerCache;
-}
-
-const SUMMARY_PROMPTS = {
-  keypoints: `Summarize the following article in 3–5 clear bullet points capturing the key ideas and facts. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
-  brief: `Give a 1–2 sentence TL;DR of the following article. Write in plain text only — no markdown, no formatting.`,
-  actions: `Extract 3–5 concrete action items or takeaways from the following article — things the reader should do, consider, or remember. Write in plain text only. Each item must start with "•" and be a direct, actionable sentence starting with a verb.`,
-};
-
 export async function summarizeContent(text, title, style = "keypoints") {
-  const prompt = SUMMARY_PROMPTS[style] || SUMMARY_PROMPTS.keypoints;
-  const provider = await resolveAiProvider(); // 'anthropic' | 'openai'
-  const payload = { text: text.slice(0, 6000), title: title || "Untitled", style, provider };
-
-  // ── Tier 1: Cloudflare Worker (API key stored as Worker secret) ──
-  if (WORKER_BASE) {
-    try {
-      const res = await fetch(`${WORKER_BASE}/summarize`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.summary) return data.summary;
-      }
-    } catch {
-      // Worker unreachable — fall through
-    }
-  }
-
-  // ── Tier 2: Supabase Edge Function (authenticated) ──────────────
-  if (SUPABASE_URL) {
-    try {
-      const { supabase } = await import("./supabase.js");
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/summarize`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify(payload),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.summary) return data.summary;
-        }
-      }
-    } catch {
-      // Edge function unreachable — fall through
-    }
-  }
-
-  // ── Tier 3: Direct browser call — branches on active provider ──
-  if (provider === "openai") {
-    const key = import.meta.env.VITE_OPENAI_KEY || getOpenAIKey();
-    if (!key) return "AI summarization is temporarily unavailable. Please try again later.";
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${key}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          max_tokens: style === "actions" ? 1000 : 800,
-          messages: [
-            { role: "system", content: "You are a reading assistant." },
-            { role: "user", content: `${prompt}\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 6000)}` },
-          ],
-        }),
-      });
-      const data = await response.json();
-      return data.choices?.[0]?.message?.content || "Could not generate summary.";
-    } catch (err) {
-      console.error("Summarization error (OpenAI):", err);
-      return "Summarization failed. Please try again.";
-    }
-  }
-
-  // Anthropic (default)
-  const key = import.meta.env.VITE_ANTHROPIC_KEY || getAnthropicKey();
-  if (!key) return "AI summarization is temporarily unavailable. Please try again later.";
+  if (!WORKER_BASE) return "AI features require the Cloudflare Worker — set VITE_PROXY_URL.";
+  const provider = getAiProvider();
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch(`${WORKER_BASE}/summarize`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": key,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: style === "actions" ? 1000 : 800,
-        messages: [{
-          role: "user",
-          content: `You are a reading assistant. ${prompt}\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 6000)}`,
-        }],
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text.slice(0, 6000), title: title || "Untitled", style, provider }),
     });
-    const data = await response.json();
-    return data.content?.[0]?.text || "Could not generate summary.";
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    return data.summary || "Could not generate summary.";
   } catch (err) {
-    console.error("Summarization error (Anthropic):", err);
+    console.error("Summarization error:", err);
     return "Summarization failed. Please try again.";
   }
 }
 
 export async function askQuestion(text, title, question) {
-  const provider = await resolveAiProvider();
-  const body = `Answer this question about the article concisely (2–4 sentences). Question: "${question}"\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 6000)}`;
-
-  if (provider === "openai") {
-    const key = import.meta.env.VITE_OPENAI_KEY || getOpenAIKey();
-    if (!key) throw new Error("No OpenAI key");
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
-      body: JSON.stringify({ model: "gpt-4o-mini", max_tokens: 200, messages: [{ role: "user", content: body }] }),
-    });
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || "No answer found.";
-  }
-
-  // Anthropic
-  const key = import.meta.env.VITE_ANTHROPIC_API_KEY || getAnthropicKey();
-  if (!key) throw new Error("No Anthropic key");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  if (!WORKER_BASE) throw new Error("AI features require the Cloudflare Worker — set VITE_PROXY_URL.");
+  const res = await fetch(`${WORKER_BASE}/ask`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-    body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 200, messages: [{ role: "user", content: body }] }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: text.slice(0, 6000), title: title || "Untitled", question }),
   });
+  if (!res.ok) throw new Error(await res.text());
   const data = await res.json();
-  return data.content?.[0]?.text || "No answer found.";
+  return data.answer || "No answer found.";
 }
 
-const TAG_PROMPT = `Suggest 3–5 concise tags for this article. Tags must be lowercase, 1–3 words, specific topics (not generic words like "article" or "news"). Return ONLY a comma-separated list of tags, nothing else.`;
-
 export async function suggestTags(text, title) {
-  const provider = await resolveAiProvider();
-  const body = `${TAG_PROMPT}\n\nTitle: "${title}"\n\nArticle:\n${text.slice(0, 2000)}`;
-
-  const parse = (raw) =>
-    (raw || "").split(",").map(t => t.trim().toLowerCase().replace(/^["'\s]+|["'\s]+$/g, "")).filter(t => t.length > 1 && t.length < 40).slice(0, 5);
-
-  if (provider === "openai") {
-    const key = import.meta.env.VITE_OPENAI_KEY || getOpenAIKey();
-    if (!key) return [];
-    try {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
-        body: JSON.stringify({ model: "gpt-4o-mini", max_tokens: 60, messages: [{ role: "user", content: body }] }),
-      });
-      const data = await res.json();
-      return parse(data.choices?.[0]?.message?.content);
-    } catch { return []; }
-  }
-
-  const key = import.meta.env.VITE_ANTHROPIC_KEY || getAnthropicKey();
-  if (!key) return [];
+  if (!WORKER_BASE) return [];
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch(`${WORKER_BASE}/tags`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 60, messages: [{ role: "user", content: body }] }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text.slice(0, 2000), title: title || "Untitled" }),
     });
+    if (!res.ok) return [];
     const data = await res.json();
-    return parse(data.content?.[0]?.text);
+    return (data.tags || []).slice(0, 5);
   } catch { return []; }
 }

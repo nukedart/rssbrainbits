@@ -15,7 +15,6 @@ import { feedsToOPML, downloadFile } from "../lib/exportUtils";
 import { getCachedFeed, cacheAge, invalidateCachedFeed } from "../lib/feedCache";
 import { getPlan, getPlanName, PLANS } from "../lib/plan";
 import { track } from "../lib/analytics";
-import { getAnthropicKey, setAnthropicKey, getOpenAIKey, setOpenAIKey } from "../lib/apiKeys";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -737,31 +736,6 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Articles are marked read when scrolled past in the list</div>
             </div>
           </label>
-        </Card>
-
-        {/* AI Integration */}
-        <Card title="AI Integration" T={T}>
-          <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 12, lineHeight: 1.6 }}>
-            Add a personal fallback API key — used only if the app's built-in summarization is unavailable. Stored locally in your browser only.
-          </div>
-          <ApiKeyInput
-            label="Anthropic API Key"
-            placeholder="sk-ant-api03-…"
-            hint="Personal fallback for Claude Haiku. Stored in browser only."
-            getValue={getAnthropicKey}
-            setValue={setAnthropicKey}
-            T={T}
-          />
-          <div style={{ marginTop: 10 }}>
-            <ApiKeyInput
-              label="OpenAI API Key"
-              placeholder="sk-…"
-              hint="Personal fallback for GPT-4o-mini. Stored in browser only."
-              getValue={getOpenAIKey}
-              setValue={setOpenAIKey}
-              T={T}
-            />
-          </div>
         </Card>
 
         {/* Reading Stats */}
@@ -1709,58 +1683,6 @@ function DataPrivacyCard({ T, user }) {
         </div>
       </div>
     </Card>
-  );
-}
-
-function ApiKeyInput({ label, placeholder, hint, getValue, setValue, T }) {
-  const [value, setLocalValue] = useState(() => getValue());
-  const [saved, setSaved]      = useState(false);
-  const [show, setShow]        = useState(false);
-
-  function handleSave() {
-    setValue(value);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
-
-  const displayValue = show ? value : value ? value.slice(0, 8) + "•".repeat(Math.max(0, value.length - 8)) : "";
-
-  return (
-    <div>
-      <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 6 }}>{label}</div>
-      <div style={{ display: "flex", gap: 6 }}>
-        <div style={{ flex: 1, position: "relative" }}>
-          <input
-            type={show ? "text" : "password"}
-            value={value}
-            onChange={e => { setLocalValue(e.target.value); setSaved(false); }}
-            placeholder={placeholder}
-            style={{
-              width: "100%", boxSizing: "border-box",
-              background: T.surface, border: `1px solid ${T.border}`,
-              borderRadius: 9, padding: "8px 36px 8px 12px",
-              fontSize: 13, color: T.text, fontFamily: "monospace", outline: "none",
-            }}
-            onFocus={e => { e.target.style.borderColor = T.accent; }}
-            onBlur={e => { e.target.style.borderColor = T.border; }}
-            onKeyDown={e => { if (e.key === "Enter") handleSave(); }}
-          />
-          <button onClick={() => setShow(v => !v)} style={{
-            position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-            background: "none", border: "none", cursor: "pointer",
-            color: T.textTertiary, fontSize: 14, padding: 2,
-          }}>{show ? "🙈" : "👁"}</button>
-        </div>
-        <button onClick={handleSave} style={{
-          background: saved ? T.green?.bg || T.accentSurface : T.accent,
-          border: "none", borderRadius: 9, padding: "8px 14px",
-          cursor: "pointer", fontSize: 12, fontWeight: 700,
-          color: saved ? T.green?.text || T.accentText : T.accentText, fontFamily: "inherit",
-          flexShrink: 0, transition: "all .2s",
-        }}>{saved ? "✓ Saved" : "Save"}</button>
-      </div>
-      <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 5 }}>{hint}</div>
-    </div>
   );
 }
 

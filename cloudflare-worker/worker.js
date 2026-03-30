@@ -42,6 +42,16 @@ export default {
       return handleSummarize(request, env, origin);
     }
 
+    // ── Route: POST /ask ────────────────────────────────────
+    if (request.method === "POST" && url.pathname === "/ask") {
+      return handleAsk(request, env, origin);
+    }
+
+    // ── Route: POST /tags ───────────────────────────────────
+    if (request.method === "POST" && url.pathname === "/tags") {
+      return handleTags(request, env, origin);
+    }
+
     // ── Route: GET ?url= (CORS proxy) ───────────────────────
     if (request.method === "GET") {
       return handleProxy(request, env, origin, url);
@@ -183,6 +193,68 @@ async function handleOpenAISummarize(env, origin, headers, text, title, style) {
       JSON.stringify({ error: `OpenAI summarization failed: ${err.message}` }),
       { status: 502, headers: { ...headers, "Content-Type": "application/json" } }
     );
+  }
+}
+
+// ── Ask a question about an article ───────────────────────────
+async function handleAsk(request, env, origin) {
+  const headers = corsHeaders(origin);
+  let body;
+  try { body = await request.json(); } catch {
+    return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: { ...headers, "Content-Type": "application/json" } });
+  }
+  const { text, title, question } = body;
+  if (!text || !question) {
+    return new Response(JSON.stringify({ error: "Missing 'text' or 'question'" }), { status: 400, headers: { ...headers, "Content-Type": "application/json" } });
+  }
+  if (!env.ANTHROPIC_API_KEY) {
+    return new Response(JSON.stringify({ error: "ANTHROPIC_API_KEY not configured on worker" }), { status: 500, headers: { ...headers, "Content-Type": "application/json" } });
+  }
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 300,
+        messages: [{ role: "user", content: `Answer this question about the article concisely (2–4 sentences). Question: "${question}"\n\nTitle: "${title || "Untitled"}"\n\nArticle:\n${text.slice(0, 6000)}` }],
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) return new Response(JSON.stringify({ error: data.error?.message || "Anthropic error" }), { status: 502, headers: { ...headers, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ answer: data.content?.[0]?.text || "No answer found." }), { status: 200, headers: { ...headers, "Content-Type": "application/json", "Cache-Control": "no-store" } });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: `Ask failed: ${err.message}` }), { status: 502, headers: { ...headers, "Content-Type": "application/json" } });
+  }
+}
+
+// ── Suggest tags for an article ────────────────────────────────
+async function handleTags(request, env, origin) {
+  const headers = corsHeaders(origin);
+  let body;
+  try { body = await request.json(); } catch {
+    return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: { ...headers, "Content-Type": "application/json" } });
+  }
+  const { text, title } = body;
+  if (!text) return new Response(JSON.stringify({ tags: [] }), { status: 200, headers: { ...headers, "Content-Type": "application/json" } });
+  if (!env.ANTHROPIC_API_KEY) return new Response(JSON.stringify({ tags: [] }), { status: 200, headers: { ...headers, "Content-Type": "application/json" } });
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 60,
+        messages: [{ role: "user", content: `Suggest 3–5 concise tags for this article. Tags must be lowercase, 1–3 words, specific topics. Return ONLY a comma-separated list of tags, nothing else.\n\nTitle: "${title || ""}"\n\nArticle:\n${text.slice(0, 2000)}` }],
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) return new Response(JSON.stringify({ tags: [] }), { status: 200, headers: { ...headers, "Content-Type": "application/json" } });
+    const raw = data.content?.[0]?.text || "";
+    const tags = raw.split(",").map(t => t.trim().toLowerCase().replace(/^["'\s]+|["'\s]+$/g, "")).filter(t => t.length > 1 && t.length < 40).slice(0, 5);
+    return new Response(JSON.stringify({ tags }), { status: 200, headers: { ...headers, "Content-Type": "application/json", "Cache-Control": "no-store" } });
+  } catch {
+    return new Response(JSON.stringify({ tags: [] }), { status: 200, headers: { ...headers, "Content-Type": "application/json" } });
   }
 }
 
