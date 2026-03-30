@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.52] — 2026-03-30
+
+- [Feature] Readwise-style daily review — fixed critical bug (passage field was "text", showed undefined); 5-card daily sessions; swipe right = Got it / left = Forgot; tags + annotation shown on card; "Forgot / Got it / Easy" labels; serif passage typography; animated swipe feedback
+
 ## [1.46.51] — 2026-03-30
 
 - [Fix] Highlight toolbar now uses `position: fixed` — was `absolute` which caused it to appear far below the selected text after scrolling, since the reader has its own scroll container (window.scrollY is always 0)
