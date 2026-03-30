@@ -40,6 +40,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.46 | Security | Removed all client-side AI API keys — all AI calls now route through Cloudflare Worker only; deleted localStorage key storage, VITE env paths, and direct browser API calls | `fetchers.js:700-894, apiKeys.js, SecondaryPages.jsx:742-764, cloudflare-worker/worker.js` | — |
 | 2026-03-30 | v1.46.47 | Feature | Removed Notes — annotation pivots to highlight-first; NotesPage + ArticleNotesPanel removed; nav updated across Sidebar/BottomNav/MobileFeedDrawer; legacy notes route → Cards | `App.jsx:20,223, Sidebar.jsx:339, MobileFeedDrawer.jsx:267, ContentViewer.jsx:17,45-47,425-437,692-701` | — |
 | 2026-03-30 | v1.46.48 | Feature | Highlight creates a card in one action — NotePanel opens immediately after highlight; NotePanel gains inline theme-tag input (passage + note + tag in one step) | `ContentViewer.jsx:138, NotePanel.jsx:1-95` | — |
+| 2026-03-30 | v1.46.49 | Nav | Replaced "Saved" with "Cards" in BottomNav — completes the mobile reading loop (Inbox → highlight → Cards) | `BottomNav.jsx:15,23,31` | — |
 
 ---
 

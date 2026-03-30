@@ -13,6 +13,7 @@ const Icons = {
   Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M2 15h5l2 4h6l2-4h5"/></svg>),
   Today:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M7 2v4M17 2v4M3 10h18"/><path d="M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2"/></svg>),
   Saved:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>),
+  Cards:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 10h12M6 14h8"/></svg>),
 };
 
 // Filled versions for active state
@@ -21,6 +22,7 @@ const IconsFilled = {
   Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="2" y="2" width="20" height="20" rx="4" opacity=".15"/><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="currentColor" strokeWidth="1.7"/><path d="M2 15h5l2 4h6l2-4h5" fill="none" stroke="currentColor" strokeWidth="1.7"/></svg>),
   Today:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M7 2v4M17 2v4M3 10h18" strokeWidth="2"/><path d="M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2" strokeWidth="2.2"/></svg>),
   Saved:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>),
+  Cards:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 10h12M6 14h8"/></svg>),
 };
 
 const NAV = [
@@ -28,7 +30,7 @@ const NAV = [
   { id: "inbox",     Icon: Icons.Inbox,     IconFilled: IconsFilled.Inbox,     label: "Inbox"   },
   { id: "add",       Icon: null,            IconFilled: null,                  label: "Add"     },
   { id: "today",     Icon: Icons.Today,     IconFilled: IconsFilled.Today,     label: "Today"   },
-  { id: "readlater", Icon: Icons.Saved,     IconFilled: IconsFilled.Saved,     label: "Saved"   },
+  { id: "cards",     Icon: Icons.Cards,     IconFilled: IconsFilled.Cards,     label: "Cards"   },
 ];
 
 export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {

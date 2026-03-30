@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.49] — 2026-03-30
+
+- [Nav] Replaced "Saved" with "Cards" in mobile BottomNav — Cards is now the primary output surface (notecard library); Saved is still reachable from the drawer
+
 ## [1.46.48] — 2026-03-30
 
 - [Feature] Highlight → card in one action: selecting text and picking a color now immediately opens the card panel (passage + annotation + theme tag) instead of silently saving; NotePanel gains inline tag input so a complete notecard is created without leaving the reader
