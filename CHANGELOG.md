@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.58] — 2026-03-30
+
+- [UX] Added global :focus-visible keyboard focus rings — every button and link now shows a 2px outline when navigated by keyboard; inline outline:none styles no longer suppress focus for keyboard users
+
 ## [1.46.57] — 2026-03-30
 
 - [Nav] Floating FAB replaces sidebar Add Source button — Things 3-style fixed "+" on desktop bottom-right; smart feeds moved above feed list in sidebar; star icon turns yellow (filled) when an article is starred

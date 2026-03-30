@@ -170,6 +170,13 @@ img { max-width: 100%; }
 /* Smooth transitions on interactive elements */
 button { transition: opacity .12s, background .12s, color .12s, border-color .12s, box-shadow .12s; }
 
+/* ── Keyboard focus rings ── */
+/* !important overrides inline outline:none — keyboard users need a visible focus indicator */
+:focus-visible {
+  outline: 2px solid currentColor !important;
+  outline-offset: 2px !important;
+}
+
 /* ── Responsive / Mobile ─────────────────────────────────────── */
 
 /* Smooth scroll on mobile */
