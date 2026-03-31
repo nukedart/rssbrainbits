@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.84] — 2026-03-31
+
+- [Feature] Redesign PodcastPlayer — desktop: centered glassmorphic modal (440px, album art header, fade-to-card gradient); mobile: full-screen sheet with blurred artwork background, large controls, "Now Playing" label
+
 ## [1.46.83] — 2026-03-31
 
 - [Polish] Standardise BottomNav active label fontWeight to 600 across all tabs — was 700 for standard tabs vs 600 for Feeds tab; reduces visual jump and unifies active state
