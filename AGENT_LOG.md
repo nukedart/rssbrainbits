@@ -69,6 +69,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.76 | Polish | Remove decorative 1px divider in Sidebar between nav and feed tree — whitespace separates sections sufficiently | `Sidebar.jsx:394` | — |
 | 2026-03-30 | v1.46.77 | Polish | Reduce mobile list-item padding 13px→10px — matches skeleton, eliminates height-shift on load, shows ~1 extra item per screen | `FeedItem.jsx:287` | — |
 | 2026-03-31 | v1.46.78 | Polish | Remove "Smart"/"Feeds" 9px uppercase section labels from Sidebar — chrome reduction, add-buttons retained with tooltips | `Sidebar.jsx:401,418` | — |
+| 2026-03-31 | v1.46.79 | Polish | Scale list-view items ~10% larger — thumbnail, title font, and row padding increased on both mobile and desktop | `FeedItem.jsx:212,231,236,260,287,315,344,373` | — |
 
 ---
 

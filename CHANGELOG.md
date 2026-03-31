@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.79] — 2026-03-31
+
+- [Polish] Scale list-view feed items ~10% larger — mobile thumbnail 84→92px, mobile title 16→18px, desktop thumbnail 72×54→80×60px, desktop title md 15→17px / lg 17→19px, row padding increased proportionally
+
 ## [1.46.78] — 2026-03-31
 
 - [Polish] Remove "Smart" and "Feeds" 9px uppercase section labels from Sidebar — add-buttons remain with tooltips; visual distinction between smart/regular rows is sufficient
