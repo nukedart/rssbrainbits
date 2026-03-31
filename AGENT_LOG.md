@@ -68,6 +68,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-30 | v1.46.75 | Fix | Image extraction: filter data: URI placeholders, check data-src/data-lazy-src, scan all imgs not just first — fixes SlickDeals thumbnails | `fetchers.js:310-323` | — |
 | 2026-03-30 | v1.46.76 | Polish | Remove decorative 1px divider in Sidebar between nav and feed tree — whitespace separates sections sufficiently | `Sidebar.jsx:394` | — |
 | 2026-03-30 | v1.46.77 | Polish | Reduce mobile list-item padding 13px→10px — matches skeleton, eliminates height-shift on load, shows ~1 extra item per screen | `FeedItem.jsx:287` | — |
+| 2026-03-31 | v1.46.78 | Polish | Remove "Smart"/"Feeds" 9px uppercase section labels from Sidebar — chrome reduction, add-buttons retained with tooltips | `Sidebar.jsx:401,418` | — |
 
 ---
 

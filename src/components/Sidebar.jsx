@@ -397,8 +397,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
         {smartFeeds.length > 0 && (
           <>
             {!collapsed && (
-              <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", flexShrink:0 }}>
-                <span style={{ flex:1, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Smart</span>
+              <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", flexShrink:0, justifyContent:"flex-end" }}>
                 <button onClick={onAddSmartFeed} title="New smart feed"
                   style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
                   onMouseEnter={e => e.currentTarget.style.color=T.accent}
@@ -414,8 +413,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
 
         {/* Feeds section header */}
         {!collapsed && (
-          <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", flexShrink:0 }}>
-            <span style={{ flex:1, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>Feeds</span>
+          <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", flexShrink:0, justifyContent:"flex-end" }}>
             <button onClick={onAddFolder} title="New folder"
               style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
               onMouseEnter={e => e.currentTarget.style.color=T.accent}

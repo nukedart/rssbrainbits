@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.78] — 2026-03-31
+
+- [Polish] Remove "Smart" and "Feeds" 9px uppercase section labels from Sidebar — add-buttons remain with tooltips; visual distinction between smart/regular rows is sufficient
+
 ## [1.46.77] — 2026-03-30
 
 - [Polish] Reduce mobile list-item vertical padding 13px → 10px — matches skeleton loader padding (eliminating height-shift on load) and shows ~1 extra item above the fold
