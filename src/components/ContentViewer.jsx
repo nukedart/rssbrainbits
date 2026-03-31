@@ -98,20 +98,48 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     }
 
     setLoading(true); setError(null);
+
+    // Helper: build a content object from the RSS feed data (fullText / description)
+    // Used as fallback when article fetching fails or returns thin content.
+    function rssFallback(partial) {
+      const rssHtml = item.fullText || "";
+      // Strip tags for plain-text (used by AI summary / highlights)
+      const rssText = rssHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      return {
+        title:       item.title,
+        description: item.description || "",
+        image:       (partial?.image) || item.image || null,
+        url:         item.url,
+        bodyHtml:    rssHtml || null,
+        bodyText:    rssText || item.description || "",
+        _fromRSS:    true, // flag so reader can show "RSS preview" notice
+      };
+    }
+
     fetchArticleContent(item.url)
       .then(async (result) => {
-        setContent(result);
-        // Auto-upgrade: if content is truncated (< 300 chars), silently retry
-        if ((result.bodyText?.length || 0) < 300 && item.url) {
+        let best = result;
+        // Auto-upgrade: if content is truncated (< 300 chars), silently retry once
+        if ((result.bodyText?.length || 0) < 300) {
           try {
             const full = await fetchArticleContent(item.url);
-            if ((full.bodyText?.length || 0) > (result.bodyText?.length || 0)) {
-              setContent(full);
-            }
-          } catch { /* silent fail */ }
+            if ((full.bodyText?.length || 0) > (result.bodyText?.length || 0)) best = full;
+          } catch { /* silent */ }
+        }
+        // RSS fallback: fetched content is still thin — use feed description/content
+        if ((best.bodyText?.length || 0) < 200 && (item.fullText?.length > 50 || item.description?.length > 50)) {
+          best = rssFallback(best);
+        }
+        setContent(best);
+      })
+      .catch(() => {
+        // Fetch failed entirely (blocked, CORS, network) — show RSS content instead of error
+        if (item.fullText?.length > 50 || item.description?.length > 50) {
+          setContent(rssFallback(null));
+        } else {
+          setError("Article could not be loaded. Try opening it in your browser.");
         }
       })
-      .catch((e) => setError(classifyArticleError(e.message)))
       .finally(() => setLoading(false));
   }, [item?.url, retryKey]);
 
@@ -626,6 +654,15 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
               {/* AI Summarize */}
               <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} bodyText={content?.bodyText} articleTitle={content?.title || item?.title} />
+
+              {/* RSS-fallback notice — shown when article couldn't be fetched */}
+              {content._fromRSS && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 20px", padding: "8px 12px", borderRadius: 8, background: T.surface2, fontSize: 12, color: T.textTertiary }}>
+                  <span>📡</span>
+                  <span>Showing RSS feed preview — </span>
+                  <a href={item?.url} target="_blank" rel="noopener noreferrer" style={{ color: T.accent, textDecoration: "none", fontWeight: 600 }}>read full article ↗</a>
+                </div>
+              )}
 
               {content.description && (
                 <p style={{ fontSize: 16, color: T.textSecondary, lineHeight: 1.7, margin: "0 0 28px", fontStyle: "italic" }}>

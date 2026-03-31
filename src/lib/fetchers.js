@@ -351,6 +351,18 @@ function stripHtml(html) {
 export async function fetchArticleContent(articleUrl) {
   const rawHtml = await proxiedFetch(articleUrl);
 
+  // Detect Cloudflare/bot challenges — throw so caller can fall back to RSS content
+  const rawSnip = rawHtml.slice(0, 1200).toLowerCase();
+  if (
+    rawSnip.includes("cf-browser-verification") ||
+    rawSnip.includes("just a moment") ||
+    rawSnip.includes("enable javascript and cookies to continue") ||
+    rawSnip.includes("checking your browser") ||
+    (rawSnip.includes("403 forbidden") && rawSnip.length < 800)
+  ) {
+    throw new Error("site-blocked");
+  }
+
   const parser = new DOMParser();
   const doc    = parser.parseFromString(rawHtml, "text/html");
 
@@ -413,17 +425,21 @@ export async function fetchArticleContent(articleUrl) {
   // Site-specific overrides (fastest path — checked before generic selectors)
   const hostname = (() => { try { return new URL(articleUrl).hostname.replace(/^www\./, ""); } catch { return ""; } })();
   const SITE_SELECTORS = {
-    "makeuseof.com":    [".article-body", ".article-content", ".content-writer-content", ".content__item"],
-    "9to5mac.com":      [".article-content", ".post-content", ".entry-content"],
-    "9to5google.com":   [".article-content", ".post-content", ".entry-content"],
-    "electrek.co":      [".article-content", ".post-content", ".entry-content"],
-    "appleinsider.com": [".article-body", ".review-body", ".news-article"],
-    "macrumors.com":    [".article-content", ".post-content"],
-    "theverge.com":     [".duet--article--article-body-component", "[data-component='article-body']"],
-    "arstechnica.com":  [".article-content.post-page", "#article-guts", ".article-content"],
-    "wired.com":        ["[class*='ArticleBodyComponent']", "[class*='article-body']", "article"],
-    "techcrunch.com":   [".article-content", ".entry-content", "article"],
-    "engadget.com":     ["[class*='article-body']", ".o-article__body", "article"],
+    "makeuseof.com":      [".article-body", ".article-content", ".content-writer-content", ".content__item"],
+    "9to5mac.com":        [".article-content", ".post-content", ".entry-content"],
+    "9to5google.com":     [".article-content", ".post-content", ".entry-content"],
+    "electrek.co":        [".article-content", ".post-content", ".entry-content"],
+    "appleinsider.com":   [".article-body", ".review-body", ".news-article"],
+    "macrumors.com":      [".article-content", ".post-content"],
+    "theverge.com":       [".duet--article--article-body-component", "[data-component='article-body']"],
+    "arstechnica.com":    [".article-content.post-page", "#article-guts", ".article-content"],
+    "wired.com":          ["[class*='ArticleBodyComponent']", "[class*='article-body']", "article"],
+    "techcrunch.com":     [".article-content", ".entry-content", "article"],
+    "engadget.com":       ["[class*='article-body']", ".o-article__body", "article"],
+    // Deal sites — deal body contains the description text
+    "slickdeals.net":     [".dealDetail__bodyContainer", ".userHtml-body", ".fpBody", ".dealContent", ".threadFirstPost"],
+    // Software directories — description section has the useful text
+    "alternativeto.net":  [".applicationPageSection-description", ".appSection__body", ".description-text", "main [class*='Description']"],
   };
 
   const SELECTORS = [

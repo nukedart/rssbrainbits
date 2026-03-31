@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.86] — 2026-03-31
+
+- [Fix] RSS content fallback in reader — when article fetch is blocked (Cloudflare, CORS, paywalls) or returns thin content (<200 chars), reader now shows the RSS feed's own content:encoded/description with a "📡 RSS preview" banner and "read full article ↗" link — same pattern used by Reeder/NetNewsWire
+- [Fix] Detect Cloudflare challenge pages in fetchArticleContent and throw immediately instead of parsing garbage HTML
+- [Fix] Add site-specific DOM selectors for slickdeals.net (deal body) and alternativeto.net (app description)
+
 ## [1.46.85] — 2026-03-31
 
 - [Feature] Add Spotify & Apple Podcast link support — paste any open.spotify.com/show or open.spotify.com/episode URL; app fetches show title via Spotify oEmbed then searches iTunes for the RSS feed automatically. Also adds Overcast, Pocket Casts, and Castro URL detection. Shows "Spotify Podcast" chip in AddModal while resolving.
