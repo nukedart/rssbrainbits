@@ -390,9 +390,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
         ))}
       </nav>
 
-      {/* ── Divider ── */}
-      <div style={{ height:1, background:T.border, margin: collapsed?"0 8px":"0 10px", flexShrink:0 }} />
-
       {/* ── Feed tree (scrollable) ── */}
       <div style={{ flex:1, minHeight:0, overflowY:"auto", padding: collapsed?"4px":"4px 6px", display:"flex", flexDirection:"column" }}>
 
