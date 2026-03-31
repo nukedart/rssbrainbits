@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.81] — 2026-03-31
+
+- [Polish] Remove decorative 1px boxShadow divider from Inbox toolbar — serves no functional purpose (whitespace already separates toolbar from list); reduces visual chrome on the most-used screen per the "no decorative chrome" principle
+
 ## [1.46.80] — 2026-03-31
 
 - [Feature] Persist AI summaries in localStorage keyed by article URL — summaries now survive reader close/reopen and load instantly without re-generating

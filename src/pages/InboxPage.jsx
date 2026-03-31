@@ -620,7 +620,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       <div style={{ flex: !isMobile && openItem ? "0 0 420px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
-        <div style={{ padding: "0 12px", background: T.bg, boxShadow: `0 1px 0 ${T.border}`, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
+        <div style={{ padding: "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
 
           {/* Title + unread badge + error badge — hidden when search open */}
           {!searchOpen && (
