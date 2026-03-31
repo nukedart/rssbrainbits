@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { Input, Button, Spinner } from "./UI";
-import { detectInputType, discoverFeed, parseXUrl, xToRSSUrl, searchApplePodcasts, resolvePodcastFeedUrl, isRSSUrl } from "../lib/fetchers";
+import { detectInputType, discoverFeed, parseXUrl, xToRSSUrl, searchApplePodcasts, resolvePodcastFeedUrl, isRSSUrl, isSpotifyPodcastUrl } from "../lib/fetchers";
 
 const TYPE_INFO = {
   rss:     { icon: "📡",  label: "RSS Feed",          desc: "All articles from this feed will appear in your inbox" },
   podcast: { icon: "🎙️", label: "Podcast",            desc: "Episodes will appear in your inbox with a play button" },
+  spotify: { icon: "🎵",  label: "Spotify Podcast",   desc: "We'll find the RSS feed for this show automatically" },
   youtube: { icon: "▶️",  label: "YouTube Channel",   desc: "Videos will appear in your inbox" },
   article: { icon: "📰",  label: "Article",            desc: "Read this article in a clean, focused view" },
   twitter: { icon: "𝕏",   label: "X / Twitter Feed",  desc: "Posts will stream into your inbox via RSS relay" },
@@ -71,7 +72,9 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
     try {
       new URL(trimmed);
       const type = detectInputType(trimmed);
-      setDetected(type);
+      // Show Spotify-specific label while resolving
+      const displayType = (type === "podcast" && isSpotifyPodcastUrl(trimmed)) ? "spotify" : type;
+      setDetected(displayType);
       if (type === "article" || type === "podcast") {
         // Podcast URLs that are already RSS feeds (feeds.buzzsprout.com, anchor.fm/s/…/rss, etc.)
         // don't need discovery — treat them as RSS directly.
@@ -107,9 +110,9 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
         finalName = finalName || `@${username}`;
       }
 
-      // If we still have a raw podcast page URL (not an RSS feed, discovery didn't run or failed),
-      // try resolving it now via iTunes Lookup API before attempting to add.
-      if (detected === "podcast" && finalUrl === trimmed && !isRSSUrl(trimmed)) {
+      // If we still have a raw podcast/spotify page URL (not an RSS feed, discovery didn't run or failed),
+      // try resolving it now before attempting to add.
+      if ((detected === "podcast" || detected === "spotify") && finalUrl === trimmed && !isRSSUrl(trimmed)) {
         const resolved = await resolvePodcastFeedUrl(trimmed).catch(() => null);
         if (resolved?.feedUrl) {
           finalUrl = resolved.feedUrl;
@@ -119,7 +122,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
         }
       }
 
-      const finalType = (detected === "podcast" || detected === "twitter" || isX) ? "rss" : (detected || "article");
+      const finalType = (detected === "podcast" || detected === "spotify" || detected === "twitter" || isX) ? "rss" : (detected || "article");
       await onAdd({ url: finalUrl, type: finalType, name: finalName });
       onClose();
     } catch (err) {

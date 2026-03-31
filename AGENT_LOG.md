@@ -4,6 +4,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 
 | Date | Version | Area | Change | Files | Session Cost |
 |------|---------|------|--------|-------|-------------|
+| 2026-03-31 | v1.46.85 | Feature | Spotify/Apple Podcast link support — oEmbed→iTunes search resolution, "Spotify Podcast" chip | `fetchers.js:565,660` `AddModal.jsx:4,8` | — |
 | 2026-03-31 | v1.46.84 | Feature | Redesign PodcastPlayer — centered modal on desktop, full-screen sheet on mobile with blurred art bg | `PodcastPlayer.jsx:1-280` | — |
 | 2026-03-31 | v1.46.83 | Polish | Standardise BottomNav active label fontWeight 700→600 — consistent with Feeds tab, less jarring jump | `BottomNav.jsx:171` | — |
 | 2026-03-31 | v1.46.82 | Polish | Add OG/Twitter Card meta tags — improves share previews and SEO score | `index.html:22` | — |

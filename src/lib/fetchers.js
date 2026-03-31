@@ -569,7 +569,16 @@ export function isPodcastUrl(url) {
     u.includes("feeds.captivate") || u.includes("anchor.fm/") ||
     u.includes("feeds.simplecast") || u.includes("feeds.soundcloud") ||
     u.includes("feeds.libsyn") || u.includes("rss.art19") ||
-    u.includes("feeds.megaphone") || u.includes("omnycontent.com/");
+    u.includes("feeds.megaphone") || u.includes("omnycontent.com/") ||
+    // Streaming platform show/episode pages — resolved to RSS via oEmbed or iTunes lookup
+    u.includes("open.spotify.com/show") || u.includes("open.spotify.com/episode") ||
+    u.includes("overcast.fm/") || u.includes("pca.st/") || u.includes("castro.fm/podcast/");
+}
+
+// ── Detect Spotify URLs specifically (for UI labelling) ──────────
+export function isSpotifyPodcastUrl(url) {
+  const u = url.toLowerCase();
+  return u.includes("open.spotify.com/show") || u.includes("open.spotify.com/episode");
 }
 
 export function isRSSUrl(url) {
@@ -633,13 +642,15 @@ export async function searchApplePodcasts(term) {
 
 
 // ── Podcast RSS Resolution ────────────────────────────────────
-// Given an Apple Podcasts or other podcast page URL, returns the actual RSS
-// feed URL. Uses the iTunes Lookup API for Apple Podcasts URLs; falls back to
-// discoverFeed() for other podcast sites (Spotify, Overcast, etc.).
+// Given an Apple Podcasts, Spotify, or other podcast page URL, returns the
+// actual RSS feed URL. Resolution chain:
+//   1. Apple Podcasts  → iTunes Lookup API (by numeric /id…)
+//   2. Spotify show/ep → Spotify oEmbed (public, no auth) → iTunes search by title
+//   3. Any other URL   → generic <link rel="alternate"> discovery
 // Returns { feedUrl, title } or null.
 export async function resolvePodcastFeedUrl(url) {
+  // ── 1. Apple Podcasts ──────────────────────────────────────
   try {
-    // Apple Podcasts: extract numeric ID from URL (e.g. /id1234567890)
     const appleMatch = url.match(/\/id(\d{6,})/);
     if (appleMatch) {
       const id = appleMatch[1];
@@ -652,7 +663,29 @@ export async function resolvePodcastFeedUrl(url) {
       if (entry?.feedUrl) return { feedUrl: entry.feedUrl, title: entry.collectionName };
     }
   } catch { /* fall through */ }
-  // Generic fallback — scrape the page for <link rel="alternate">
+
+  // ── 2. Spotify show or episode → oEmbed → iTunes search ───
+  try {
+    const spotifyMatch = url.match(/open\.spotify\.com\/(show|episode)\/([A-Za-z0-9]+)/);
+    if (spotifyMatch) {
+      const isEpisode = spotifyMatch[1] === "episode";
+      const oembedRes = await fetchWithTimeout(
+        `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`,
+        8000
+      );
+      const oembed = await oembedRes.json();
+      // For episodes the show name is in author_name; for shows it's in title.
+      const searchTerm = isEpisode
+        ? (oembed.author_name || oembed.title)
+        : (oembed.title || oembed.author_name);
+      if (searchTerm) {
+        const results = await searchApplePodcasts(searchTerm);
+        if (results[0]?.feedUrl) return { feedUrl: results[0].feedUrl, title: results[0].title };
+      }
+    }
+  } catch { /* fall through */ }
+
+  // ── 3. Generic fallback — scrape page for <link rel="alternate"> ──
   return discoverFeed(url);
 }
 

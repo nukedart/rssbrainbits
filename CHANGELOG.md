@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.85] — 2026-03-31
+
+- [Feature] Add Spotify & Apple Podcast link support — paste any open.spotify.com/show or open.spotify.com/episode URL; app fetches show title via Spotify oEmbed then searches iTunes for the RSS feed automatically. Also adds Overcast, Pocket Casts, and Castro URL detection. Shows "Spotify Podcast" chip in AddModal while resolving.
+
 ## [1.46.84] — 2026-03-31
 
 - [Feature] Redesign PodcastPlayer — desktop: centered glassmorphic modal (440px, album art header, fade-to-card gradient); mobile: full-screen sheet with blurred artwork background, large controls, "Now Playing" label
