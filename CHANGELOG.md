@@ -3,7 +3,7 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
-## [Unreleased]
+## [1.46.82] — 2026-03-31
 
 - [Polish] Add Open Graph and Twitter Card meta tags to index.html — improves share link previews and SEO score
 
