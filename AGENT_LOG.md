@@ -4,6 +4,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 
 | Date | Version | Area | Change | Files | Session Cost |
 |------|---------|------|--------|-------|-------------|
+| 2026-03-31 | v1.46.82 | Polish | Add OG/Twitter Card meta tags — improves share previews and SEO score | `index.html:22` | — |
 | 2026-03-31 | v1.46.81 | Polish | Remove decorative boxShadow divider from Inbox toolbar — no decorative chrome principle | `InboxPage.jsx:623` | — |
 | 2026-03-30 | v1.46.80 | Feature | Persist AI summaries in localStorage — summaries survive reader close/reopen | `ContentViewer.jsx:35,65,258` | — |
 | 2026-03-30 | v1.46.68 | Polish | Remove borderBottom divider from mobile list-view items — whitespace separates rows | `FeedItem.jsx:290` | — |

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [Polish] Add Open Graph and Twitter Card meta tags to index.html — improves share link previews and SEO score
+
 ## [1.46.81] — 2026-03-31
 
 - [Polish] Remove decorative 1px boxShadow divider from Inbox toolbar — serves no functional purpose (whitespace already separates toolbar from list); reduces visual chrome on the most-used screen per the "no decorative chrome" principle
