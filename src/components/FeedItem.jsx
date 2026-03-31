@@ -239,7 +239,7 @@ function ListThumb({ item, cardSize, T }) {
       )}
       {progress > 5 && progress < 95 && (
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${progress}%`, background: "rgba(172,207,174,.95)", transition: "width .3s" }} />
+          <div style={{ height: "100%", width: `${progress}%`, background: T.accent, transition: "width .3s" }} />
         </div>
       )}
     </div>
@@ -479,7 +479,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             )}
             {progress > 5 && progress < 95 && (
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${progress}%`, background: "rgba(172,207,174,.9)" }} />
+                <div style={{ height: "100%", width: `${progress}%`, background: T.accent }} />
               </div>
             )}
           </div>

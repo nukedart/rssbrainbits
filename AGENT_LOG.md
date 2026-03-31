@@ -4,6 +4,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 
 | Date | Version | Area | Change | Files | Session Cost |
 |------|---------|------|--------|-------|-------------|
+| 2026-03-31 | v1.46.87 | Polish | Replace hardcoded rgba sage-green in reading-progress bars with T.accent token | `FeedItem.jsx:242,483` | — |
 | 2026-03-31 | v1.46.86 | Fix | RSS content fallback + Cloudflare block detection + SlickDeals/AlternativeTo selectors | `fetchers.js:351,430` `ContentViewer.jsx:100,630` | — |
 | 2026-03-31 | v1.46.85 | Feature | Spotify/Apple Podcast link support — oEmbed→iTunes search resolution, "Spotify Podcast" chip | `fetchers.js:565,660` `AddModal.jsx:4,8` | — |
 | 2026-03-31 | v1.46.84 | Feature | Redesign PodcastPlayer — centered modal on desktop, full-screen sheet on mobile with blurred art bg | `PodcastPlayer.jsx:1-280` | — |

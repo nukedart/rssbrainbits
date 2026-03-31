@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.87] — 2026-03-31
+
+- [Polish] Replace hardcoded sage-green rgba in reading-progress bars with T.accent token — bars in both list-view thumbnails and card-view now match the theme accent (periwinkle in Distilled, forest green in Light) instead of always showing Nocturne's sage green
+
 ## [1.46.86] — 2026-03-31
 
 - [Fix] RSS content fallback in reader — when article fetch is blocked (Cloudflare, CORS, paywalls) or returns thin content (<200 chars), reader now shows the RSS feed's own content:encoded/description with a "📡 RSS preview" banner and "read full article ↗" link — same pattern used by Reeder/NetNewsWire
