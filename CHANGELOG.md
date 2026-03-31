@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.77] — 2026-03-30
+
+- [Polish] Reduce mobile list-item vertical padding 13px → 10px — matches skeleton loader padding (eliminating height-shift on load) and shows ~1 extra item above the fold
+
 ## [1.46.76] — 2026-03-30
 
 - [Polish] Remove decorative divider between Sidebar nav and feed tree — whitespace already creates visual separation; reduces chrome per no-decoration principle
