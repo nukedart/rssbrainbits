@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.80] — 2026-03-31
+
+- [Feature] Persist AI summaries in localStorage keyed by article URL — summaries now survive reader close/reopen and load instantly without re-generating
+
 ## [1.46.79] — 2026-03-31
 
 - [Polish] Scale list-view feed items ~10% larger — mobile thumbnail 84→92px, mobile title 16→18px, desktop thumbnail 72×54→80×60px, desktop title md 15→17px / lg 17→19px, row padding increased proportionally

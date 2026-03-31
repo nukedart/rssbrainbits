@@ -32,7 +32,13 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const [saved, setSaved]         = useState(false);
 
   // AI summary
-  const [summary, setSummary]         = useState(null);
+  const [summary, setSummary]         = useState(() => {
+    // Restore cached summary for this article on first render
+    const url = item?.url;
+    if (!url) return null;
+    if (item.summary) return item.summary;
+    try { return localStorage.getItem("ai-summary:" + url) || null; } catch { return null; }
+  });
   const [summarizing, setSummarizing] = useState(false);
   const [summaryStyle, setSummaryStyle] = useState("keypoints"); // keypoints | brief | actions
 
@@ -60,6 +66,17 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const articleRef = useRef(null);
   const lastSavedProgressRef = useRef(0);
   const yt = item?.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
+
+  // ── Restore cached summary when item changes ──────────────
+  useEffect(() => {
+    if (!item?.url) return;
+    if (item.summary) { setSummary(item.summary); return; }
+    try {
+      const cached = localStorage.getItem("ai-summary:" + item.url);
+      if (cached) setSummary(cached);
+      else setSummary(null);
+    } catch { setSummary(null); }
+  }, [item?.url]);
 
   // ── Fetch article ──────────────────────────────────────────
   useEffect(() => {
@@ -254,6 +271,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     const result = await summarizeContent(text, content?.title || item?.title, useStyle);
     setSummary(result);
     setSummarizing(false);
+
+    // Cache summary in localStorage so it survives re-opens without re-generating
+    if (result && item?.url && !result.startsWith("AI summarization") && !result.startsWith("You've used")) {
+      try { localStorage.setItem("ai-summary:" + item.url, result); } catch { /* storage full — non-fatal */ }
+    }
 
     // Increment usage counter for free users
     if (user && !isProUser(user) && result && !result.startsWith("You've used")) {
