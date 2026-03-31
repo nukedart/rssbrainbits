@@ -168,7 +168,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
                 </span>
               )}
             </span>
-            <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 400, letterSpacing: ".01em" }}>
+            <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400, letterSpacing: ".01em" }}>
               {label}
             </span>
           </button>

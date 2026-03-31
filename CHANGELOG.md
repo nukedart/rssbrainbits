@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.83] — 2026-03-31
+
+- [Polish] Standardise BottomNav active label fontWeight to 600 across all tabs — was 700 for standard tabs vs 600 for Feeds tab; reduces visual jump and unifies active state
+
 ## [1.46.82] — 2026-03-31
 
 - [Polish] Add Open Graph and Twitter Card meta tags to index.html — improves share link previews and SEO score
