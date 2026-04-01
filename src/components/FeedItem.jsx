@@ -538,7 +538,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 
           {/* Action buttons — absolute overlay at card bottom, desktop hover only */}
           {hovered && !isMobile && (
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", alignItems: "center", padding: "6px 8px", background: T.surface, borderTop: `1px solid ${T.border}` }} onClick={e => e.stopPropagation()}>
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", alignItems: "center", padding: "6px 8px", background: T.surface }} onClick={e => e.stopPropagation()}>
               {item.isPodcast && onPlayPodcast && <ActionBtn icon={<Ic.Play />} title="Play" onClick={() => onPlayPodcast(item)} T={T} />}
               <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
               <ActionBtn icon={<Ic.Clock />} title="Save for later" onClick={onReadLater} T={T} />

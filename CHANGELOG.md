@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.89] — 2026-04-01
+
+- [Polish] Remove decorative borderTop from CardItem hover action bar — T.surface background already creates contrast against T.card; eliminating the border makes the hover state softer per "No decorative chrome" principle
+
 ## [1.46.88] — 2026-04-01
 
 - [Polish] Increase mobile list item vertical padding from 11px to 14px — serves "Generous whitespace" principle; every Inbox row gains 6px of breathing room between entries, making the list feel calmer and more deliberate

@@ -4,6 +4,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 
 | Date | Version | Area | Change | Files | Session Cost |
 |------|---------|------|--------|-------|-------------|
+| 2026-04-01 | v1.46.89 | Polish | Remove redundant borderTop from CardItem hover action bar | `FeedItem.jsx:541` | — |
 | 2026-04-01 | v1.46.88 | Polish | Increase mobile list item padding 11px→14px for more generous whitespace between Inbox rows | `FeedItem.jsx:287` | — |
 | 2026-03-31 | v1.46.87 | Polish | Replace hardcoded rgba sage-green in reading-progress bars with T.accent token | `FeedItem.jsx:242,483` | — |
 | 2026-03-31 | v1.46.86 | Fix | RSS content fallback + Cloudflare block detection + SlickDeals/AlternativeTo selectors | `fetchers.js:351,430` `ContentViewer.jsx:100,630` | — |
