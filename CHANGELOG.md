@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.88] — 2026-04-01
+
+- [Polish] Increase mobile list item vertical padding from 11px to 14px — serves "Generous whitespace" principle; every Inbox row gains 6px of breathing room between entries, making the list feel calmer and more deliberate
+
 ## [1.46.87] — 2026-03-31
 
 - [Polish] Replace hardcoded sage-green rgba in reading-progress bars with T.accent token — bars in both list-view thumbnails and card-view now match the theme accent (periwinkle in Distilled, forest green in Light) instead of always showing Nocturne's sage green
