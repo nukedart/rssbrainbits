@@ -297,7 +297,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                   <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent, flexShrink: 0 }} />
                 )}
                 <span style={{
-                  fontSize: 12, fontWeight: 600, color: T.accent,
+                  fontSize: 12, fontWeight: 500, color: T.textSecondary,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
                 }}>
                   {item.source}

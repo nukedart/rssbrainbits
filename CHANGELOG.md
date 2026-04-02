@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.90] — 2026-04-02
+
+- [Polish] Mute mobile list item source labels from T.accent to T.textSecondary (weight 600→500) — serves "Calm hierarchy" principle; titles become the clear focal point, the accent unread dot gains meaning as the sole accent signal, and the list reads quieter matching Reeder's visual style
+
 ## [1.46.89] — 2026-04-01
 
 - [Polish] Remove decorative borderTop from CardItem hover action bar — T.surface background already creates contrast against T.card; eliminating the border makes the hover state softer per "No decorative chrome" principle
