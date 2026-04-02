@@ -4,6 +4,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 
 | Date | Version | Area | Change | Files | Session Cost |
 |------|---------|------|--------|-------|-------------|
+| 2026-04-02 | v1.46.91 | Feature | Podcast panel player — episodes open in right panel with inline audio controls, no modal | `ContentViewer.jsx:1273` `InboxPage.jsx:963,978` | — |
 | 2026-04-02 | v1.46.90 | Polish | Mute mobile source label T.accent→T.textSecondary, weight 600→500 for calmer hierarchy | `FeedItem.jsx:300` | — |
 | 2026-04-01 | v1.46.89 | Polish | Remove redundant borderTop from CardItem hover action bar | `FeedItem.jsx:541` | — |
 | 2026-04-01 | v1.46.88 | Polish | Increase mobile list item padding 11px→14px for more generous whitespace between Inbox rows | `FeedItem.jsx:287` | — |

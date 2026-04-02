@@ -1269,54 +1269,222 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighl
 }
 
 // ── Podcast Episode View ──────────────────────────────────────
-// Show notes view for podcast items — artwork, metadata, description
+// Full inline audio player for podcast items in the right panel
 function PodcastEpisodeView({ item, summary, summarizing, onSummarize, T }) {
-  const [expanded, setExpanded] = useState(false);
-  const desc = item?.description || item?.fullText || "";
+  const { isMobile } = useBreakpoint();
+  const audioRef  = useRef(null);
+  const sleepRef  = useRef(null);
+  const [playing, setPlaying]           = useState(false);
+  const [progress, setProgress]         = useState(0);
+  const [currentTime, setCurrentTime]   = useState(0);
+  const [duration, setDuration]         = useState(0);
+  const [audioLoading, setAudioLoading] = useState(true);
+  const [rate, setRate]                 = useState(1);
+  const [sleepTimer, setSleepTimer]     = useState(null); // minutes remaining
+  const [notesExpanded, setNotesExpanded] = useState(false);
+  const desc     = item?.description || item?.fullText || "";
   const chapters = parseChapters(desc);
-  const duration = item?.audioDuration;
 
-  function fmtDuration(s) {
-    if (!s) return null;
-    // Handle HH:MM:SS and MM:SS strings as-is
-    if (/^\d+:\d+/.test(s)) return s;
-    // Handle seconds as number
-    const n = parseInt(s, 10);
-    if (isNaN(n)) return s;
-    const h = Math.floor(n/3600), m = Math.floor((n%3600)/60), sec = n%60;
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m ${sec}s`;
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const onLoaded  = () => { setAudioLoading(false); setDuration(audio.duration || 0); };
+    const onTime    = () => { setCurrentTime(audio.currentTime); setProgress(audio.duration ? audio.currentTime / audio.duration : 0); };
+    const onEnded   = () => setPlaying(false);
+    const onWaiting = () => setAudioLoading(true);
+    const onCanPlay = () => setAudioLoading(false);
+    audio.addEventListener("loadedmetadata", onLoaded);
+    audio.addEventListener("timeupdate", onTime);
+    audio.addEventListener("ended", onEnded);
+    audio.addEventListener("waiting", onWaiting);
+    audio.addEventListener("canplay", onCanPlay);
+    return () => {
+      clearInterval(sleepRef.current);
+      audio.removeEventListener("loadedmetadata", onLoaded);
+      audio.removeEventListener("timeupdate", onTime);
+      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("waiting", onWaiting);
+      audio.removeEventListener("canplay", onCanPlay);
+    };
+  }, [item?.audioUrl]);
+
+  function togglePlay() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) { audio.pause(); setPlaying(false); }
+    else { audio.play().then(() => setPlaying(true)).catch(() => {}); }
+  }
+  function seek(e) {
+    const audio = audioRef.current;
+    if (!audio || !duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    audio.currentTime = pct * duration;
+  }
+  function skip(secs) {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = Math.max(0, Math.min(duration, audio.currentTime + secs));
+  }
+  function cycleRate() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const rates = [1, 1.25, 1.5, 1.75, 2];
+    const next  = rates[(rates.indexOf(rate) + 1) % rates.length];
+    audio.playbackRate = next;
+    setRate(next);
+  }
+  function toggleSleep() {
+    if (sleepTimer !== null) {
+      clearInterval(sleepRef.current);
+      setSleepTimer(null);
+      return;
+    }
+    let mins = 30;
+    setSleepTimer(mins);
+    sleepRef.current = setInterval(() => {
+      mins -= 1;
+      if (mins <= 0) {
+        clearInterval(sleepRef.current);
+        audioRef.current?.pause();
+        setPlaying(false);
+        setSleepTimer(null);
+      } else {
+        setSleepTimer(mins);
+      }
+    }, 60000);
+  }
+  function fmt(secs) {
+    if (!isFinite(secs)) return "0:00";
+    const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = Math.floor(secs % 60);
+    return h > 0 ? `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}` : `${m}:${String(s).padStart(2,"0")}`;
   }
 
+  function SkipButton({ seconds, label }) {
+    const isBack = seconds < 0;
+    return (
+      <button onClick={() => skip(seconds)} style={{
+        background: "none", border: "none", cursor: "pointer",
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+        color: T.textSecondary, padding: "4px 8px",
+      }}>
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          {isBack
+            ? <><path d="M7 14A7 7 0 1 1 9.5 7.5"/><polyline points="4,8 7,14 10,8"/></>
+            : <><path d="M21 14A7 7 0 1 0 18.5 7.5"/><polyline points="18,8 21,14 24,8"/></>
+          }
+        </svg>
+        <span style={{ fontSize: 10, fontWeight: 600 }}>{label}</span>
+      </button>
+    );
+  }
+
+  const artSize = isMobile ? "min(220px, 55vw)" : "180px";
+
   return (
-    <div>
-      {/* Art + metadata row */}
-      <div style={{ display: "flex", gap: 18, marginBottom: 22, alignItems: "flex-start" }}>
-        {item.image && (
-          <img src={item.image} alt="" style={{
-            width: 88, height: 88, borderRadius: 14, objectFit: "cover", flexShrink: 0,
-            boxShadow: "0 8px 24px rgba(0,0,0,.3)",
-          }} />
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.accent, textTransform: "uppercase", marginBottom: 6 }}>Podcast Episode</div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3, fontFamily: "var(--reader-font-family)" }}>
-            {item.title}
-          </h1>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-            {item.source && <span style={{ fontSize: 12, fontWeight: 500, color: T.textSecondary }}>{item.source}</span>}
-            {duration && <span style={{ fontSize: 12, color: T.textTertiary }}>⏱ {fmtDuration(duration)}</span>}
-            {item.date && <span style={{ fontSize: 12, color: T.textTertiary }}>{new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>}
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
+      <audio ref={audioRef} src={item?.audioUrl} preload="metadata" />
+
+      {/* Album art */}
+      <div style={{
+        width: artSize, height: artSize, borderRadius: 18,
+        overflow: "hidden", flexShrink: 0,
+        boxShadow: "0 16px 48px rgba(0,0,0,.35)",
+        marginBottom: 24, marginTop: 8,
+      }}>
+        {item?.image
+          ? <img src={item.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          : (
+            <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${T.accent}44, ${T.accent}22)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke={T.accent} strokeWidth="1.5" opacity="0.6">
+                <circle cx="28" cy="28" r="22"/><circle cx="28" cy="28" r="8"/><circle cx="28" cy="28" r="2" fill={T.accent}/>
+                <line x1="28" y1="6" x2="28" y2="12"/><line x1="28" y1="44" x2="28" y2="50"/>
+                <line x1="6" y1="28" x2="12" y2="28"/><line x1="44" y1="28" x2="50" y2="28"/>
+              </svg>
+            </div>
+          )
+        }
+      </div>
+
+      {/* Title & metadata */}
+      <div style={{ textAlign: "center", width: "100%", maxWidth: 380, marginBottom: 20, padding: "0 8px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.accent, textTransform: "uppercase", marginBottom: 6 }}>
+          {item?.source || "Podcast"}
+        </div>
+        <h2 style={{ fontSize: 17, fontWeight: 700, color: T.text, margin: "0 0 8px", lineHeight: 1.3, fontFamily: "var(--reader-font-family)" }}>
+          {item?.title}
+        </h2>
+        {item?.date && (
+          <div style={{ fontSize: 12, color: T.textTertiary }}>
+            {new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
           </div>
+        )}
+      </div>
+
+      {/* Seek bar */}
+      <div style={{ width: "100%", maxWidth: 380, padding: "0 8px", marginBottom: 8 }}>
+        <div
+          onClick={seek}
+          style={{ height: 4, background: T.border, borderRadius: 2, cursor: "pointer", position: "relative" }}
+        >
+          <div style={{ height: "100%", width: `${progress * 100}%`, background: T.accent, borderRadius: 2, transition: "width .2s linear" }} />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+          <span style={{ fontSize: 11, color: T.textTertiary, fontVariantNumeric: "tabular-nums" }}>{fmt(currentTime)}</span>
+          <span style={{ fontSize: 11, color: T.textTertiary, fontVariantNumeric: "tabular-nums" }}>{duration ? fmt(duration) : "--:--"}</span>
         </div>
       </div>
 
-      {/* AI Summary */}
-      <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} summaryStyle="keypoints" T={T} />
+      {/* Main controls */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+        <SkipButton seconds={-15} label="15" />
+        <button
+          onClick={togglePlay}
+          style={{
+            width: 64, height: 64, borderRadius: "50%",
+            background: T.accent, border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: `0 8px 24px ${T.accent}55`,
+            color: T.accentText, flexShrink: 0,
+          }}
+        >
+          {audioLoading
+            ? <Spinner size={24} />
+            : playing
+              ? <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              : <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+          }
+        </button>
+        <SkipButton seconds={30} label="30" />
+      </div>
 
-      {/* Chapters from timestamps */}
+      {/* Secondary controls */}
+      <div style={{ display: "flex", gap: 20, marginBottom: 28 }}>
+        <button onClick={cycleRate} style={{
+          background: T.surface2, border: "none", borderRadius: 8,
+          padding: "5px 12px", cursor: "pointer", fontSize: 12, fontWeight: 700,
+          color: rate !== 1 ? T.accent : T.textSecondary,
+        }}>
+          {rate}×
+        </button>
+        <button onClick={toggleSleep} style={{
+          background: sleepTimer !== null ? `${T.accent}22` : T.surface2,
+          border: "none", borderRadius: 8,
+          padding: "5px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600,
+          color: sleepTimer !== null ? T.accent : T.textSecondary,
+        }}>
+          {sleepTimer !== null ? `💤 ${sleepTimer}m` : "💤"}
+        </button>
+      </div>
+
+      {/* AI Summary */}
+      <div style={{ width: "100%", maxWidth: 520, marginBottom: 16 }}>
+        <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={onSummarize} summaryStyle="keypoints" T={T} />
+      </div>
+
+      {/* Chapters */}
       {chapters.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ width: "100%", maxWidth: 520, marginBottom: 20 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.textTertiary, textTransform: "uppercase", marginBottom: 10 }}>
             Chapters ({chapters.length})
           </div>
@@ -1333,29 +1501,23 @@ function PodcastEpisodeView({ item, summary, summarizing, onSummarize, T }) {
 
       {/* Show notes */}
       {desc && (
-        <div>
-          <button onClick={() => setExpanded(v => !v)} style={{
+        <div style={{ width: "100%", maxWidth: 520 }}>
+          <button onClick={() => setNotesExpanded(v => !v)} style={{
             background: "none", border: "none", cursor: "pointer",
             fontSize: 12, fontWeight: 600, color: T.textSecondary,
             padding: 0, fontFamily: "inherit",
             display: "flex", alignItems: "center", gap: 6, marginBottom: 12,
           }}>
-            {expanded ? "▲" : "▼"} Show notes
+            {notesExpanded ? "▲" : "▼"} Show notes
           </button>
-          <div style={{
-            maxHeight: expanded ? "none" : 120,
-            overflow: "hidden",
-            position: "relative",
-          }}>
-            <div style={{ fontSize: 14, color: T.textSecondary, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-              {desc}
-            </div>
-            {!expanded && desc.length > 300 && (
+          <div style={{ maxHeight: notesExpanded ? "none" : 120, overflow: "hidden", position: "relative" }}>
+            <div style={{ fontSize: 14, color: T.textSecondary, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{desc}</div>
+            {!notesExpanded && desc.length > 300 && (
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 60, background: `linear-gradient(transparent, ${T.bg})` }} />
             )}
           </div>
-          {!expanded && desc.length > 300 && (
-            <button onClick={() => setExpanded(true)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: T.accent, padding: "8px 0 0", fontFamily: "inherit" }}>
+          {!notesExpanded && desc.length > 300 && (
+            <button onClick={() => setNotesExpanded(true)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: T.accent, padding: "8px 0 0", fontFamily: "inherit" }}>
               Read more
             </button>
           )}

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.91] — 2026-04-02
+
+- [Feature] Podcast episodes now open in the right panel (desktop) / full-screen (mobile) like articles — centered album art, inline play/pause/skip/seek controls, playback rate, sleep timer, and AI summary embedded directly in ContentViewer; clicking a podcast item no longer opens a separate modal
+
 ## [1.46.90] — 2026-04-02
 
 - [Polish] Mute mobile list item source labels from T.accent to T.textSecondary (weight 600→500) — serves "Calm hierarchy" principle; titles become the clear focal point, the accent unread dot gains meaning as the sole accent signal, and the list reads quieter matching Reeder's visual style

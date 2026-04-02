@@ -960,7 +960,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 <FeedItem item={item} viewMode="card" cardSize={isMobile ? "sm" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
-                  onClick={() => { if (item.isPodcast && item.audioUrl && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}
+                  onClick={() => { openByIdx(i); }}
                   onSave={() => handleSaveItem(item)}
                   isSaved={savedUrls.has(item.url)}
                   onReadLater={() => handleReadLater(item)}
@@ -975,7 +975,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               <FeedItem item={item} viewMode="list" cardSize={isMobile ? "sm" : cardSize}
                 isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
                 isRead={readUrls.has(item.url)}
-                onClick={() => { setCursorIdx(i); if (item.isPodcast && item.audioUrl && onPlayPodcast) { onPlayPodcast(item); } else { openByIdx(i); } }}
+                onClick={() => { setCursorIdx(i); openByIdx(i); }}
                 onSave={() => handleSaveItem(item)}
                 onReadLater={() => handleReadLater(item)}
                 onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
