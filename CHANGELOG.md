@@ -3,7 +3,7 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
-## [1.46.93] — 2026-04-03
+## [1.46.96] — 2026-04-03
 
 - [Polish] Remove decorative border from inactive source filter button — button reads clearly through its surface background; accent border preserved only when a filter is active (functional signal). Principle: no decorative chrome.
 
