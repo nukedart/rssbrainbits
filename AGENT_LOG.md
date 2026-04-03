@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-03 | v1.46.96 | Polish | Remove decorative border from inactive source filter pill — reduces toolbar noise | `InboxPage.jsx:691` | — |
 |------|---------|------|--------|-------|-------------|
 | 2026-04-03 | v1.46.95 | Polish | Today page read items: whole-row opacity→title-only T.textTertiary; images keep full presence | `TodayPage.jsx:519,529,541` | — |
 | 2026-04-03 | v1.46.94 | Polish | Card view source labels T.accent→T.textSecondary, weight 600→500 — matches list view v1.46.90 fix | `FeedItem.jsx:494` | — |

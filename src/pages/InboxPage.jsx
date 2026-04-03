@@ -688,7 +688,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               <button onClick={() => setSourceDropOpen(v => !v)} style={{
                 display: "flex", alignItems: "center", gap: 5,
                 padding: "4px 10px 4px 10px", borderRadius: 20,
-                border: `1px solid ${activeSource !== "all" ? T.accent : T.border}`,
+                border: `1px solid ${activeSource !== "all" ? T.accent : "transparent"}`,
                 background: activeSource !== "all" ? T.accentSurface : T.surface,
                 color: activeSource !== "all" ? T.accent : T.textSecondary,
                 cursor: "pointer", fontSize: 12, fontWeight: 500, fontFamily: "inherit",

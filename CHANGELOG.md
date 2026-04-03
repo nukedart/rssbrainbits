@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.93] — 2026-04-03
+
+- [Polish] Remove decorative border from inactive source filter button — button reads clearly through its surface background; accent border preserved only when a filter is active (functional signal). Principle: no decorative chrome.
+
 ## [1.46.95] — 2026-04-03
 
 - [Polish] Today page read items no longer fade the whole row at 50% opacity — images keep full presence, only the title dims to T.textTertiary; matches InboxPage's color-based read state pattern
@@ -18,7 +22,6 @@ Format: `## [version] — YYYY-MM-DD`
 ## [1.46.92] — 2026-04-03
 
 - [Polish] Remove borderTop hairline from BottomNav — backdrop-filter blur already separates the nav from content; removing the hard edge makes the nav feel like a floating glass surface (Reeder/iOS style) rather than a boxed element. Serves "No decorative chrome" principle.
-
 ## [1.46.91] — 2026-04-02
 
 - [Feature] Podcast episodes now open in the right panel (desktop) / full-screen (mobile) like articles — centered album art, inline play/pause/skip/seek controls, playback rate, sleep timer, and AI summary embedded directly in ContentViewer; clicking a podcast item no longer opens a separate modal
