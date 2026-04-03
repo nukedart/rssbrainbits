@@ -5,6 +5,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | Date | Version | Area | Change | Files | Session Cost |
 | 2026-04-03 | v1.46.96 | Polish | Remove decorative border from inactive source filter pill — reduces toolbar noise | `InboxPage.jsx:691` | — |
 |------|---------|------|--------|-------|-------------|
+| 2026-04-03 | v1.46.98 | Polish | SearchBar match highlight: hardcoded teal → T.accent at 33% opacity, matches all three themes | `SearchBar.jsx:211` | — |
 | 2026-04-03 | v1.46.96 | Polish | Today hero card: remove 65% opacity on read state; title dims to T.textTertiary, image stays crisp | `TodayPage.jsx:397,441` | — |
 | 2026-04-03 | v1.46.95 | Polish | Today page read items: whole-row opacity→title-only T.textTertiary; images keep full presence | `TodayPage.jsx:519,529,541` | — |
 | 2026-04-03 | v1.46.94 | Polish | Card view source labels T.accent→T.textSecondary, weight 600→500 — matches list view v1.46.90 fix | `FeedItem.jsx:494` | — |

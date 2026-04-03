@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.98] — 2026-04-03
+
+- [Polish] Search match highlight now uses the theme accent color (`T.accent` at 33% opacity) instead of a hardcoded teal — matches correctly in all three themes (sage in Nocturne, periwinkle in Distilled, forest green in Light)
+
 ## [1.46.97] — 2026-04-03
 
 - [Polish] Today hero card no longer fades to 65% opacity when read — the "✓ Read" badge on the image already signals read state; now only the title dims to T.textTertiary, keeping the hero image crisp

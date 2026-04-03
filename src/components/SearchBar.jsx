@@ -208,7 +208,7 @@ function highlightMatch(text, query, T) {
   return (
     <span>
       {text.slice(0, idx)}
-      <mark style={{ background: "rgba(101,213,196,0.35)", borderRadius: 2, padding: "0 1px", color: "inherit" }}>
+      <mark style={{ background: `${T.accent}55`, borderRadius: 2, padding: "0 1px", color: "inherit" }}>
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
