@@ -55,7 +55,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
       background: hexToRgba(T.card, 0.92),
       backdropFilter: "blur(24px) saturate(180%)",
       WebkitBackdropFilter: "blur(24px) saturate(180%)",
-      borderTop: `0.5px solid ${T.border}`,
+
       transform: hidden ? "translateY(100%)" : "translateY(0)",
       transition: "transform .25s ease",
       display: "flex", alignItems: "stretch",
