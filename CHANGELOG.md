@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [Polish] Today hero card no longer fades to 65% opacity when read — the "✓ Read" badge on the image already signals read state; now only the title dims to T.textTertiary, keeping the hero image crisp
+
 ## [1.46.96] — 2026-04-03
 
 - [Polish] Remove decorative border from inactive source filter button — button reads clearly through its surface background; accent border preserved only when a filter is active (functional signal). Principle: no decorative chrome.

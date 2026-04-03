@@ -394,7 +394,6 @@ function HeroCard({ item, isRead, onClick, T }) {
         background: hovered ? T.card : T.surface,
         cursor: "pointer",
         transition: "all .15s",
-        opacity: isRead ? 0.65 : 1,
         boxShadow: hovered ? "0 4px 20px rgba(0,0,0,.08)" : "none",
       }}
     >
@@ -438,7 +437,7 @@ function HeroCard({ item, isRead, onClick, T }) {
         )}
         <h2 style={{
           fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-          fontSize: 18, fontWeight: 700, color: T.text,
+          fontSize: 18, fontWeight: 700, color: isRead ? T.textTertiary : T.text,
           margin: "0 0 7px", lineHeight: 1.3, letterSpacing: "-.01em",
         }}>
           {item.title}
