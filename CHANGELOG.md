@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.94] — 2026-04-03
+
+- [Polish] Card view source labels muted from T.accent to T.textSecondary (weight 600→500) — matches the list view fix from v1.46.90, giving card view the same calm hierarchy where titles are the focal point
+
 ## [1.46.93] — 2026-04-03
 
 - [Fix] Podcast episodes in card view no longer show a misleading "X min read" estimate alongside the real audio duration — mirrors the existing guard already in list view
