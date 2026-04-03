@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.99] — 2026-04-03
+
+- [Perf] Lazy-load fuse.js (6.6 kB gz) on first search keystroke instead of statically with InboxPage — browser no longer fetches the fuzzy-search library until the user actually searches
+
 ## [1.46.98] — 2026-04-03
 
 - [Polish] Search match highlight now uses the theme accent color (`T.accent` at 33% opacity) instead of a hardcoded teal — matches correctly in all three themes (sage in Nocturne, periwinkle in Distilled, forest green in Light)

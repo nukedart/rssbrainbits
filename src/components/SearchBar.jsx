@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from "react";
-import Fuse from "fuse.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { searchItems } from "../lib/supabase";
@@ -24,6 +23,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
   const [results, setResults]   = useState([]);
   const [loading, setLoading]   = useState(false);
   const [focused, setFocused]   = useState(false);
+  const [FuseClass, setFuseClass] = useState(null);
   const inputRef  = useRef(null);
   const timerRef  = useRef(null);
   const panelRef  = useRef(null);
@@ -42,14 +42,21 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Memoize Fuse index — only rebuild when the item list changes, not on every keystroke
+  // Load Fuse lazily on first search — removes it from InboxPage's initial bundle
+  useEffect(() => {
+    if (query.trim() && !FuseClass) {
+      import("fuse.js").then(m => setFuseClass(() => m.default));
+    }
+  }, [query, FuseClass]);
+
+  // Memoize Fuse index — only rebuild when the item list or the loaded class changes
   const fuse = useMemo(() => {
-    if (!allItems.length) return null;
-    return new Fuse(allItems, {
+    if (!allItems.length || !FuseClass) return null;
+    return new FuseClass(allItems, {
       keys: [{ name: "title", weight: 0.55 }, { name: "description", weight: 0.22 }, { name: "fullText", weight: 0.12 }, { name: "source", weight: 0.07 }, { name: "author", weight: 0.04 }],
       threshold: 0.35, includeScore: true, minMatchCharLength: 2,
     });
-  }, [allItems]);
+  }, [allItems, FuseClass]);
 
   // Debounced search — fuzzy local first, then Supabase full-text
   useEffect(() => {
