@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [Fix] Podcast episodes in card view no longer show a misleading "X min read" estimate alongside the real audio duration — mirrors the existing guard already in list view
+
 ## [1.46.92] — 2026-04-03
 
 - [Polish] Remove borderTop hairline from BottomNav — backdrop-filter blur already separates the nav from content; removing the hard edge makes the nav feel like a floating glass surface (Reeder/iOS style) rather than a boxed element. Serves "No decorative chrome" principle.
