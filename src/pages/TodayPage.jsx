@@ -521,12 +521,11 @@ function TodayItem({ item, isSelected, isRead, compact, onClick, T }) {
         padding: "13px 22px", cursor: "pointer",
         background: hovered ? T.surface : "transparent",
         borderBottom: `1px solid ${T.border}`,
-        transition: "background .12s, opacity .15s",
-        opacity: isRead ? 0.5 : 1,
+        transition: "background .12s",
       }}
     >
       {item.image && (
-        <img src={item.image} alt="" style={{ width: 60, height: 45, objectFit: "cover", borderRadius: 8, flexShrink: 0, marginTop: 2 }} onError={e => { e.target.style.display = "none"; }} />
+        <img src={item.image} alt="" style={{ width: 60, height: 45, objectFit: "cover", borderRadius: 8, flexShrink: 0, marginTop: 2, opacity: isRead ? 0.5 : 1 }} onError={e => { e.target.style.display = "none"; }} />
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -538,7 +537,7 @@ function TodayItem({ item, isSelected, isRead, compact, onClick, T }) {
         </div>
         <h3 style={{
           fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-          fontSize: 15, fontWeight: 600, color: T.text,
+          fontSize: 15, fontWeight: 600, color: isRead ? T.textTertiary : T.text,
           margin: "0 0 4px", lineHeight: 1.3, letterSpacing: "-.01em",
         }}>
           {item.title}

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.95] — 2026-04-03
+
+- [Polish] Today page read items no longer fade the whole row at 50% opacity — images keep full presence, only the title dims to T.textTertiary; matches InboxPage's color-based read state pattern
+
 ## [1.46.94] — 2026-04-03
 
 - [Polish] Card view source labels muted from T.accent to T.textSecondary (weight 600→500) — matches the list view fix from v1.46.90, giving card view the same calm hierarchy where titles are the focal point

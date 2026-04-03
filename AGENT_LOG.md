@@ -4,6 +4,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 
 | Date | Version | Area | Change | Files | Session Cost |
 |------|---------|------|--------|-------|-------------|
+| 2026-04-03 | v1.46.95 | Polish | Today page read items: whole-row opacity→title-only T.textTertiary; images keep full presence | `TodayPage.jsx:519,529,541` | — |
 | 2026-04-03 | v1.46.94 | Polish | Card view source labels T.accent→T.textSecondary, weight 600→500 — matches list view v1.46.90 fix | `FeedItem.jsx:494` | — |
 | 2026-04-03 | v1.46.93 | Fix | Card view podcast items no longer show misleading "X min read" alongside audio duration | `FeedItem.jsx:526,531` | — |
 | 2026-04-03 | v1.46.92 | Polish | Remove redundant borderTop hairline from BottomNav — backdrop-filter glass provides separation | `BottomNav.jsx:59` | — |
