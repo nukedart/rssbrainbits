@@ -108,37 +108,9 @@ function SectionLabel({ label, action, actionTitle, T }) {
   );
 }
 
-function NavRow({ id, label, icon, badge, active, onNavigate, T }) {
-  const isActive = active === id;
-  return (
-    <button
-      onClick={() => onNavigate(id)}
-      style={{
-        display:"flex", alignItems:"center", gap:14,
-        padding:"13px 20px",
-        width:"100%", border:"none",
-        background: isActive ? T.accentSurface : "transparent",
-        cursor:"pointer", fontFamily:"inherit", textAlign:"left",
-        WebkitTapHighlightColor:"transparent",
-        transition:"background .1s",
-      }}
-    >
-      <span style={{ color: isActive ? T.accent : T.textTertiary, display:"flex", flexShrink:0 }}>{icon}</span>
-      <span style={{ flex:1, fontSize:16, fontWeight: isActive ? 700 : 500, color: isActive ? T.accent : T.text, letterSpacing:"-.01em" }}>
-        {label}
-      </span>
-      {badge > 0 && (
-        <span style={{ fontSize:13, fontWeight:700, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
-          {badge > 99 ? "99+" : badge}
-        </span>
-      )}
-    </button>
-  );
-}
-
 export default function MobileFeedDrawer({
   active, onNavigate, onClose,
-  unreadCount = 0, feedUnreadCounts = {},
+  feedUnreadCounts = {},
   smartFeeds = [], onAddSmartFeed, onEditSmartFeed,
   folders = [], feeds = [],
   onAddFolder, onMoveFeedToFolder,
@@ -253,25 +225,6 @@ export default function MobileFeedDrawer({
           </button>
         </div>
 
-        {/* Top nav rows */}
-        <div style={{ flexShrink:0, borderTop:`1px solid ${T.border}` }}>
-          <NavRow id="inbox" label="Inbox" badge={unreadCount} active={active} onNavigate={navigate} T={T} icon={
-            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/></svg>
-          }/>
-          <NavRow id="today" label="Today" badge={0} active={active} onNavigate={navigate} T={T} icon={
-            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1.5v3M11 1.5v3M2 7h12"/></svg>
-          }/>
-          <NavRow id="readlater" label="Saved" badge={0} active={active} onNavigate={navigate} T={T} icon={
-            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 14l-4-3-4 3V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
-          }/>
-<NavRow id="review" label="Review" badge={0} active={active} onNavigate={navigate} T={T} icon={
-            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13.5 8a5.5 5.5 0 0 1-9.9 3.3M2.5 8a5.5 5.5 0 0 1 9.9-3.3"/><path d="M11.5 4.5l.9-2.1 2.1.9"/><path d="M4.5 11.5l-.9 2.1-2.1-.9"/></svg>
-          }/>
-          <NavRow id="cards" label="Cards" badge={0} active={active} onNavigate={navigate} T={T} icon={
-            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M4 7h8M4 10h5"/></svg>
-          }/>
-        </div>
-
         {/* Feed tree — scrollable */}
         <div style={{ flex:1, overflowY:"auto", minHeight:0, borderTop:`1px solid ${T.border}` }}>
           {(folders.length > 0 || feeds.length > 0) && (
@@ -328,11 +281,6 @@ export default function MobileFeedDrawer({
             </>
           )}
 
-          {/* Settings row at the bottom */}
-          <div style={{ height:1, background:T.border, margin:"8px 0" }} />
-          <NavRow id="settings" label="Settings" badge={0} active={active} onNavigate={navigate} T={T} icon={
-            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.6 3.6l1.3 1.3M11.1 11.1l1.3 1.3M3.6 12.4l1.3-1.3M11.1 4.9l1.3-1.3"/></svg>
-          }/>
         </div>
       </div>
 

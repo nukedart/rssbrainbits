@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.106] — 2026-04-04
+
+- [Nav] Removed Add button from pill nav — 4-item pill (Feeds, Inbox, Cards, Review) is cleaner and more balanced
+- [Nav] Feeds bottom sheet now focused purely on feed browsing — removed duplicate nav rows (Inbox, Today, Cards, Review, Settings) that were redundant with the pill
+
 ## [1.46.105] — 2026-04-04
 
 - [Polish] Floating pill nav sits closer to screen edge (16→8px) and button items are slightly larger (10→12px vertical padding)

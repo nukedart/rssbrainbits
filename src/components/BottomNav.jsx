@@ -1,4 +1,4 @@
-import { List, Inbox, CreditCard, RefreshCw, Plus } from "lucide-react";
+import { List, Inbox, CreditCard, RefreshCw } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 
 function hexToRgba(hex, alpha) {
@@ -10,11 +10,10 @@ function hexToRgba(hex, alpha) {
 }
 
 const NAV_ITEMS = [
-  { id: "feeds",  Icon: List,      label: "Feeds",  special: "feeds" },
-  { id: "inbox",  Icon: Inbox,     label: "Inbox"  },
-  { id: "add",    Icon: Plus,      label: "Add",    special: "add"   },
+  { id: "feeds",  Icon: List,       label: "Feeds",  special: "feeds" },
+  { id: "inbox",  Icon: Inbox,      label: "Inbox"  },
   { id: "cards",  Icon: CreditCard, label: "Cards"  },
-  { id: "review", Icon: RefreshCw, label: "Review" },
+  { id: "review", Icon: RefreshCw,  label: "Review" },
 ];
 
 export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {
@@ -39,37 +38,6 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
       maxWidth: "calc(100vw - 32px)",
     }}>
       {NAV_ITEMS.map(({ id, Icon, label, special }) => {
-
-        // ── Centre Add (+) button ─────────────────────────────
-        if (special === "add") {
-          return (
-            <button
-              key="add"
-              onClick={onAdd}
-              aria-label="Add feed"
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                padding: "6px 6px",
-                border: "none", background: "transparent",
-                cursor: "pointer", fontFamily: "inherit",
-                WebkitTapHighlightColor: "transparent",
-              }}
-              onTouchStart={e => e.currentTarget.firstChild.style.transform = "scale(0.88)"}
-              onTouchEnd={e => e.currentTarget.firstChild.style.transform = "scale(1)"}
-              onTouchCancel={e => e.currentTarget.firstChild.style.transform = "scale(1)"}
-            >
-              <span style={{
-                width: 40, height: 40, borderRadius: 999,
-                background: T.accent, color: T.accentText,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: `0 3px 14px ${T.accent}55`,
-                transition: "transform .1s",
-              }}>
-                <Icon size={19} strokeWidth={2.5} />
-              </span>
-            </button>
-          );
-        }
 
         // ── Feeds drawer trigger ──────────────────────────────
         if (special === "feeds") {
