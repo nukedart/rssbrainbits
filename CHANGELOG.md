@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.105] — 2026-04-04
+
+- [Polish] Floating pill nav sits closer to screen edge (16→8px) and button items are slightly larger (10→12px vertical padding)
+
 ## [1.46.104] — 2026-04-03
 
 - [Nav] Floating pill nav is always visible (removed scroll-hide); mobile toolbar taller (62px); feed scroll area extends to screen bottom with just enough padding to clear the pill

@@ -23,7 +23,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
   return (
     <nav style={{
       position: "fixed",
-      bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+      bottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
       left: "50%",
       zIndex: 600,
       background: hexToRgba(T.card, 0.94),
@@ -83,7 +83,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               style={{
                 display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
-                gap: 3, padding: "10px 14px",
+                gap: 3, padding: "12px 16px",
                 border: "none", background: "transparent",
                 color: isActive ? T.accent : T.textTertiary,
                 cursor: "pointer", fontFamily: "inherit",
@@ -111,7 +111,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             style={{
               display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center",
-              gap: 3, padding: "10px 14px",
+              gap: 3, padding: "12px 16px",
               border: "none", background: "transparent",
               color: isActive ? T.accent : T.textTertiary,
               cursor: "pointer", fontFamily: "inherit",
