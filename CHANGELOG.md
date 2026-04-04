@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.104] — 2026-04-03
+
+- [Nav] Floating pill nav is always visible (removed scroll-hide); mobile toolbar taller (62px); feed scroll area extends to screen bottom with just enough padding to clear the pill
+
 ## [1.46.103] — 2026-04-03
 
 - [Nav] BottomNav is now a floating pill — centered, lifted off the bottom edge with rounded corners and a deep shadow instead of a full-width bar

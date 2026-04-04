@@ -620,7 +620,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       <div style={{ flex: !isMobile && openItem ? "0 0 420px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
-        <div style={{ padding: "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 48 : 54 }}>
+        <div style={{ padding: "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 62 : 54 }}>
 
           {/* Title + unread badge + error badge — hidden when search open */}
           {!searchOpen && (
@@ -906,7 +906,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             if (Math.abs(top - prev) < 4) return;
             window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
           }) : undefined}
-          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 80px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "80px" : undefined, WebkitOverflowScrolling: "touch" }}>
+          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 96px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "96px" : undefined, WebkitOverflowScrolling: "touch" }}>
           {/* New articles banner — shown after a background refresh detects new items */}
           {newArticleCount > 0 && !loadingItems && (
             <button

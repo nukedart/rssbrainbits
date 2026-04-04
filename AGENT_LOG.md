@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-03 | v1.46.104 | Nav | Pill nav always visible; mobile toolbar 48→62px; feed content fills to screen bottom | `BottomNav.jsx:21-32` `InboxPage.jsx:623,909` `App.jsx:257` | — |
 | 2026-04-03 | v1.46.103 | Nav | BottomNav converted to floating pill — centered, lifted off bottom, pill border-radius + shadow | `BottomNav.jsx:34-54` | — |
 | 2026-04-03 | v1.46.102 | Nav | BottomNav rewritten with lucide-react icons — declarative NAV_ITEMS array, strokeWidth for active state | `BottomNav.jsx:1-157` | — |
 | 2026-04-03 | v1.46.96 | Polish | Remove decorative border from inactive source filter pill — reduces toolbar noise | `InboxPage.jsx:691` | — |

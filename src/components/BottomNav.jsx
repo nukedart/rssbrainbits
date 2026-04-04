@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { List, Inbox, CreditCard, RefreshCw, Plus } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 
@@ -20,16 +19,6 @@ const NAV_ITEMS = [
 
 export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {
   const { T } = useTheme();
-  const [hidden, setHidden] = useState(false);
-
-  useEffect(() => {
-    const handler = e => setHidden(e.detail === "down");
-    window.addEventListener("fb-nav-dir", handler);
-    return () => window.removeEventListener("fb-nav-dir", handler);
-  }, []);
-
-  // Always show when navigating to a new page
-  useEffect(() => { setHidden(false); }, [active]);
 
   return (
     <nav style={{
@@ -40,10 +29,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
       background: hexToRgba(T.card, 0.94),
       backdropFilter: "blur(28px) saturate(200%)",
       WebkitBackdropFilter: "blur(28px) saturate(200%)",
-      transform: hidden
-        ? "translateX(-50%) translateY(calc(100% + 32px))"
-        : "translateX(-50%)",
-      transition: "transform .28s cubic-bezier(.4,0,.2,1)",
+      transform: "translateX(-50%)",
       display: "flex", alignItems: "center",
       borderRadius: 999,
       border: `1px solid ${T.border}`,
