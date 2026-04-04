@@ -267,7 +267,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         (i.author||"").toLowerCase().includes(q)
       );
     }
-    return items;
+    return items.sort((a, b) => (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0));
   })();
 
   // ── Open item by index ────────────────────────────────────────
@@ -575,13 +575,13 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        // Fire when item has scrolled fully past the top (bottom edge above viewport top)
-        if (!entry.isIntersecting && entry.boundingClientRect.bottom < 0) {
+        // Fire when item has scrolled fully past the top of the scroll container
+        if (!entry.isIntersecting && entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0)) {
           const url = entry.target.dataset.url;
           if (url && !readUrlsRef.current.has(url)) handleMarkRead(url);
         }
       });
-    }, { threshold: 0 });
+    }, { root: listRef.current, threshold: 0 });
     return () => observerRef.current?.disconnect();
   }, [autoMarkRead]);
 

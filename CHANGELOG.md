@@ -10,6 +10,8 @@ Format: `## [version] — YYYY-MM-DD`
 ## [1.46.119] — 2026-04-04
 
 - [Polish] Remove decorative boxShadow from active Unread/All toggle pill — active state is already communicated by T.bg background and font-weight 600; toolbar reads calmer without the depth layer
+- [Fix] Read-on-scroll: pass `root: listRef.current` to IntersectionObserver so it tracks the scroll container boundary, not the viewport; items now correctly mark read when scrolled past the top
+- [Fix] Inbox sort: guaranteed newest-first across all filter modes with safe date handling for items missing dates
 
 ## [1.46.118] — 2026-04-04
 
