@@ -229,6 +229,29 @@ export default function MobileFeedDrawer({
           </button>
         </div>
 
+        {/* Quick-nav: pages not in the bottom pill */}
+        <div style={{ display:"flex", gap:8, padding:"0 16px 12px", flexShrink:0 }}>
+          {[
+            { id:"today",     label:"Today"  },
+            { id:"readlater", label:"Saved"  },
+          ].map(({ id, label }) => {
+            const isActive = active === id;
+            return (
+              <button key={id} onClick={() => navigate(id)} style={{
+                flex:1, padding:"9px 0", borderRadius:10,
+                background: isActive ? T.accentSurface : T.surface,
+                border:`1px solid ${isActive ? T.accent+"44" : T.border}`,
+                color: isActive ? T.accent : T.textSecondary,
+                fontSize:13, fontWeight: isActive ? 700 : 500,
+                cursor:"pointer", fontFamily:"inherit",
+                WebkitTapHighlightColor:"transparent",
+              }}>
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Feed tree — scrollable */}
         <div style={{ flex:1, overflowY:"auto", minHeight:0, borderTop:`1px solid ${T.border}` }}>
           {(folders.length > 0 || feeds.length > 0) && (

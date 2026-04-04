@@ -50,12 +50,12 @@ Type these in the chat to trigger focused agent workflows:
 
 | Command | What it does |
 |---|---|
-| `/iterate` | Full autonomous loop: audit → pick one issue → fix → test → deploy |
-| `/perf` | Performance-only audit: bundle sizes + Lighthouse trend + top wins |
-| `/nav` | Navigation UX audit: consistency, coverage, mobile overflow, labels |
-| `/polish` | Visual audit: hardcoded colors, spacing, radius, theme consistency |
-| `/ux` | UX/UI improvement loop: tap targets, accessibility, empty states, micro-interactions |
-| `/features` | Competitive analysis: compares Feedbox vs top RSS apps, produces prioritized feature backlog |
+| `/iterate [N]` | **Action loop** — audit → pick one issue → fix → test → deploy. Runs N times if given (e.g. `/iterate 3`) |
+| `/ux [N]`      | **Action loop** — UX/UI improvements: tap targets, accessibility, empty states, micro-interactions. Runs N times if given |
+| `/perf`        | **Audit only** — bundle sizes + Lighthouse trend + top 3 perf wins. No changes made |
+| `/nav`         | **Audit only** — navigation consistency, mobile overflow, label clarity. No changes made |
+| `/polish`      | **Audit only** — hardcoded colors, spacing, radius, theme consistency. No changes made |
+| `/features`    | **Audit only** — competitive gap analysis vs Feedly/Reeder/Readwise, produces prioritized backlog |
 
 ## Changelog rule (MANDATORY — applies to every code change)
 

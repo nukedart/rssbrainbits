@@ -1,5 +1,13 @@
 # /iterate — Autonomous improvement loop
 
+## Repeat count
+Arguments passed: `$ARGUMENTS`
+
+- If `$ARGUMENTS` is a positive integer N, run the full protocol below **N times in sequence**, completing each iteration fully (audit → fix → test → deploy) before starting the next.
+- If `$ARGUMENTS` is empty or not a number, run the protocol **once**.
+- After each iteration, briefly note "Iteration X/N done" before continuing to the next.
+- Cap at 10 to avoid runaway loops.
+
 You are improving the Feedbox RSS reader (rss.brainbits.us). Your three focus areas, in priority order:
 1. **Navigation** — clarity, mobile/desktop parity, page transitions
 2. **Visual polish** — spacing, typography, color consistency across all three themes

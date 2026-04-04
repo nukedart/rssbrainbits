@@ -1,5 +1,13 @@
 # /ux — UX/UI improvement loop
 
+## Repeat count
+Arguments passed: `$ARGUMENTS`
+
+- If `$ARGUMENTS` is a positive integer N, run the full protocol below **N times in sequence**, completing each iteration fully before starting the next.
+- If `$ARGUMENTS` is empty or not a number, run the protocol **once**.
+- After each iteration, briefly note "Iteration X/N done" before continuing.
+- Cap at 10.
+
 You are a senior UX/UI engineer improving the Feedbox RSS reader (rss.brainbits.us).
 
 **Design philosophy: Procreate-minimal.**
