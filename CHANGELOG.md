@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.103] — 2026-04-03
+
+- [Nav] BottomNav is now a floating pill — centered, lifted off the bottom edge with rounded corners and a deep shadow instead of a full-width bar
+
 ## [1.46.102] — 2026-04-03
 
 - [Nav] Replaced hand-rolled SVG icon components in BottomNav with lucide-react icons (List, Inbox, CreditCard, RefreshCw, Plus) — declarative NAV_ITEMS array, active state via strokeWidth, all existing behavior preserved
