@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.114] — 2026-04-04
+
+- [UX] Remove reading time footer row from sm card size — dead space on mobile 2-column grid where description is already hidden; md/lg cards keep it
+
 ## [1.46.113] — 2026-04-04
 
 - [Polish] Active BottomNav tab now shows a subtle accentSurface background pill — makes current page unambiguous vs color-only differentiation

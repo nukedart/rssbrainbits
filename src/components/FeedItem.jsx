@@ -523,18 +523,20 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               </div>
             )}
 
-            {/* Reading time + date row */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: cardSize !== "sm" ? 6 : 0, marginBottom: 8 }}>
-              {!item.isPodcast && item.description && (
-                <span style={{ fontSize: 10, color: T.textTertiary }}>
-                  {readingTime(item.description)}
-                </span>
-              )}
-              {!item.isPodcast && item.date && item.description && <span style={{ fontSize: 10, color: T.textTertiary }}>·</span>}
-              {item.isPodcast && item.audioDuration && (
-                <span style={{ fontSize: 10, color: T.accent }}>▶ {item.audioDuration}</span>
-              )}
-            </div>
+            {/* Reading time — md/lg only; sm cards are too compact */}
+            {cardSize !== "sm" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, marginBottom: 8 }}>
+                {!item.isPodcast && item.description && (
+                  <span style={{ fontSize: 10, color: T.textTertiary }}>
+                    {readingTime(item.description)}
+                  </span>
+                )}
+                {!item.isPodcast && item.date && item.description && <span style={{ fontSize: 10, color: T.textTertiary }}>·</span>}
+                {item.isPodcast && item.audioDuration && (
+                  <span style={{ fontSize: 10, color: T.accent }}>▶ {item.audioDuration}</span>
+                )}
+              </div>
+            )}
 
           </div>
 
