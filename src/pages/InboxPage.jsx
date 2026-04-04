@@ -1034,7 +1034,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         <Suspense fallback={null}>
           <ContentViewer
             item={openItem}
-            onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+            onClose={() => { setOpenItem(null); setOpenIdx(-1); window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }}
             onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
             onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
             currentIdx={openIdx}

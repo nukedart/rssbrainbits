@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.101] — 2026-04-03
+
+- [Nav] BottomNav now always reappears after closing an article on mobile — dispatches "up" event on ContentViewer close so a hidden nav never stays hidden after returning to the list
+
 ## [1.46.100] — 2026-04-03
 
 - [Polish] Review page now uses the same highlight color definitions as Cards page — yellow/green/blue/purple strips match between the two views for visual consistency
