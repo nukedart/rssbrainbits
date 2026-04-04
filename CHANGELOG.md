@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.108] — 2026-04-04
+
+- [Nav] Add button restored to pill nav (5 items)
+- [Polish] AddModal redesigned — no heavy header, X button replaces Cancel, input is the hero, detected type shown as a slim accent label, single full-width action button
+
 ## [1.46.107] — 2026-04-04
 
 ### Changes since v1.46.106

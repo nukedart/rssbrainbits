@@ -4,12 +4,12 @@ import { Input, Button, Spinner } from "./UI";
 import { detectInputType, discoverFeed, parseXUrl, xToRSSUrl, searchApplePodcasts, resolvePodcastFeedUrl, isRSSUrl, isSpotifyPodcastUrl } from "../lib/fetchers";
 
 const TYPE_INFO = {
-  rss:     { icon: "📡",  label: "RSS Feed",          desc: "All articles from this feed will appear in your inbox" },
-  podcast: { icon: "🎙️", label: "Podcast",            desc: "Episodes will appear in your inbox with a play button" },
-  spotify: { icon: "🎵",  label: "Spotify Podcast",   desc: "We'll find the RSS feed for this show automatically" },
-  youtube: { icon: "▶️",  label: "YouTube Channel",   desc: "Videos will appear in your inbox" },
-  article: { icon: "📰",  label: "Article",            desc: "Read this article in a clean, focused view" },
-  twitter: { icon: "𝕏",   label: "X / Twitter Feed",  desc: "Posts will stream into your inbox via RSS relay" },
+  rss:     { label: "RSS Feed"          },
+  podcast: { label: "Podcast"           },
+  spotify: { label: "Spotify Podcast"   },
+  youtube: { label: "YouTube Channel"   },
+  article: { label: "Article"           },
+  twitter: { label: "X / Twitter Feed"  },
 };
 
 const DISCOVER_FEEDS = {
@@ -63,7 +63,6 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
     const trimmed = val.trim();
     if (!trimmed) { setDetected(null); return; }
 
-    // Check for @handle or x.com/twitter.com profile
     const xParsed = parseXUrl(trimmed);
     if (xParsed.isX || trimmed.startsWith("@")) {
       setDetected("twitter"); return;
@@ -72,15 +71,11 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
     try {
       new URL(trimmed);
       const type = detectInputType(trimmed);
-      // Show Spotify-specific label while resolving
       const displayType = (type === "podcast" && isSpotifyPodcastUrl(trimmed)) ? "spotify" : type;
       setDetected(displayType);
       if (type === "article" || type === "podcast") {
-        // Podcast URLs that are already RSS feeds (feeds.buzzsprout.com, anchor.fm/s/…/rss, etc.)
-        // don't need discovery — treat them as RSS directly.
         if (type === "podcast" && isRSSUrl(trimmed)) {
-          setDetected("rss");
-          return;
+          setDetected("rss"); return;
         }
         setDiscovering(true);
         discoverTimerRef.current = setTimeout(() => {
@@ -110,15 +105,13 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
         finalName = finalName || `@${username}`;
       }
 
-      // If we still have a raw podcast/spotify page URL (not an RSS feed, discovery didn't run or failed),
-      // try resolving it now before attempting to add.
       if ((detected === "podcast" || detected === "spotify") && finalUrl === trimmed && !isRSSUrl(trimmed)) {
         const resolved = await resolvePodcastFeedUrl(trimmed).catch(() => null);
         if (resolved?.feedUrl) {
           finalUrl = resolved.feedUrl;
           finalName = finalName || resolved.title || null;
         } else {
-          throw new Error("Couldn't find an RSS feed for this podcast. Try pasting the feed URL directly, or search by podcast name above.");
+          throw new Error("Couldn't find an RSS feed for this podcast. Try pasting the feed URL directly.");
         }
       }
 
@@ -132,115 +125,130 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
 
   const info = detected ? TYPE_INFO[detected] : null;
   const btnLabel = loading ? "Adding…"
-    : detected === "rss" ? "Subscribe"
-    : detected === "twitter" ? "Follow on X"
+    : detected === "rss"     ? "Subscribe"
+    : detected === "twitter" ? "Follow"
     : detected === "youtube" ? "Subscribe"
     : detected === "article" ? "Open Article"
     : "Add";
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: T.overlay, zIndex: 1000,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "24px",
-    }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: T.overlay,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "20px",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div style={{
         background: T.card,
-        borderRadius: 18,
-        padding: "24px 24px 20px",
-        width: "100%", maxWidth: "min(500px, 95vw)",
+        borderRadius: 22,
+        padding: "20px 20px 24px",
+        width: "100%", maxWidth: "min(480px, 95vw)",
         maxHeight: "90vh", overflowY: "auto",
         boxShadow: "0 24px 80px rgba(0,0,0,.3)",
-        animation: "fadeInScale .2s ease",
+        animation: "fadeInScale .18s ease",
         border: `1px solid ${T.border}`,
+        position: "relative",
       }}>
 
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: T.accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, marginRight: 12, color: T.accentText, fontWeight: 700 }}>+</div>
-          <div>
-            <h2 style={{ fontSize: 17, fontWeight: 700, color: T.text, margin: 0 }}>Add to Feedbox</h2>
-            <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>RSS, YouTube, podcast, article, or X</div>
-          </div>
-          <button onClick={onClose} style={{
-            marginLeft: "auto", background: T.surface2, border: "none",
-            borderRadius: 8, width: 30, height: 30, cursor: "pointer",
-            color: T.textSecondary, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center",
-          }}>×</button>
+        {/* X close */}
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            position: "absolute", top: 14, right: 14,
+            background: T.surface2, border: "none", borderRadius: "50%",
+            width: 28, height: 28, cursor: "pointer",
+            color: T.textTertiary, fontSize: 16, lineHeight: 1,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >×</button>
+
+        {/* Input */}
+        <div style={{ marginTop: 8, marginBottom: 4 }}>
+          <Input
+            value={url}
+            onChange={handleUrlChange}
+            placeholder="URL, @handle, or YouTube link…"
+            autoFocus
+            onKeyDown={e => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }}
+            style={{ fontSize: 15 }}
+          />
         </div>
 
-        {/* Single URL input */}
-        <Input
-          value={url}
-          onChange={handleUrlChange}
-          placeholder="Paste a URL, RSS feed, @x_handle, or YouTube link…"
-          autoFocus
-          onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }}
-          style={{ fontSize: 14 }}
-        />
-
-        {/* Detected type chip */}
+        {/* Detected type — slim one-liner */}
         {(info || discovering) && (
-          <div style={{ display: "flex", gap: 10, padding: "10px 14px", borderRadius: 10, background: T.accentSurface, marginTop: 12, alignItems: "center" }}>
-            {discovering ? <Spinner size={18} /> : <span style={{ fontSize: 20 }}>{info?.icon}</span>}
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>
-                {discovering ? "Detecting feed…" : info?.label}
-              </div>
-              {!discovering && <div style={{ fontSize: 12, color: T.textSecondary }}>{info?.desc}</div>}
-            </div>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6,
+            fontSize: 12, color: T.textSecondary,
+            padding: "6px 2px",
+          }}>
+            {discovering
+              ? <><Spinner size={12} /><span>Detecting…</span></>
+              : <span style={{ color: T.accent, fontWeight: 600 }}>{info?.label}</span>
+            }
           </div>
         )}
 
-        {/* Optional nickname (for feeds & X) */}
+        {/* Optional nickname */}
         {(detected === "rss" || detected === "podcast" || detected === "twitter" || detected === "youtube") && (
-          <div style={{ marginTop: 12 }}>
-            <Input value={feedName} onChange={setFeedName} placeholder="Nickname (optional, e.g. Hacker News)" />
+          <div style={{ marginTop: 8 }}>
+            <Input value={feedName} onChange={setFeedName} placeholder="Nickname (optional)" style={{ fontSize: 14 }} />
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div style={{ fontSize: 13, color: T.danger, padding: "9px 13px", background: `${T.danger}18`, borderRadius: 9, marginTop: 12, lineHeight: 1.5 }}>{error}</div>
+          <div style={{ fontSize: 13, color: T.danger, padding: "8px 12px", background: `${T.danger}18`, borderRadius: 9, marginTop: 10, lineHeight: 1.5 }}>
+            {error}
+          </div>
         )}
 
-        {/* Actions */}
-        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-          <Button variant="secondary" onClick={onClose} style={{ flex: 1, justifyContent: "center" }}>Cancel</Button>
+        {/* Primary action */}
+        <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
           {detected === "article" && onSaveForLater && (
             <Button variant="secondary" onClick={async () => {
               setLoading(true); setError("");
               try { await onSaveForLater({ url: url.trim(), type: "article" }); onClose(); }
               catch (err) { setError(err.message || "Failed to save."); }
               finally { setLoading(false); }
-            }} disabled={!url.trim() || loading} style={{ flex: 2, justifyContent: "center" }}>
-              {loading ? "Saving…" : "🔖 Save for Later"}
+            }} disabled={!url.trim() || loading} style={{ flex: 1, justifyContent: "center" }}>
+              {loading ? "Saving…" : "🔖 Save"}
             </Button>
           )}
-          <Button onClick={handleSubmit} disabled={!url.trim() || loading} style={{ flex: detected === "article" && onSaveForLater ? 2 : 3, justifyContent: "center" }}>
+          <Button
+            onClick={handleSubmit}
+            disabled={!url.trim() || loading}
+            style={{ flex: 1, justifyContent: "center" }}
+          >
             {btnLabel}
           </Button>
         </div>
 
-        {/* Browse popular feeds — collapsible */}
-        <div style={{ marginTop: 20, borderTop: `1px solid ${T.border}`, paddingTop: 16 }}>
+        {/* Browse popular feeds */}
+        <div style={{ marginTop: 18, borderTop: `1px solid ${T.border}`, paddingTop: 14 }}>
           <button onClick={() => setShowDiscover(v => !v)} style={{
             display: "flex", alignItems: "center", gap: 6, width: "100%",
             background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
-            fontSize: 12, fontWeight: 600, color: T.textSecondary, padding: 0, marginBottom: showDiscover ? 12 : 0,
+            fontSize: 12, fontWeight: 600, color: T.textSecondary, padding: 0,
+            marginBottom: showDiscover ? 12 : 0,
+            WebkitTapHighlightColor: "transparent",
           }}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ transform: showDiscover ? "rotate(90deg)" : "rotate(0deg)", transition: "transform .15s" }}><path d="M4 2l4 4-4 4"/></svg>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ transform: showDiscover ? "rotate(90deg)" : "rotate(0deg)", transition: "transform .15s" }}><path d="M4 2l4 4-4 4"/></svg>
             Browse popular feeds
           </button>
           {showDiscover && (
-            <div style={{ maxHeight: 320, overflowY: "auto" }}>
+            <div style={{ maxHeight: 300, overflowY: "auto" }}>
               {Object.entries(DISCOVER_FEEDS).map(([category, feeds]) => (
                 <div key={category}>
                   <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, padding: "8px 2px 4px" }}>{category}</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {feeds.map(feed => (
-                      <div key={feed.url} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 9, background: T.surface, cursor: "pointer", transition: "background .12s" }}
+                      <div key={feed.url}
+                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 9, background: T.surface, cursor: "pointer", transition: "background .12s" }}
                         onMouseEnter={e => e.currentTarget.style.background = T.surface2}
                         onMouseLeave={e => e.currentTarget.style.background = T.surface}
                         onClick={async () => {
@@ -253,7 +261,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                           <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{feed.name}</div>
                           <div style={{ fontSize: 11, color: T.textTertiary }}>{feed.desc}</div>
                         </div>
-                        <span style={{ fontSize: 11, color: T.accent, fontWeight: 600, flexShrink: 0 }}>+ Add</span>
+                        <span style={{ fontSize: 11, color: T.accent, fontWeight: 600, flexShrink: 0 }}>+</span>
                       </div>
                     ))}
                   </div>
