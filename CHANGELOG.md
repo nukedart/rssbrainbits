@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.120] — 2026-04-04
+
+- [Polish] Remove decorative border from unselected card-view items — card gap + borderRadius already define shape; only selected cards keep the accent border as functional selection indicator
+
 ## [1.46.119] — 2026-04-04
 
 - [Polish] Remove decorative boxShadow from active Unread/All toggle pill — active state is already communicated by T.bg background and font-weight 600; toolbar reads calmer without the depth layer
