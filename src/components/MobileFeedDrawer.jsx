@@ -213,15 +213,19 @@ export default function MobileFeedDrawer({
           <button
             onClick={onAddSource}
             style={{
-              background:T.accent, border:"none", borderRadius:10,
-              padding:"7px 14px", cursor:"pointer",
-              color:T.accentText, fontSize:13, fontWeight:700,
-              display:"flex", alignItems:"center", gap:6,
+              background:"none", border:"none", padding:"4px",
+              cursor:"pointer", color:T.textTertiary,
+              display:"flex", alignItems:"center",
               WebkitTapHighlightColor:"transparent",
+              transition:"color .12s",
             }}
+            onTouchStart={e => { e.currentTarget.style.color = T.text; }}
+            onTouchEnd={e => { e.currentTarget.style.color = T.textTertiary; }}
+            onTouchCancel={e => { e.currentTarget.style.color = T.textTertiary; }}
+            onMouseEnter={e => { e.currentTarget.style.color = T.text; }}
+            onMouseLeave={e => { e.currentTarget.style.color = T.textTertiary; }}
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>
-            Add
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M10 4v12M4 10h12"/></svg>
           </button>
         </div>
 

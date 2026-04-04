@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.107] — 2026-04-04
+
+### Changes since v1.46.106
+
+---
+
 ## [1.46.106] — 2026-04-04
 
 - [Nav] Removed Add button from pill nav — 4-item pill (Feeds, Inbox, Cards, Review) is cleaner and more balanced
