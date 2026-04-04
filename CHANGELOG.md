@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.119] — 2026-04-04
+
+- [Polish] Remove decorative boxShadow from active Unread/All toggle pill — active state is already communicated by T.bg background and font-weight 600; toolbar reads calmer without the depth layer
+
 ## [1.46.118] — 2026-04-04
 
 - [Polish] BottomNav pill larger: button padding 8→11px, icons 21→24px, Add circle 36→42px, labels 10→11px

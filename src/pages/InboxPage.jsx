@@ -741,7 +741,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   fontWeight: readFilter === val ? 600 : 400,
                   fontSize: 11, cursor: "pointer", fontFamily: "inherit",
                   transition: "all .15s",
-                  boxShadow: readFilter === val ? "0 1px 3px rgba(0,0,0,.12)" : "none",
                 }}>{label}</button>
               ))}
             </div>
