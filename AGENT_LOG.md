@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-03 | v1.46.102 | Nav | BottomNav rewritten with lucide-react icons — declarative NAV_ITEMS array, strokeWidth for active state | `BottomNav.jsx:1-157` | — |
 | 2026-04-03 | v1.46.96 | Polish | Remove decorative border from inactive source filter pill — reduces toolbar noise | `InboxPage.jsx:691` | — |
 |------|---------|------|--------|-------|-------------|
 | 2026-04-03 | v1.46.101 | Nav | BottomNav reappears after closing mobile reader — dispatch fb-nav-dir "up" on ContentViewer onClose | `InboxPage.jsx:1037` | — |

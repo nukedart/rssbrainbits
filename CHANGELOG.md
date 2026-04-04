@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.102] — 2026-04-03
+
+- [Nav] Replaced hand-rolled SVG icon components in BottomNav with lucide-react icons (List, Inbox, CreditCard, RefreshCw, Plus) — declarative NAV_ITEMS array, active state via strokeWidth, all existing behavior preserved
+
 ## [1.46.101] — 2026-04-03
 
 - [Nav] BottomNav now always reappears after closing an article on mobile — dispatches "up" event on ContentViewer close so a hidden nav never stays hidden after returning to the list

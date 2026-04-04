@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { List, Inbox, CreditCard, RefreshCw, Plus } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 
 function hexToRgba(hex, alpha) {
@@ -9,31 +10,12 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-const Icons = {
-  Feeds:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h12M3 18h8"/></svg>),
-  Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M2 15h5l2 4h6l2-4h5"/></svg>),
-  Today:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M7 2v4M17 2v4M3 10h18"/><path d="M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2"/></svg>),
-  Saved:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>),
-  Cards:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 10h12M6 14h8"/></svg>),
-  Review:   () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 1-15.8 5.9"/><path d="M3 12a9 9 0 0 1 15.8-5.9"/><path d="M17.5 5.8l1.5-3.5 3.5 1.5"/><path d="M6.5 18.2l-1.5 3.5-3.5-1.5"/></svg>),
-};
-
-// Filled versions for active state
-const IconsFilled = {
-  Feeds:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h12M3 18h8" strokeWidth="2.2"/></svg>),
-  Inbox:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="2" y="2" width="20" height="20" rx="4" opacity=".15"/><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="currentColor" strokeWidth="1.7"/><path d="M2 15h5l2 4h6l2-4h5" fill="none" stroke="currentColor" strokeWidth="1.7"/></svg>),
-  Today:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M7 2v4M17 2v4M3 10h18" strokeWidth="2"/><path d="M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2" strokeWidth="2.2"/></svg>),
-  Saved:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>),
-  Cards:    () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 10h12M6 14h8"/></svg>),
-  Review:   () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 1-15.8 5.9"/><path d="M3 12a9 9 0 0 1 15.8-5.9"/><path d="M17.5 5.8l1.5-3.5 3.5 1.5"/><path d="M6.5 18.2l-1.5 3.5-3.5-1.5"/></svg>),
-};
-
-const NAV = [
-  { id: "feeds",     Icon: Icons.Feeds,     IconFilled: IconsFilled.Feeds,     label: "Feeds",   special: "feeds" },
-  { id: "inbox",     Icon: Icons.Inbox,     IconFilled: IconsFilled.Inbox,     label: "Inbox"   },
-  { id: "add",       Icon: null,            IconFilled: null,                  label: "Add"     },
-  { id: "cards",     Icon: Icons.Cards,     IconFilled: IconsFilled.Cards,     label: "Cards"   },
-  { id: "review",    Icon: Icons.Review,    IconFilled: IconsFilled.Review,    label: "Review"  },
+const NAV_ITEMS = [
+  { id: "feeds",  Icon: List,      label: "Feeds",  special: "feeds" },
+  { id: "inbox",  Icon: Inbox,     label: "Inbox"  },
+  { id: "add",    Icon: Plus,      label: "Add",    special: "add"   },
+  { id: "cards",  Icon: CreditCard, label: "Cards"  },
+  { id: "review", Icon: RefreshCw, label: "Review" },
 ];
 
 export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {
@@ -55,7 +37,6 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
       background: hexToRgba(T.card, 0.92),
       backdropFilter: "blur(24px) saturate(180%)",
       WebkitBackdropFilter: "blur(24px) saturate(180%)",
-
       transform: hidden ? "translateY(100%)" : "translateY(0)",
       transition: "transform .25s ease",
       display: "flex", alignItems: "stretch",
@@ -63,10 +44,10 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
       paddingLeft: "env(safe-area-inset-left, 0px)",
       paddingRight: "env(safe-area-inset-right, 0px)",
     }}>
-      {NAV.map(({ id, Icon, IconFilled, label, special }) => {
+      {NAV_ITEMS.map(({ id, Icon, label, special }) => {
 
         // ── Centre Add (+) button ─────────────────────────────
-        if (id === "add") {
+        if (special === "add") {
           return (
             <button
               key="add"
@@ -92,9 +73,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
                 boxShadow: `0 3px 14px ${T.accent}55`,
                 transition: "transform .1s",
               }}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M10 3v14M3 10h14"/>
-                </svg>
+                <Icon size={20} strokeWidth={2.5} />
               </span>
             </button>
           );
@@ -102,8 +81,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
 
         // ── Feeds drawer trigger ──────────────────────────────
         if (special === "feeds") {
-          const isFeedsActive = active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:");
-          const ActiveIcon = isFeedsActive ? IconFilled : Icon;
+          const isActive = active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:");
           return (
             <button
               key="feeds"
@@ -115,7 +93,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
                 alignItems: "center", justifyContent: "center",
                 gap: 4, padding: "8px 4px 6px",
                 border: "none", background: "transparent",
-                color: isFeedsActive ? T.accent : T.textTertiary,
+                color: isActive ? T.accent : T.textTertiary,
                 cursor: "pointer", fontFamily: "inherit",
                 WebkitTapHighlightColor: "transparent",
                 minHeight: 54, transition: "color .12s",
@@ -124,15 +102,14 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <ActiveIcon />
-              <span style={{ fontSize: 10, fontWeight: isFeedsActive ? 600 : 400, letterSpacing: ".01em" }}>Feeds</span>
+              <Icon size={22} strokeWidth={isActive ? 2.2 : 1.7} />
+              <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400, letterSpacing: ".01em" }}>Feeds</span>
             </button>
           );
         }
 
         // ── Standard nav tab ─────────────────────────────────
-        const isActive = active === id || (id === "inbox" && active === "inbox");
-        const ActiveIcon = isActive ? IconFilled : Icon;
+        const isActive = active === id;
         return (
           <button
             key={id}
@@ -154,7 +131,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >
             <span style={{ position: "relative", display: "flex" }}>
-              <ActiveIcon />
+              <Icon size={22} strokeWidth={isActive ? 2.2 : 1.7} />
               {id === "inbox" && unreadCount > 0 && (
                 <span style={{
                   position: "absolute", top: -3, right: -8,
