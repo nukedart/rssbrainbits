@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.117] — 2026-04-04
+
+- [Nav] Feeds pill button now stays active on Today and Saved pages — previously the pill showed no active item when navigating to those pages via the Feeds drawer
+
 ## [1.46.116] — 2026-04-04
 
 - [Polish] Page transitions upgraded from plain fadeIn to fadeInScale (0.96→1 scale + fade) — every navigation feels spatial and intentional instead of just appearing

@@ -73,7 +73,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
 
         // ── Feeds drawer trigger ──────────────────────────────
         if (special === "feeds") {
-          const isActive = active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:");
+          const isActive = active === "today" || active === "readlater" || active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:");
           return (
             <button
               key="feeds"
