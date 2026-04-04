@@ -83,12 +83,14 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               style={{
                 display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
-                gap: 3, padding: "12px 16px",
-                border: "none", background: "transparent",
+                gap: 3, padding: "8px 14px",
+                border: "none",
+                background: isActive ? T.accentSurface : "transparent",
+                borderRadius: 10,
                 color: isActive ? T.accent : T.textTertiary,
                 cursor: "pointer", fontFamily: "inherit",
                 WebkitTapHighlightColor: "transparent",
-                transition: "color .12s",
+                transition: "color .12s, background .12s",
               }}
               onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; }}
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
@@ -111,12 +113,14 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             style={{
               display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center",
-              gap: 3, padding: "12px 16px",
-              border: "none", background: "transparent",
+              gap: 3, padding: "8px 14px",
+              border: "none",
+              background: isActive ? T.accentSurface : "transparent",
+              borderRadius: 10,
               color: isActive ? T.accent : T.textTertiary,
               cursor: "pointer", fontFamily: "inherit",
               WebkitTapHighlightColor: "transparent",
-              transition: "color .12s",
+              transition: "color .12s, background .12s",
             }}
             onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; }}
             onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}

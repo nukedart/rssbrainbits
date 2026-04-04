@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-04 | v1.46.113 | Polish | Active BottomNav tab gets accentSurface background pill — clear active state beyond color alone | `BottomNav.jsx:83-120` | — |
 | 2026-04-04 | v1.46.112 | Nav | Restore Today+Saved on mobile via compact pill buttons in Feeds bottom sheet | `MobileFeedDrawer.jsx:232-252` | — |
 | 2026-04-04 | v1.46.111 | Polish | Card items: 1px border + 14px radius + hover shadow — clear definition on all themes | `FeedItem.jsx:447-450` | — |
 | 2026-04-04 | v1.46.110 | Fix | Auto-mark-read on scroll: observer recreated on every read due to readUrls dep; fixed with readUrlsRef | `InboxPage.jsx:44-46,579,584` | — |

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.113] — 2026-04-04
+
+- [Polish] Active BottomNav tab now shows a subtle accentSurface background pill — makes current page unambiguous vs color-only differentiation
+
 ## [1.46.112] — 2026-04-04
 
 - [Nav] Restore Today and Saved access on mobile — added compact pill buttons in Feeds bottom sheet after removing the full nav row list in v1.46.106
