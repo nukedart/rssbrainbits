@@ -34,7 +34,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
       borderRadius: 999,
       border: `1px solid ${T.border}`,
       boxShadow: "0 8px 40px rgba(0,0,0,.22), 0 1px 0 rgba(255,255,255,.06) inset",
-      padding: "0 6px",
+      padding: "0 8px",
       width: "max-content",
       maxWidth: "calc(100vw - 32px)",
     }}>
@@ -59,13 +59,13 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               onTouchCancel={e => e.currentTarget.firstChild.style.transform = "scale(1)"}
             >
               <span style={{
-                width: 36, height: 36, borderRadius: 999,
+                width: 42, height: 42, borderRadius: 999,
                 background: T.accent, color: T.accentText,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 boxShadow: `0 2px 10px ${T.accent}55`,
                 transition: "transform .1s",
               }}>
-                <Icon size={18} strokeWidth={2.5} />
+                <Icon size={20} strokeWidth={2.5} />
               </span>
             </button>
           );
@@ -83,7 +83,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               style={{
                 display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
-                gap: 3, padding: "8px 14px",
+                gap: 4, padding: "11px 18px",
                 border: "none",
                 background: isActive ? T.accentSurface : "transparent",
                 borderRadius: 10,
@@ -96,8 +96,8 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <Icon size={21} strokeWidth={isActive ? 2.2 : 1.7} />
-              <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400, letterSpacing: ".01em" }}>Feeds</span>
+              <Icon size={24} strokeWidth={isActive ? 2.2 : 1.7} />
+              <span style={{ fontSize: 11, fontWeight: isActive ? 600 : 400, letterSpacing: ".01em" }}>Feeds</span>
             </button>
           );
         }
@@ -113,7 +113,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             style={{
               display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center",
-              gap: 3, padding: "8px 14px",
+              gap: 4, padding: "11px 18px",
               border: "none",
               background: isActive ? T.accentSurface : "transparent",
               borderRadius: 10,
@@ -127,7 +127,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
             onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >
             <span style={{ position: "relative", display: "flex" }}>
-              <Icon size={21} strokeWidth={isActive ? 2.2 : 1.7} />
+              <Icon size={24} strokeWidth={isActive ? 2.2 : 1.7} />
               {id === "inbox" && unreadCount > 0 && (
                 <span style={{
                   position: "absolute", top: -3, right: -8,
@@ -141,7 +141,7 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
                 </span>
               )}
             </span>
-            <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400, letterSpacing: ".01em" }}>
+            <span style={{ fontSize: 11, fontWeight: isActive ? 600 : 400, letterSpacing: ".01em" }}>
               {label}
             </span>
           </button>

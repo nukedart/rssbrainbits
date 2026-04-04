@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.118] — 2026-04-04
+
+- [Polish] BottomNav pill larger: button padding 8→11px, icons 21→24px, Add circle 36→42px, labels 10→11px
+
 ## [1.46.117] — 2026-04-04
 
 - [Nav] Feeds pill button now stays active on Today and Saved pages — previously the pill showed no active item when navigating to those pages via the Feeds drawer
