@@ -42,6 +42,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "card"));
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
+  const readUrlsRef = useRef(readUrls);
+  useEffect(() => { readUrlsRef.current = readUrls; }, [readUrls]);
   const [savedUrls, setSavedUrls]       = useState(new Set());
   const [readFilter, setReadFilter]     = useState("unread"); // "all" | "unread"
   const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
@@ -576,12 +578,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         // Fire when item has scrolled fully past the top (bottom edge above viewport top)
         if (!entry.isIntersecting && entry.boundingClientRect.bottom < 0) {
           const url = entry.target.dataset.url;
-          if (url && !readUrls.has(url)) handleMarkRead(url);
+          if (url && !readUrlsRef.current.has(url)) handleMarkRead(url);
         }
       });
     }, { threshold: 0 });
     return () => observerRef.current?.disconnect();
-  }, [autoMarkRead, readUrls]);
+  }, [autoMarkRead]);
 
   // ── Pull-to-refresh (mobile) ─────────────────────────────
   function handlePTRStart(e) {
