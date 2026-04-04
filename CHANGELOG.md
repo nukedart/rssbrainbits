@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.100] — 2026-04-03
+
+- [Polish] Review page now uses the same highlight color definitions as Cards page — yellow/green/blue/purple strips match between the two views for visual consistency
+
 ## [1.46.99] — 2026-04-03
 
 - [Perf] Lazy-load fuse.js (6.6 kB gz) on first search keystroke instead of statically with InboxPage — browser no longer fetches the fuzzy-search library until the user actually searches

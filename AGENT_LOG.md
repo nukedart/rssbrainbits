@@ -5,6 +5,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | Date | Version | Area | Change | Files | Session Cost |
 | 2026-04-03 | v1.46.96 | Polish | Remove decorative border from inactive source filter pill — reduces toolbar noise | `InboxPage.jsx:691` | — |
 |------|---------|------|--------|-------|-------------|
+| 2026-04-03 | v1.47.00 | Polish | Review page highlight strips now use HIGHLIGHT_COLORS from SelectionToolbar — matches Cards page colors | `ReviewPage.jsx:6,45,159` | — |
 | 2026-04-03 | v1.46.99 | Perf | Lazy-load fuse.js on first search keystroke — defers 6.6 kB gz from InboxPage initial fetch | `SearchBar.jsx:2,46` | — |
 | 2026-04-03 | v1.46.98 | Polish | SearchBar match highlight: hardcoded teal → T.accent at 33% opacity, matches all three themes | `SearchBar.jsx:211` | — |
 | 2026-04-03 | v1.46.96 | Polish | Today hero card: remove 65% opacity on read state; title dims to T.textTertiary, image stays crisp | `TodayPage.jsx:397,441` | — |

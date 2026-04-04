@@ -5,6 +5,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { getAllHighlights } from "../lib/supabase";
 import { Spinner } from "../components/UI";
+import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 
 // ── SM-2 helpers ───────────────────────────────────────────────
 const MIN_EASE = 1.3;
@@ -41,8 +42,6 @@ function saveSchedule(userId, s) {
   localStorage.setItem(`fb-sr-${userId}`, JSON.stringify(s));
 }
 
-// ── Color strip map ────────────────────────────────────────────
-const COLOR_STRIP = { yellow: "#f6c843", blue: "#60a5fa", green: "#4ade80", purple: "#c084fc" };
 
 export default function ReviewPage() {
   const { T } = useTheme();
@@ -157,7 +156,7 @@ export default function ReviewPage() {
     );
   }
 
-  const stripColor = COLOR_STRIP[current.color] || COLOR_STRIP.yellow;
+  const stripColor = (HIGHLIGHT_COLORS.find(c => c.id === current.color) || HIGHLIGHT_COLORS[0]).border;
   const swipeOpacity = swipeState ? 0.85 : 1;
   const swipeTranslate = swipeState === "right" ? "translateX(8px)" : swipeState === "left" ? "translateX(-8px)" : "none";
 
