@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.115] — 2026-04-04
+
+- [UX] SwipeRow now handles onTouchCancel — interrupted swipes (OS gesture, call, notification) snap back instead of staying stuck mid-swipe
+
 ## [1.46.114] — 2026-04-04
 
 - [UX] Remove reading time footer row from sm card size — dead space on mobile 2-column grid where description is already hidden; md/lg cards keep it

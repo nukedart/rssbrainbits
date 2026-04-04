@@ -174,6 +174,7 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
+        onTouchCancel={() => { touchRef.current = null; setSwipeX(0); setRightX(0); setSwiped(false); }}
         style={{ transform: `translateX(${swipeX + rightX}px)`, transition: touchRef.current ? "none" : "transform .25s cubic-bezier(.25,.46,.45,.94)", position: "relative", zIndex: 1 }}
       >
         {typeof children === "function" ? children({ swiped, close }) : children}
