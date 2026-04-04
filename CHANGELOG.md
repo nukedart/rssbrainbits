@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.116] — 2026-04-04
+
+- [Polish] Page transitions upgraded from plain fadeIn to fadeInScale (0.96→1 scale + fade) — every navigation feels spatial and intentional instead of just appearing
+
 ## [1.46.115] — 2026-04-04
 
 - [UX] SwipeRow now handles onTouchCancel — interrupted swipes (OS gesture, call, notification) snap back instead of staying stuck mid-swipe

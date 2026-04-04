@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-04 | v1.46.116 | Polish | Page transitions: fadeIn → fadeInScale for spatial depth on every navigation | `App.jsx:257` | — |
 | 2026-04-04 | v1.46.115 | UX | SwipeRow: add onTouchCancel to reset stuck swipe state on OS interruptions | `FeedItem.jsx:177` | — |
 | 2026-04-04 | v1.46.114 | UX | Remove reading time footer from sm cards — eliminates dead space on mobile grid | `FeedItem.jsx:526-537` | — |
 | 2026-04-04 | v1.46.113 | Polish | Active BottomNav tab gets accentSurface background pill — clear active state beyond color alone | `BottomNav.jsx:83-120` | — |
