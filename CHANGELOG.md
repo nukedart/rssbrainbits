@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.109] — 2026-04-04
+
+- [Polish] AddModal polished: header with RSS icon + title separated by a divider, larger input with focus ring glow, detected type shown as a small uppercase accent badge, deeper shadow and tighter border radius
+
 ## [1.46.108] — 2026-04-04
 
 - [Nav] Add button restored to pill nav (5 items)

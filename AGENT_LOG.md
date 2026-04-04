@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-04 | v1.46.109 | Polish | AddModal polished: RSS icon header + divider, larger input with glow focus, accent badge for detected type | `AddModal.jsx:115-260` | — |
 | 2026-04-04 | v1.46.108 | Polish | AddModal redesigned: X replaces Cancel, no header block, input as hero, slim type label | `AddModal.jsx:1-200` | — |
 | 2026-04-04 | v1.46.106 | Nav | Remove Add slot from pill nav (4 items); strip redundant nav rows from Feeds bottom sheet | `BottomNav.jsx:12-18` `MobileFeedDrawer.jsx:111-273` | — |
 | 2026-04-04 | v1.46.105 | Polish | Pill nav closer to bottom (16→8px) and larger tap targets (padding 10→12px) | `BottomNav.jsx:26,68,105` | — |

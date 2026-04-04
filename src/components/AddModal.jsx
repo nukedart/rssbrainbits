@@ -143,133 +143,182 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
     >
       <div style={{
         background: T.card,
-        borderRadius: 22,
-        padding: "20px 20px 24px",
-        width: "100%", maxWidth: "min(480px, 95vw)",
+        borderRadius: 24,
+        width: "100%", maxWidth: "min(440px, 94vw)",
         maxHeight: "90vh", overflowY: "auto",
-        boxShadow: "0 24px 80px rgba(0,0,0,.3)",
+        boxShadow: "0 32px 96px rgba(0,0,0,.32), 0 0 0 1px rgba(255,255,255,.04) inset",
         animation: "fadeInScale .18s ease",
         border: `1px solid ${T.border}`,
-        position: "relative",
+        overflow: "hidden",
       }}>
 
-        {/* X close */}
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          style={{
-            position: "absolute", top: 14, right: 14,
-            background: T.surface2, border: "none", borderRadius: "50%",
-            width: 28, height: 28, cursor: "pointer",
-            color: T.textTertiary, fontSize: 16, lineHeight: 1,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            WebkitTapHighlightColor: "transparent",
-          }}
-        >×</button>
-
-        {/* Input */}
-        <div style={{ marginTop: 8, marginBottom: 4 }}>
-          <Input
-            value={url}
-            onChange={handleUrlChange}
-            placeholder="URL, @handle, or YouTube link…"
-            autoFocus
-            onKeyDown={e => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }}
-            style={{ fontSize: 15 }}
-          />
-        </div>
-
-        {/* Detected type — slim one-liner */}
-        {(info || discovering) && (
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "18px 18px 16px",
+          borderBottom: `1px solid ${T.border}`,
+        }}>
+          {/* RSS waves icon */}
           <div style={{
-            display: "flex", alignItems: "center", gap: 6,
-            fontSize: 12, color: T.textSecondary,
-            padding: "6px 2px",
+            width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+            background: T.accentSurface,
+            display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            {discovering
-              ? <><Spinner size={12} /><span>Detecting…</span></>
-              : <span style={{ color: T.accent, fontWeight: 600 }}>{info?.label}</span>
-            }
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round">
+              <circle cx="4" cy="12" r="1.2" fill={T.accent} stroke="none"/>
+              <path d="M2 8.5a5.5 5.5 0 0 1 5.5 5.5"/>
+              <path d="M2 4.5a9.5 9.5 0 0 1 9.5 9.5"/>
+            </svg>
           </div>
-        )}
-
-        {/* Optional nickname */}
-        {(detected === "rss" || detected === "podcast" || detected === "twitter" || detected === "youtube") && (
-          <div style={{ marginTop: 8 }}>
-            <Input value={feedName} onChange={setFeedName} placeholder="Nickname (optional)" style={{ fontSize: 14 }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Add a source</div>
+            <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>RSS · YouTube · Podcast · Article</div>
           </div>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div style={{ fontSize: 13, color: T.danger, padding: "8px 12px", background: `${T.danger}18`, borderRadius: 9, marginTop: 10, lineHeight: 1.5 }}>
-            {error}
-          </div>
-        )}
-
-        {/* Primary action */}
-        <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-          {detected === "article" && onSaveForLater && (
-            <Button variant="secondary" onClick={async () => {
-              setLoading(true); setError("");
-              try { await onSaveForLater({ url: url.trim(), type: "article" }); onClose(); }
-              catch (err) { setError(err.message || "Failed to save."); }
-              finally { setLoading(false); }
-            }} disabled={!url.trim() || loading} style={{ flex: 1, justifyContent: "center" }}>
-              {loading ? "Saving…" : "🔖 Save"}
-            </Button>
-          )}
-          <Button
-            onClick={handleSubmit}
-            disabled={!url.trim() || loading}
-            style={{ flex: 1, justifyContent: "center" }}
-          >
-            {btnLabel}
-          </Button>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              background: T.surface2, border: "none", borderRadius: "50%",
+              width: 28, height: 28, cursor: "pointer", flexShrink: 0,
+              color: T.textSecondary, fontSize: 17, lineHeight: 1,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >×</button>
         </div>
 
-        {/* Browse popular feeds */}
-        <div style={{ marginTop: 18, borderTop: `1px solid ${T.border}`, paddingTop: 14 }}>
-          <button onClick={() => setShowDiscover(v => !v)} style={{
-            display: "flex", alignItems: "center", gap: 6, width: "100%",
-            background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
-            fontSize: 12, fontWeight: 600, color: T.textSecondary, padding: 0,
-            marginBottom: showDiscover ? 12 : 0,
-            WebkitTapHighlightColor: "transparent",
-          }}>
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ transform: showDiscover ? "rotate(90deg)" : "rotate(0deg)", transition: "transform .15s" }}><path d="M4 2l4 4-4 4"/></svg>
-            Browse popular feeds
-          </button>
-          {showDiscover && (
-            <div style={{ maxHeight: 300, overflowY: "auto" }}>
-              {Object.entries(DISCOVER_FEEDS).map(([category, feeds]) => (
-                <div key={category}>
-                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, padding: "8px 2px 4px" }}>{category}</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {feeds.map(feed => (
-                      <div key={feed.url}
-                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 9, background: T.surface, cursor: "pointer", transition: "background .12s" }}
-                        onMouseEnter={e => e.currentTarget.style.background = T.surface2}
-                        onMouseLeave={e => e.currentTarget.style.background = T.surface}
-                        onClick={async () => {
-                          setLoading(true); setError("");
-                          try { await onAdd({ url: feed.url, type: "rss", name: feed.name }); onClose(); }
-                          catch (err) { setError(err.message || "Failed to add feed."); setLoading(false); }
-                        }}
-                      >
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{feed.name}</div>
-                          <div style={{ fontSize: 11, color: T.textTertiary }}>{feed.desc}</div>
-                        </div>
-                        <span style={{ fontSize: 11, color: T.accent, fontWeight: 600, flexShrink: 0 }}>+</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {loading && <div style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}><Spinner size={20} /></div>}
+        {/* Body */}
+        <div style={{ padding: "20px 18px 22px" }}>
+
+          {/* URL input — larger and more spacious */}
+          <div style={{ position: "relative" }}>
+            <input
+              value={url}
+              onChange={e => handleUrlChange(e.target.value)}
+              placeholder="Paste a URL, @handle, or feed link…"
+              autoFocus
+              onKeyDown={e => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                background: T.surface, border: `1.5px solid ${T.border}`,
+                borderRadius: 12, padding: "13px 16px",
+                fontSize: 15, color: T.text,
+                fontFamily: "inherit", outline: "none",
+              }}
+              onFocus={e => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = `0 0 0 3px ${T.accent}22`; }}
+              onBlur={e => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
+            />
+          </div>
+
+          {/* Detected type badge */}
+          {(info || discovering) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, minHeight: 22 }}>
+              {discovering ? (
+                <><Spinner size={12} /><span style={{ fontSize: 12, color: T.textTertiary }}>Detecting…</span></>
+              ) : (
+                <span style={{
+                  fontSize: 11, fontWeight: 700, letterSpacing: ".04em",
+                  color: T.accent, background: T.accentSurface,
+                  padding: "3px 9px", borderRadius: 20,
+                  border: `1px solid ${T.accent}33`,
+                }}>
+                  {info?.label.toUpperCase()}
+                </span>
+              )}
             </div>
           )}
+
+          {/* Nickname */}
+          {(detected === "rss" || detected === "podcast" || detected === "twitter" || detected === "youtube") && (
+            <div style={{ marginTop: 10 }}>
+              <input
+                value={feedName}
+                onChange={e => setFeedName(e.target.value)}
+                placeholder="Nickname (optional)"
+                style={{
+                  width: "100%", boxSizing: "border-box",
+                  background: T.surface, border: `1.5px solid ${T.border}`,
+                  borderRadius: 12, padding: "11px 16px",
+                  fontSize: 14, color: T.text,
+                  fontFamily: "inherit", outline: "none",
+                }}
+                onFocus={e => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = `0 0 0 3px ${T.accent}22`; }}
+                onBlur={e => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
+              />
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div style={{ fontSize: 13, color: T.danger, padding: "9px 13px", background: `${T.danger}18`, borderRadius: 10, marginTop: 12, lineHeight: 1.5 }}>
+              {error}
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+            {detected === "article" && onSaveForLater && (
+              <Button variant="secondary" onClick={async () => {
+                setLoading(true); setError("");
+                try { await onSaveForLater({ url: url.trim(), type: "article" }); onClose(); }
+                catch (err) { setError(err.message || "Failed to save."); }
+                finally { setLoading(false); }
+              }} disabled={!url.trim() || loading} style={{ flex: 1, justifyContent: "center" }}>
+                {loading ? "Saving…" : "🔖 Save"}
+              </Button>
+            )}
+            <Button
+              onClick={handleSubmit}
+              disabled={!url.trim() || loading}
+              style={{ flex: 1, justifyContent: "center", padding: "12px" }}
+            >
+              {btnLabel}
+            </Button>
+          </div>
+
+          {/* Browse popular feeds */}
+          <div style={{ marginTop: 20, borderTop: `1px solid ${T.border}`, paddingTop: 16 }}>
+            <button onClick={() => setShowDiscover(v => !v)} style={{
+              display: "flex", alignItems: "center", gap: 6, width: "100%",
+              background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
+              fontSize: 12, fontWeight: 600, color: T.textSecondary, padding: 0,
+              marginBottom: showDiscover ? 14 : 0,
+              WebkitTapHighlightColor: "transparent",
+            }}>
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ transform: showDiscover ? "rotate(90deg)" : "rotate(0deg)", transition: "transform .15s" }}><path d="M4 2l4 4-4 4"/></svg>
+              Browse popular feeds
+            </button>
+            {showDiscover && (
+              <div style={{ maxHeight: 300, overflowY: "auto" }}>
+                {Object.entries(DISCOVER_FEEDS).map(([category, feeds]) => (
+                  <div key={category}>
+                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, padding: "6px 2px 4px" }}>{category}</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      {feeds.map(feed => (
+                        <div key={feed.url}
+                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 10, background: T.surface, cursor: "pointer", transition: "background .12s" }}
+                          onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+                          onMouseLeave={e => e.currentTarget.style.background = T.surface}
+                          onClick={async () => {
+                            setLoading(true); setError("");
+                            try { await onAdd({ url: feed.url, type: "rss", name: feed.name }); onClose(); }
+                            catch (err) { setError(err.message || "Failed to add feed."); setLoading(false); }
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{feed.name}</div>
+                            <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{feed.desc}</div>
+                          </div>
+                          <span style={{ fontSize: 13, color: T.accent, fontWeight: 600, flexShrink: 0, opacity: 0.7 }}>+</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {loading && <div style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}><Spinner size={20} /></div>}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
