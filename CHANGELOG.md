@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.111] — 2026-04-04
+
+- [Polish] Card items now have a 1px border + 14px radius + subtle hover shadow — defines cards clearly across all themes, especially Light/Distilled where card-bg contrast is low
+
 ## [1.46.110] — 2026-04-04
 
 - [Fix] Auto-mark-read on scroll was broken — IntersectionObserver was being recreated on every read (because readUrls was a dependency), which disconnected all observations; fixed by keeping readUrls in a ref so the observer stays stable
