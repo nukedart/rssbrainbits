@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.121] — 2026-04-05
+
+- [Polish] Read article titles on mobile now use T.textTertiary instead of T.textSecondary — matches desktop, strengthens unread/read hierarchy so unread items pop instantly when scanning the inbox
+
 ## [1.46.120] — 2026-04-04
 
 - [Polish] Remove decorative border from unselected card-view items — card gap + borderRadius already define shape; only selected cards keep the accent border as functional selection indicator

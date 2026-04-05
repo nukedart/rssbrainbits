@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-05 | v1.46.121 | Polish | Read titles on mobile use T.textTertiary (not textSecondary) — matches desktop, sharpens unread/read hierarchy | `FeedItem.jsx:318` | — |
 | 2026-04-04 | v1.46.120 | Polish | Remove decorative border from unselected card items — gap+radius define shape | `FeedItem.jsx:450` | — |
 | 2026-04-04 | v1.46.119 | Polish | Remove boxShadow from active Unread/All toggle pill — T.bg+weight already signal selection | `InboxPage.jsx:744` | — |
 | 2026-04-04 | v1.46.118 | Polish | BottomNav pill bigger: padding 11px, icons 24px, Add 42px, labels 11px | `BottomNav.jsx:37,68,87,99,115,128,141` | — |

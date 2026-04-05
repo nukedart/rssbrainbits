@@ -315,7 +315,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                 fontFamily: "var(--reader-font-family)",
                 fontSize: 18,
                 fontWeight: isRead ? 400 : 600,
-                color: isRead ? T.textSecondary : T.text,
+                color: isRead ? T.textTertiary : T.text,
                 lineHeight: 1.35,
                 overflow: "hidden", display: "-webkit-box",
                 WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
