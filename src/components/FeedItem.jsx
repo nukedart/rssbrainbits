@@ -408,7 +408,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 
           {/* Action buttons — absolute overlay, right-aligned, never shifts layout */}
           {hovered && (
-            <div style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", display: "flex", gap: 0, background: T.bg, borderRadius: 8, boxShadow: `0 1px 6px rgba(0,0,0,.1)` }} onClick={e => e.stopPropagation()}>
+            <div style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", display: "flex", gap: 0, background: T.bg, borderRadius: 8 }} onClick={e => e.stopPropagation()}>
               {item.isPodcast && onPlayPodcast && (
                 <ActionBtn icon={<Ic.Play />} title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
               )}
