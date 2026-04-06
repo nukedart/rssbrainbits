@@ -78,6 +78,8 @@ Deno.serve(async (req) => {
 
   // ── Call the active provider ──────────────────────────────
   try {
+    let summary: string;
+
     if (provider === "openai") {
       const res = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -93,7 +95,7 @@ Deno.serve(async (req) => {
       });
       const data = await res.json();
       if (!res.ok) return json({ error: data.error?.message || "OpenAI error" }, 502);
-      return json({ summary: data.choices?.[0]?.message?.content || "Could not generate summary." });
+      summary = data.choices?.[0]?.message?.content || "Could not generate summary.";
     } else {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -110,8 +112,24 @@ Deno.serve(async (req) => {
       });
       const data = await res.json();
       if (!res.ok) return json({ error: data.error?.message || "Anthropic error" }, 502);
-      return json({ summary: data.content?.[0]?.text || "Could not generate summary." });
+      summary = data.content?.[0]?.text || "Could not generate summary.";
     }
+
+    // ── Track AI usage (fire-and-forget — don't block the response) ──
+    (async () => {
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        const { data: row } = await adminClient
+          .from("ai_usage").select("count")
+          .eq("user_id", user.id).eq("date", today).maybeSingle();
+        await adminClient.from("ai_usage").upsert(
+          { user_id: user.id, date: today, count: (row?.count ?? 0) + 1 },
+          { onConflict: "user_id,date" }
+        );
+      } catch { /* usage tracking is non-critical */ }
+    })();
+
+    return json({ summary });
   } catch (err) {
     return json({ error: `Summarization failed: ${(err as Error).message}` }, 502);
   }

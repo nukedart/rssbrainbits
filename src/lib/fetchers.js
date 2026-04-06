@@ -2,6 +2,7 @@
 import { Readability } from "@mozilla/readability";
 import { getCachedFeed, setCachedFeed } from "./feedCache.js";
 import { getAiProvider } from "./apiKeys.js";
+import { supabase } from "./supabase.js";
 
 // Own Cloudflare Worker proxy — fast, free, private, no rate limits.
 // Set VITE_PROXY_URL in .env.local and GitHub secrets after deploying.
@@ -798,21 +799,30 @@ export async function discoverFeed(pageUrl) {
 const WORKER_BASE = import.meta.env.VITE_PROXY_URL || null;
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || null;
 
-// Cache the active provider per page load.
+// Summarize via Supabase Edge Function — provider + API keys come from admin panel (app_config / app_secrets).
+// Falls back to Cloudflare Worker if the edge function is unavailable.
 export async function summarizeContent(text, title, style = "keypoints") {
-  if (!WORKER_BASE) return "AI features require the Cloudflare Worker — set VITE_PROXY_URL.";
-  const provider = getAiProvider();
   try {
-    const res = await fetch(`${WORKER_BASE}/summarize`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: text.slice(0, 6000), title: title || "Untitled", style, provider }),
+    const { data, error } = await supabase.functions.invoke("summarize", {
+      body: { text: text.slice(0, 6000), title: title || "Untitled", style },
     });
-    if (!res.ok) throw new Error(await res.text());
-    const data = await res.json();
-    return data.summary || "Could not generate summary.";
-  } catch (err) {
-    console.error("Summarization error:", err);
+    if (error) throw error;
+    return data?.summary || "Could not generate summary.";
+  } catch (edgeErr) {
+    // Fallback: Cloudflare Worker (uses its own secret store, not admin panel keys)
+    if (WORKER_BASE) {
+      try {
+        const res = await fetch(`${WORKER_BASE}/summarize`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: text.slice(0, 6000), title: title || "Untitled", style, provider: getAiProvider() }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        return data.summary || "Could not generate summary.";
+      } catch { /* fall through */ }
+    }
+    console.error("Summarization error:", edgeErr);
     return "Summarization failed. Please try again.";
   }
 }

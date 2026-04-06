@@ -5,7 +5,9 @@ Format: `## [version] — YYYY-MM-DD`
 
 ## [1.46.128] — 2026-04-06
 
-- [Polish] Inbox toolbar title: 14px → 17px with tighter letter-spacing — establishes one dominant heading per screen (Typography as design); feed name now clearly leads the hierarchy above icon buttons and toggle pills
+- [Polish] Inbox toolbar title: 14px → 17px with tighter letter-spacing — establishes one dominant heading per screen
+- [Fix] AI summarization now routes through Supabase Edge Function (reads provider + API keys from admin panel app_config/app_secrets) — admin panel AI Settings now actually work; Cloudflare Worker is kept as fallback
+- [Fix] Supabase summarize edge function now tracks usage in ai_usage table after each successful call — AI usage metrics in admin panel now populate correctly
 
 ## [1.46.127] — 2026-04-06
 
