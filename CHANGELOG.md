@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.127] — 2026-04-06
+
+- [Fix] YouTube thumbnails: check media:thumbnail before media:content (YouTube's media:content is a Flash embed URL, not an image); add yt:videoId fallback to construct i.ytimg.com/vi/ID/hqdefault.jpg directly
+- [Fix] Feed image extraction: DOMParser replaces regex-only approach in rss2json path — handles lazy-load src variants; also checks item.enclosures array for image types (fixes Slickdeals and similar)
+- [Fix] Image parser: content:encoded checked before description for HTML image extraction — full post HTML has better images than excerpts
+
 ## [1.46.126] — 2026-04-06
 
 - [UX] Remove borderBottom from reader top bar — blur+background already separates header from content; border was decorative chrome anchoring the eye away from the article

@@ -154,10 +154,13 @@ async function fetchViaRss2Json(feedUrl) {
   return {
     title: json.feed?.title || new URL(feedUrl).hostname,
     items: (json.items || []).slice(0, getFeedLimit()).map(item => {
-      // rss2json returns thumbnail separately; also try to extract from content
-      const image = item.thumbnail && !item.thumbnail.includes("1x1")
+      // rss2json returns thumbnail separately; fall through to HTML extraction
+      // Check enclosures array too (some feeds, e.g. Slickdeals, put images there)
+      const enclosureImg = (item.enclosure?.type || "").startsWith("image") ? item.enclosure?.link
+                         : (Array.isArray(item.enclosures) ? item.enclosures.find(e => (e.type||"").startsWith("image"))?.link : null);
+      const image = (item.thumbnail && !item.thumbnail.includes("1x1") && !item.thumbnail.includes("pixel"))
         ? item.thumbnail
-        : extractImageFromText(item.content || item.description || "");
+        : enclosureImg || extractImageFromText(item.content || item.description || "");
       const descRaw = item.description || "";
       const enclosure = item.enclosure;
       const audioUrl = enclosure?.type?.startsWith("audio") ? enclosure.link : null;
@@ -180,10 +183,24 @@ async function fetchViaRss2Json(feedUrl) {
 // Extract first usable image from HTML string (used in rss2json fallback)
 function extractImageFromText(html) {
   if (!html) return null;
-  const match = html.match(/<img[^>]+src=["']([^"']{20,})["']/i);
+  // Use DOMParser for accuracy — catches lazy-load variants and unquoted attributes
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    for (const img of doc.querySelectorAll("img")) {
+      const src = img.getAttribute("src") || "";
+      const lazy = img.getAttribute("data-src") || img.getAttribute("data-lazy-src") ||
+                   img.getAttribute("data-original") || "";
+      const candidate = (!src.startsWith("data:") && src.length > 8) ? src : lazy;
+      if (candidate && !candidate.startsWith("data:") &&
+          !candidate.includes("1x1") && !candidate.includes("pixel.gif") &&
+          !candidate.includes("spacer") && candidate.length > 8) return candidate;
+    }
+  } catch {}
+  // Regex fallback for any HTML DOMParser couldn't parse
+  const match = html.match(/<img[^>]+src=["']?((?!data:)[^\s"'>]{10,})["'> ]/i);
   const src = match?.[1];
   if (!src) return null;
-  if (src.includes("tracking") || src.includes("pixel") || src.includes("spacer")) return null;
+  if (src.includes("1x1") || src.includes("pixel.gif") || src.includes("spacer")) return null;
   return src;
 }
 
@@ -283,12 +300,31 @@ function extractItemImage(item) {
   // (media\\:content) is unreliable across browsers when parsing XML documents.
   const allEls = Array.from(item.querySelectorAll("*"));
   const byName = (...names) => allEls.find(el => names.includes(el.nodeName) || names.includes(el.localName));
+  const allByName = (...names) => allEls.filter(el => names.includes(el.nodeName) || names.includes(el.localName));
 
-  // 1. media:content / media:thumbnail (BBC, NYT, YouTube, most modern feeds)
-  const media = byName("media:content", "media:thumbnail");
-  if (media?.getAttribute("url")) return media.getAttribute("url");
+  // 1a. media:thumbnail — explicit thumbnail (YouTube, Yahoo Media RSS, most feeds)
+  //     Must be checked BEFORE media:content because YouTube puts a Flash embed URL
+  //     in media:content and the actual thumbnail in media:thumbnail.
+  const mediaThumbnail = byName("media:thumbnail");
+  if (mediaThumbnail?.getAttribute("url")) return mediaThumbnail.getAttribute("url");
 
-  // 2. Any element with a "url" attribute and image-like localName
+  // 1b. media:content — only use if medium=image or type starts with image/
+  //     (YouTube's media:content is type="application/x-shockwave-flash" — skip it)
+  for (const mc of allByName("media:content")) {
+    const medium = mc.getAttribute("medium");
+    const type   = mc.getAttribute("type") || "";
+    const url    = mc.getAttribute("url");
+    if (url && (medium === "image" || type.startsWith("image/"))) return url;
+  }
+
+  // 1c. YouTube video ID → construct hqdefault thumbnail directly
+  const ytId = byName("yt:videoId", "videoId");
+  if (ytId?.textContent?.trim()) {
+    return `https://i.ytimg.com/vi/${ytId.textContent.trim()}/hqdefault.jpg`;
+  }
+
+  // 2. Any element with a "url" attribute and image-like localName (fallback for
+  //    feeds that drop the namespace prefix, e.g. localName="thumbnail")
   const genericMedia = allEls.find(el =>
     (el.localName === "content" || el.localName === "thumbnail") && el.getAttribute("url")
   );
@@ -299,33 +335,34 @@ function extractItemImage(item) {
   if (enclosure?.getAttribute("type")?.startsWith("image")) return enclosure.getAttribute("url");
 
   // 4. Parse description/content:encoded HTML to find first <img src>
-  //    Catches WordPress, Substack, Ghost, Medium, and most CMS feeds
+  //    Catches WordPress, Substack, Ghost, Medium, Slickdeals, and most CMS feeds
   const encodedEl = allEls.find(el => el.localName === "encoded" || el.nodeName === "content:encoded");
   const rawDesc =
-    item.querySelector("description")?.textContent ||
     encodedEl?.textContent ||
+    item.querySelector("description")?.textContent ||
     item.querySelector("summary")?.textContent ||
     item.querySelector("content")?.textContent || "";
 
   if (rawDesc) {
     const parser = new DOMParser();
     const descDoc = parser.parseFromString(rawDesc, "text/html");
-    // Try all imgs — skip data: placeholders used by lazy-load libraries
     const imgs = Array.from(descDoc.querySelectorAll("img"));
     for (const img of imgs) {
-      // Prefer real src; fall back to data-src / data-lazy-src for lazy-loaded images
+      // Prefer real src; fall back to lazy-load variants
       const src = img.getAttribute("src") || "";
       const lazySrc = img.getAttribute("data-src") || img.getAttribute("data-lazy-src") ||
                       img.getAttribute("data-original") || img.getAttribute("data-srcset")?.split(" ")[0] || "";
-      const candidate = (!src.startsWith("data:") && src.length > 10) ? src : lazySrc;
-      if (candidate && !candidate.startsWith("data:") && !candidate.includes("tracking") &&
-          !candidate.includes("pixel") && !candidate.includes("spacer") && candidate.length > 10) {
+      const candidate = (!src.startsWith("data:") && src.length > 8) ? src : lazySrc;
+      if (candidate && !candidate.startsWith("data:") &&
+          !candidate.includes("1x1") && !candidate.includes("pixel.gif") &&
+          !candidate.includes("spacer") && candidate.length > 8) {
         return candidate;
       }
     }
-    // Regex fallback — exclude data: URIs
-    const imgMatch = rawDesc.match(/<img[^>]+src=["']((?!data:)[^"']{20,})["']/i);
-    if (imgMatch?.[1]) return imgMatch[1];
+    // Regex fallback — handles unquoted src and srcset
+    const imgMatch = rawDesc.match(/<img[^>]+src=["']?((?!data:)[^\s"'>]{10,})["'> ]/i)
+                  || rawDesc.match(/srcset=["']?((?!data:)[^\s"'>{,]+)/i);
+    if (imgMatch?.[1]) return imgMatch[1].split(",")[0].trim().split(" ")[0];
   }
 
   // 5. itunes:image href (podcasts)
