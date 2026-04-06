@@ -3,6 +3,19 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.125] — 2026-04-06
+
+### Changes since v1.46.118
+- v1.46.121
+- v1.46.123
+- v1.46.122
+- v1.46.121
+- v1.46.119
+- v1.46.120
+- v1.46.119
+
+---
+
 ## [1.46.124] — 2026-04-06
 
 - [Nav] Sidebar active nav item now uses T.accentSurface background (matching mobile BottomNav) — previously used T.surface which was identical to hover, making active page indistinguishable at a glance
