@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.130] — 2026-04-06
+
+### Changes since v1.46.127
+- v1.46.128
+- v1.46.128
+
+---
+
 ## [1.46.128] — 2026-04-06
 
 - [Polish] Inbox toolbar title: 14px → 17px with tighter letter-spacing — establishes one dominant heading per screen
