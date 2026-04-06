@@ -359,7 +359,6 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         position: "sticky", top: 0, zIndex: 10,
         background: `${T.bg}d8`,
         backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
-        borderBottom: `1px solid ${T.border}`,
         padding: isMobile ? "8px 12px" : "10px 16px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 10,
         flexShrink: 0,
       }}>

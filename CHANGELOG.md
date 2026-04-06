@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.126] — 2026-04-06
+
+- [UX] Remove borderBottom from reader top bar — blur+background already separates header from content; border was decorative chrome anchoring the eye away from the article
+
+
 ## [1.46.125] — 2026-04-06
 
 ### Changes since v1.46.118
