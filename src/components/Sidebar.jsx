@@ -59,7 +59,7 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
         justifyContent: collapsed ? "center" : "flex-start",
         borderRadius: 8, border:"none", cursor:"pointer",
         width:"100%", textAlign:"left",
-        background: isActive ? T.surface : "transparent",
+        background: isActive ? T.accentSurface : "transparent",
         fontFamily:"inherit", transition:"background .12s",
         position: "relative",
       }}

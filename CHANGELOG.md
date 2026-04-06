@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.124] — 2026-04-06
+
+- [Nav] Sidebar active nav item now uses T.accentSurface background (matching mobile BottomNav) — previously used T.surface which was identical to hover, making active page indistinguishable at a glance
+
 ## [1.46.123] — 2026-04-06
 
 - [Polish] Replace card-view hover drop shadow with a subtle border token — removes decorative chrome, aligns with the flat background-color hover pattern already used in list view
