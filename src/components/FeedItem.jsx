@@ -447,9 +447,8 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             position: "relative",
             background: isSelected ? T.accentSurface : T.card,
             borderRadius: 14, overflow: "hidden", cursor: "pointer",
-            border: `1px solid ${isSelected ? T.accent + "55" : "transparent"}`,
-            boxShadow: hovered && !isMobile ? "0 4px 16px rgba(0,0,0,.10)" : "none",
-            transition: "box-shadow .15s, border-color .15s",
+            border: `1px solid ${isSelected ? T.accent + "55" : hovered && !isMobile ? T.border : "transparent"}`,
+            transition: "border-color .15s",
             display: "flex", flexDirection: "column",
             height: "100%",
           }}

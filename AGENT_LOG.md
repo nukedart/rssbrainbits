@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-06 | v1.46.123 | Polish | Replace card-view hover drop shadow with T.border — removes decorative chrome, matches flat hover pattern in list view | `FeedItem.jsx:451` | — |
 | 2026-04-05 | v1.46.122 | Polish | Remove decorative boxShadow from list-item hover action tray — no chrome, T.bg contrast sufficient | `FeedItem.jsx:411` | — |
 | 2026-04-05 | v1.46.121 | Polish | Read titles on mobile use T.textTertiary (not textSecondary) — matches desktop, sharpens unread/read hierarchy | `FeedItem.jsx:318` | — |
 | 2026-04-04 | v1.46.120 | Polish | Remove decorative border from unselected card items — gap+radius define shape | `FeedItem.jsx:450` | — |

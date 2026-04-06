@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.123] — 2026-04-06
+
+- [Polish] Replace card-view hover drop shadow with a subtle border token — removes decorative chrome, aligns with the flat background-color hover pattern already used in list view
+
 ## [1.46.122] — 2026-04-05
 
 - [Polish] Remove decorative boxShadow from list-item hover action tray — T.bg background already contrasts with the hovered row; shadow was decorative chrome adding visual weight to every article hover
