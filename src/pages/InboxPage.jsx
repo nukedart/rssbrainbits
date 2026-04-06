@@ -627,7 +627,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Title + unread badge + error badge — hidden when search open */}
           {!searchOpen && (
             <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: T.text, letterSpacing: "-.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <div style={{ fontSize: 17, fontWeight: 700, color: T.text, letterSpacing: "-.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {activeFeedName}
               </div>
               {unreadCount > 0 && (

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.128] — 2026-04-06
+
+- [Polish] Inbox toolbar title: 14px → 17px with tighter letter-spacing — establishes one dominant heading per screen (Typography as design); feed name now clearly leads the hierarchy above icon buttons and toggle pills
+
 ## [1.46.127] — 2026-04-06
 
 - [Fix] YouTube thumbnails: check media:thumbnail before media:content (YouTube's media:content is a Flash embed URL, not an image); add yt:videoId fallback to construct i.ytimg.com/vi/ID/hqdefault.jpg directly
