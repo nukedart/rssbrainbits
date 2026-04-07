@@ -512,7 +512,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
               const isActive = theme === id || (id === "distilled" && theme === "nocturne");
               return (
                 <button key={label} onClick={() => setTheme(id)} title={label}
-                  style={{ width:24, height:22, borderRadius:6, border:`1px solid ${isActive?T.accent:T.border}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"all .15s" }}
+                  style={{ width:24, height:22, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"all .15s" }}
                 ><Icon /></button>
               );
             })}
@@ -545,14 +545,14 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
                 const isActive = theme === id || (id === "distilled" && theme === "nocturne");
                 return (
                   <button key={label} onClick={() => setTheme(id)} title={label}
-                    style={{ width:24, height:24, borderRadius:6, border:`1px solid ${isActive?T.accent:T.border}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, flexShrink:0, transition:"all .15s" }}
+                    style={{ width:24, height:24, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, flexShrink:0, transition:"all .15s" }}
                   ><Icon /></button>
                 );
               })}
               <button onClick={() => setShortcutsOpen(v => !v)} title="Keyboard shortcuts"
-                style={{ width:24, height:24, borderRadius:6, border:`1px solid ${shortcutsOpen?T.accent:T.border}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontFamily:"inherit", flexShrink:0, transition:"all .12s" }}
+                style={{ width:24, height:24, borderRadius:6, border:`1px solid ${shortcutsOpen?T.accent:"transparent"}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontFamily:"inherit", flexShrink:0, transition:"all .12s" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accent; e.currentTarget.style.background=T.accentSurface; }}
-                onMouseLeave={e => { if (!shortcutsOpen) { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.background="transparent"; }}}
+                onMouseLeave={e => { if (!shortcutsOpen) { e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.background="transparent"; }}}
               >⌘</button>
             </>
           )}

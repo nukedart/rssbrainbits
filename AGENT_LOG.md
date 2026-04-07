@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-07 | v1.46.131 | Polish | Sidebar footer icon buttons: inactive border transparent — eliminates T.border noise; accent border kept for active state | `Sidebar.jsx:515,548,553` | — |
 | 2026-04-06 | v1.46.129 | Fix | AI settings now work: summarize routes through Supabase Edge Fn (reads app_secrets/app_config); ai_usage tracking added | `fetchers.js:802`, `summarize/index.ts:81` | — |
 | 2026-04-06 | v1.46.128 | Polish | Inbox toolbar title 14px → 17px — creates dominant heading, serves Typography-as-design hierarchy principle | `InboxPage.jsx:630` | — |
 | 2026-04-06 | v1.46.127 | Fix | YouTube thumbnails + Slickdeals images: media:thumbnail before media:content, yt:videoId fallback, DOMParser extraction | `fetchers.js:281,158,180` | — |

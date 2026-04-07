@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.131] — 2026-04-07
+
+- [Polish] Remove decorative borders from inactive sidebar footer icon buttons (theme toggles, keyboard shortcut) — transparent border in rest state reduces visual noise; active accent border retained for state clarity
+
 ## [1.46.130] — 2026-04-06
 
 ### Changes since v1.46.127
