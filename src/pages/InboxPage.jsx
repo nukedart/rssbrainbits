@@ -435,22 +435,25 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     track("feed_deleted");
   }
 
-  async function handleMarkRead(url) {
-    await markRead(user.id, url);
+  function handleMarkRead(url) {
+    // Optimistic update — sidebar counts and unread filter respond instantly
     setReadUrls((prev) => {
+      if (prev.has(url)) return prev;
       const next = new Set([...prev, url]);
       try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
       return next;
     });
+    // Persist in background — don't block the UI
+    markRead(user.id, url).catch(console.error);
   }
 
-  async function handleMarkUnread(url) {
-    await markUnread(user.id, url);
+  function handleMarkUnread(url) {
     setReadUrls((prev) => {
       const next = new Set(prev); next.delete(url);
       try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
       return next;
     });
+    markUnread(user.id, url).catch(console.error);
   }
 
   async function handleMarkAllRead() {

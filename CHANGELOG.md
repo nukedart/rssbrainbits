@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.135] — 2026-04-08
+
+- [Fix] Mark-read now optimistically updates local state before the Supabase write — sidebar feed counts and unread filter update instantly on scroll/open instead of after a 100–400ms network round-trip
+
+
 ## [1.46.134] — 2026-04-08
 
 ### Changes since v1.46.127
