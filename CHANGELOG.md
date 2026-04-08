@@ -3,9 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
-## [1.46.136] — 2026-04-08
+## [1.46.137] — 2026-04-08
 
 - [Polish] Remove border from skeleton cards — actual FeedItem cards render borderless by default; matching the skeleton to the loaded state eliminates decorative chrome and smooths the loading-to-content transition
+- [Feature] Today page: AI morning brief — generates a 2–3 sentence conversational summary of the day's headlines across your feeds; cached in localStorage by date so it only calls the API once per day (~$0.0013/day); shows animated loading dots while generating
 
 ## [1.46.135] — 2026-04-08
 

@@ -7,6 +7,7 @@ import { fetchRSSFeed } from "../lib/fetchers";
 import { getCachedFeed } from "../lib/feedCache";
 import { Spinner } from "../components/UI";
 import ContentViewer from "../components/ContentViewer";
+import { supabase } from "../lib/supabase";
 
 const TWENTY_FOUR_HOURS = 86400000;
 const MAX_PER_FEED = 10;
@@ -22,6 +23,26 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
   const [openItem, setOpenItem] = useState(null);
   const [openIdx, setOpenIdx]   = useState(-1);
   const [readUrls, setReadUrls] = useState(new Set());
+
+  // ── AI morning brief — generated once per day, cached by date ─
+  const todayKey = `fb-today-brief-${new Date().toISOString().slice(0, 10)}`;
+  const [brief, setBrief] = useState(() => {
+    try { return localStorage.getItem(todayKey) || null; } catch { return null; }
+  });
+  const [briefLoading, setBriefLoading] = useState(false);
+
+  useEffect(() => {
+    if (brief || loading || !items.length) return;
+    setBriefLoading(true);
+    const articleList = items.slice(0, 30).map(i => `- ${i.source}: ${i.title}`).join("\n");
+    supabase.functions.invoke("summarize", {
+      body: { text: articleList, title: "Today's Reading Brief", style: "morning_brief" },
+    }).then(({ data, error }) => {
+      if (error || !data?.summary) return;
+      setBrief(data.summary);
+      try { localStorage.setItem(todayKey, data.summary); } catch {}
+    }).catch(() => {}).finally(() => setBriefLoading(false));
+  }, [items.length, loading]);
 
   // Load read state
   useEffect(() => {
@@ -200,6 +221,11 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
         {!loading && items.length > 0 && (
           <div style={{ paddingBottom: isMobile ? 100 : 40 }}>
 
+            {/* AI morning brief */}
+            {!showSplit && (brief || briefLoading) && (
+              <BriefCard brief={brief} loading={briefLoading} T={T} />
+            )}
+
             {/* Hero / featured — only when not split-view */}
             {!showSplit && heroItem && (
               <HeroCard
@@ -286,6 +312,51 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
           totalCount={items.length}
           onPlayPodcast={onPlayPodcast}
         />
+      )}
+    </div>
+  );
+}
+
+// ── AI Morning Brief card ───────────────────────────────────────
+function BriefCard({ brief, loading, T }) {
+  return (
+    <div style={{
+      margin: "12px 20px 4px",
+      background: T.accentSurface,
+      border: `1px solid ${T.accent}28`,
+      borderRadius: 14,
+      padding: "14px 18px",
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 7, marginBottom: 8,
+      }}>
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5"/>
+        </svg>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: T.accent }}>
+          Today's Brief
+        </span>
+      </div>
+      {loading ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", gap: 3 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                width: 4, height: 4, borderRadius: "50%", background: T.accent,
+                opacity: 0.5,
+                animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+              }} />
+            ))}
+          </div>
+          <span style={{ fontSize: 12, color: T.textTertiary }}>Writing your brief…</span>
+        </div>
+      ) : (
+        <p style={{
+          fontSize: 13, lineHeight: 1.65, color: T.text,
+          margin: 0, letterSpacing: "-.01em",
+        }}>
+          {brief}
+        </p>
       )}
     </div>
   );

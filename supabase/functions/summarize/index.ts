@@ -23,9 +23,10 @@ const adminClient = createClient(
 );
 
 const PROMPTS: Record<string, string> = {
-  keypoints: `Summarize the following article in 3–5 clear bullet points capturing the key ideas and facts. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
-  brief:     `Give a 1–2 sentence TL;DR of the following article. Write in plain text only — no markdown, no formatting.`,
-  actions:   `Extract 3–5 concrete action items or takeaways from the following article. Write in plain text only. Each item must start with "•" and be a direct, actionable sentence starting with a verb.`,
+  keypoints:     `Summarize the following article in 3–5 clear bullet points capturing the key ideas and facts. Write in plain text only — no markdown, no asterisks, no bold. Each bullet must start with "•" and be a complete, insightful sentence.`,
+  brief:         `Give a 1–2 sentence TL;DR of the following article. Write in plain text only — no markdown, no formatting.`,
+  actions:       `Extract 3–5 concrete action items or takeaways from the following article. Write in plain text only. Each item must start with "•" and be a direct, actionable sentence starting with a verb.`,
+  morning_brief: `You are a personal news editor. The user has given you a list of today's article headlines from their RSS feeds. Write a 2–3 sentence morning briefing that highlights the most interesting themes, patterns, or notable stories. Be specific — mention actual topics and sources by name. Write in second person ("Today..."), conversational tone. No bullet points, no markdown, no asterisks. Keep it under 80 words.`,
 };
 
 Deno.serve(async (req) => {
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
   }
 
   const prompt    = PROMPTS[style] || PROMPTS.keypoints;
-  const maxTokens = style === "actions" ? 1000 : 800;
+  const maxTokens = style === "morning_brief" ? 200 : style === "actions" ? 1000 : 800;
   const content   = `${prompt}\n\nTitle: "${title || "Untitled"}"\n\nArticle:\n${text.slice(0, 6000)}`;
 
   // ── Call the active provider ──────────────────────────────
