@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.136] — 2026-04-08
+
+- [Polish] Remove border from skeleton cards — actual FeedItem cards render borderless by default; matching the skeleton to the loaded state eliminates decorative chrome and smooths the loading-to-content transition
+
 ## [1.46.135] — 2026-04-08
 
 - [Fix] Mark-read now optimistically updates local state before the Supabase write — sidebar feed counts and unread filter update instantly on scroll/open instead of after a 100–400ms network round-trip

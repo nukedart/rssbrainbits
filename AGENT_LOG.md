@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-08 | v1.46.136 | Polish | Skeleton card border removed — loading state now matches borderless FeedItem card appearance | `InboxPage.jsx:1192` | — |
 | 2026-04-08 | v1.46.135 | Fix | Optimistic mark-read — sidebar counts update instantly, Supabase write moves to background | `InboxPage.jsx:438` | — |
 | 2026-04-08 | v1.46.133 | Fix | getReadUrls scoped to 90 days — fixes 1000-row Supabase cap causing old read items to reappear as unread | `supabase.js:288` | — |
 | 2026-04-08 | v1.46.132 | Polish | Swipe action buttons: replace 5 hardcoded iOS hex values with T.accent/T.success/T.warning/T.surface2/T.accentText | `FeedItem.jsx:144,148,157,162,167` | — |

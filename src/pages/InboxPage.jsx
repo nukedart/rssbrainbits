@@ -1189,7 +1189,7 @@ function SkeletonList({ count = 8, cardSize = "md", viewMode = "list" }) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: 14, padding: 14 }}>
         {Array.from({ length: count }).map((_, i) => (
-          <div key={i} style={{ background: T.card, borderRadius: 12, overflow: "hidden", border: `1px solid ${T.border}`, animation: `fadeIn .3s ease both`, animationDelay: `${i * 50}ms` }}>
+          <div key={i} style={{ background: T.card, borderRadius: 12, overflow: "hidden", animation: `fadeIn .3s ease both`, animationDelay: `${i * 50}ms` }}>
             <div className="skeleton" style={{ aspectRatio: "16/9", width: "100%" }} />
             <div style={{ padding: "12px 14px 14px" }}>
               <div className="skeleton" style={{ height: 10, width: "40%", marginBottom: 10 }} />
