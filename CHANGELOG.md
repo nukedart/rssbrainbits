@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.132] — 2026-04-08
+
+- [Polish] Replace 5 hardcoded iOS hex colors in swipe action buttons with theme tokens (T.accent, T.success, T.warning, T.surface2, T.accentText) — swipe actions now adapt to all three themes; eliminates jarring iOS blue/orange/green in Light (parchment) and Nocturne (sage) themes
+
 ## [1.46.131] — 2026-04-07
 
 - [Polish] Remove decorative borders from inactive sidebar footer icon buttons (theme toggles, keyboard shortcut) — transparent border in rest state reduces visual noise; active accent border retained for state clarity

@@ -141,11 +141,11 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
       {rightX > 0 && (
         <div style={{
           position: "absolute", left: 0, top: 0, bottom: 0, width: rightX,
-          background: "#27AE60",
+          background: T.success,
           display: "flex", alignItems: "center", paddingLeft: 16,
           overflow: "hidden",
         }}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke={T.accentText} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
             style={{ opacity: Math.min(revealProgress * 2, 1), transform: `scale(${0.5 + revealProgress * 0.5})`, flexShrink: 0 }}>
             <path d="M3 10l5 5 9-9"/>
           </svg>
@@ -154,17 +154,17 @@ function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobi
       {/* Revealed action buttons (left-swipe → right side, iOS Mail style) */}
       <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: ACTION_W, display: "flex" }}>
         <button onClick={e => { e.stopPropagation(); haptic(); onMarkRead?.(); close(); }}
-          style={{ flex: 1, border: "none", background: isRead ? "#636366" : "#007AFF", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
+          style={{ flex: 1, border: "none", background: isRead ? T.surface2 : T.accent, color: isRead ? T.text : T.accentText, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
           {isRead ? <Ic.Unread /> : <Ic.Read />}
           {isRead ? "Unread" : "Read"}
         </button>
         <button onClick={e => { e.stopPropagation(); haptic(); onReadLater?.(); close(); }}
-          style={{ flex: 1, border: "none", background: "#FF9500", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
+          style={{ flex: 1, border: "none", background: T.warning, color: T.accentText, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
           <Ic.Clock />
           Later
         </button>
         <button onClick={e => { e.stopPropagation(); haptic(); onSave?.(); close(); }}
-          style={{ flex: 1, border: "none", background: "#34C759", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
+          style={{ flex: 1, border: "none", background: T.success, color: T.accentText, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
           <Ic.Star />
           Star
         </button>
