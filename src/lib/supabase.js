@@ -285,8 +285,15 @@ export async function removeReadLater(userId, url) {
 
 // ── Read / Unread tracking ────────────────────────────────────
 export async function getReadUrls(userId) {
+  // Only fetch read items from the last 90 days — RSS feeds never surface items
+  // older than that, so tracking beyond 90d wastes bytes and hits Supabase's
+  // default 1000-row response cap (which caused old items to reappear as unread).
+  const since = new Date(Date.now() - 90 * 86400000).toISOString();
   const { data, error } = await supabase
-    .from("read_items").select("url").eq("user_id", userId);
+    .from("read_items")
+    .select("url")
+    .eq("user_id", userId)
+    .gte("read_at", since);
   if (error) throw error;
   return new Set(data.map((r) => r.url));
 }

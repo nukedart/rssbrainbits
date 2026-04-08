@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.133] — 2026-04-08
+
+- [Fix] getReadUrls now scoped to last 90 days — previously hit Supabase's default 1000-row cap, causing items read >1000 articles ago to reappear as unread; 90-day window covers all realistic RSS item ages and keeps the query fast
+
 ## [1.46.132] — 2026-04-08
 
 - [Polish] Replace 5 hardcoded iOS hex colors in swipe action buttons with theme tokens (T.accent, T.success, T.warning, T.surface2, T.accentText) — swipe actions now adapt to all three themes; eliminates jarring iOS blue/orange/green in Light (parchment) and Nocturne (sage) themes
