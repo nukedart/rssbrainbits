@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.138] — 2026-04-08
+
+### Changes since v1.46.135
+- v1.46.136
+- v1.46.136
+
+---
+
 ## [1.46.137] — 2026-04-08
 
 - [Polish] Remove border from skeleton cards — actual FeedItem cards render borderless by default; matching the skeleton to the loaded state eliminates decorative chrome and smooths the loading-to-content transition
