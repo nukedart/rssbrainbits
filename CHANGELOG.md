@@ -3,6 +3,18 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.134] — 2026-04-08
+
+### Changes since v1.46.127
+- v1.46.131
+- v1.46.132
+- v1.46.131
+- v1.46.129 — Fix: AI settings work via Supabase Edge Function
+- v1.46.128
+- v1.46.128
+
+---
+
 ## [1.46.133] — 2026-04-08
 
 - [Fix] getReadUrls now scoped to last 90 days — previously hit Supabase's default 1000-row cap, causing items read >1000 articles ago to reappear as unread; 90-day window covers all realistic RSS item ages and keeps the query fast
