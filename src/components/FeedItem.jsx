@@ -318,7 +318,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                 color: isRead ? T.textTertiary : T.text,
                 lineHeight: 1.35,
                 overflow: "hidden", display: "-webkit-box",
-                WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
                 letterSpacing: "-.01em",
                 marginBottom: 6,
               }}>
