@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-09 | v1.46.140 | UX | Reduce mobile feed row padding 14→11px — shows ~1 more item above the fold | `FeedItem.jsx:288` | — |
 | 2026-04-09 | v1.46.139 | Polish | Mobile list title clamp 3 → 2 lines — row height ~144px → ~120px, one extra article visible above the fold | `FeedItem.jsx:321` | — |
 | 2026-04-08 | v1.46.137 | Feature | Today AI morning brief — daily headline summary, cached by date, ~$0.0013/call | `TodayPage.jsx:28`, `summarize/index.ts:26` | — |
 | 2026-04-08 | v1.46.136 | Polish | Skeleton card border removed — loading state now matches borderless FeedItem card appearance | `InboxPage.jsx:1192` | — |

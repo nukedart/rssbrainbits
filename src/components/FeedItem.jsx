@@ -285,7 +285,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             onClick={swiped ? close : onClick}
             style={{
               display: "flex", alignItems: "flex-start", gap: 12,
-              padding: "14px 16px",
+              padding: "11px 16px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
             }}
