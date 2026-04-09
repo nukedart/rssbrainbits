@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.142] — 2026-04-09
+
+- [Nav] Collapsed sidebar active folder now uses T.accentSurface — was T.surface (same as hover), making active folder indistinguishable when sidebar is collapsed
+
 ## [1.46.141] — 2026-04-09
 
 ### Changes since v1.46.135

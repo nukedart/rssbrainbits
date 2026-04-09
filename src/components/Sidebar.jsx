@@ -157,7 +157,7 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
         style={{
           display:"flex", alignItems:"center", justifyContent:"center",
           width:"100%", padding:"7px 0", border:"none",
-          background: isActive ? T.surface : dragOver ? T.accentSurface : "transparent",
+          background: isActive ? T.accentSurface : dragOver ? T.accentSurface : "transparent",
           cursor:"pointer", position:"relative", borderRadius:8, transition:"background .1s",
           outline: dragOver ? `2px solid ${T.accent}` : "none",
         }}
