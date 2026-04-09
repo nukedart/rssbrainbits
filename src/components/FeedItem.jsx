@@ -383,7 +383,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             }}>
               {item.title}
             </div>
-            {cardSize !== "sm" && item.description && (
+            {cardSize === "lg" && item.description && (
               <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", marginBottom: 4 }}>
                 {item.description}
               </div>

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.143] — 2026-04-09
+
+- [Polish] Remove description excerpt from default (md) desktop list view — titles are now the sole dominant element, reducing per-row visual noise and improving headline scan speed; excerpt preserved at lg size for power users
+
 ## [1.46.142] — 2026-04-09
 
 - [Nav] Collapsed sidebar active folder now uses T.accentSurface — was T.surface (same as hover), making active folder indistinguishable when sidebar is collapsed
