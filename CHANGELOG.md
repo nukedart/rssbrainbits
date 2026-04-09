@@ -3,6 +3,17 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.141] — 2026-04-09
+
+### Changes since v1.46.135
+- v1.46.139
+- v1.46.139
+- v1.46.138 — Feature: AI morning brief on Today page
+- v1.46.136
+- v1.46.136
+
+---
+
 ## [1.46.140] — 2026-04-09
 
 - [Polish] Mobile list title clamp 3 → 2 lines — matches desktop behavior; reduces row height from ~144px to ~120px so one extra article fits above the fold; content-first principle applied
