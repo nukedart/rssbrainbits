@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.145] — 2026-04-10
+
+- [Polish] Fix desktop list-view action button panel backdrop — was `T.bg` (page background), now matches the row's hover/selected state (`T.surface` / `T.accentSurface`); eliminates visible dark/light "floating island" artefact on hover (no decorative chrome principle)
+
 ## [1.46.144] — 2026-04-10
 
 - [Polish] Reduce desktop list medium-row padding 13px → 11px — follows v1.46.143 description removal; rows now carry title+metadata only (2 lines), so the prior padding left excess white space; tighter rows show ~1 more article above the fold (content-first principle)
