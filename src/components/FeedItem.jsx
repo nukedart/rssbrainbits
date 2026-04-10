@@ -342,7 +342,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   }
 
   // ── Desktop layout ─────────────────────────────────────────
-  const vPad = cardSize === "sm" ? "8px 16px" : cardSize === "lg" ? "15px 20px" : "13px 18px";
+  const vPad = cardSize === "sm" ? "8px 16px" : cardSize === "lg" ? "15px 20px" : "11px 18px";
   return (
     <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={false}>
       {({ swiped, close } = {}) => (

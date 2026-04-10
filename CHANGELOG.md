@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.144] — 2026-04-10
+
+- [Polish] Reduce desktop list medium-row padding 13px → 11px — follows v1.46.143 description removal; rows now carry title+metadata only (2 lines), so the prior padding left excess white space; tighter rows show ~1 more article above the fold (content-first principle)
+
 ## [1.46.143] — 2026-04-09
 
 - [Polish] Remove description excerpt from default (md) desktop list view — titles are now the sole dominant element, reducing per-row visual noise and improving headline scan speed; excerpt preserved at lg size for power users
