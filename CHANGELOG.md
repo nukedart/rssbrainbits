@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.146] — 2026-04-11
+
+- [Polish] Mobile source label fontWeight 500→400 — fixes hierarchy inversion where read-item source appeared heavier than its own dimmed title; title now always dominates by weight
+
 ## [1.46.145] — 2026-04-10
 
 - [Polish] Fix desktop list-view action button panel backdrop — was `T.bg` (page background), now matches the row's hover/selected state (`T.surface` / `T.accentSurface`); eliminates visible dark/light "floating island" artefact on hover (no decorative chrome principle)

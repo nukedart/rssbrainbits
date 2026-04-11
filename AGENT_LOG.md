@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-11 | v1.46.146 | Polish | Mobile source label fontWeight 500→400 — fixes hierarchy inversion on read items where source outweighed title | `FeedItem.jsx:301` | — |
 | 2026-04-10 | v1.46.145 | Polish | Desktop list action button panel: T.bg → T.surface/accentSurface — eliminates visible backdrop mismatch on row hover | `FeedItem.jsx:411` | — |
 | 2026-04-10 | v1.46.144 | Polish | Desktop list md row padding 13px → 11px — natural follow-up to description removal; ~1 more article above the fold | `FeedItem.jsx:345` | — |
 | 2026-04-09 | v1.46.143 | Polish | Remove description excerpt from default (md) desktop list view — title is now dominant, faster headline scanning | `FeedItem.jsx:386` | — |
