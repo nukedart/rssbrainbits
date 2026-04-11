@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { List, Inbox, Plus, CreditCard, RefreshCw } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 
@@ -19,6 +20,13 @@ const NAV_ITEMS = [
 
 export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {
   const { T } = useTheme();
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    function onNavDir(e) { setVisible(e.detail !== "down"); }
+    window.addEventListener("fb-nav-dir", onNavDir);
+    return () => window.removeEventListener("fb-nav-dir", onNavDir);
+  }, []);
 
   return (
     <nav style={{
@@ -29,7 +37,8 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
       background: hexToRgba(T.card, 0.94),
       backdropFilter: "blur(28px) saturate(200%)",
       WebkitBackdropFilter: "blur(28px) saturate(200%)",
-      transform: "translateX(-50%)",
+      transform: `translateX(-50%) translateY(${visible ? "0" : "120px"})`,
+      transition: "transform .3s cubic-bezier(.4,0,.2,1)",
       display: "flex", alignItems: "center",
       borderRadius: 999,
       border: `1px solid ${T.border}`,

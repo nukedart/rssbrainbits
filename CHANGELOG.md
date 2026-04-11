@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.147] — 2026-04-11
+
+- [UX] BottomNav auto-hides on scroll-down and reappears on scroll-up — content first principle; the floating nav pill now clears the full viewport while reading, sliding back in on upward scroll via the existing `fb-nav-dir` event
+
 ## [1.46.146] — 2026-04-11
 
 - [Polish] Mobile source label fontWeight 500→400 — fixes hierarchy inversion where read-item source appeared heavier than its own dimmed title; title now always dominates by weight
