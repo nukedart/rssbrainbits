@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.149] — 2026-04-12
+
+- [Polish] Remove duplicate `borderLeft` from ContentViewer root — all split-view parents already own this border; in split mode the divider was double-width (2px), in full-screen mode a 1px line appeared at the absolute screen edge; serves the "no decorative chrome" principle
+
 ## [1.46.148] — 2026-04-12
 
 - [Polish] Card hover border replaced with background elevation (T.surface2) — eliminates the border-flash on hover; hover state now communicated through a calm background lift rather than a hard outline, per "no decorative chrome" principle

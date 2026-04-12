@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-12 | v1.46.149 | Polish | Remove duplicate borderLeft from ContentViewer — split-view divider was 2px instead of intended 1px; screen-edge border in full-screen mode eliminated | `ContentViewer.jsx:341` | — |
 | 2026-04-12 | v1.46.148 | Polish | Card hover border → background elevation (T.surface2) — eliminates border-flash, calmer hover feedback | `FeedItem.jsx:448` | — |
 | 2026-04-11 | v1.46.147 | UX | BottomNav auto-hides on scroll-down, reappears on scroll-up — content-first; consumes existing fb-nav-dir event | `BottomNav.jsx:25` | — |
 | 2026-04-11 | v1.46.146 | Polish | Mobile source label fontWeight 500→400 — fixes hierarchy inversion on read items where source outweighed title | `FeedItem.jsx:301` | — |

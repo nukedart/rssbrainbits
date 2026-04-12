@@ -338,7 +338,6 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           : { position: "fixed", inset: 0, zIndex: 500 }
         ),
         background: T.bg,
-        borderLeft: `1px solid ${T.border}`,
         display: "flex", flexDirection: "column", overflow: "hidden",
       }}
     >
