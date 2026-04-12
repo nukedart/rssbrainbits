@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.148] — 2026-04-12
+
+- [Polish] Card hover border replaced with background elevation (T.surface2) — eliminates the border-flash on hover; hover state now communicated through a calm background lift rather than a hard outline, per "no decorative chrome" principle
+
 ## [1.46.147] — 2026-04-11
 
 - [UX] BottomNav auto-hides on scroll-down and reappears on scroll-up — content first principle; the floating nav pill now clears the full viewport while reading, sliding back in on upward scroll via the existing `fb-nav-dir` event
