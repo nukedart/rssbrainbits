@@ -774,6 +774,31 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           )}
 
+          {/* Image size toggle — mobile list view only */}
+          {isMobile && viewMode === "list" && !searchOpen && (
+            <button
+              onClick={() => {
+                const next = cardSize === "sm" ? "md" : cardSize === "md" ? "lg" : "sm";
+                setCardSize(next);
+                localStorage.setItem("fb-cardsize", next);
+              }}
+              title={`Image size: ${cardSize === "sm" ? "hidden" : cardSize === "md" ? "small" : "large"}`}
+              style={{
+                background: cardSize !== "sm" ? T.accentSurface : "transparent", border: "none", borderRadius: 8,
+                width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: cardSize !== "sm" ? T.accent : T.textTertiary, transition: "all .15s",
+              }}
+            >
+              {cardSize === "sm"
+                ? <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="14" height="10" rx="2"/><line x1="1" y1="8" x2="15" y2="8" strokeOpacity=".3"/></svg>
+                : cardSize === "md"
+                ? <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M4.5 9.5l2-2.5 2 2 1.5-1.5 2 2" strokeWidth="1.5"/></svg>
+                : <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="2" width="14" height="12" rx="2"/><path d="M4 10.5l2.5-3 2.5 2.5 1.5-2 2 2.5" strokeWidth="1.5"/></svg>
+              }
+            </button>
+          )}
+
           {/* Search icon toggle */}
           <button
             onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
@@ -976,7 +1001,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           ) : (
             baseItems.map((item, i) => (
               <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={i < 20 ? { animation: `fadeInUp .18s ease both`, animationDelay: `${i * 20}ms` } : {}}>
-              <FeedItem item={item} viewMode="list" cardSize={isMobile ? "sm" : cardSize}
+              <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
                 isRead={readUrls.has(item.url)}
                 onClick={() => { setCursorIdx(i); openByIdx(i); }}

@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-17 | v1.46.161 | Feature | Mobile image size toggle in list view: cycle hidden/small/large thumbnails | `InboxPage.jsx:777` | — |
 | 2026-04-17 | v1.46.160 | Feature | Today page revamp: magazine grid layout, HeroCard, StatPills, ArticleGrid | `TodayPage.jsx` | — |
 | 2026-04-17 | v1.46.159 | Nav | Sidebar folders default collapsed; expand state persisted to localStorage | `Sidebar.jsx:295` | — |
 | 2026-04-17 | v1.46.158 | Feature | Podcast player revamp: mini-bar + full-screen mobile, draggable seek, volume, resume position | `PodcastPlayer.jsx` | — |

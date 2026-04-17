@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.161] — 2026-04-17
+
+- [Feature] Article list image size toggle — tap the photo icon in mobile list view to cycle through hidden/small/large thumbnails; removes forced "no image" on mobile so users can scan article images at their preferred size
+
 ## [1.46.160] — 2026-04-17
 
 - [Feature] Today page visual revamp — magazine-style grid layout with HeroCard, 2/3-col ArticleGrid, horizontal StatPills, and compact PageHeader; improves at-a-glance content scanning on both mobile and desktop
