@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.152] — 2026-04-17
+
+- [UX] Reader title is now a clickable link to the original article — opens in new tab; useful for Slickdeals and paywalled articles where the extracted content is incomplete
+
 ## [1.46.151] — 2026-04-17
 
 - [Polish] Sidebar unread counts → dot indicators — removes number anxiety; a dot cleanly signals "has unread" without cluttering the nav; consistent with collapsed sidebar behavior

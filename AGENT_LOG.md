@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-17 | v1.46.152 | UX | Reader title → clickable link to original article, opens in new tab | `ContentViewer.jsx:629` | — |
 | 2026-04-17 | v1.46.151 | Polish | Sidebar unread counts → dot indicators — removes number anxiety, consistent with collapsed nav dots | `Sidebar.jsx:80,132,198` | — |
 | 2026-04-17 | v1.46.150 | Feature | Today page: AI morning brief → 3-widget dashboard (Streak, Review Due, Saved) | `TodayPage.jsx` | — |
 | 2026-04-12 | v1.46.149 | Polish | Remove duplicate borderLeft from ContentViewer — split-view divider was 2px instead of intended 1px; screen-edge border in full-screen mode eliminated | `ContentViewer.jsx:341` | — |

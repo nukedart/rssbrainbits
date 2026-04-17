@@ -637,7 +637,16 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                   textShadow: "0 2px 28px rgba(0,0,0,0.55)",
                   maxWidth: 600,
                 }}>
-                  {content.title || item.title}
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "inherit", textDecoration: "none" }}
+                    onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
+                    onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
+                  >
+                    {content.title || item.title}
+                  </a>
                 </h1>
               </div>
             </div>
