@@ -292,20 +292,13 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
   const { isTablet, isMobile } = useBreakpoint();
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [expandedFolders, setExpandedFolders] = useState(() => new Set());
+  const [expandedFolders, setExpandedFolders] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("fb-sidebar-folders") || "[]");
+      return new Set(saved);
+    } catch { return new Set(); }
+  });
   const shortcutsRef = useRef(null);
-
-  // Auto-expand all folders on first load
-  useEffect(() => {
-    if (folders.length > 0) {
-      setExpandedFolders(prev => {
-        if (prev.size >= folders.length) return prev;
-        const next = new Set(prev);
-        folders.forEach(f => next.add(f.id));
-        return next;
-      });
-    }
-  }, [folders]);
 
   useEffect(() => {
     if (!shortcutsOpen) return;
@@ -315,7 +308,12 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
   }, [shortcutsOpen]);
 
   function toggleFolder(id) {
-    setExpandedFolders(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setExpandedFolders(prev => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      try { localStorage.setItem("fb-sidebar-folders", JSON.stringify([...n])); } catch {}
+      return n;
+    });
   }
 
   if (isMobile) return null;

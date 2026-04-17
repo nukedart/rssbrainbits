@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.159] — 2026-04-17
+
+- [Nav] Sidebar folders default to collapsed — removed auto-expand-all on load; expand state persisted to localStorage so preference is remembered across sessions
+
 ## [1.46.158] — 2026-04-17
 
 - [Feature] Podcast player revamp (Pocket Casts-style): mobile gets a mini-bar above BottomNav (tap to expand full-screen); draggable seekbar with thumb; volume slider; episode position saved/restored per episode; artwork scales with play state; desktop modal wider with volume control
