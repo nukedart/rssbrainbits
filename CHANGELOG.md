@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.156] — 2026-04-17
+
+- [UX] Today page source group headers: remove borderBottom divider and article count — whitespace separates groups; count was redundant chrome
+
 ## [1.46.155] — 2026-04-17
 
 - [Polish] Sidebar Analytics/Admin active state: T.surface → T.accentSurface — was the only nav item that didn't highlight when selected

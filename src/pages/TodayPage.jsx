@@ -256,17 +256,9 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
               if (!visibleArts.length) return null;
               return (
                 <div key={source}>
-                  <div style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "12px 22px 6px",
-                    borderBottom: `1px solid ${T.border}`,
-                    marginTop: 4,
-                  }}>
+                  <div style={{ padding: "14px 22px 4px", marginTop: 4 }}>
                     <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: T.textTertiary }}>
                       {source}
-                    </span>
-                    <span style={{ fontSize: 10, color: T.textTertiary }}>
-                      {visibleArts.length} {visibleArts.length === 1 ? "article" : "articles"}
                     </span>
                   </div>
                   {visibleArts.map(item => (
