@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-17 | v1.46.155 | Polish | Sidebar Analytics active bg T.surface → T.accentSurface — matches all other nav items | `Sidebar.jsx:487` | — |
 | 2026-04-17 | v1.46.154 | UX | Reader toolbar: external-link icon button to open original article | `ContentViewer.jsx:488` | — |
 | 2026-04-17 | v1.46.153 | Polish | BottomNav Inbox badge → dot — matches sidebar dots, consistent mobile/desktop | `BottomNav.jsx:140` | — |
 | 2026-04-17 | v1.46.152 | UX | Reader title → clickable link to original article, opens in new tab | `ContentViewer.jsx:629` | — |

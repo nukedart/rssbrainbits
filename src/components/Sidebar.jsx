@@ -484,7 +484,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
               display:"flex", alignItems:"center", gap: collapsed?0:7,
               justifyContent: collapsed?"center":"flex-start",
               padding: collapsed?"6px 0":"6px 10px", borderRadius:8, border:"none",
-              background: active==="analytics" ? T.surface : "transparent",
+              background: active==="analytics" ? T.accentSurface : "transparent",
               cursor:"pointer", fontFamily:"inherit", transition:"background .15s", width:"100%",
             }}
             onMouseEnter={e => { if (active!=="analytics") e.currentTarget.style.background=T.surface; }}
