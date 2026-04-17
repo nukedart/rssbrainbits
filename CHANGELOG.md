@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.157] — 2026-04-17
+
+- [UX] Reader toolbar: Save and Share converted to icon-only buttons — reduces text clutter, consistent with the existing external-link icon button; Save icon fills solid when saved
+
 ## [1.46.156] — 2026-04-17
 
 - [UX] Today page source group headers: remove borderBottom divider and article count — whitespace separates groups; count was redundant chrome

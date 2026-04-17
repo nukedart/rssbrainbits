@@ -472,18 +472,27 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           )}
 
           {/* Save */}
-          <button onClick={handleSave} disabled={saved}
-            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: saved ? "default" : "pointer", fontSize: 12, fontWeight: 600, color: saved ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "all .12s", flexShrink: 0 }}
+          <button onClick={handleSave} disabled={saved} title={saved ? "Saved" : "Save"}
+            aria-label={saved ? "Saved" : "Save article"}
+            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: saved ? "default" : "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
             onMouseEnter={e => { if (!saved) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
             onMouseLeave={e => { if (!saved) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
-          >{saved ? "✓ Saved" : "Save"}</button>
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
+            </svg>
+          </button>
 
-          {/* Share — visible button (not buried in overflow) */}
-          <button onClick={handleShare} title={shareFeedback || "Share"}
-            style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: shareFeedback ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "all .12s", flexShrink: 0, whiteSpace: "nowrap" }}
+          {/* Share */}
+          <button onClick={handleShare} title={shareFeedback || "Share"} aria-label="Share article"
+            style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: shareFeedback ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
             onMouseEnter={e => { if (!shareFeedback) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
             onMouseLeave={e => { if (!shareFeedback) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
-          >{shareFeedback || "↑ Share"}</button>
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 1v10M4 4l4-3 4 3"/><path d="M4 8H2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-2"/>
+            </svg>
+          </button>
 
           {/* Open original */}
           {item?.url && (
