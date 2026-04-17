@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.150] — 2026-04-17
+
+- [Feature] Today page: replace AI morning brief with a 3-widget dashboard (Reading Streak, Review Due, Saved count) — no API calls on load; data from existing localStorage SM-2 schedule + Supabase count queries
+
 ## [1.46.149] — 2026-04-12
 
 - [Polish] Remove duplicate `borderLeft` from ContentViewer root — all split-view parents already own this border; in split mode the divider was double-width (2px), in full-screen mode a 1px line appeared at the absolute screen edge; serves the "no decorative chrome" principle
