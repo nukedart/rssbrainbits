@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.160] — 2026-04-17
+
+- [Feature] Today page visual revamp — magazine-style grid layout with HeroCard, 2/3-col ArticleGrid, horizontal StatPills, and compact PageHeader; improves at-a-glance content scanning on both mobile and desktop
+
 ## [1.46.159] — 2026-04-17
 
 - [Nav] Sidebar folders default to collapsed — removed auto-expand-all on load; expand state persisted to localStorage so preference is remembered across sessions
