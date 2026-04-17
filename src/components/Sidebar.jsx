@@ -78,9 +78,7 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
             {label}
           </span>
           {badge > 0 && (
-            <span style={{ fontSize:10, fontWeight:700, color: badgeColor ? bc : (isActive ? T.accent : T.textTertiary), flexShrink:0 }}>
-              {badge > 99 ? "99+" : badge}
-            </span>
+            <span style={{ width:6, height:6, borderRadius:"50%", background: badgeColor ? bc : T.accent, flexShrink:0 }} />
           )}
         </>
       )}
@@ -128,11 +126,9 @@ function FeedRow({ feed, unread, active, onNavigate, T, indent = 0 }) {
       }}>
         {name}
       </span>
-      {/* Unread count */}
+      {/* Unread dot */}
       {unread > 0 && (
-        <span style={{ fontSize:10, fontWeight:700, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
-          {unread > 99 ? "99+" : unread}
-        </span>
+        <span style={{ width:5, height:5, borderRadius:"50%", background: isActive ? T.accent : T.accent, flexShrink:0, opacity: isActive ? 0.5 : 1 }} />
       )}
     </button>
   );
@@ -198,11 +194,9 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
           }}>
             {folder.name}
           </span>
-          {/* Unread count — hidden on hover to make room for actions */}
+          {/* Unread dot — hidden on hover to make room for actions */}
           {folderUnread > 0 && !hovered && (
-            <span style={{ fontSize:10, fontWeight:700, color: isActive ? T.accent : T.textTertiary, flexShrink:0, marginRight:2 }}>
-              {folderUnread > 99 ? "99+" : folderUnread}
-            </span>
+            <span style={{ width:5, height:5, borderRadius:"50%", background:T.accent, flexShrink:0, marginRight:2, opacity: isActive ? 0.5 : 1 }} />
           )}
         </button>
         {/* Edit button — visible on hover */}

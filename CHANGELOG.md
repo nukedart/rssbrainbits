@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.151] — 2026-04-17
+
+- [Polish] Sidebar unread counts → dot indicators — removes number anxiety; a dot cleanly signals "has unread" without cluttering the nav; consistent with collapsed sidebar behavior
+
 ## [1.46.150] — 2026-04-17
 
 - [Feature] Today page: replace AI morning brief with a 3-widget dashboard (Reading Streak, Review Due, Saved count) — no API calls on load; data from existing localStorage SM-2 schedule + Supabase count queries
