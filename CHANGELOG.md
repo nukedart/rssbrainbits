@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.158] — 2026-04-17
+
+- [Feature] Podcast player revamp (Pocket Casts-style): mobile gets a mini-bar above BottomNav (tap to expand full-screen); draggable seekbar with thumb; volume slider; episode position saved/restored per episode; artwork scales with play state; desktop modal wider with volume control
+
 ## [1.46.157] — 2026-04-17
 
 - [UX] Reader toolbar: Save and Share converted to icon-only buttons — reduces text clutter, consistent with the existing external-link icon button; Save icon fills solid when saved

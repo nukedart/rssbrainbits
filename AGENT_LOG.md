@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-04-17 | v1.46.158 | Feature | Podcast player revamp: mini-bar + full-screen mobile, draggable seek, volume, resume position | `PodcastPlayer.jsx` | — |
 | 2026-04-17 | v1.46.157 | UX | Reader toolbar Save+Share → icon-only buttons; Save fills solid when saved | `ContentViewer.jsx:474` | — |
 | 2026-04-17 | v1.46.156 | UX | Today source group headers: remove borderBottom + article count — chrome recedes | `TodayPage.jsx:259` | — |
 | 2026-04-17 | v1.46.155 | Polish | Sidebar Analytics active bg T.surface → T.accentSurface — matches all other nav items | `Sidebar.jsx:487` | — |
