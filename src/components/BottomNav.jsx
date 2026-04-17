@@ -139,15 +139,11 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
               <Icon size={24} strokeWidth={isActive ? 2.2 : 1.7} />
               {id === "inbox" && unreadCount > 0 && (
                 <span style={{
-                  position: "absolute", top: -3, right: -8,
-                  background: T.accent, color: T.accentText,
-                  fontSize: 9, fontWeight: 700, lineHeight: 1,
-                  padding: "2px 4px", borderRadius: 8,
-                  minWidth: 14, textAlign: "center",
+                  position: "absolute", top: -2, right: -4,
+                  width: 6, height: 6, borderRadius: "50%",
+                  background: T.accent,
                   boxShadow: "0 1px 4px rgba(0,0,0,.25)",
-                }}>
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
+                }} />
               )}
             </span>
             <span style={{ fontSize: 11, fontWeight: isActive ? 600 : 400, letterSpacing: ".01em" }}>

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.153] — 2026-04-17
+
+- [Polish] BottomNav Inbox unread badge → dot — matches sidebar dot indicator; consistent mobile/desktop treatment
+
 ## [1.46.152] — 2026-04-17
 
 - [UX] Reader title is now a clickable link to the original article — opens in new tab; useful for Slickdeals and paywalled articles where the extracted content is incomplete
