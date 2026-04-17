@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.154] — 2026-04-17
+
+- [UX] Reader toolbar: add external-link icon button to open original article in new tab — promoted from overflow menu, always one tap away
+
 ## [1.46.153] — 2026-04-17
 
 - [Polish] BottomNav Inbox unread badge → dot — matches sidebar dot indicator; consistent mobile/desktop treatment

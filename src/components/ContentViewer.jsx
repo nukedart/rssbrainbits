@@ -485,6 +485,23 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             onMouseLeave={e => { if (!shareFeedback) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
           >{shareFeedback || "↑ Share"}</button>
 
+          {/* Open original */}
+          {item?.url && (
+            <button
+              onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
+              title="Open original article"
+              style={{ background: "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
+              onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
+              onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9"/>
+                <path d="M10 1h5v5"/>
+                <path d="M15 1L8 8"/>
+              </svg>
+            </button>
+          )}
+
           {/* ··· overflow menu */}
           <OverflowMenu
             T={T}
