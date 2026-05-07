@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.162] — 2026-05-07
+
+- [UX] Add touch feedback (opacity + scale) to Review rating buttons — tapping "Forgot/Got it/Easy" now feels immediately responsive on mobile, matching BottomNav and other touch elements
+
 ## [1.46.161] — 2026-04-17
 
 - [Feature] Article list image size toggle — tap the photo icon in mobile list view to cycle through hidden/small/large thumbnails; removes forced "no image" on mobile so users can scan article images at their preferred size

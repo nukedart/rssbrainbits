@@ -268,6 +268,9 @@ export default function ReviewPage() {
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.03)"; }}
             onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+            onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; e.currentTarget.style.transform = "scale(0.97)"; }}
+            onTouchEnd={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.transform = "scale(1)"; }}
+            onTouchCancel={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.transform = "scale(1)"; }}
           >
             <span style={{ fontSize: 14, fontWeight: 600, color: accent ? T.accentText : T.text }}>{label}</span>
             <span style={{ fontSize: 11, color: T.textTertiary }}>{sub}</span>
