@@ -80,7 +80,13 @@ export default function CardsPage() {
       ? untagged
       : buckets.find(([t]) => t === selectedTheme)?.[1] || [];
     return (
-      <div style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0 }}>
+      <div onScroll={e => {
+          const el = e.currentTarget, top = el.scrollTop, prev = el._lastScrollTop ?? 0;
+          el._lastScrollTop = top;
+          if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
+          if (Math.abs(top - prev) < 4) return;
+          window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
+        }} style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0 }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 80px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
             <button onClick={() => setSelectedTheme(null)} style={{
@@ -189,7 +195,13 @@ export default function CardsPage() {
 
   // ── Bucket view (all themes) ───────────────────────────────
   return (
-    <div style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0 }}>
+    <div onScroll={e => {
+        const el = e.currentTarget, top = el.scrollTop, prev = el._lastScrollTop ?? 0;
+        el._lastScrollTop = top;
+        if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
+        if (Math.abs(top - prev) < 4) return;
+        window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
+      }} style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0 }}>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 80px" }}>
         <div style={{ marginBottom: 24 }}>
           <div style={{ fontSize: 20, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>Cards</div>

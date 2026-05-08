@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-05-08 | v1.46.164 | Nav | BottomNav scroll-hide extended to TodayPage and CardsPage — consistent chrome-recede on all primary screens | `TodayPage.jsx:134, CardsPage.jsx:83,198` | — |
 | 2026-05-07 | v1.46.163 | UX | Reader top bar auto-hides on scroll-down, reappears on scroll-up — chrome recedes while reading | `ContentViewer.jsx:64,234,360` | — |
 | 2026-05-07 | v1.46.162 | UX | Review rating buttons: add touch feedback (opacity+scale) — buttons feel responsive on mobile | `ReviewPage.jsx:269` | — |
 | 2026-04-17 | v1.46.161 | Feature | Mobile image size toggle in list view: cycle hidden/small/large thumbnails | `InboxPage.jsx:777` | — |

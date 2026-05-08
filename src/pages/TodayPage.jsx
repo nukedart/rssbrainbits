@@ -131,13 +131,21 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
     <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
       {/* ── Left panel ── */}
-      <div style={{
-        flex: showSplit ? "0 0 380px" : 1,
-        overflowY: "auto",
-        display: "flex", flexDirection: "column",
-        minWidth: 0,
-        transition: "flex .2s ease",
-      }}>
+      <div
+        onScroll={isMobile ? (e => {
+          const el = e.currentTarget, top = el.scrollTop, prev = el._lastScrollTop ?? 0;
+          el._lastScrollTop = top;
+          if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
+          if (Math.abs(top - prev) < 4) return;
+          window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
+        }) : undefined}
+        style={{
+          flex: showSplit ? "0 0 380px" : 1,
+          overflowY: "auto",
+          display: "flex", flexDirection: "column",
+          minWidth: 0,
+          transition: "flex .2s ease",
+        }}>
 
         {/* ── Compact header ── */}
         {!showSplit && (
