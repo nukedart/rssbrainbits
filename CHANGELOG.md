@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.166] — 2026-05-08
+
+- [Feature] New card button on Cards page — create a card directly without highlighting in an article; passage, annotation, color, and comma-separated tags supported
+
 ## [1.46.165] — 2026-05-08
 
 ### Changes since v1.46.164

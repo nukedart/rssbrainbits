@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { Spinner } from "../components/UI";
-import { getAllHighlights, updateHighlightNote, updateHighlightTags } from "../lib/supabase";
+import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags } from "../lib/supabase";
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 
 // Consistent color avatar derived from theme name
@@ -34,6 +34,8 @@ export default function CardsPage() {
   const [editingId, setEditingId] = useState(null);   // which card's note is open
   const [editNote, setEditNote] = useState("");
   const [tagInputs, setTagInputs] = useState({});     // highlightId → draft tag string
+  const [showNewCard, setShowNewCard] = useState(false);
+  const [newCard, setNewCard] = useState({ passage: "", note: "", color: "yellow", tagDraft: "" });
 
   async function saveNote(h) {
     const note = editNote.trim();
@@ -55,6 +57,25 @@ export default function CardsPage() {
     setHighlights(prev => prev.map(x => x.id === h.id ? { ...x, tags } : x));
     setTagInputs(prev => ({ ...prev, [h.id]: "" }));
     try { await updateHighlightTags(h.id, tags); } catch {}
+  }
+
+  function handleNewCardKey(e) {
+    if (e.key === "Escape") setShowNewCard(false);
+  }
+
+  async function createCard() {
+    const passage = newCard.passage.trim();
+    if (!passage) return;
+    const tags = newCard.tagDraft.trim()
+      ? [...new Set(newCard.tagDraft.split(",").map(t => t.trim().toLowerCase()).filter(Boolean))]
+      : [];
+    const record = { passage, note: newCard.note.trim(), color: newCard.color, tags };
+    setShowNewCard(false);
+    setNewCard({ passage: "", note: "", color: "yellow", tagDraft: "" });
+    try {
+      const saved = await addHighlight(user.id, record);
+      setHighlights(prev => [saved, ...prev]);
+    } catch {}
   }
 
   useEffect(() => {
@@ -230,12 +251,141 @@ export default function CardsPage() {
   return (
     <div onScroll={navDirScroll} style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0, animation: "fadeIn .15s ease" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 80px" }}>
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>Cards</div>
-          <div style={{ fontSize: 13, color: T.textTertiary, marginTop: 4 }}>
-            {totalTagged} tagged highlight{totalTagged !== 1 ? "s" : ""} · {buckets.length} theme{buckets.length !== 1 ? "s" : ""}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>Cards</div>
+            <div style={{ fontSize: 13, color: T.textTertiary, marginTop: 4 }}>
+              {totalTagged} tagged highlight{totalTagged !== 1 ? "s" : ""} · {buckets.length} theme{buckets.length !== 1 ? "s" : ""}
+            </div>
           </div>
+          <button
+            onClick={() => setShowNewCard(true)}
+            aria-label="New card"
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              background: T.accent, color: T.accentText, border: "none",
+              borderRadius: 10, padding: "8px 14px", cursor: "pointer",
+              fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+              flexShrink: 0, transition: "opacity .12s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = ".85"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> New card
+          </button>
         </div>
+
+        {/* ── New Card Modal ── */}
+        {showNewCard && (
+          <div
+            onClick={e => { if (e.target === e.currentTarget) setShowNewCard(false); }}
+            onKeyDown={handleNewCardKey}
+            style={{
+              position: "fixed", inset: 0, zIndex: 800,
+              background: "rgba(0,0,0,.45)", backdropFilter: "blur(4px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 20, animation: "fadeIn .15s ease",
+            }}
+          >
+            <div style={{
+              background: T.card, borderRadius: 16, padding: "24px",
+              width: "100%", maxWidth: 480, boxShadow: "0 24px 64px rgba(0,0,0,.3)",
+              display: "flex", flexDirection: "column", gap: 14,
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>New card</div>
+
+              {/* Passage */}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 6 }}>Passage</div>
+                <textarea
+                  autoFocus
+                  value={newCard.passage}
+                  onChange={e => setNewCard(p => ({ ...p, passage: e.target.value }))}
+                  placeholder="The passage or quote you want to remember…"
+                  style={{
+                    width: "100%", boxSizing: "border-box", minHeight: 90, resize: "vertical",
+                    background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
+                    padding: "10px 12px", fontSize: 14, color: T.text, lineHeight: 1.6,
+                    fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic",
+                    outline: "none",
+                  }}
+                  onFocus={e => e.target.style.borderColor = T.accent}
+                  onBlur={e => e.target.style.borderColor = T.border}
+                />
+              </div>
+
+              {/* Annotation */}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 6 }}>Annotation <span style={{ fontWeight: 400, textTransform: "none" }}>(optional)</span></div>
+                <textarea
+                  value={newCard.note}
+                  onChange={e => setNewCard(p => ({ ...p, note: e.target.value }))}
+                  placeholder="Your thoughts in your own words…"
+                  style={{
+                    width: "100%", boxSizing: "border-box", minHeight: 64, resize: "vertical",
+                    background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
+                    padding: "10px 12px", fontSize: 13, color: T.text, lineHeight: 1.55,
+                    fontFamily: "inherit", outline: "none",
+                  }}
+                  onFocus={e => e.target.style.borderColor = T.accent}
+                  onBlur={e => e.target.style.borderColor = T.border}
+                />
+              </div>
+
+              {/* Tags + Color row */}
+              <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 6 }}>Tags</div>
+                  <input
+                    value={newCard.tagDraft}
+                    onChange={e => setNewCard(p => ({ ...p, tagDraft: e.target.value }))}
+                    placeholder="stoicism, leadership…"
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
+                      padding: "8px 10px", fontSize: 13, color: T.text, fontFamily: "inherit", outline: "none",
+                    }}
+                    onFocus={e => e.target.style.borderColor = T.accent}
+                    onBlur={e => e.target.style.borderColor = T.border}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 6 }}>Color</div>
+                  <div style={{ display: "flex", gap: 6, paddingTop: 4 }}>
+                    {HIGHLIGHT_COLORS.map(c => (
+                      <button key={c.id} onClick={() => setNewCard(p => ({ ...p, color: c.id }))}
+                        aria-label={c.label}
+                        style={{
+                          width: 24, height: 24, borderRadius: 6, border: `2px solid ${newCard.color === c.id ? c.border : "transparent"}`,
+                          background: c.bg, cursor: "pointer", transition: "border-color .1s",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+                <button onClick={() => setShowNewCard(false)} style={{
+                  background: T.surface2, border: "none", borderRadius: 8, padding: "8px 16px",
+                  cursor: "pointer", color: T.textSecondary, fontSize: 13, fontFamily: "inherit",
+                }}>Cancel</button>
+                <button
+                  onClick={createCard}
+                  disabled={!newCard.passage.trim()}
+                  style={{
+                    background: newCard.passage.trim() ? T.accent : T.surface2,
+                    color: newCard.passage.trim() ? T.accentText : T.textTertiary,
+                    border: "none", borderRadius: 8, padding: "8px 20px",
+                    cursor: newCard.passage.trim() ? "pointer" : "default",
+                    fontSize: 13, fontWeight: 600, fontFamily: "inherit", transition: "all .15s",
+                  }}
+                >Save card</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {buckets.length === 0 && untagged.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 24px" }}>
