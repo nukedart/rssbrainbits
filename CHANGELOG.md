@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.167] — 2026-05-08
+
+- [Feature] Cards bucket view: filter bar to search themes by name + A→Z / count sort toggle
+
 ## [1.46.166] — 2026-05-08
 
 - [Feature] New card button on Cards page — create a card directly without highlighting in an article; passage, annotation, color, and comma-separated tags supported

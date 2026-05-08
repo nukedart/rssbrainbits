@@ -35,6 +35,8 @@ export default function CardsPage() {
   const [editNote, setEditNote] = useState("");
   const [tagInputs, setTagInputs] = useState({});     // highlightId → draft tag string
   const [showNewCard, setShowNewCard] = useState(false);
+  const [sortAZ, setSortAZ] = useState(false);
+  const [filterQuery, setFilterQuery] = useState("");
   const [newCard, setNewCard] = useState({ passage: "", note: "", color: "yellow", tagDraft: "" });
 
   async function saveNote(h) {
@@ -86,7 +88,7 @@ export default function CardsPage() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  // theme → highlight[] map, sorted by count desc
+  // theme → highlight[] map, sorted + filtered
   const buckets = useMemo(() => {
     const map = {};
     highlights.forEach(h => {
@@ -95,8 +97,15 @@ export default function CardsPage() {
         map[tag].push(h);
       });
     });
-    return Object.entries(map).sort((a, b) => b[1].length - a[1].length);
-  }, [highlights]);
+    let entries = Object.entries(map);
+    if (filterQuery.trim()) {
+      const q = filterQuery.trim().toLowerCase();
+      entries = entries.filter(([t]) => t.toLowerCase().includes(q));
+    }
+    return entries.sort((a, b) => sortAZ
+      ? a[0].localeCompare(b[0])
+      : b[1].length - a[1].length);
+  }, [highlights, sortAZ, filterQuery]);
 
   const untagged = useMemo(() =>
     highlights.filter(h => !(h.tags || []).length),
@@ -251,7 +260,7 @@ export default function CardsPage() {
   return (
     <div onScroll={navDirScroll} style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0, animation: "fadeIn .15s ease" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 80px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
           <div>
             <div style={{ fontSize: 20, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>Cards</div>
             <div style={{ fontSize: 13, color: T.textTertiary, marginTop: 4 }}>
@@ -384,6 +393,32 @@ export default function CardsPage() {
                 >Save card</button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Filter + sort bar */}
+        {(buckets.length > 0 || untagged.length > 0) && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center" }}>
+            <input
+              value={filterQuery}
+              onChange={e => setFilterQuery(e.target.value)}
+              placeholder="Filter themes…"
+              style={{
+                flex: 1, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
+                padding: "7px 12px", fontSize: 13, color: T.text, fontFamily: "inherit", outline: "none",
+              }}
+              onFocus={e => e.target.style.borderColor = T.accent}
+              onBlur={e => e.target.style.borderColor = T.border}
+            />
+            <button
+              onClick={() => setSortAZ(v => !v)}
+              title={sortAZ ? "Sort by count" : "Sort A→Z"}
+              style={{
+                background: sortAZ ? T.accentSurface : T.surface, border: `1px solid ${sortAZ ? T.accent : T.border}`,
+                borderRadius: 8, padding: "7px 12px", cursor: "pointer", color: sortAZ ? T.accent : T.textSecondary,
+                fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0, transition: "all .12s",
+              }}
+            >{sortAZ ? "A→Z" : "#"}</button>
           </div>
         )}
 
