@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.165] — 2026-05-08
+
+### Changes since v1.46.164
+
+---
+
 ## [1.46.164] — 2026-05-08
 
 - [Nav] BottomNav now auto-hides on scroll-down in TodayPage and CardsPage — consistent with Inbox, chrome recedes across all primary mobile screens

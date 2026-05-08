@@ -8,6 +8,23 @@ import { Spinner } from "../components/UI";
 import { getAllHighlights, updateHighlightNote, updateHighlightTags } from "../lib/supabase";
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 
+// Consistent color avatar derived from theme name
+const AVATAR_COLORS = ["#2F6FED","#AA8439","#65D5C4","#8B5CF6","#EF4444","#22C55E","#F97316","#EC4899"];
+function themeAvatar(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xFFFFFFFF;
+  return { letter: (name[0] || "?").toUpperCase(), color: AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length] };
+}
+
+// Shared scroll-direction dispatcher
+function navDirScroll(e) {
+  const el = e.currentTarget, top = el.scrollTop, prev = el._lastScrollTop ?? 0;
+  el._lastScrollTop = top;
+  if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
+  if (Math.abs(top - prev) < 4) return;
+  window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
+}
+
 export default function CardsPage() {
   const { T } = useTheme();
   const { user } = useAuth();
@@ -80,13 +97,7 @@ export default function CardsPage() {
       ? untagged
       : buckets.find(([t]) => t === selectedTheme)?.[1] || [];
     return (
-      <div onScroll={e => {
-          const el = e.currentTarget, top = el.scrollTop, prev = el._lastScrollTop ?? 0;
-          el._lastScrollTop = top;
-          if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
-          if (Math.abs(top - prev) < 4) return;
-          window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
-        }} style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0 }}>
+      <div onScroll={navDirScroll} style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0, animation: "fadeIn .15s ease" }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 80px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
             <button onClick={() => setSelectedTheme(null)} style={{
@@ -98,7 +109,7 @@ export default function CardsPage() {
               <div style={{ fontSize: 12, color: T.textTertiary }}>{cards.length} card{cards.length !== 1 ? "s" : ""}</div>
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {cards.map(h => {
               const col = HIGHLIGHT_COLORS.find(c => c.id === h.color) || HIGHLIGHT_COLORS[0];
               const allTags = h.tags || [];
@@ -107,16 +118,25 @@ export default function CardsPage() {
                 <div key={h.id} style={{
                   background: T.card, borderRadius: 12,
                   border: `1px solid ${isEditing ? T.accent : T.border}`,
-                  overflow: "hidden", display: "flex",
+                  overflow: "hidden",
                   transition: "border-color .15s",
                 }}>
-                  <div style={{ width: 4, background: col.border, flexShrink: 0 }} />
-                  <div style={{ padding: "14px 16px", flex: 1 }}>
-                    {/* Passage — always read-only */}
-                    <div style={{ fontSize: 14, color: T.text, lineHeight: 1.65, fontStyle: "italic", marginBottom: 8 }}>
+                  {/* Passage — color-tinted background, serif font */}
+                  <div style={{
+                    padding: "16px 18px 14px",
+                    background: col.bg + "22",
+                    borderBottom: `1px solid ${col.bg}44`,
+                  }}>
+                    <div style={{
+                      fontSize: 15, color: T.text, lineHeight: 1.7,
+                      fontFamily: "'Cormorant Garamond', Georgia, serif",
+                      fontStyle: "italic", fontWeight: 500,
+                    }}>
                       "{h.passage}"
                     </div>
+                  </div>
 
+                  <div style={{ padding: "12px 18px 14px" }}>
                     {/* Note — click to edit */}
                     {isEditing ? (
                       <textarea
@@ -127,40 +147,53 @@ export default function CardsPage() {
                         onKeyDown={e => { if (e.key === "Escape") { setEditingId(null); } }}
                         placeholder="Your annotation…"
                         style={{
-                          width: "100%", boxSizing: "border-box", fontSize: 12, color: T.text,
+                          width: "100%", boxSizing: "border-box", fontSize: 13, color: T.text,
                           background: T.surface, border: `1px solid ${T.accent}`, borderRadius: 8,
-                          padding: "7px 10px", marginBottom: 8, lineHeight: 1.5, resize: "vertical",
-                          fontFamily: "inherit", outline: "none", minHeight: 60,
+                          padding: "8px 10px", marginBottom: 10, lineHeight: 1.55, resize: "vertical",
+                          fontFamily: "inherit", outline: "none", minHeight: 64,
                         }}
                       />
                     ) : (
                       <div
                         onClick={() => { setEditingId(h.id); setEditNote(h.note || ""); }}
-                        title="Click to edit annotation"
+                        title="Click to annotate"
                         style={{
-                          fontSize: 12, borderRadius: 8, padding: "7px 10px", marginBottom: 8,
-                          lineHeight: 1.5, cursor: "text", minHeight: 34,
+                          fontSize: 13, borderRadius: 8, padding: h.note ? "8px 10px" : "7px 10px",
+                          marginBottom: 10, lineHeight: 1.55, cursor: "text", minHeight: 36,
                           color: h.note ? T.textSecondary : T.textTertiary,
                           background: h.note ? T.surface : "transparent",
                           border: `1px dashed ${h.note ? "transparent" : T.border}`,
                           fontStyle: h.note ? "normal" : "italic",
                         }}
                       >
-                        {h.note || "Add an annotation…"}
+                        {h.note || "+ Add annotation"}
                       </div>
                     )}
 
-                    {/* Source */}
-                    <div style={{ fontSize: 11, color: T.textTertiary, marginBottom: allTags.length ? 8 : 0 }}>
-                      {h.article_title || "Untitled"}
-                    </div>
+                    {/* Source — clickable */}
+                    {h.article_title && (
+                      <a
+                        href={h.article_url || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "block", fontSize: 11, color: T.textTertiary,
+                          marginBottom: allTags.length ? 10 : 0,
+                          textDecoration: "none", transition: "color .12s",
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.color = T.accent}
+                        onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
+                      >
+                        ↗ {h.article_title}
+                      </a>
+                    )}
 
-                    {/* Tags — always editable */}
+                    {/* Tags */}
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
                       {allTags.map(t => (
                         <span key={t} style={{
                           display: "inline-flex", alignItems: "center", gap: 3,
-                          fontSize: 10, padding: "2px 6px 2px 8px", borderRadius: 20,
+                          fontSize: 11, padding: "2px 6px 2px 8px", borderRadius: 20,
                           background: T.accentSurface, color: T.accent, border: `1px solid ${T.accent}44`,
                         }}>
                           <span onClick={() => setSelectedTheme(t)} style={{ cursor: "pointer" }}>{t}</span>
@@ -177,7 +210,7 @@ export default function CardsPage() {
                         onBlur={() => commitTag(h)}
                         placeholder="+ tag"
                         style={{
-                          fontSize: 10, padding: "2px 6px", borderRadius: 20, border: `1px dashed ${T.border}`,
+                          fontSize: 11, padding: "2px 6px", borderRadius: 20, border: `1px dashed ${T.border}`,
                           background: "transparent", color: T.textTertiary, fontFamily: "inherit",
                           outline: "none", width: 44, minWidth: 0,
                         }}
@@ -195,13 +228,7 @@ export default function CardsPage() {
 
   // ── Bucket view (all themes) ───────────────────────────────
   return (
-    <div onScroll={e => {
-        const el = e.currentTarget, top = el.scrollTop, prev = el._lastScrollTop ?? 0;
-        el._lastScrollTop = top;
-        if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
-        if (Math.abs(top - prev) < 4) return;
-        window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
-      }} style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0 }}>
+    <div onScroll={navDirScroll} style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0, animation: "fadeIn .15s ease" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 80px" }}>
         <div style={{ marginBottom: 24 }}>
           <div style={{ fontSize: 20, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>Cards</div>
@@ -219,36 +246,59 @@ export default function CardsPage() {
             </div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
-            {buckets.map(([theme, cards]) => (
-              <button key={theme} onClick={() => setSelectedTheme(theme)} style={{
-                background: T.card, border: `1px solid ${T.border}`,
-                borderRadius: 14, padding: "18px 16px",
-                cursor: "pointer", textAlign: "left", fontFamily: "inherit",
-                transition: "border-color .12s, background .12s",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.background = T.accentSurface; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.card; }}
-              >
-                <div style={{ fontSize: 22, marginBottom: 10 }}>📇</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4 }}>{theme}</div>
-                <div style={{ fontSize: 12, color: T.textTertiary }}>{cards.length} card{cards.length !== 1 ? "s" : ""}</div>
-              </button>
-            ))}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+            {buckets.map(([theme, cards]) => {
+              const av = themeAvatar(theme);
+              const preview = cards[0]?.passage?.slice(0, 72) + (cards[0]?.passage?.length > 72 ? "…" : "");
+              return (
+                <button key={theme} onClick={() => setSelectedTheme(theme)} style={{
+                  background: T.card, border: `1px solid ${T.border}`,
+                  borderRadius: 14, padding: "16px 16px 14px",
+                  cursor: "pointer", textAlign: "left", fontFamily: "inherit",
+                  transition: "border-color .12s, box-shadow .12s",
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = av.color; e.currentTarget.style.boxShadow = `0 0 0 1px ${av.color}44`; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  {/* Letter avatar */}
+                  <div style={{
+                    width: 34, height: 34, borderRadius: 10, marginBottom: 12,
+                    background: av.color + "22", border: `1px solid ${av.color}44`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 15, fontWeight: 700, color: av.color,
+                    fontFamily: "inherit",
+                  }}>{av.letter}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4 }}>{theme}</div>
+                  <div style={{ fontSize: 11, color: T.textTertiary, marginBottom: preview ? 8 : 0 }}>
+                    {cards.length} card{cards.length !== 1 ? "s" : ""}
+                  </div>
+                  {preview && (
+                    <div style={{
+                      fontSize: 11, color: T.textTertiary, lineHeight: 1.5,
+                      fontStyle: "italic", overflow: "hidden",
+                      display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                    }}>"{preview}"</div>
+                  )}
+                </button>
+              );
+            })}
             {untagged.length > 0 && (
               <button onClick={() => setSelectedTheme("__untagged__")} style={{
                 background: T.card, border: `1px solid ${T.border}`,
-                borderRadius: 14, padding: "18px 16px",
+                borderRadius: 14, padding: "16px 16px 14px",
                 cursor: "pointer", textAlign: "left", fontFamily: "inherit",
-                transition: "border-color .12s, background .12s",
-                opacity: 0.7,
+                transition: "border-color .12s", opacity: 0.7,
               }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = T.textTertiary; e.currentTarget.style.opacity = "1"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.opacity = "0.7"; }}
               >
-                <div style={{ fontSize: 22, marginBottom: 10 }}>📌</div>
+                <div style={{
+                  width: 34, height: 34, borderRadius: 10, marginBottom: 12,
+                  background: T.surface2, display: "flex", alignItems: "center",
+                  justifyContent: "center", fontSize: 15, color: T.textTertiary,
+                }}>?</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: T.textSecondary, marginBottom: 4 }}>Untagged</div>
-                <div style={{ fontSize: 12, color: T.textTertiary }}>{untagged.length} highlight{untagged.length !== 1 ? "s" : ""}</div>
+                <div style={{ fontSize: 11, color: T.textTertiary }}>{untagged.length} highlight{untagged.length !== 1 ? "s" : ""}</div>
               </button>
             )}
           </div>
