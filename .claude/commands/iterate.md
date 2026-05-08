@@ -17,10 +17,10 @@ You are improving the Feedbox RSS reader (rss.brainbits.us). Your three focus ar
 
 **Step 1 — Audit (read-only, targeted)**
 Run `npm test` and note any failures.
-Read ONLY these files to assess current state — do not read anything else yet:
-- `src/App.jsx` (routing, page list)
-- `src/components/Sidebar.jsx` (desktop nav)
-- `src/components/BottomNav.jsx` (mobile nav)
+Grep first — only Read if grep is ambiguous, and use `offset`+`limit`:
+- Grep `VALID_PAGES|currentPage|lazy` in `src/App.jsx` — page list
+- Read `src/components/Sidebar.jsx` lines 1–60 (offset 0, limit 60)
+- Read `src/components/BottomNav.jsx` lines 1–50 (offset 0, limit 50)
 Check `scripts/perf-history.json` if it exists for recent Lighthouse scores.
 
 **Step 2 — Pick ONE issue**

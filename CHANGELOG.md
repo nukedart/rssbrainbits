@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.163] — 2026-05-07
+
+- [UX] Reader top bar now auto-hides on scroll-down and reappears on scroll-up — chrome recedes while reading, maximizing content area on mobile
+
 ## [1.46.162] — 2026-05-07
 
 - [UX] Add touch feedback (opacity + scale) to Review rating buttons — tapping "Forgot/Got it/Easy" now feels immediately responsive on mobile, matching BottomNav and other touch elements

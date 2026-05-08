@@ -9,13 +9,13 @@ Think like a power user who has tried every major RSS app. Think about what make
 
 ## Step 1 — Understand Feedbox's current feature set
 
-Read these files to build a complete picture of what Feedbox already does:
-- `src/App.jsx` — page list and routing (what pages/sections exist)
-- `src/pages/InboxPage.jsx` lines 1–80 — filtering, smart feeds, search
-- `src/pages/SecondaryPages.jsx` lines 1–80 — Settings, ManageFeeds, History, ReadLater sections
-- `src/pages/TodayPage.jsx` lines 1–60 — Today digest logic
-- `src/components/ContentViewer.jsx` lines 1–60 — reader features (TTS, highlights, notes)
+Use targeted Greps — do NOT read whole files:
+- Grep `currentPage|VALID_PAGES|lazy` in `src/App.jsx` — page list
+- Grep `filter|search|smartFeed|folder` in `src/pages/InboxPage.jsx` — inbox features
+- Grep `TTS|highlight|note|speechSynth|Readability` in `src/components/ContentViewer.jsx` — reader features
+- Grep `export.*function|const.*Page` in `src/pages/SecondaryPages.jsx` — settings/history sections
 
+Only Read a file if a grep result is ambiguous — and use `offset`+`limit` to read only the relevant lines.
 Summarize what Feedbox currently offers in a compact bullet list before proceeding.
 
 ---

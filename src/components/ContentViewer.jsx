@@ -62,6 +62,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const [readProgress, setReadProgress]         = useState(0);
   const [shareFeedback, setShareFeedback]       = useState(null);
   const scrollContainerRef = useRef(null);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
 
   const articleRef = useRef(null);
   const lastSavedProgressRef = useRef(0);
@@ -156,6 +158,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   // ── Load highlights + tags ─────────────────────────────────
   useEffect(() => {
     if (!user || !item?.url) return;
+    setHeaderVisible(true);
+    lastScrollYRef.current = 0;
     getHighlights(user.id, item.url).then(setHighlights).catch(console.error);
     // Load saved reading progress
     getReadingProgress(user.id, item.url).then(prog => {
@@ -232,6 +236,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     if (max <= 0) return;
     const pct = Math.round((el.scrollTop / max) * 100);
     setReadProgress(pct);
+    // Auto-hide header: hide on scroll-down, reveal on scroll-up
+    const delta = el.scrollTop - lastScrollYRef.current;
+    lastScrollYRef.current = el.scrollTop;
+    if (delta > 8 && el.scrollTop > 60) setHeaderVisible(false);
+    else if (delta < -8) setHeaderVisible(true);
     // Debounce Supabase write — only save every 5% change
     if (Math.abs(pct - lastSavedProgressRef.current) >= 5) {
       lastSavedProgressRef.current = pct;
@@ -353,13 +362,18 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         }} />
       </div>
 
-      {/* ── Top bar ── */}
+      {/* ── Top bar (auto-hides on scroll-down, reappears on scroll-up) ── */}
       <div style={{
-        position: "sticky", top: 0, zIndex: 10,
+        maxHeight: headerVisible ? "80px" : "0px",
+        overflow: "hidden",
+        transition: "max-height .22s ease",
+        flexShrink: 0,
+        zIndex: 10,
+      }}>
+      <div style={{
         background: `${T.bg}d8`,
         backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
         padding: isMobile ? "8px 12px" : "10px 16px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 10,
-        flexShrink: 0,
       }}>
         <button onClick={onClose} style={{
           background: T.surface2, border: "none", borderRadius: 8,
@@ -530,6 +544,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             exportFeedback={exportFeedback}
           />
         </div>
+      </div>
       </div>
 
       {/* ── Tags bar ── */}
