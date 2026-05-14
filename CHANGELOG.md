@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.168] — 2026-05-14
+
+- [Fix] Podcast player: play button no longer spins forever — loading state now driven by audio events (playing/pause/waiting/canplay/error) instead of loadedmetadata alone; optimistic play response on tap
+- [Perf] Podcast player: eliminated all React re-renders during playback — seekbar and mini-bar progress strip now update via requestAnimationFrame with direct DOM writes; localStorage position saves moved from every timeupdate to a 10s interval
+
 ## [1.46.167] — 2026-05-08
 
 - [Feature] Cards bucket view: filter bar to search themes by name + A→Z / count sort toggle

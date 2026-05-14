@@ -18,19 +18,41 @@ function fmt(s) {
   return `${m}:${String(sec).padStart(2,"0")}`;
 }
 
-// ── Seekbar with draggable thumb ──────────────────────────────────────
-function SeekBar({ progress, currentTime, duration, seekTo, T, light }) {
-  const trackRef   = useRef(null);
-  const dragging   = useRef(false);
-  const durRef     = useRef(duration);
-  const [dragPct, setDragPct] = useState(null);
+// ── SeekBar — fully ref-driven via RAF, zero React re-renders during playback
+function SeekBar({ audioRef, T, light }) {
+  const trackRef = useRef(null);
+  const fillRef  = useRef(null);
+  const thumbRef = useRef(null);
+  const ctRef    = useRef(null);
+  const durRef   = useRef(null);
+  const dragging = useRef(false);
 
-  useEffect(() => { durRef.current = duration; }, [duration]);
+  // RAF loop — updates DOM directly without touching React state
+  useEffect(() => {
+    let raf;
+    function tick() {
+      if (!dragging.current) {
+        const audio = audioRef.current;
+        if (audio) {
+          const ct  = audio.currentTime || 0;
+          const dur = audio.duration    || 0;
+          const pct = dur ? ct / dur : 0;
+          if (fillRef.current)  fillRef.current.style.width    = `${pct * 100}%`;
+          if (thumbRef.current) thumbRef.current.style.left    = `${pct * 100}%`;
+          if (ctRef.current)    ctRef.current.textContent      = fmt(ct);
+          if (durRef.current)   durRef.current.textContent     = fmt(dur);
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []); // audioRef is a stable ref object
 
   function getPct(e) {
     if (!trackRef.current) return 0;
-    const rect   = trackRef.current.getBoundingClientRect();
-    const touch  = e.changedTouches?.[0] || e.touches?.[0];
+    const rect    = trackRef.current.getBoundingClientRect();
+    const touch   = e.changedTouches?.[0] || e.touches?.[0];
     const clientX = touch ? touch.clientX : e.clientX;
     return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
   }
@@ -38,36 +60,49 @@ function SeekBar({ progress, currentTime, duration, seekTo, T, light }) {
   function onStart(e) {
     e.preventDefault();
     dragging.current = true;
-    setDragPct(getPct(e));
+    if (thumbRef.current) {
+      thumbRef.current.style.width      = "16px";
+      thumbRef.current.style.height     = "16px";
+      thumbRef.current.style.transition = "none";
+    }
+    const pct = getPct(e);
+    if (fillRef.current)  fillRef.current.style.width = `${pct * 100}%`;
+    if (thumbRef.current) thumbRef.current.style.left  = `${pct * 100}%`;
   }
 
   useEffect(() => {
     function onMove(e) {
       if (!dragging.current) return;
       e.preventDefault();
-      setDragPct(getPct(e));
+      const pct = getPct(e);
+      if (fillRef.current)  fillRef.current.style.width = `${pct * 100}%`;
+      if (thumbRef.current) thumbRef.current.style.left  = `${pct * 100}%`;
     }
     function onEnd(e) {
       if (!dragging.current) return;
       dragging.current = false;
-      seekTo(getPct(e) * durRef.current);
-      setDragPct(null);
+      if (thumbRef.current) {
+        thumbRef.current.style.width      = "12px";
+        thumbRef.current.style.height     = "12px";
+        thumbRef.current.style.transition = "width .1s, height .1s";
+      }
+      const audio = audioRef.current;
+      if (audio) audio.currentTime = getPct(e) * (audio.duration || 0);
     }
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup",   onEnd);
-    window.addEventListener("touchmove", onMove, { passive: false });
-    window.addEventListener("touchend",  onEnd);
+    window.addEventListener("mousemove",  onMove);
+    window.addEventListener("mouseup",    onEnd);
+    window.addEventListener("touchmove",  onMove, { passive: false });
+    window.addEventListener("touchend",   onEnd);
     return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup",   onEnd);
-      window.removeEventListener("touchmove", onMove);
-      window.removeEventListener("touchend",  onEnd);
+      window.removeEventListener("mousemove",  onMove);
+      window.removeEventListener("mouseup",    onEnd);
+      window.removeEventListener("touchmove",  onMove);
+      window.removeEventListener("touchend",   onEnd);
     };
-  }, []); // stable — uses refs for duration + seekTo
+  }, []);
 
-  const pct   = dragPct !== null ? dragPct : progress;
-  const track = light ? "rgba(255,255,255,.2)"  : T.surface2;
-  const fill  = light ? "rgba(255,255,255,.9)"  : T.accent;
+  const track = light ? "rgba(255,255,255,.2)" : T.surface2;
+  const fill  = light ? "rgba(255,255,255,.9)" : T.accent;
 
   return (
     <div>
@@ -75,21 +110,21 @@ function SeekBar({ progress, currentTime, duration, seekTo, T, light }) {
         style={{ padding: "8px 0", cursor: "pointer", touchAction: "none" }}
       >
         <div style={{ position: "relative", height: 4, borderRadius: 2, background: track }}>
-          <div style={{ position: "absolute", inset: "0 auto 0 0", width: `${pct * 100}%`, background: fill, borderRadius: 2 }} />
-          <div style={{
-            position: "absolute", top: "50%", left: `${pct * 100}%`,
+          <div ref={fillRef} style={{ position: "absolute", inset: "0 auto 0 0", width: "0%", background: fill, borderRadius: 2 }} />
+          <div ref={thumbRef} style={{
+            position: "absolute", top: "50%", left: "0%",
             transform: "translate(-50%, -50%)",
-            width: dragPct !== null ? 16 : 12, height: dragPct !== null ? 16 : 12,
+            width: 12, height: 12,
             borderRadius: "50%", background: fill,
             boxShadow: "0 1px 4px rgba(0,0,0,.4)",
-            transition: dragPct !== null ? "none" : "width .1s, height .1s",
+            transition: "width .1s, height .1s",
             pointerEvents: "none",
           }} />
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 1 }}>
-        <span style={{ fontSize: 11, fontVariantNumeric: "tabular-nums", color: light ? "rgba(255,255,255,.5)" : T.textTertiary }}>{fmt(currentTime)}</span>
-        <span style={{ fontSize: 11, fontVariantNumeric: "tabular-nums", color: light ? "rgba(255,255,255,.5)" : T.textTertiary }}>{fmt(duration)}</span>
+        <span ref={ctRef}  style={{ fontSize: 11, fontVariantNumeric: "tabular-nums", color: light ? "rgba(255,255,255,.5)" : T.textTertiary }}>0:00</span>
+        <span ref={durRef} style={{ fontSize: 11, fontVariantNumeric: "tabular-nums", color: light ? "rgba(255,255,255,.5)" : T.textTertiary }}>0:00</span>
       </div>
     </div>
   );
@@ -195,72 +230,111 @@ function ArtworkPlaceholder({ size, radius, T }) {
 export default function PodcastPlayer({ item, onClose }) {
   const { T }        = useTheme();
   const { isMobile } = useBreakpoint();
-  const audioRef     = useRef(null);
+  const audioRef       = useRef(null);
+  const miniBarFillRef = useRef(null);
 
-  const [expanded,    setExpanded]  = useState(false);
-  const [playing,     setPlaying]   = useState(false);
-  const [progress,    setProgress]  = useState(0);
-  const [currentTime, setCT]        = useState(0);
-  const [duration,    setDuration]  = useState(0);
-  const [loading,     setLoading]   = useState(true);
-  const [rate,        setRate]      = useState(1);
-  const [volume,      setVolume]    = useState(1);
-  const [sleepTimer,  setSleep]     = useState(null);
+  const [expanded,   setExpanded]  = useState(false);
+  const [playing,    setPlaying]   = useState(false);
+  const [loading,    setLoading]   = useState(false); // driven by waiting/canplay events
+  const [rate,       setRate]      = useState(1);
+  const [volume,     setVolume]    = useState(1);
+  const [sleepTimer, setSleep]     = useState(null);
   const sleepRef = useRef(null);
 
-  // Persist seek position per episode
   const posKey = item?.audioUrl ? `fb-pod-pos-${btoa(item.audioUrl).slice(0,32)}` : null;
 
+  // Audio event listeners — authoritative source of truth for playing/loading state
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const onLoaded = () => {
-      setLoading(false);
-      setDuration(audio.duration || 0);
-      // Restore saved position
+
+    const onLoaded  = () => {
+      if (!audio.duration) return;
       if (posKey) {
         const saved = parseFloat(localStorage.getItem(posKey) || "0");
-        if (saved > 10 && saved < (audio.duration || 0) - 10) audio.currentTime = saved;
+        if (saved > 10 && saved < audio.duration - 10) audio.currentTime = saved;
       }
     };
-    const onTime = () => {
-      setCT(audio.currentTime);
-      setProgress(audio.duration ? audio.currentTime / audio.duration : 0);
-      if (posKey) {
-        try { localStorage.setItem(posKey, audio.currentTime.toString()); } catch {}
-      }
-    };
-    const onEnded   = () => setPlaying(false);
+    const onPlaying = () => { setLoading(false); setPlaying(true); };
+    const onPause   = () => { setLoading(false); setPlaying(false); };
+    const onEnded   = () => { setLoading(false); setPlaying(false); };
     const onWaiting = () => setLoading(true);
     const onCanPlay = () => setLoading(false);
+    const onError   = () => setLoading(false);
+
     audio.addEventListener("loadedmetadata", onLoaded);
-    audio.addEventListener("timeupdate",     onTime);
+    audio.addEventListener("playing",        onPlaying);
+    audio.addEventListener("pause",          onPause);
     audio.addEventListener("ended",          onEnded);
     audio.addEventListener("waiting",        onWaiting);
     audio.addEventListener("canplay",        onCanPlay);
+    audio.addEventListener("error",          onError);
+
+    // Handle already-loaded audio (e.g. switching episodes while loaded)
+    if (audio.readyState >= 1 && audio.duration) onLoaded();
+
     return () => {
       clearInterval(sleepRef.current);
+      if (posKey && audio.currentTime > 0) {
+        try { localStorage.setItem(posKey, audio.currentTime.toString()); } catch {}
+      }
       audio.removeEventListener("loadedmetadata", onLoaded);
-      audio.removeEventListener("timeupdate",     onTime);
+      audio.removeEventListener("playing",        onPlaying);
+      audio.removeEventListener("pause",          onPause);
       audio.removeEventListener("ended",          onEnded);
       audio.removeEventListener("waiting",        onWaiting);
       audio.removeEventListener("canplay",        onCanPlay);
+      audio.removeEventListener("error",          onError);
     };
   }, [item?.audioUrl]);
+
+  // RAF loop for mini-bar progress strip (mobile only) — no React state needed
+  useEffect(() => {
+    if (!isMobile) return;
+    let raf;
+    function tick() {
+      const audio = audioRef.current;
+      if (audio && miniBarFillRef.current) {
+        const pct = audio.duration ? audio.currentTime / audio.duration : 0;
+        miniBarFillRef.current.style.width = `${pct * 100}%`;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [isMobile]);
+
+  // Persist seek position every 10s (not on every timeupdate)
+  useEffect(() => {
+    if (!posKey) return;
+    const id = setInterval(() => {
+      const audio = audioRef.current;
+      if (audio?.currentTime > 0) {
+        try { localStorage.setItem(posKey, audio.currentTime.toString()); } catch {}
+      }
+    }, 10000);
+    return () => clearInterval(id);
+  }, [posKey]);
 
   function togglePlay() {
     const audio = audioRef.current;
     if (!audio) return;
-    if (playing) { audio.pause(); setPlaying(false); }
-    else { audio.play().then(() => setPlaying(true)).catch(console.error); }
+    if (playing) {
+      audio.pause();
+    } else {
+      setPlaying(true); // optimistic — corrected by playing/pause events if needed
+      audio.play().catch(err => {
+        console.error(err);
+        setPlaying(false);
+        setLoading(false);
+      });
+    }
   }
 
-  function seekTo(time) {
+  function skip(secs) {
     const audio = audioRef.current;
-    if (audio) audio.currentTime = Math.max(0, Math.min(duration, time));
+    if (audio) audio.currentTime = Math.max(0, Math.min(audio.duration || 0, audio.currentTime + secs));
   }
-
-  function skip(secs) { seekTo(currentTime + secs); }
 
   function cycleRate() {
     const next = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
@@ -287,13 +361,11 @@ export default function PodcastPlayer({ item, onClose }) {
 
   if (!item?.audioUrl) return null;
 
-  const seekProps = { progress, currentTime, duration, seekTo, T };
-
   // ── MOBILE ────────────────────────────────────────────────────────
   if (isMobile) {
     return (
       <>
-        <audio ref={audioRef} src={item.audioUrl} preload="metadata" />
+        <audio ref={audioRef} src={item.audioUrl} preload="metadata" playsInline />
 
         {/* ── Full-screen expanded ── */}
         {expanded && (
@@ -367,7 +439,7 @@ export default function PodcastPlayer({ item, onClose }) {
 
                 {/* Seekbar */}
                 <div style={{ marginBottom: 16 }}>
-                  <SeekBar {...seekProps} light />
+                  <SeekBar audioRef={audioRef} T={T} light />
                 </div>
 
                 {/* Main controls */}
@@ -410,9 +482,9 @@ export default function PodcastPlayer({ item, onClose }) {
           opacity: expanded ? 0 : 1,
           pointerEvents: expanded ? "none" : "auto",
         }}>
-          {/* Progress strip */}
+          {/* Progress strip — updated via RAF ref, no React state */}
           <div style={{ height: 3, background: T.surface2 }}>
-            <div style={{ height: "100%", width: `${progress * 100}%`, background: T.accent, transition: "width .2s linear" }} />
+            <div ref={miniBarFillRef} style={{ height: "100%", width: "0%", background: T.accent }} />
           </div>
           {/* Row */}
           <div
@@ -518,7 +590,7 @@ export default function PodcastPlayer({ item, onClose }) {
 
           {/* Seekbar */}
           <div style={{ marginBottom: 20 }}>
-            <SeekBar {...seekProps} light={false} />
+            <SeekBar audioRef={audioRef} T={T} light={false} />
           </div>
 
           {/* Main controls */}
