@@ -1,5 +1,5 @@
 // ── TodayPage — Flipboard-style daily dashboard ─────────────────
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
@@ -134,7 +134,7 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
       );
     }
     return (
-      <CardDeck
+      <ScrollDeck
         items={items}
         readUrls={readUrls}
         loading={loading}
@@ -229,278 +229,183 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
   );
 }
 
-// ── Mobile: full-screen swipeable card deck ───────────────────
-function CardDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, onNavigate, T }) {
-  const [idx, setIdx] = useState(0);
-  const containerRef = useRef(null);
-  const cardRef = useRef(null);
-  const startY = useRef(0);
-  const startTime = useRef(0);
-  const currentDragY = useRef(0);
-  const dragging = useRef(false);
-  const navigating = useRef(false); // lock: one animation at a time
-  const idxRef = useRef(0);
-  const itemsRef = useRef(items);
-
-  useEffect(() => { idxRef.current = idx; }, [idx]);
-  useEffect(() => { itemsRef.current = items; }, [items]);
-
-  useEffect(() => {
-    const firstUnread = items.findIndex(i => !readUrls.has(i.url));
-    if (firstUnread >= 0) setIdx(firstUnread);
-  }, [items.length]);
-
-  // Slide to idx in a given direction. dir=1 means "going forward" (exit up, enter from below).
-  function slideTo(nextIdx, dir) {
-    if (navigating.current) return;
-    if (nextIdx < 0 || nextIdx >= itemsRef.current.length) {
-      // Bounce card back — can't go further
-      if (cardRef.current) {
-        cardRef.current.style.transition = "transform .3s cubic-bezier(.34,1.56,.64,1)";
-        cardRef.current.style.transform = "translateY(0)";
-      }
-      return;
-    }
-
-    navigating.current = true;
-    const exitY  = dir === 1 ? "-108%" : "108%";
-    const enterY = dir === 1 ?  "108%" : "-108%";
-
-    // Phase 1 — exit current card
-    if (cardRef.current) {
-      cardRef.current.style.transition = "transform .2s ease-in";
-      cardRef.current.style.transform = `translateY(${exitY})`;
-    }
-
-    setTimeout(() => {
-      // Phase 2 — swap content and position new card off-screen
-      setIdx(nextIdx);
-      if (cardRef.current) {
-        cardRef.current.style.transition = "none";
-        cardRef.current.style.transform = `translateY(${enterY})`;
-      }
-      // Double rAF ensures React has flushed the new content before we animate in
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (cardRef.current) {
-            cardRef.current.style.transition = "transform .28s cubic-bezier(.25,.46,.45,.94)";
-            cardRef.current.style.transform = "translateY(0)";
-          }
-          setTimeout(() => { navigating.current = false; }, 300);
-        });
-      });
-    }, 210);
-  }
-
-  function goNext() { slideTo(idxRef.current + 1,  1); }
-  function goPrev() { slideTo(idxRef.current - 1, -1); }
-
-  // Native passive:false touchmove so we can preventDefault (stops page scroll)
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    function handleMove(e) {
-      if (!dragging.current || navigating.current) return;
-      e.preventDefault();
-      const dy = e.touches[0].clientY - startY.current;
-      currentDragY.current = dy;
-      if (cardRef.current) {
-        // Damped follow — card moves 30% of finger delta
-        cardRef.current.style.transform = `translateY(${dy * 0.3}px)`;
-        cardRef.current.style.transition = "none";
-      }
-    }
-    el.addEventListener("touchmove", handleMove, { passive: false });
-    return () => el.removeEventListener("touchmove", handleMove);
-  }, []);
-
-  function onTouchStart(e) {
-    if (navigating.current) return;
-    startY.current = e.touches[0].clientY;
-    startTime.current = Date.now();
-    currentDragY.current = 0;
-    dragging.current = true;
-  }
-
-  function onTouchEnd() {
-    if (!dragging.current) return;
-    dragging.current = false;
-    if (navigating.current) return;
-
-    const dy = currentDragY.current;
-    const elapsed = Math.max(Date.now() - startTime.current, 1);
-    const velocity = Math.abs(dy) / elapsed; // px/ms
-    currentDragY.current = 0;
-
-    const isFlick = velocity > 0.5 && Math.abs(dy) > 12;
-
-    if      (dy < -60 || (isFlick && dy < 0)) goNext();
-    else if (dy >  60 || (isFlick && dy > 0)) goPrev();
-    else {
-      // Not enough — snap back
-      if (cardRef.current) {
-        cardRef.current.style.transition = "transform .28s cubic-bezier(.4,0,.2,1)";
-        cardRef.current.style.transform = "translateY(0)";
-      }
-    }
-  }
-
+// ── Mobile: CSS scroll-snap card feed ────────────────────────
+// Browser handles all touch physics — no custom gesture code needed.
+function ScrollDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, onNavigate, T }) {
   if (loading && !items.length) {
     return <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}><Spinner size={28} /></div>;
   }
   if (!loading && !items.length) return <EmptyState feeds={feeds} T={T} />;
 
-  const item = items[idx];
-  if (!item) return null;
-
   return (
-    <div
-      ref={containerRef}
-      style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-    >
-      <FlipCard
-        cardRef={cardRef}
-        item={item}
-        idx={idx}
-        total={items.length}
-        isRead={readUrls.has(item.url)}
-        onOpen={() => onOpen(item, idx)}
-        canNext={idx < items.length - 1}
-        canPrev={idx > 0}
-        onNext={goNext}
-        onPrev={goPrev}
-        streak={streak}
-        reviewDue={reviewDue}
-        onNavigate={onNavigate}
-        T={T}
-      />
+    <div style={{
+      flex: 1,
+      overflowY: "scroll",
+      overflowX: "hidden",
+      scrollSnapType: "y mandatory",
+      WebkitOverflowScrolling: "touch",
+    }}>
+      {items.map((item, i) => (
+        <SnapCard
+          key={item.url || i}
+          item={item}
+          idx={i}
+          total={items.length}
+          isRead={readUrls.has(item.url)}
+          onOpen={() => onOpen(item, i)}
+          streak={i === 0 ? streak : 0}
+          reviewDue={i === 0 ? reviewDue : 0}
+          onNavigate={onNavigate}
+          T={T}
+          isLast={i === items.length - 1}
+        />
+      ))}
     </div>
   );
 }
 
-// ── Full-screen flip card ─────────────────────────────────────
-function FlipCard({ cardRef, item, idx, total, isRead, onOpen, canNext, canPrev, onNext, onPrev, streak, reviewDue, onNavigate, T }) {
+// ── Single snap card (full-screen, tap to open) ───────────────
+function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavigate, T, isLast }) {
   const hasImage = !!item.image;
 
   return (
-    <div ref={cardRef} style={{
-      position: "absolute", inset: 0,
-      display: "flex", flexDirection: "column",
-      willChange: "transform",
-    }}>
-      {/* Card body */}
-      <div
-        onClick={onOpen}
-        style={{
-          flex: 1, position: "relative", overflow: "hidden", cursor: "pointer",
-          background: hasImage ? "#111" : `linear-gradient(160deg, ${T.accent}30, ${T.surface2} 65%)`,
-          WebkitTapHighlightColor: "transparent",
-        }}
-      >
-        {hasImage && (
-          <img
-            src={item.image} alt=""
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: isRead ? 0.5 : 0.88 }}
-            onError={e => { e.target.style.display = "none"; }}
-          />
-        )}
+    <div
+      onClick={onOpen}
+      style={{
+        // Each card fills viewport minus room for the BottomNav pill + a peek of the next card.
+        // env(safe-area-inset-bottom) handles iPhone home-bar devices.
+        height: "calc(100% - env(safe-area-inset-bottom, 0px) - 108px)",
+        scrollSnapAlign: "start",
+        scrollSnapStop: "always", // prevents skipping cards on fast swipe
+        flexShrink: 0,
+        position: "relative",
+        overflow: "hidden",
+        cursor: "pointer",
+        background: hasImage ? "#0a0a0a" : `linear-gradient(160deg, ${T.accent}28, ${T.surface2} 70%)`,
+        WebkitTapHighlightColor: "transparent",
+        // Gap between cards doubles as the peek strip
+        marginBottom: isLast ? "calc(env(safe-area-inset-bottom, 0px) + 72px)" : 10,
+      }}
+    >
+      {/* Full-bleed image */}
+      {hasImage && (
+        <img
+          src={item.image} alt=""
+          style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover",
+            opacity: isRead ? 0.45 : 0.86,
+          }}
+          onError={e => { e.target.style.display = "none"; }}
+        />
+      )}
 
-        {/* Gradient overlay */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,.48) 0%, transparent 28%, transparent 42%, rgba(0,0,0,.88) 100%)" }} />
+      {/* Cinematic gradient — dark top for legibility, heavy dark bottom for text */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to bottom, rgba(0,0,0,.6) 0%, transparent 28%, transparent 38%, rgba(0,0,0,.94) 100%)",
+      }} />
 
-        {/* Top bar */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "18px 16px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {streak > 0 && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,.18)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "4px 10px", borderRadius: 100 }}>
-                🔥 {streak}d streak
-              </span>
-            )}
-            {reviewDue > 0 && (
-              <span
-                onClick={e => { e.stopPropagation(); onNavigate?.("review"); }}
-                style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: T.accent + "cc", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "4px 10px", borderRadius: 100, cursor: "pointer" }}
-              >
-                {reviewDue} card{reviewDue !== 1 ? "s" : ""} due →
-              </span>
-            )}
-          </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.85)", background: "rgba(0,0,0,.4)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "4px 11px", borderRadius: 100, flexShrink: 0 }}>
-            {idx + 1} / {total}
-          </span>
-        </div>
-
-        {/* Bottom content */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 20px 22px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.75)", textTransform: "uppercase", letterSpacing: ".08em", background: "rgba(255,255,255,.12)", padding: "3px 9px", borderRadius: 100 }}>
-              {item.source}
+      {/* Top bar: streak + review badge left, counter right */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0,
+        padding: "20px 16px 0",
+        display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+      }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {streak > 0 && (
+            <span style={{
+              fontSize: 11, fontWeight: 700, color: "#fff",
+              background: "rgba(255,255,255,.18)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+              padding: "4px 10px", borderRadius: 100,
+            }}>
+              🔥 {streak}d streak
             </span>
-            {item.date && <span style={{ fontSize: 11, color: "rgba(255,255,255,.5)" }}>{relTime(item.date)}</span>}
-            {isRead && (
-              <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#fff", background: T.accent + "bb", padding: "3px 9px", borderRadius: 100 }}>
-                ✓ Read
-              </span>
-            )}
-          </div>
+          )}
+          {reviewDue > 0 && (
+            <span
+              onClick={e => { e.stopPropagation(); onNavigate?.("review"); }}
+              style={{
+                fontSize: 11, fontWeight: 700, color: "#fff",
+                background: T.accent + "cc", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+                padding: "4px 10px", borderRadius: 100, cursor: "pointer",
+              }}
+            >
+              {reviewDue} card{reviewDue !== 1 ? "s" : ""} due →
+            </span>
+          )}
+        </div>
+        <span style={{
+          fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.85)",
+          background: "rgba(0,0,0,.45)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+          padding: "4px 11px", borderRadius: 100, flexShrink: 0,
+        }}>
+          {idx + 1} / {total}
+        </span>
+      </div>
 
-          <h2 style={{
-            fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-            fontSize: 23, fontWeight: 800, color: "#fff",
-            margin: "0 0 14px", lineHeight: 1.28, letterSpacing: "-.02em",
-            textShadow: "0 2px 12px rgba(0,0,0,.5)",
-            display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden",
+      {/* Bottom content — sits above BottomNav pill, not clipped */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        padding: "0 20px 26px",
+      }}>
+        {/* Source + time + read badge */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.78)",
+            textTransform: "uppercase", letterSpacing: ".07em",
+            background: "rgba(255,255,255,.13)", padding: "3px 9px", borderRadius: 100,
           }}>
-            {item.title}
-          </h2>
+            {item.source}
+          </span>
+          {item.date && (
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,.48)" }}>{relTime(item.date)}</span>
+          )}
+          {isRead && (
+            <span style={{
+              marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#fff",
+              background: T.accent + "bb", padding: "3px 9px", borderRadius: 100,
+            }}>
+              ✓ Read
+            </span>
+          )}
+        </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,.5)", fontSize: 12, fontWeight: 600 }}>
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2.5a1 1 0 0 1 1.447-.894l9 4.5a1 1 0 0 1 0 1.788l-9 4.5A1 1 0 0 1 3 11.5v-9z"/></svg>
-            Tap to read
-          </div>
+        {/* Headline */}
+        <h2 style={{
+          fontFamily: "var(--reader-font-family)", fontStyle: "italic",
+          fontSize: 24, fontWeight: 800, color: "#fff",
+          margin: "0 0 16px", lineHeight: 1.26, letterSpacing: "-.02em",
+          textShadow: "0 2px 14px rgba(0,0,0,.55)",
+          display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden",
+        }}>
+          {item.title}
+        </h2>
+
+        {/* Tap hint */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 6,
+          color: "rgba(255,255,255,.48)", fontSize: 12, fontWeight: 600,
+        }}>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M3 2.5a1 1 0 0 1 1.447-.894l9 4.5a1 1 0 0 1 0 1.788l-9 4.5A1 1 0 0 1 3 11.5v-9z"/>
+          </svg>
+          Tap to read
         </div>
       </div>
 
-      {/* Navigation strip — extra bottom padding clears the fixed BottomNav pill */}
-      <div
-        onTouchStart={e => e.stopPropagation()}
-        style={{
-          background: T.card,
-          borderTop: `1px solid ${T.border}`,
-          padding: "10px 20px",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 76px)",
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        <button
-          onClick={onPrev} disabled={!canPrev}
-          style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "none", cursor: canPrev ? "pointer" : "default", color: canPrev ? T.text : T.textTertiary, fontSize: 13, fontWeight: 600, fontFamily: "inherit", padding: "4px 0", opacity: canPrev ? 1 : 0.3 }}
-        >
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M10 2L4 8l6 6"/></svg>
-          Prev
-        </button>
-
-        {/* Progress pips */}
-        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-          {Array.from({ length: Math.min(total, 9) }).map((_, i) => {
-            const active = total <= 9 ? i === idx : i === Math.round(idx * 8 / Math.max(total - 1, 1));
-            return (
-              <div key={i} style={{ width: active ? 18 : 5, height: 5, borderRadius: 3, background: active ? T.accent : T.border, transition: "all .25s cubic-bezier(.4,0,.2,1)" }} />
-            );
-          })}
+      {/* Scroll hint chevron — only on cards that have a next */}
+      {!isLast && (
+        <div style={{
+          position: "absolute", bottom: 6, left: "50%", transform: "translateX(-50%)",
+          color: "rgba(255,255,255,.3)", pointerEvents: "none", lineHeight: 1,
+        }}>
+          <svg width="18" height="10" viewBox="0 0 18 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 2l7 6 7-6"/>
+          </svg>
         </div>
-
-        <button
-          onClick={onNext} disabled={!canNext}
-          style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "none", cursor: canNext ? "pointer" : "default", color: canNext ? T.text : T.textTertiary, fontSize: 13, fontWeight: 600, fontFamily: "inherit", padding: "4px 0", opacity: canNext ? 1 : 0.3 }}
-        >
-          Next
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 2l6 6-6 6"/></svg>
-        </button>
-      </div>
+      )}
     </div>
   );
 }
