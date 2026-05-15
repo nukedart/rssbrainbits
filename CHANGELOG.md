@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.175] — 2026-05-15
+
+- [Fix] Today mobile swipe — replace setState-per-frame drag with imperative ref transforms and passive:false touchmove listener; add velocity-based flick detection; stop propagation on nav strip so buttons don't trigger swipes
+
 ## [1.46.174] — 2026-05-15
 
 - [Feature] Today page Flipboard redesign — mobile gets full-screen swipeable cards (drag up/down to navigate, tap to read, streak + review-due overlays); desktop gets a magazine tile grid (2/3 hero + 2 stacked medium tiles + 3-col small grid) replacing the uniform card grid

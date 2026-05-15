@@ -232,8 +232,11 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
 // ── Mobile: full-screen swipeable card deck ───────────────────
 function CardDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, onNavigate, T }) {
   const [idx, setIdx] = useState(0);
-  const [dragY, setDragY] = useState(0);
+  const containerRef = useRef(null);
+  const cardRef = useRef(null);
   const startY = useRef(0);
+  const startTime = useRef(0);
+  const currentDragY = useRef(0);
   const dragging = useRef(false);
 
   useEffect(() => {
@@ -241,22 +244,56 @@ function CardDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, 
     if (firstUnread >= 0) setIdx(firstUnread);
   }, [items.length]);
 
-  function goNext() { if (idx < items.length - 1) setIdx(i => i + 1); }
-  function goPrev() { if (idx > 0) setIdx(i => i - 1); }
+  // Register passive:false touchmove on the container so we can preventDefault
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    function handleMove(e) {
+      if (!dragging.current) return;
+      e.preventDefault();
+      const dy = e.touches[0].clientY - startY.current;
+      currentDragY.current = dy;
+      if (cardRef.current) {
+        cardRef.current.style.transform = `translateY(${dy * 0.35}px)`;
+        cardRef.current.style.transition = "none";
+      }
+    }
+    el.addEventListener("touchmove", handleMove, { passive: false });
+    return () => el.removeEventListener("touchmove", handleMove);
+  }, []);
+
+  const idxRef = useRef(idx);
+  useEffect(() => { idxRef.current = idx; }, [idx]);
+  const itemsRef = useRef(items);
+  useEffect(() => { itemsRef.current = items; }, [items]);
+
+  function goNext() { if (idxRef.current < itemsRef.current.length - 1) setIdx(i => i + 1); }
+  function goPrev() { if (idxRef.current > 0) setIdx(i => i - 1); }
 
   function onTouchStart(e) {
     startY.current = e.touches[0].clientY;
+    startTime.current = Date.now();
+    currentDragY.current = 0;
     dragging.current = true;
   }
-  function onTouchMove(e) {
-    if (!dragging.current) return;
-    setDragY(e.touches[0].clientY - startY.current);
-  }
+
   function onTouchEnd() {
     dragging.current = false;
-    if (dragY < -55) goNext();
-    else if (dragY > 55) goPrev();
-    setDragY(0);
+    const dy = currentDragY.current;
+    const elapsed = Math.max(Date.now() - startTime.current, 1);
+    const velocity = Math.abs(dy) / elapsed; // px/ms
+
+    // Snap card back with spring animation
+    if (cardRef.current) {
+      cardRef.current.style.transition = "transform .28s cubic-bezier(.4,0,.2,1)";
+      cardRef.current.style.transform = "translateY(0)";
+    }
+
+    // Flick (fast, short) or drag (slow, long)
+    if (dy < -40 || velocity > 0.4 && dy < 0) goNext();
+    else if (dy > 40 || velocity > 0.4 && dy > 0) goPrev();
+
+    currentDragY.current = 0;
   }
 
   if (loading && !items.length) {
@@ -269,17 +306,17 @@ function CardDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, 
 
   return (
     <div
+      ref={containerRef}
       style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}
       onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
       <FlipCard
+        cardRef={cardRef}
         item={item}
         idx={idx}
         total={items.length}
         isRead={readUrls.has(item.url)}
-        dragY={dragY}
         onOpen={() => onOpen(item, idx)}
         canNext={idx < items.length - 1}
         canPrev={idx > 0}
@@ -295,15 +332,14 @@ function CardDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, 
 }
 
 // ── Full-screen flip card ─────────────────────────────────────
-function FlipCard({ item, idx, total, isRead, dragY, onOpen, canNext, canPrev, onNext, onPrev, streak, reviewDue, onNavigate, T }) {
+function FlipCard({ cardRef, item, idx, total, isRead, onOpen, canNext, canPrev, onNext, onPrev, streak, reviewDue, onNavigate, T }) {
   const hasImage = !!item.image;
 
   return (
-    <div style={{
+    <div ref={cardRef} style={{
       position: "absolute", inset: 0,
       display: "flex", flexDirection: "column",
-      transform: `translateY(${dragY * 0.25}px)`,
-      transition: dragY === 0 ? "transform .3s cubic-bezier(.4,0,.2,1)" : "none",
+      willChange: "transform",
     }}>
       {/* Card body */}
       <div
@@ -379,13 +415,16 @@ function FlipCard({ item, idx, total, isRead, dragY, onOpen, canNext, canPrev, o
       </div>
 
       {/* Navigation strip */}
-      <div style={{
-        background: T.card,
-        borderTop: `1px solid ${T.border}`,
-        padding: "10px 20px 12px",
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        flexShrink: 0,
-      }}>
+      <div
+        onTouchStart={e => e.stopPropagation()}
+        style={{
+          background: T.card,
+          borderTop: `1px solid ${T.border}`,
+          padding: "10px 20px 12px",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          flexShrink: 0,
+        }}
+      >
         <button
           onClick={onPrev} disabled={!canPrev}
           style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "none", cursor: canPrev ? "pointer" : "default", color: canPrev ? T.text : T.textTertiary, fontSize: 13, fontWeight: 600, fontFamily: "inherit", padding: "4px 0", opacity: canPrev ? 1 : 0.3 }}
