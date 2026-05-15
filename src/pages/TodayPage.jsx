@@ -1,5 +1,5 @@
-// ── TodayPage — magazine-style daily dashboard ─────────────────
-import { useState, useEffect, useMemo } from "react";
+// ── TodayPage — Flipboard-style daily dashboard ─────────────────
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
@@ -34,7 +34,6 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
   const [openIdx, setOpenIdx]   = useState(-1);
   const [readUrls, setReadUrls] = useState(new Set());
 
-  // ── Widget data ────────────────────────────────────────────────
   const [streak, setStreak]         = useState(0);
   const [thisWeek, setThisWeek]     = useState(0);
   const [reviewDue, setReviewDue]   = useState(0);
@@ -107,62 +106,60 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
     });
   }
 
-  function openByIdx(idx) {
-    if (idx < 0 || idx >= items.length) return;
-    setOpenItem(items[idx]);
-    setOpenIdx(idx);
-    markRead(items[idx].url);
+  function openByIdx(i) {
+    if (i < 0 || i >= items.length) return;
+    setOpenItem(items[i]);
+    setOpenIdx(i);
+    markRead(items[i].url);
   }
 
-  const readCount     = items.filter(i => readUrls.has(i.url)).length;
-  const unreadCount   = items.length - readCount;
-  const progress      = items.length > 0 ? Math.round((readCount / items.length) * 100) : 0;
-  const unreadMinutes = unreadCount * AVG_READ_MIN;
-  const firstUnreadIdx = items.findIndex(i => !readUrls.has(i.url));
-  const heroItem = items.find(i => !readUrls.has(i.url) && i.image) || items.find(i => !readUrls.has(i.url));
-
-  const dateLabel = new Date().toLocaleDateString("en-US", {
-    weekday: "long", month: "long", day: "numeric",
-  });
-
+  const readCount = items.filter(i => readUrls.has(i.url)).length;
+  const progress  = items.length > 0 ? Math.round((readCount / items.length) * 100) : 0;
+  const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   const showSplit = !isMobile && openItem;
 
+  // ── Mobile: full-screen card deck ────────────────────────────
+  if (isMobile) {
+    if (openItem) {
+      return (
+        <ContentViewer
+          item={openItem}
+          onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+          onNext={openIdx < items.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
+          onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
+          currentIdx={openIdx}
+          totalCount={items.length}
+          onPlayPodcast={onPlayPodcast}
+        />
+      );
+    }
+    return (
+      <CardDeck
+        items={items}
+        readUrls={readUrls}
+        loading={loading}
+        feeds={feeds}
+        onOpen={(item, i) => { setOpenItem(item); setOpenIdx(i); markRead(item.url); }}
+        streak={streak}
+        reviewDue={reviewDue}
+        onNavigate={onNavigate}
+        T={T}
+      />
+    );
+  }
+
+  // ── Desktop: magazine grid + optional split reader ────────────
   return (
     <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
-      {/* ── Left panel ── */}
-      <div
-        onScroll={isMobile ? (e => {
-          const el = e.currentTarget, top = el.scrollTop, prev = el._lastScrollTop ?? 0;
-          el._lastScrollTop = top;
-          if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
-          if (Math.abs(top - prev) < 4) return;
-          window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
-        }) : undefined}
-        style={{
-          flex: showSplit ? "0 0 380px" : 1,
-          overflowY: "auto",
-          display: "flex", flexDirection: "column",
-          minWidth: 0,
-          transition: "flex .2s ease",
-        }}>
-
-        {/* ── Compact header ── */}
-        {!showSplit && (
-          <PageHeader
-            T={T} isMobile={isMobile}
-            dateLabel={dateLabel}
-            total={items.length}
-            readCount={readCount}
-            progress={progress}
-            unreadMinutes={unreadMinutes}
-            loading={loading}
-            onStartReading={firstUnreadIdx >= 0 ? () => openByIdx(firstUnreadIdx) : null}
-          />
-        )}
-
-        {/* Compact split header */}
-        {showSplit && (
+      {/* Left panel */}
+      <div style={{
+        flex: showSplit ? "0 0 380px" : 1,
+        overflowY: "auto",
+        minWidth: 0,
+        transition: "flex .2s ease",
+      }}>
+        {showSplit ? (
           <div style={{ padding: "12px 18px 10px", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".14em", color: T.accent, textTransform: "uppercase", marginBottom: 1 }}>{dateLabel}</div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -170,80 +167,51 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
               {items.length > 0 && <span style={{ fontSize: 11, color: T.textTertiary }}>{readCount}/{items.length} read</span>}
             </div>
           </div>
+        ) : (
+          <>
+            <PageHeader
+              T={T}
+              dateLabel={dateLabel}
+              total={items.length}
+              readCount={readCount}
+              progress={progress}
+              loading={loading}
+              onStartReading={() => {
+                const i = items.findIndex(x => !readUrls.has(x.url));
+                if (i >= 0) openByIdx(i);
+              }}
+            />
+            <StatPills T={T} streak={streak} thisWeek={thisWeek} reviewDue={reviewDue} savedCount={savedCount} onNavigate={onNavigate} />
+          </>
         )}
 
-        {/* Loading */}
-        {loading && (
+        {loading && items.length === 0 && (
           <div style={{ display: "flex", justifyContent: "center", paddingTop: 60 }}>
             <Spinner size={28} />
           </div>
         )}
 
-        {/* Empty */}
-        {!loading && items.length === 0 && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
-            {feeds.length === 0 ? (
-              <>
-                <div style={{ fontSize: 36, marginBottom: 14 }}>📡</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: T.text, marginBottom: 6, fontFamily: "var(--reader-font-family)", fontStyle: "italic" }}>No feeds added yet</div>
-                <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6, maxWidth: 280 }}>Add RSS feeds, podcasts, or YouTube channels and Today will show a daily digest of what's new.</div>
-              </>
-            ) : (
-              <>
-                <div style={{ fontSize: 36, marginBottom: 14 }}>🌅</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: T.text, marginBottom: 6, fontFamily: "var(--reader-font-family)", fontStyle: "italic" }}>Quiet day</div>
-                <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6, maxWidth: 280 }}>No new articles in the last 24 hours. Check back later or add more feeds.</div>
-              </>
-            )}
-          </div>
-        )}
+        {!loading && items.length === 0 && <EmptyState feeds={feeds} T={T} />}
 
-        {/* Content */}
         {!loading && items.length > 0 && (
-          <>
-            {/* Stat pills */}
-            {!showSplit && (
-              <StatPills T={T} streak={streak} thisWeek={thisWeek} reviewDue={reviewDue} savedCount={savedCount} onNavigate={onNavigate} />
-            )}
-
-            {/* Hero */}
-            {!showSplit && heroItem && (
-              <HeroCard
-                item={heroItem}
-                isRead={readUrls.has(heroItem.url)}
-                onClick={() => openByIdx(items.indexOf(heroItem))}
-                T={T} isMobile={isMobile}
-              />
-            )}
-
-            {/* Article grid */}
-            {!showSplit && (
-              <ArticleGrid
-                items={items}
-                heroItem={heroItem}
-                readUrls={readUrls}
-                openByIdx={openByIdx}
-                T={T} isMobile={isMobile}
-              />
-            )}
-
-            {/* Split-view compact list */}
-            {showSplit && items.map((item, i) => (
+          showSplit ? (
+            items.map((item, i) => (
               <TodayItem
                 key={item.url || i}
                 item={item}
                 isSelected={openItem?.url === item.url}
                 isRead={readUrls.has(item.url)}
-                compact={true}
                 onClick={() => openByIdx(i)}
                 T={T}
               />
-            ))}
-          </>
+            ))
+          ) : (
+            <MagazineGrid items={items} readUrls={readUrls} openByIdx={openByIdx} T={T} />
+          )
         )}
       </div>
 
-      {/* ── Desktop split reader ── */}
+      {/* Right panel: split reader */}
       {showSplit && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: `1px solid ${T.border}` }}>
           <ContentViewer
@@ -257,97 +225,377 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
           />
         </div>
       )}
+    </div>
+  );
+}
 
-      {/* ── Mobile full-screen reader ── */}
-      {openItem && isMobile && (
-        <ContentViewer
-          item={openItem}
-          onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
-          onNext={openIdx < items.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
-          onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
-          currentIdx={openIdx}
-          totalCount={items.length}
-          onPlayPodcast={onPlayPodcast}
-        />
+// ── Mobile: full-screen swipeable card deck ───────────────────
+function CardDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, onNavigate, T }) {
+  const [idx, setIdx] = useState(0);
+  const [dragY, setDragY] = useState(0);
+  const startY = useRef(0);
+  const dragging = useRef(false);
+
+  useEffect(() => {
+    const firstUnread = items.findIndex(i => !readUrls.has(i.url));
+    if (firstUnread >= 0) setIdx(firstUnread);
+  }, [items.length]);
+
+  function goNext() { if (idx < items.length - 1) setIdx(i => i + 1); }
+  function goPrev() { if (idx > 0) setIdx(i => i - 1); }
+
+  function onTouchStart(e) {
+    startY.current = e.touches[0].clientY;
+    dragging.current = true;
+  }
+  function onTouchMove(e) {
+    if (!dragging.current) return;
+    setDragY(e.touches[0].clientY - startY.current);
+  }
+  function onTouchEnd() {
+    dragging.current = false;
+    if (dragY < -55) goNext();
+    else if (dragY > 55) goPrev();
+    setDragY(0);
+  }
+
+  if (loading && !items.length) {
+    return <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}><Spinner size={28} /></div>;
+  }
+  if (!loading && !items.length) return <EmptyState feeds={feeds} T={T} />;
+
+  const item = items[idx];
+  if (!item) return null;
+
+  return (
+    <div
+      style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      <FlipCard
+        item={item}
+        idx={idx}
+        total={items.length}
+        isRead={readUrls.has(item.url)}
+        dragY={dragY}
+        onOpen={() => onOpen(item, idx)}
+        canNext={idx < items.length - 1}
+        canPrev={idx > 0}
+        onNext={goNext}
+        onPrev={goPrev}
+        streak={streak}
+        reviewDue={reviewDue}
+        onNavigate={onNavigate}
+        T={T}
+      />
+    </div>
+  );
+}
+
+// ── Full-screen flip card ─────────────────────────────────────
+function FlipCard({ item, idx, total, isRead, dragY, onOpen, canNext, canPrev, onNext, onPrev, streak, reviewDue, onNavigate, T }) {
+  const hasImage = !!item.image;
+
+  return (
+    <div style={{
+      position: "absolute", inset: 0,
+      display: "flex", flexDirection: "column",
+      transform: `translateY(${dragY * 0.25}px)`,
+      transition: dragY === 0 ? "transform .3s cubic-bezier(.4,0,.2,1)" : "none",
+    }}>
+      {/* Card body */}
+      <div
+        onClick={onOpen}
+        style={{
+          flex: 1, position: "relative", overflow: "hidden", cursor: "pointer",
+          background: hasImage ? "#111" : `linear-gradient(160deg, ${T.accent}30, ${T.surface2} 65%)`,
+          WebkitTapHighlightColor: "transparent",
+        }}
+      >
+        {hasImage && (
+          <img
+            src={item.image} alt=""
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: isRead ? 0.5 : 0.88 }}
+            onError={e => { e.target.style.display = "none"; }}
+          />
+        )}
+
+        {/* Gradient overlay */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,.48) 0%, transparent 28%, transparent 42%, rgba(0,0,0,.88) 100%)" }} />
+
+        {/* Top bar */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "18px 16px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {streak > 0 && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,.18)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "4px 10px", borderRadius: 100 }}>
+                🔥 {streak}d streak
+              </span>
+            )}
+            {reviewDue > 0 && (
+              <span
+                onClick={e => { e.stopPropagation(); onNavigate?.("review"); }}
+                style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: T.accent + "cc", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "4px 10px", borderRadius: 100, cursor: "pointer" }}
+              >
+                {reviewDue} card{reviewDue !== 1 ? "s" : ""} due →
+              </span>
+            )}
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.85)", background: "rgba(0,0,0,.4)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "4px 11px", borderRadius: 100, flexShrink: 0 }}>
+            {idx + 1} / {total}
+          </span>
+        </div>
+
+        {/* Bottom content */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 20px 22px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.75)", textTransform: "uppercase", letterSpacing: ".08em", background: "rgba(255,255,255,.12)", padding: "3px 9px", borderRadius: 100 }}>
+              {item.source}
+            </span>
+            {item.date && <span style={{ fontSize: 11, color: "rgba(255,255,255,.5)" }}>{relTime(item.date)}</span>}
+            {isRead && (
+              <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#fff", background: T.accent + "bb", padding: "3px 9px", borderRadius: 100 }}>
+                ✓ Read
+              </span>
+            )}
+          </div>
+
+          <h2 style={{
+            fontFamily: "var(--reader-font-family)", fontStyle: "italic",
+            fontSize: 23, fontWeight: 800, color: "#fff",
+            margin: "0 0 14px", lineHeight: 1.28, letterSpacing: "-.02em",
+            textShadow: "0 2px 12px rgba(0,0,0,.5)",
+            display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden",
+          }}>
+            {item.title}
+          </h2>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,.5)", fontSize: 12, fontWeight: 600 }}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2.5a1 1 0 0 1 1.447-.894l9 4.5a1 1 0 0 1 0 1.788l-9 4.5A1 1 0 0 1 3 11.5v-9z"/></svg>
+            Tap to read
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation strip */}
+      <div style={{
+        background: T.card,
+        borderTop: `1px solid ${T.border}`,
+        padding: "10px 20px 12px",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        flexShrink: 0,
+      }}>
+        <button
+          onClick={onPrev} disabled={!canPrev}
+          style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "none", cursor: canPrev ? "pointer" : "default", color: canPrev ? T.text : T.textTertiary, fontSize: 13, fontWeight: 600, fontFamily: "inherit", padding: "4px 0", opacity: canPrev ? 1 : 0.3 }}
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M10 2L4 8l6 6"/></svg>
+          Prev
+        </button>
+
+        {/* Progress pips */}
+        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+          {Array.from({ length: Math.min(total, 9) }).map((_, i) => {
+            const active = total <= 9 ? i === idx : i === Math.round(idx * 8 / Math.max(total - 1, 1));
+            return (
+              <div key={i} style={{ width: active ? 18 : 5, height: 5, borderRadius: 3, background: active ? T.accent : T.border, transition: "all .25s cubic-bezier(.4,0,.2,1)" }} />
+            );
+          })}
+        </div>
+
+        <button
+          onClick={onNext} disabled={!canNext}
+          style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "none", cursor: canNext ? "pointer" : "default", color: canNext ? T.text : T.textTertiary, fontSize: 13, fontWeight: 600, fontFamily: "inherit", padding: "4px 0", opacity: canNext ? 1 : 0.3 }}
+        >
+          Next
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 2l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Desktop: Flipboard magazine grid ─────────────────────────
+function MagazineGrid({ items, readUrls, openByIdx, T }) {
+  if (!items.length) return null;
+  const [hero, second, third, ...rest] = items;
+
+  return (
+    <div style={{ padding: "0 16px 40px" }}>
+      {/* Top row: hero (2/3) + 2 stacked medium tiles (1/3) */}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 10, marginBottom: 10 }}>
+        <MagazineTile item={hero} isRead={readUrls.has(hero.url)} onClick={() => openByIdx(0)} variant="hero" T={T} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {second && <MagazineTile item={second} isRead={readUrls.has(second.url)} onClick={() => openByIdx(1)} variant="medium" T={T} />}
+          {third  && <MagazineTile item={third}  isRead={readUrls.has(third.url)}  onClick={() => openByIdx(2)} variant="medium" T={T} />}
+        </div>
+      </div>
+
+      {/* Remaining: 3-col small grid */}
+      {rest.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          {rest.map((item, i) => (
+            <MagazineTile key={item.url || i} item={item} isRead={readUrls.has(item.url)} onClick={() => openByIdx(i + 3)} variant="small" T={T} />
+          ))}
+        </div>
       )}
     </div>
   );
 }
 
-// ── Page header — compact two-row design ───────────────────────
-function PageHeader({ T, isMobile, dateLabel, total, readCount, progress, unreadMinutes, loading, onStartReading }) {
-  const unread = total - readCount;
+function MagazineTile({ item, isRead, onClick, variant, T }) {
+  const [hovered, setHovered] = useState(false);
+  const hasImage = !!item.image;
+  const isHero   = variant === "hero";
+  const isMedium = variant === "medium";
 
+  if (isHero) {
+    return (
+      <div
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          position: "relative", borderRadius: 16, overflow: "hidden", cursor: "pointer",
+          aspectRatio: "16/9", opacity: isRead ? 0.65 : 1,
+          background: hasImage ? "#000" : `linear-gradient(135deg, ${T.accent}22, ${T.surface2})`,
+          transition: "all .15s",
+          boxShadow: hovered ? "0 12px 40px rgba(0,0,0,.18)" : "0 2px 8px rgba(0,0,0,.07)",
+          transform: hovered ? "translateY(-2px)" : "none",
+        }}
+      >
+        {hasImage && <img src={item.image} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.style.display = "none"} />}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 25%, rgba(0,0,0,.85) 100%)" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 22px" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 9 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.7)", textTransform: "uppercase", letterSpacing: ".08em" }}>{item.source}</span>
+            {item.date && <span style={{ fontSize: 11, color: "rgba(255,255,255,.45)" }}>{relTime(item.date)}</span>}
+          </div>
+          <h2 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 22, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.25, letterSpacing: "-.02em", textShadow: "0 2px 8px rgba(0,0,0,.4)", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {item.title}
+          </h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (isMedium) {
+    return (
+      <div
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          position: "relative", borderRadius: 12, overflow: "hidden", cursor: "pointer", flex: 1,
+          opacity: isRead ? 0.6 : 1, minHeight: 110,
+          background: hasImage ? "#111" : `linear-gradient(135deg, ${T.accent}20, ${T.surface2})`,
+          transition: "all .15s",
+          boxShadow: hovered ? "0 8px 28px rgba(0,0,0,.14)" : "0 1px 6px rgba(0,0,0,.06)",
+          transform: hovered ? "translateY(-1px)" : "none",
+        }}
+      >
+        {hasImage && <img src={item.image} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} onError={e => e.target.style.display = "none"} />}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 15%, rgba(0,0,0,.82) 100%)" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.65)", textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 5 }}>{item.source}</div>
+          <h3 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 14, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {item.title}
+          </h3>
+        </div>
+      </div>
+    );
+  }
+
+  // Small card
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRadius: 12, overflow: "hidden", cursor: "pointer",
+        background: T.card, border: `1px solid ${T.border}`,
+        opacity: isRead ? 0.5 : 1, transition: "all .15s",
+        boxShadow: hovered ? "0 6px 20px rgba(0,0,0,.1)" : "none",
+        transform: hovered ? "translateY(-1px)" : "none",
+      }}
+    >
+      {hasImage ? (
+        <img src={item.image} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", display: "block" }} onError={e => e.target.style.display = "none"} />
+      ) : (
+        <div style={{ width: "100%", aspectRatio: "16/9", background: `linear-gradient(135deg, ${T.accent}18, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 22, fontWeight: 800, color: T.accent, opacity: 0.2, fontFamily: "var(--reader-font-family)" }}>
+            {(item.source || "?").charAt(0).toUpperCase()}
+          </span>
+        </div>
+      )}
+      <div style={{ padding: "9px 11px 12px" }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {item.source}{item.date ? ` · ${relTime(item.date)}` : ""}
+        </div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: T.text, lineHeight: 1.35, letterSpacing: "-.01em", fontFamily: "var(--reader-font-family)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+          {item.title}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Empty state ───────────────────────────────────────────────
+function EmptyState({ feeds, T }) {
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
+      {feeds.length === 0 ? (
+        <>
+          <div style={{ fontSize: 36, marginBottom: 14 }}>📡</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: T.text, marginBottom: 6, fontFamily: "var(--reader-font-family)", fontStyle: "italic" }}>No feeds added yet</div>
+          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6, maxWidth: 280 }}>Add RSS feeds, podcasts, or YouTube channels and Today will show a daily digest.</div>
+        </>
+      ) : (
+        <>
+          <div style={{ fontSize: 36, marginBottom: 14 }}>🌅</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: T.text, marginBottom: 6, fontFamily: "var(--reader-font-family)", fontStyle: "italic" }}>Quiet day</div>
+          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6, maxWidth: 280 }}>No new articles in the last 24 hours. Check back later or add more feeds.</div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Desktop PageHeader ────────────────────────────────────────
+function PageHeader({ T, dateLabel, total, readCount, progress, loading, onStartReading }) {
+  const unread = total - readCount;
   function fmtTime(min) {
     if (min < 60) return `${min}m`;
     const h = Math.floor(min / 60), m = min % 60;
     return m > 0 ? `${h}h ${m}m` : `${h}h`;
   }
-
   return (
-    <div style={{
-      padding: isMobile ? "20px 16px 14px" : "24px 22px 16px",
-      flexShrink: 0,
-    }}>
-      {/* Top row: date + unread count */}
+    <div style={{ padding: "24px 22px 16px", flexShrink: 0 }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
         <div>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".16em", color: T.accent, textTransform: "uppercase", marginBottom: 4 }}>
-            {dateLabel}
-          </div>
-          <div style={{
-            fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-            fontSize: isMobile ? 30 : 36,
-            fontWeight: 700, lineHeight: 1, color: T.text,
-            letterSpacing: "-.025em",
-          }}>
-            Today
-          </div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".16em", color: T.accent, textTransform: "uppercase", marginBottom: 4 }}>{dateLabel}</div>
+          <div style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 36, fontWeight: 700, lineHeight: 1, color: T.text, letterSpacing: "-.025em" }}>Today</div>
         </div>
         {!loading && total > 0 && (
           <div style={{ textAlign: "right", paddingTop: 4 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: unread > 0 ? T.text : T.accent, letterSpacing: "-.01em" }}>
-              {unread > 0 ? `${unread} unread` : "All read ✓"}
-            </div>
-            {unread > 0 && (
-              <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>
-                ~{fmtTime(unreadMinutes)}
-              </div>
-            )}
+            <div style={{ fontSize: 14, fontWeight: 700, color: unread > 0 ? T.text : T.accent }}>{unread > 0 ? `${unread} unread` : "All read ✓"}</div>
+            {unread > 0 && <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>~{fmtTime(unread * AVG_READ_MIN)}</div>}
           </div>
         )}
       </div>
-
       {!loading && total > 0 && (
         <>
-          {/* Progress bar */}
           <div style={{ height: 3, background: T.surface2, borderRadius: 2, overflow: "hidden", marginBottom: 12 }}>
-            <div style={{
-              height: "100%", width: `${progress}%`,
-              background: progress === 100 ? T.success : T.accent,
-              borderRadius: 2, transition: "width .4s ease",
-            }} />
+            <div style={{ height: "100%", width: `${progress}%`, background: progress === 100 ? T.success : T.accent, borderRadius: 2, transition: "width .4s ease" }} />
           </div>
-
-          {/* Start/Continue reading CTA */}
-          {onStartReading && (
+          {onStartReading && unread > 0 && (
             <button
               onClick={onStartReading}
-              style={{
-                display: "flex", alignItems: "center", gap: 8,
-                background: T.accent, color: T.accentText,
-                border: "none", borderRadius: 10,
-                padding: isMobile ? "10px 18px" : "9px 16px",
-                fontSize: 13, fontWeight: 700, cursor: "pointer",
-                fontFamily: "inherit", width: "100%", justifyContent: "center",
-                boxShadow: `0 2px 12px ${T.accent}40`,
-                transition: "opacity .12s, transform .1s",
-              }}
+              style={{ display: "flex", alignItems: "center", gap: 8, background: T.accent, color: T.accentText, border: "none", borderRadius: 10, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", justifyContent: "center", boxShadow: `0 2px 12px ${T.accent}40`, transition: "opacity .12s" }}
               onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-              onTouchStart={e => e.currentTarget.style.transform = "scale(0.97)"}
-              onTouchEnd={e => e.currentTarget.style.transform = "scale(1)"}
-              onTouchCancel={e => e.currentTarget.style.transform = "scale(1)"}
             >
               <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2.5a1 1 0 0 1 1.447-.894l9 4.5a1 1 0 0 1 0 1.788l-9 4.5A1 1 0 0 1 3 11.5v-9z"/></svg>
               {readCount > 0 ? "Continue Reading" : "Start Reading"}
@@ -359,53 +607,18 @@ function PageHeader({ T, isMobile, dateLabel, total, readCount, progress, unread
   );
 }
 
-// ── Stat pills — horizontal scrollable row ─────────────────────
+// ── Stat pills ────────────────────────────────────────────────
 function StatPills({ T, streak, thisWeek, reviewDue, savedCount, onNavigate }) {
   const pills = [
-    {
-      icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M8 1.5C8 1.5 4 5 4 8.5a4 4 0 0 0 8 0C12 5 8 1.5 8 1.5z"/></svg>,
-      value: streak, label: "day streak", highlight: streak >= 7,
-    },
-    {
-      icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 12L6 4l4 6 3-4 3 6"/></svg>,
-      value: thisWeek, label: "this week",
-    },
-    {
-      icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 7h6M5 10h4"/></svg>,
-      value: reviewDue, label: reviewDue === 1 ? "card due" : "cards due", cta: reviewDue > 0,
-      onClick: reviewDue > 0 && onNavigate ? () => onNavigate("review") : null,
-    },
-    {
-      icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/></svg>,
-      value: savedCount, label: "saved",
-      onClick: onNavigate ? () => onNavigate("readlater") : null,
-    },
+    { icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M8 1.5C8 1.5 4 5 4 8.5a4 4 0 0 0 8 0C12 5 8 1.5 8 1.5z"/></svg>, value: streak, label: "day streak", highlight: streak >= 7 },
+    { icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 12L6 4l4 6 3-4 3 6"/></svg>, value: thisWeek, label: "this week" },
+    { icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 7h6M5 10h4"/></svg>, value: reviewDue, label: reviewDue === 1 ? "card due" : "cards due", cta: reviewDue > 0, onClick: reviewDue > 0 && onNavigate ? () => onNavigate("review") : null },
+    { icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/></svg>, value: savedCount, label: "saved", onClick: onNavigate ? () => onNavigate("readlater") : null },
   ];
-
   return (
-    <div style={{
-      display: "flex", gap: 7,
-      padding: "2px 16px 14px",
-      overflowX: "auto",
-      scrollbarWidth: "none",
-      WebkitOverflowScrolling: "touch",
-    }}>
+    <div style={{ display: "flex", gap: 7, padding: "2px 16px 14px", overflowX: "auto", scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
       {pills.map((p, i) => (
-        <div
-          key={i}
-          onClick={p.onClick || undefined}
-          style={{
-            display: "flex", alignItems: "center", gap: 5,
-            background: p.cta ? T.accentSurface : p.highlight ? T.accentSurface : T.surface,
-            border: `1px solid ${p.cta || p.highlight ? T.accent + "40" : T.border}`,
-            borderRadius: 100,
-            padding: "5px 12px 5px 9px",
-            flexShrink: 0,
-            color: p.cta || p.highlight ? T.accent : T.textSecondary,
-            cursor: p.onClick ? "pointer" : "default",
-            WebkitTapHighlightColor: "transparent",
-          }}
-        >
+        <div key={i} onClick={p.onClick || undefined} style={{ display: "flex", alignItems: "center", gap: 5, background: p.cta ? T.accentSurface : p.highlight ? T.accentSurface : T.surface, border: `1px solid ${p.cta || p.highlight ? T.accent + "40" : T.border}`, borderRadius: 100, padding: "5px 12px 5px 9px", flexShrink: 0, color: p.cta || p.highlight ? T.accent : T.textSecondary, cursor: p.onClick ? "pointer" : "default", WebkitTapHighlightColor: "transparent" }}>
           <span style={{ display: "flex", opacity: p.cta || p.highlight ? 1 : 0.6 }}>{p.icon}</span>
           <span style={{ fontSize: 13, fontWeight: 700, color: p.cta || p.highlight ? T.accent : T.text, letterSpacing: "-.01em" }}>{p.value}</span>
           <span style={{ fontSize: 11, color: T.textTertiary }}>{p.label}</span>
@@ -415,272 +628,32 @@ function StatPills({ T, streak, thisWeek, reviewDue, savedCount, onNavigate }) {
   );
 }
 
-// ── Hero card — cinematic featured story ───────────────────────
-function HeroCard({ item, isRead, onClick, T, isMobile }) {
+// ── TodayItem (compact list, desktop split-view) ──────────────
+function TodayItem({ item, isSelected, isRead, onClick, T }) {
   const [hovered, setHovered] = useState(false);
-
   return (
     <div
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        margin: isMobile ? "0 12px 10px" : "0 16px 12px",
-        borderRadius: 16,
-        overflow: "hidden",
-        cursor: "pointer",
-        opacity: isRead ? 0.65 : 1,
-        transition: "all .15s",
-        boxShadow: hovered ? "0 8px 28px rgba(0,0,0,.14)" : "0 2px 10px rgba(0,0,0,.07)",
-        transform: hovered ? "translateY(-1px)" : "none",
-      }}
-    >
-      {item.image ? (
-        <div style={{ position: "relative", paddingBottom: isMobile ? "52%" : "40%" }}>
-          <img src={item.image} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-            onError={e => { e.target.parentElement.style.display = "none"; }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 30%, rgba(0,0,0,.72))" }} />
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "16px 16px 14px" : "18px 20px 16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(255,255,255,.7)", background: "rgba(255,255,255,.15)", padding: "2px 7px", borderRadius: 100 }}>
-                {item.source}
-              </span>
-              {item.date && <span style={{ fontSize: 10, color: "rgba(255,255,255,.5)" }}>{relTime(item.date)}</span>}
-              {isRead && <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: T.accent, padding: "2px 7px", borderRadius: 100, marginLeft: "auto" }}>✓ Read</span>}
-            </div>
-            <h2 style={{
-              fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-              fontSize: isMobile ? 17 : 20, fontWeight: 700,
-              color: "#fff", margin: 0, lineHeight: 1.3,
-              letterSpacing: "-.015em",
-              display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
-              textShadow: "0 1px 4px rgba(0,0,0,.3)",
-            }}>
-              {item.title}
-            </h2>
-          </div>
-        </div>
-      ) : (
-        <div style={{ padding: "18px 20px", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.accent, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 8 }}>{item.source}</div>
-          <h2 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 18, fontWeight: 700, color: T.text, margin: 0, lineHeight: 1.3 }}>
-            {item.title}
-          </h2>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Article grid — list on mobile / 3-col desktop ─────────────
-function ArticleGrid({ items, heroItem, readUrls, openByIdx, T, isMobile }) {
-  const gridItems = items.filter(i => i.url !== heroItem?.url);
-  if (!gridItems.length) return null;
-
-  if (isMobile) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", padding: "0 0 100px" }}>
-        {gridItems.map((item, i) => (
-          <ArticleRow
-            key={item.url || i}
-            item={item}
-            isRead={readUrls.has(item.url)}
-            onClick={() => openByIdx(items.indexOf(item))}
-            T={T}
-          />
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(3, 1fr)",
-      gap: 12,
-      padding: "0 16px 40px",
-    }}>
-      {gridItems.map((item, i) => (
-        <ArticleCard
-          key={item.url || i}
-          item={item}
-          isRead={readUrls.has(item.url)}
-          onClick={() => openByIdx(items.indexOf(item))}
-          T={T}
-        />
-      ))}
-    </div>
-  );
-}
-
-// ── Mobile row — thumbnail left, title right ───────────────────
-function ArticleRow({ item, isRead, onClick, T }) {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        display: "flex", alignItems: "center", gap: 12,
-        padding: "11px 16px",
-        borderBottom: `1px solid ${T.border}`,
-        cursor: "pointer",
-        opacity: isRead ? 0.5 : 1,
-        WebkitTapHighlightColor: "transparent",
-      }}
-      onTouchStart={e => e.currentTarget.style.background = T.surface}
-      onTouchEnd={e => e.currentTarget.style.background = "transparent"}
-      onTouchCancel={e => e.currentTarget.style.background = "transparent"}
-    >
-      {item.image ? (
-        <img src={item.image} alt="" style={{ width: 72, height: 54, objectFit: "cover", borderRadius: 8, flexShrink: 0 }}
-          onError={e => { e.target.style.display = "none"; }} />
-      ) : (
-        <div style={{ width: 72, height: 54, borderRadius: 8, flexShrink: 0, background: `linear-gradient(135deg, ${T.accent}18, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 20, fontWeight: 800, color: T.accent, opacity: 0.25, fontFamily: "var(--reader-font-family)" }}>
-            {(item.source || "?").charAt(0).toUpperCase()}
-          </span>
-        </div>
-      )}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {item.source}{item.date ? ` · ${relTime(item.date)}` : ""}
-        </div>
-        <div style={{
-          fontSize: 14, fontWeight: 600, color: T.text,
-          lineHeight: 1.35, letterSpacing: "-.01em",
-          fontFamily: "var(--reader-font-family)",
-          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-        }}>
-          {item.title}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ArticleCard({ item, isRead, onClick, T }) {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        borderRadius: 12,
-        overflow: "hidden",
-        cursor: "pointer",
-        background: T.card,
-        border: `1px solid ${T.border}`,
-        transition: "all .15s",
-        opacity: isRead ? 0.5 : 1,
-        boxShadow: hovered ? "0 6px 20px rgba(0,0,0,.1)" : "none",
-        transform: hovered ? "translateY(-1px)" : "none",
-      }}
-    >
-      {item.image ? (
-        <img src={item.image} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", display: "block" }}
-          onError={e => { e.target.style.display = "none"; }} />
-      ) : (
-        <div style={{ width: "100%", aspectRatio: "16/9", background: `linear-gradient(135deg, ${T.accent}18, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 24, fontWeight: 800, color: T.accent, opacity: 0.25, fontFamily: "var(--reader-font-family)" }}>
-            {(item.source || "?").charAt(0).toUpperCase()}
-          </span>
-        </div>
-      )}
-      <div style={{ padding: "9px 11px 12px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
-          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-            {item.source}
-          </span>
-          {item.date && <span style={{ fontSize: 10, color: T.textTertiary, flexShrink: 0 }}>{relTime(item.date)}</span>}
-        </div>
-        <div style={{
-          fontSize: 13, fontWeight: 600, color: T.text,
-          lineHeight: 1.35, letterSpacing: "-.01em",
-          fontFamily: "var(--reader-font-family)",
-          display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
-        }}>
-          {item.title}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── TodayItem — compact row for split-view list ────────────────
-function TodayItem({ item, isSelected, isRead, compact, onClick, T }) {
-  const [hovered, setHovered] = useState(false);
-
-  if (compact) {
-    return (
-      <div
-        onClick={onClick}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          display: "flex", alignItems: "flex-start", gap: 12,
-          padding: "11px 20px", cursor: "pointer",
-          background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
-          borderLeft: `3px solid ${isSelected ? T.accent : "transparent"}`,
-          transition: "background .12s",
-        }}
-      >
-        {item.image && (
-          <img src={item.image} alt="" style={{ width: 44, height: 34, objectFit: "cover", borderRadius: 5, flexShrink: 0, marginTop: 2 }} onError={e => { e.target.style.display = "none"; }} />
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            fontSize: 13, fontWeight: isSelected ? 600 : 500,
-            color: isSelected ? T.accent : isRead ? T.textTertiary : T.text,
-            lineHeight: 1.35, marginBottom: 2,
-            overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-            fontFamily: "var(--reader-font-family)",
-          }}>
-            {item.title}
-          </div>
-          <div style={{ fontSize: 11, color: T.textTertiary }}>
-            {item.source}{item.date ? ` · ${relTime(item.date)}` : ""}
-          </div>
-        </div>
-        {isRead && <span style={{ fontSize: 10, color: T.accent, flexShrink: 0, marginTop: 3 }}>✓</span>}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "flex", alignItems: "flex-start", gap: 14,
-        padding: "13px 22px", cursor: "pointer",
-        background: hovered ? T.surface : "transparent",
-        borderBottom: `1px solid ${T.border}`,
+        display: "flex", alignItems: "flex-start", gap: 12,
+        padding: "11px 20px", cursor: "pointer",
+        background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
+        borderLeft: `3px solid ${isSelected ? T.accent : "transparent"}`,
         transition: "background .12s",
       }}
     >
       {item.image && (
-        <img src={item.image} alt="" style={{ width: 60, height: 45, objectFit: "cover", borderRadius: 8, flexShrink: 0, marginTop: 2, opacity: isRead ? 0.5 : 1 }} onError={e => { e.target.style.display = "none"; }} />
+        <img src={item.image} alt="" style={{ width: 44, height: 34, objectFit: "cover", borderRadius: 5, flexShrink: 0, marginTop: 2 }} onError={e => { e.target.style.display = "none"; }} />
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em" }}>{item.source}</span>
-          {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>{relTime(item.date)}</span>}
-          {isRead && <span style={{ fontSize: 10, color: T.accent, marginLeft: "auto" }}>✓</span>}
-        </div>
-        <h3 style={{
-          fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-          fontSize: 15, fontWeight: 600, color: isRead ? T.textTertiary : T.text,
-          margin: "0 0 4px", lineHeight: 1.3, letterSpacing: "-.01em",
-        }}>
+        <div style={{ fontSize: 13, fontWeight: isSelected ? 600 : 500, color: isSelected ? T.accent : isRead ? T.textTertiary : T.text, lineHeight: 1.35, marginBottom: 2, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontFamily: "var(--reader-font-family)" }}>
           {item.title}
-        </h3>
-        {item.description && (
-          <p style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.55, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-            {item.description}
-          </p>
-        )}
+        </div>
+        <div style={{ fontSize: 11, color: T.textTertiary }}>
+          {item.source}{item.date ? ` · ${relTime(item.date)}` : ""}
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.174] — 2026-05-15
+
+- [Feature] Today page Flipboard redesign — mobile gets full-screen swipeable cards (drag up/down to navigate, tap to read, streak + review-due overlays); desktop gets a magazine tile grid (2/3 hero + 2 stacked medium tiles + 3-col small grid) replacing the uniform card grid
+
 ## [1.46.173] — 2026-05-15
 
 - [Fix] Vitest test suite restored — switched to node environment and removed jest-dom setup that caused 60s worker startup timeout in vitest 4.x; all 17 tests now pass in ~13s
