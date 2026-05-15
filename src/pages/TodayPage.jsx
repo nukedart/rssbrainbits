@@ -464,17 +464,33 @@ function HeroCard({ item, isRead, onClick, T, isMobile }) {
   );
 }
 
-// ── Article grid — 2-col mobile / 3-col desktop ────────────────
+// ── Article grid — list on mobile / 3-col desktop ─────────────
 function ArticleGrid({ items, heroItem, readUrls, openByIdx, T, isMobile }) {
   const gridItems = items.filter(i => i.url !== heroItem?.url);
   if (!gridItems.length) return null;
 
+  if (isMobile) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", padding: "0 0 100px" }}>
+        {gridItems.map((item, i) => (
+          <ArticleRow
+            key={item.url || i}
+            item={item}
+            isRead={readUrls.has(item.url)}
+            onClick={() => openByIdx(items.indexOf(item))}
+            T={T}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div style={{
       display: "grid",
-      gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
-      gap: isMobile ? 10 : 12,
-      padding: isMobile ? "0 12px 100px" : "0 16px 40px",
+      gridTemplateColumns: "repeat(3, 1fr)",
+      gap: 12,
+      padding: "0 16px 40px",
     }}>
       {gridItems.map((item, i) => (
         <ArticleCard
@@ -482,14 +498,58 @@ function ArticleGrid({ items, heroItem, readUrls, openByIdx, T, isMobile }) {
           item={item}
           isRead={readUrls.has(item.url)}
           onClick={() => openByIdx(items.indexOf(item))}
-          T={T} isMobile={isMobile}
+          T={T}
         />
       ))}
     </div>
   );
 }
 
-function ArticleCard({ item, isRead, onClick, T, isMobile }) {
+// ── Mobile row — thumbnail left, title right ───────────────────
+function ArticleRow({ item, isRead, onClick, T }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "11px 16px",
+        borderBottom: `1px solid ${T.border}`,
+        cursor: "pointer",
+        opacity: isRead ? 0.5 : 1,
+        WebkitTapHighlightColor: "transparent",
+      }}
+      onTouchStart={e => e.currentTarget.style.background = T.surface}
+      onTouchEnd={e => e.currentTarget.style.background = "transparent"}
+      onTouchCancel={e => e.currentTarget.style.background = "transparent"}
+    >
+      {item.image ? (
+        <img src={item.image} alt="" style={{ width: 72, height: 54, objectFit: "cover", borderRadius: 8, flexShrink: 0 }}
+          onError={e => { e.target.style.display = "none"; }} />
+      ) : (
+        <div style={{ width: 72, height: 54, borderRadius: 8, flexShrink: 0, background: `linear-gradient(135deg, ${T.accent}18, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 20, fontWeight: 800, color: T.accent, opacity: 0.25, fontFamily: "var(--reader-font-family)" }}>
+            {(item.source || "?").charAt(0).toUpperCase()}
+          </span>
+        </div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {item.source}{item.date ? ` · ${relTime(item.date)}` : ""}
+        </div>
+        <div style={{
+          fontSize: 14, fontWeight: 600, color: T.text,
+          lineHeight: 1.35, letterSpacing: "-.01em",
+          fontFamily: "var(--reader-font-family)",
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+        }}>
+          {item.title}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ArticleCard({ item, isRead, onClick, T }) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -509,20 +569,17 @@ function ArticleCard({ item, isRead, onClick, T, isMobile }) {
         transform: hovered ? "translateY(-1px)" : "none",
       }}
     >
-      {/* Thumbnail */}
       {item.image ? (
         <img src={item.image} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", display: "block" }}
           onError={e => { e.target.style.display = "none"; }} />
       ) : (
         <div style={{ width: "100%", aspectRatio: "16/9", background: `linear-gradient(135deg, ${T.accent}18, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: T.accent, opacity: 0.25, fontFamily: "var(--reader-font-family)" }}>
+          <span style={{ fontSize: 24, fontWeight: 800, color: T.accent, opacity: 0.25, fontFamily: "var(--reader-font-family)" }}>
             {(item.source || "?").charAt(0).toUpperCase()}
           </span>
         </div>
       )}
-
-      {/* Meta */}
-      <div style={{ padding: isMobile ? "8px 9px 10px" : "9px 11px 12px" }}>
+      <div style={{ padding: "9px 11px 12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
           <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
             {item.source}
@@ -530,8 +587,7 @@ function ArticleCard({ item, isRead, onClick, T, isMobile }) {
           {item.date && <span style={{ fontSize: 10, color: T.textTertiary, flexShrink: 0 }}>{relTime(item.date)}</span>}
         </div>
         <div style={{
-          fontSize: isMobile ? 12 : 13,
-          fontWeight: 600, color: T.text,
+          fontSize: 13, fontWeight: 600, color: T.text,
           lineHeight: 1.35, letterSpacing: "-.01em",
           fontFamily: "var(--reader-font-family)",
           display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",

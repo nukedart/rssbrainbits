@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.171] — 2026-05-15
+
+- [UX] Today page mobile article list: replaced cramped 2-column card grid with full-width rows (thumbnail left, title right) — 14px font and full-width tap targets replace the previous 12px/170px-wide cards
+
 ## [1.46.170] — 2026-05-15
 
 - [Nav] Today page added to mobile BottomNav (replaces center Add FAB) — Today was completely unreachable on mobile; Add Feed is already accessible from the Inbox header
