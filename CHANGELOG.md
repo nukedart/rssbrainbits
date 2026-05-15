@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.176] — 2026-05-15
+
+- [Fix] Today mobile — two-phase slide transition (card exits off-screen, new card enters from opposite side); navigatingRef lock stops rapid swipes stacking; nav strip bottom padding clears the fixed BottomNav pill; 60px drag + 0.5px/ms flick thresholds
+
 ## [1.46.175] — 2026-05-15
 
 - [Fix] Today mobile swipe — replace setState-per-frame drag with imperative ref transforms and passive:false touchmove listener; add velocity-based flick detection; stop propagation on nav strip so buttons don't trigger swipes

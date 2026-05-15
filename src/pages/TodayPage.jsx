@@ -238,23 +238,75 @@ function CardDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, 
   const startTime = useRef(0);
   const currentDragY = useRef(0);
   const dragging = useRef(false);
+  const navigating = useRef(false); // lock: one animation at a time
+  const idxRef = useRef(0);
+  const itemsRef = useRef(items);
+
+  useEffect(() => { idxRef.current = idx; }, [idx]);
+  useEffect(() => { itemsRef.current = items; }, [items]);
 
   useEffect(() => {
     const firstUnread = items.findIndex(i => !readUrls.has(i.url));
     if (firstUnread >= 0) setIdx(firstUnread);
   }, [items.length]);
 
-  // Register passive:false touchmove on the container so we can preventDefault
+  // Slide to idx in a given direction. dir=1 means "going forward" (exit up, enter from below).
+  function slideTo(nextIdx, dir) {
+    if (navigating.current) return;
+    if (nextIdx < 0 || nextIdx >= itemsRef.current.length) {
+      // Bounce card back — can't go further
+      if (cardRef.current) {
+        cardRef.current.style.transition = "transform .3s cubic-bezier(.34,1.56,.64,1)";
+        cardRef.current.style.transform = "translateY(0)";
+      }
+      return;
+    }
+
+    navigating.current = true;
+    const exitY  = dir === 1 ? "-108%" : "108%";
+    const enterY = dir === 1 ?  "108%" : "-108%";
+
+    // Phase 1 — exit current card
+    if (cardRef.current) {
+      cardRef.current.style.transition = "transform .2s ease-in";
+      cardRef.current.style.transform = `translateY(${exitY})`;
+    }
+
+    setTimeout(() => {
+      // Phase 2 — swap content and position new card off-screen
+      setIdx(nextIdx);
+      if (cardRef.current) {
+        cardRef.current.style.transition = "none";
+        cardRef.current.style.transform = `translateY(${enterY})`;
+      }
+      // Double rAF ensures React has flushed the new content before we animate in
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (cardRef.current) {
+            cardRef.current.style.transition = "transform .28s cubic-bezier(.25,.46,.45,.94)";
+            cardRef.current.style.transform = "translateY(0)";
+          }
+          setTimeout(() => { navigating.current = false; }, 300);
+        });
+      });
+    }, 210);
+  }
+
+  function goNext() { slideTo(idxRef.current + 1,  1); }
+  function goPrev() { slideTo(idxRef.current - 1, -1); }
+
+  // Native passive:false touchmove so we can preventDefault (stops page scroll)
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     function handleMove(e) {
-      if (!dragging.current) return;
+      if (!dragging.current || navigating.current) return;
       e.preventDefault();
       const dy = e.touches[0].clientY - startY.current;
       currentDragY.current = dy;
       if (cardRef.current) {
-        cardRef.current.style.transform = `translateY(${dy * 0.35}px)`;
+        // Damped follow — card moves 30% of finger delta
+        cardRef.current.style.transform = `translateY(${dy * 0.3}px)`;
         cardRef.current.style.transition = "none";
       }
     }
@@ -262,15 +314,8 @@ function CardDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, 
     return () => el.removeEventListener("touchmove", handleMove);
   }, []);
 
-  const idxRef = useRef(idx);
-  useEffect(() => { idxRef.current = idx; }, [idx]);
-  const itemsRef = useRef(items);
-  useEffect(() => { itemsRef.current = items; }, [items]);
-
-  function goNext() { if (idxRef.current < itemsRef.current.length - 1) setIdx(i => i + 1); }
-  function goPrev() { if (idxRef.current > 0) setIdx(i => i - 1); }
-
   function onTouchStart(e) {
+    if (navigating.current) return;
     startY.current = e.touches[0].clientY;
     startTime.current = Date.now();
     currentDragY.current = 0;
@@ -278,22 +323,26 @@ function CardDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, 
   }
 
   function onTouchEnd() {
+    if (!dragging.current) return;
     dragging.current = false;
+    if (navigating.current) return;
+
     const dy = currentDragY.current;
     const elapsed = Math.max(Date.now() - startTime.current, 1);
     const velocity = Math.abs(dy) / elapsed; // px/ms
-
-    // Snap card back with spring animation
-    if (cardRef.current) {
-      cardRef.current.style.transition = "transform .28s cubic-bezier(.4,0,.2,1)";
-      cardRef.current.style.transform = "translateY(0)";
-    }
-
-    // Flick (fast, short) or drag (slow, long)
-    if (dy < -40 || velocity > 0.4 && dy < 0) goNext();
-    else if (dy > 40 || velocity > 0.4 && dy > 0) goPrev();
-
     currentDragY.current = 0;
+
+    const isFlick = velocity > 0.5 && Math.abs(dy) > 12;
+
+    if      (dy < -60 || (isFlick && dy < 0)) goNext();
+    else if (dy >  60 || (isFlick && dy > 0)) goPrev();
+    else {
+      // Not enough — snap back
+      if (cardRef.current) {
+        cardRef.current.style.transition = "transform .28s cubic-bezier(.4,0,.2,1)";
+        cardRef.current.style.transform = "translateY(0)";
+      }
+    }
   }
 
   if (loading && !items.length) {
@@ -414,13 +463,14 @@ function FlipCard({ cardRef, item, idx, total, isRead, onOpen, canNext, canPrev,
         </div>
       </div>
 
-      {/* Navigation strip */}
+      {/* Navigation strip — extra bottom padding clears the fixed BottomNav pill */}
       <div
         onTouchStart={e => e.stopPropagation()}
         style={{
           background: T.card,
           borderTop: `1px solid ${T.border}`,
-          padding: "10px 20px 12px",
+          padding: "10px 20px",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 76px)",
           display: "flex", justifyContent: "space-between", alignItems: "center",
           flexShrink: 0,
         }}
