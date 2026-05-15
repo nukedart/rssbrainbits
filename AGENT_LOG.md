@@ -6,6 +6,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-05-15 | v1.46.170 | Nav | Today page added to mobile BottomNav; fixed feeds isActive bug that lit up Feeds when on Today | `BottomNav.jsx:25-31` | — |
 | 2026-05-15 | v1.46.171 | UX | Today page mobile: 2-col card grid → full-width list rows with 14px font and large tap targets | `TodayPage.jsx:467-544` | — |
 | 2026-05-15 | v1.46.172 | Feature | StatPills interactive: "cards due" → Review, "saved" → Read Later; onNavigate wired to TodayPage | `TodayPage.jsx:363-408`, `App.jsx:217` | — |
+| 2026-05-15 | v1.46.173 | Fix | Vitest restored: node env + removed jest-dom setup; 17 tests pass in 13s (was 60s timeout) | `vitest.config.js`, `src/test/setup.js` | — |
 | 2026-05-08 | v1.46.166 | Feature | New card button + modal on Cards page — create cards without highlighting in an article | `CardsPage.jsx` | — |
 | 2026-05-08 | v1.46.164 | Nav | BottomNav scroll-hide extended to TodayPage and CardsPage — consistent chrome-recede on all primary screens | `TodayPage.jsx:134, CardsPage.jsx:83,198` | — |
 | 2026-05-07 | v1.46.163 | UX | Reader top bar auto-hides on scroll-down, reappears on scroll-up — chrome recedes while reading | `ContentViewer.jsx:64,234,360` | — |

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.173] — 2026-05-15
+
+- [Fix] Vitest test suite restored — switched to node environment and removed jest-dom setup that caused 60s worker startup timeout in vitest 4.x; all 17 tests now pass in ~13s
+
 ## [1.46.172] — 2026-05-15
 
 - [Feature] Today page StatPills are now interactive — "cards due" navigates to Review, "saved" navigates to Read Later; decorative CTAs now deliver on their visual promise
