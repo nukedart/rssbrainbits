@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
-import { List, Inbox, Plus } from "lucide-react";
+import { List, Inbox } from "lucide-react";
 
+const TodayIcon  = ({ size, strokeWidth }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1.5v3M11 1.5v3M2 7h12"/>
+  </svg>
+);
 const CardIcon   = ({ size, strokeWidth }) => (
   <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
     <rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M4 7h8M4 10h5"/>
@@ -25,12 +30,12 @@ function hexToRgba(hex, alpha) {
 const NAV_ITEMS = [
   { id: "feeds",  Icon: List,       label: "Feeds",  special: "feeds" },
   { id: "inbox",  Icon: Inbox,      label: "Inbox"  },
-  { id: "add",    Icon: Plus,       label: "Add",    special: "add"   },
+  { id: "today",  Icon: TodayIcon,  label: "Today"  },
   { id: "cards",  Icon: CardIcon,   label: "Cards"  },
   { id: "review", Icon: ReviewIcon, label: "Review" },
 ];
 
-export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {
+export default function BottomNav({ active, onNavigate, onOpenFeeds, unreadCount = 0 }) {
   const { T } = useTheme();
   const [visible, setVisible] = useState(true);
 
@@ -61,40 +66,9 @@ export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unre
     }}>
       {NAV_ITEMS.map(({ id, Icon, label, special }) => {
 
-        // ── Add button ───────────────────────────────────────
-        if (special === "add") {
-          return (
-            <button
-              key="add"
-              onClick={onAdd}
-              aria-label="Add feed"
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                padding: "6px 8px",
-                border: "none", background: "transparent",
-                cursor: "pointer", fontFamily: "inherit",
-                WebkitTapHighlightColor: "transparent",
-              }}
-              onTouchStart={e => e.currentTarget.firstChild.style.transform = "scale(0.88)"}
-              onTouchEnd={e => e.currentTarget.firstChild.style.transform = "scale(1)"}
-              onTouchCancel={e => e.currentTarget.firstChild.style.transform = "scale(1)"}
-            >
-              <span style={{
-                width: 42, height: 42, borderRadius: 999,
-                background: T.accent, color: T.accentText,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: `0 2px 10px ${T.accent}55`,
-                transition: "transform .1s",
-              }}>
-                <Icon size={20} strokeWidth={2.5} />
-              </span>
-            </button>
-          );
-        }
-
         // ── Feeds drawer trigger ──────────────────────────────
         if (special === "feeds") {
-          const isActive = active === "today" || active === "readlater" || active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:");
+          const isActive = active === "readlater" || active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:");
           return (
             <button
               key="feeds"

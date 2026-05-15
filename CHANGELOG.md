@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.170] — 2026-05-15
+
+- [Nav] Today page added to mobile BottomNav (replaces center Add FAB) — Today was completely unreachable on mobile; Add Feed is already accessible from the Inbox header
+
 ## [1.46.169] — 2026-05-14
 
 - [Polish] BottomNav Cards and Review icons replaced with same custom SVGs as Sidebar — CreditCard (payment icon) and RefreshCw (generic refresh) were semantically wrong; now mobile/desktop icon language is consistent
