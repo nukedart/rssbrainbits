@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.169] — 2026-05-14
+
+- [Polish] BottomNav Cards and Review icons replaced with same custom SVGs as Sidebar — CreditCard (payment icon) and RefreshCw (generic refresh) were semantically wrong; now mobile/desktop icon language is consistent
+
 ## [1.46.168] — 2026-05-14
 
 - [Fix] Podcast player: play button no longer spins forever — loading state now driven by audio events (playing/pause/waiting/canplay/error) instead of loadedmetadata alone; optimistic play response on tap

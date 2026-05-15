@@ -1,5 +1,17 @@
 import { useState, useEffect } from "react";
-import { List, Inbox, Plus, CreditCard, RefreshCw } from "lucide-react";
+import { List, Inbox, Plus } from "lucide-react";
+
+const CardIcon   = ({ size, strokeWidth }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M4 7h8M4 10h5"/>
+  </svg>
+);
+const ReviewIcon = ({ size, strokeWidth }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M13.5 8a5.5 5.5 0 0 1-9.9 3.3M2.5 8a5.5 5.5 0 0 1 9.9-3.3"/>
+    <path d="M11.5 4.5l.9-2.1 2.1.9"/><path d="M4.5 11.5l-.9 2.1-2.1-.9"/>
+  </svg>
+);
 import { useTheme } from "../hooks/useTheme";
 
 function hexToRgba(hex, alpha) {
@@ -14,8 +26,8 @@ const NAV_ITEMS = [
   { id: "feeds",  Icon: List,       label: "Feeds",  special: "feeds" },
   { id: "inbox",  Icon: Inbox,      label: "Inbox"  },
   { id: "add",    Icon: Plus,       label: "Add",    special: "add"   },
-  { id: "cards",  Icon: CreditCard, label: "Cards"  },
-  { id: "review", Icon: RefreshCw,  label: "Review" },
+  { id: "cards",  Icon: CardIcon,   label: "Cards"  },
+  { id: "review", Icon: ReviewIcon, label: "Review" },
 ];
 
 export default function BottomNav({ active, onNavigate, onAdd, onOpenFeeds, unreadCount = 0 }) {
