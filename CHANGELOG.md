@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.172] — 2026-05-15
+
+- [Feature] Today page StatPills are now interactive — "cards due" navigates to Review, "saved" navigates to Read Later; decorative CTAs now deliver on their visual promise
+
 ## [1.46.171] — 2026-05-15
 
 - [UX] Today page mobile article list: replaced cramped 2-column card grid with full-width rows (thumbnail left, title right) — 14px font and full-width tap targets replace the previous 12px/170px-wide cards

@@ -214,7 +214,7 @@ function AppShell() {
     }
     switch (page) {
       case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} forceOpenSearch={forceOpenSearch} onForcedSearchClose={() => setForceOpenSearch(false)} />;
-      case "today":        return <TodayPage feeds={feeds} onPlayPodcast={setPodcastItem} />;
+      case "today":        return <TodayPage feeds={feeds} onPlayPodcast={setPodcastItem} onNavigate={navigateTo} />;
       case "readlater":    return <ReadLaterPage />;
       case "history":      return <HistoryPage />;
       case "stats":        return <StatsPage />;

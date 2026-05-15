@@ -23,7 +23,7 @@ function relTime(dateStr) {
   return "Yesterday";
 }
 
-export default function TodayPage({ feeds = [], onPlayPodcast }) {
+export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
   const { T }        = useTheme();
   const { user }     = useAuth();
   const { isMobile } = useBreakpoint();
@@ -203,7 +203,7 @@ export default function TodayPage({ feeds = [], onPlayPodcast }) {
           <>
             {/* Stat pills */}
             {!showSplit && (
-              <StatPills T={T} streak={streak} thisWeek={thisWeek} reviewDue={reviewDue} savedCount={savedCount} />
+              <StatPills T={T} streak={streak} thisWeek={thisWeek} reviewDue={reviewDue} savedCount={savedCount} onNavigate={onNavigate} />
             )}
 
             {/* Hero */}
@@ -360,11 +360,11 @@ function PageHeader({ T, isMobile, dateLabel, total, readCount, progress, unread
 }
 
 // ── Stat pills — horizontal scrollable row ─────────────────────
-function StatPills({ T, streak, thisWeek, reviewDue, savedCount }) {
+function StatPills({ T, streak, thisWeek, reviewDue, savedCount, onNavigate }) {
   const pills = [
     {
       icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M8 1.5C8 1.5 4 5 4 8.5a4 4 0 0 0 8 0C12 5 8 1.5 8 1.5z"/></svg>,
-      value: streak, label: streak === 1 ? "day streak" : "day streak", highlight: streak >= 7,
+      value: streak, label: "day streak", highlight: streak >= 7,
     },
     {
       icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 12L6 4l4 6 3-4 3 6"/></svg>,
@@ -373,10 +373,12 @@ function StatPills({ T, streak, thisWeek, reviewDue, savedCount }) {
     {
       icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 7h6M5 10h4"/></svg>,
       value: reviewDue, label: reviewDue === 1 ? "card due" : "cards due", cta: reviewDue > 0,
+      onClick: reviewDue > 0 && onNavigate ? () => onNavigate("review") : null,
     },
     {
       icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/></svg>,
-      value: savedCount, label: savedCount === 1 ? "saved" : "saved",
+      value: savedCount, label: "saved",
+      onClick: onNavigate ? () => onNavigate("readlater") : null,
     },
   ];
 
@@ -389,15 +391,21 @@ function StatPills({ T, streak, thisWeek, reviewDue, savedCount }) {
       WebkitOverflowScrolling: "touch",
     }}>
       {pills.map((p, i) => (
-        <div key={i} style={{
-          display: "flex", alignItems: "center", gap: 5,
-          background: p.cta ? T.accentSurface : p.highlight ? T.accentSurface : T.surface,
-          border: `1px solid ${p.cta || p.highlight ? T.accent + "40" : T.border}`,
-          borderRadius: 100,
-          padding: "5px 12px 5px 9px",
-          flexShrink: 0,
-          color: p.cta || p.highlight ? T.accent : T.textSecondary,
-        }}>
+        <div
+          key={i}
+          onClick={p.onClick || undefined}
+          style={{
+            display: "flex", alignItems: "center", gap: 5,
+            background: p.cta ? T.accentSurface : p.highlight ? T.accentSurface : T.surface,
+            border: `1px solid ${p.cta || p.highlight ? T.accent + "40" : T.border}`,
+            borderRadius: 100,
+            padding: "5px 12px 5px 9px",
+            flexShrink: 0,
+            color: p.cta || p.highlight ? T.accent : T.textSecondary,
+            cursor: p.onClick ? "pointer" : "default",
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
           <span style={{ display: "flex", opacity: p.cta || p.highlight ? 1 : 0.6 }}>{p.icon}</span>
           <span style={{ fontSize: 13, fontWeight: 700, color: p.cta || p.highlight ? T.accent : T.text, letterSpacing: "-.01em" }}>{p.value}</span>
           <span style={{ fontSize: 11, color: T.textTertiary }}>{p.label}</span>
