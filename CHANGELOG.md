@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.178] — 2026-05-16
+
+- [Polish] Today mobile cards: no-image cards now use theme-native text/badge colors instead of white-on-dark-overlay — readable in Light and Distilled themes
+
 ## [1.46.177] — 2026-05-15
 
 - [Feature] Today mobile redesign — replace custom swipe/gesture engine with CSS scroll-snap; browser handles all touch physics; no more "zip through" or gesture jank; cards snap one-at-a-time (scrollSnapStop: always); remove bottom Prev/Next strip; chevron hint + 10px peek of next card; safe-area-aware height clears BottomNav pill

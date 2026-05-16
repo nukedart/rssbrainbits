@@ -268,6 +268,17 @@ function ScrollDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue
 function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavigate, T, isLast }) {
   const hasImage = !!item.image;
 
+  // Image cards: always dark (overlay over photo). No-image: theme-native.
+  const fg        = hasImage ? "#fff"                    : T.text;
+  const fgMuted   = hasImage ? "rgba(255,255,255,.48)"   : T.textTertiary;
+  const srcBg     = hasImage ? "rgba(255,255,255,.13)"   : T.border;
+  const srcFg     = hasImage ? "rgba(255,255,255,.78)"   : T.textSecondary;
+  const ctrBg     = hasImage ? "rgba(0,0,0,.45)"         : T.border;
+  const ctrFg     = hasImage ? "rgba(255,255,255,.85)"   : T.textSecondary;
+  const streakBg  = hasImage ? "rgba(255,255,255,.18)"   : T.accent + "22";
+  const streakFg  = hasImage ? "#fff"                    : T.accent;
+  const chevronFg = hasImage ? "rgba(255,255,255,.3)"    : T.textTertiary;
+
   return (
     <div
       onClick={onOpen}
@@ -281,7 +292,7 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
         position: "relative",
         overflow: "hidden",
         cursor: "pointer",
-        background: hasImage ? "#0a0a0a" : `linear-gradient(160deg, ${T.accent}28, ${T.surface2} 70%)`,
+        background: hasImage ? "#0a0a0a" : `linear-gradient(160deg, ${T.accent}18, ${T.surface2} 70%)`,
         WebkitTapHighlightColor: "transparent",
         // Gap between cards doubles as the peek strip
         marginBottom: isLast ? "calc(env(safe-area-inset-bottom, 0px) + 72px)" : 10,
@@ -301,11 +312,13 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
         />
       )}
 
-      {/* Cinematic gradient — dark top for legibility, heavy dark bottom for text */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(to bottom, rgba(0,0,0,.6) 0%, transparent 28%, transparent 38%, rgba(0,0,0,.94) 100%)",
-      }} />
+      {/* Cinematic gradient — only on image cards; no-image cards use theme bg instead */}
+      {hasImage && (
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to bottom, rgba(0,0,0,.6) 0%, transparent 28%, transparent 38%, rgba(0,0,0,.94) 100%)",
+        }} />
+      )}
 
       {/* Top bar: streak + review badge left, counter right */}
       <div style={{
@@ -316,9 +329,8 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {streak > 0 && (
             <span style={{
-              fontSize: 11, fontWeight: 700, color: "#fff",
-              background: "rgba(255,255,255,.18)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-              padding: "4px 10px", borderRadius: 100,
+              fontSize: 11, fontWeight: 700, color: streakFg,
+              background: streakBg, padding: "4px 10px", borderRadius: 100,
             }}>
               🔥 {streak}d streak
             </span>
@@ -327,9 +339,8 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
             <span
               onClick={e => { e.stopPropagation(); onNavigate?.("review"); }}
               style={{
-                fontSize: 11, fontWeight: 700, color: "#fff",
-                background: T.accent + "cc", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-                padding: "4px 10px", borderRadius: 100, cursor: "pointer",
+                fontSize: 11, fontWeight: 700, color: T.accentText,
+                background: T.accent, padding: "4px 10px", borderRadius: 100, cursor: "pointer",
               }}
             >
               {reviewDue} card{reviewDue !== 1 ? "s" : ""} due →
@@ -337,15 +348,14 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
           )}
         </div>
         <span style={{
-          fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.85)",
-          background: "rgba(0,0,0,.45)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-          padding: "4px 11px", borderRadius: 100, flexShrink: 0,
+          fontSize: 12, fontWeight: 700, color: ctrFg,
+          background: ctrBg, padding: "4px 11px", borderRadius: 100, flexShrink: 0,
         }}>
           {idx + 1} / {total}
         </span>
       </div>
 
-      {/* Bottom content — sits above BottomNav pill, not clipped */}
+      {/* Bottom content */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
         padding: "0 20px 26px",
@@ -353,19 +363,19 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
         {/* Source + time + read badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
           <span style={{
-            fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.78)",
+            fontSize: 11, fontWeight: 700, color: srcFg,
             textTransform: "uppercase", letterSpacing: ".07em",
-            background: "rgba(255,255,255,.13)", padding: "3px 9px", borderRadius: 100,
+            background: srcBg, padding: "3px 9px", borderRadius: 100,
           }}>
             {item.source}
           </span>
           {item.date && (
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,.48)" }}>{relTime(item.date)}</span>
+            <span style={{ fontSize: 11, color: fgMuted }}>{relTime(item.date)}</span>
           )}
           {isRead && (
             <span style={{
-              marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#fff",
-              background: T.accent + "bb", padding: "3px 9px", borderRadius: 100,
+              marginLeft: "auto", fontSize: 11, fontWeight: 700,
+              color: T.accentText, background: T.accent, padding: "3px 9px", borderRadius: 100,
             }}>
               ✓ Read
             </span>
@@ -375,9 +385,9 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
         {/* Headline */}
         <h2 style={{
           fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-          fontSize: 24, fontWeight: 800, color: "#fff",
+          fontSize: 24, fontWeight: 800, color: fg,
           margin: "0 0 16px", lineHeight: 1.26, letterSpacing: "-.02em",
-          textShadow: "0 2px 14px rgba(0,0,0,.55)",
+          textShadow: hasImage ? "0 2px 14px rgba(0,0,0,.55)" : "none",
           display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden",
         }}>
           {item.title}
@@ -386,7 +396,7 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
         {/* Tap hint */}
         <div style={{
           display: "flex", alignItems: "center", gap: 6,
-          color: "rgba(255,255,255,.48)", fontSize: 12, fontWeight: 600,
+          color: fgMuted, fontSize: 12, fontWeight: 600,
         }}>
           <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
             <path d="M3 2.5a1 1 0 0 1 1.447-.894l9 4.5a1 1 0 0 1 0 1.788l-9 4.5A1 1 0 0 1 3 11.5v-9z"/>
@@ -399,7 +409,7 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
       {!isLast && (
         <div style={{
           position: "absolute", bottom: 6, left: "50%", transform: "translateX(-50%)",
-          color: "rgba(255,255,255,.3)", pointerEvents: "none", lineHeight: 1,
+          color: chevronFg, pointerEvents: "none", lineHeight: 1,
         }}>
           <svg width="18" height="10" viewBox="0 0 18 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M2 2l7 6 7-6"/>
