@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.179] — 2026-05-19
+
+- [Perf] BottomNav: replace lucide-react List/Inbox with inline SVGs — removes the only lucide-react usage, consistent icon weight with Sidebar
+
 ## [1.46.178] — 2026-05-16
 
 - [Polish] Today mobile cards: no-image cards now use theme-native text/badge colors instead of white-on-dark-overlay — readable in Light and Distilled themes

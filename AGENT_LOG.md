@@ -7,6 +7,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-05-15 | v1.46.171 | UX | Today page mobile: 2-col card grid → full-width list rows with 14px font and large tap targets | `TodayPage.jsx:467-544` | — |
 | 2026-05-15 | v1.46.172 | Feature | StatPills interactive: "cards due" → Review, "saved" → Read Later; onNavigate wired to TodayPage | `TodayPage.jsx:363-408`, `App.jsx:217` | — |
 | 2026-05-15 | v1.46.173 | Fix | Vitest restored: node env + removed jest-dom setup; 17 tests pass in 13s (was 60s timeout) | `vitest.config.js`, `src/test/setup.js` | — |
+| 2026-05-19 | v1.46.179 | Perf | BottomNav: drop lucide-react, replace List/Inbox with inline SVGs matching Sidebar style | `BottomNav.jsx:1-35` | — |
 | 2026-05-16 | v1.46.178 | Polish | Today SnapCard: no-image cards use theme-native colors (T.text, T.border) — fix white text on light bg | `TodayPage.jsx:268-320` | — |
 | 2026-05-15 | v1.46.177 | Feature | Today mobile: replace custom swipe engine with CSS scroll-snap; one card per swipe; remove Prev/Next strip | `TodayPage.jsx:232-430` | — |
 | 2026-05-15 | v1.46.176 | Fix | Today mobile: two-phase slide transition, navigating lock, BottomNav clearance, flick thresholds | `TodayPage.jsx:232-370` | — |

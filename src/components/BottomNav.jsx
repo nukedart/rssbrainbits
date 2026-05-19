@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
-import { List, Inbox } from "lucide-react";
 
+const ListIcon   = ({ size, strokeWidth }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 4.5h12M2 8h12M2 11.5h12"/>
+  </svg>
+);
+const InboxIcon  = ({ size, strokeWidth }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="1.5" y="1.5" width="13" height="13" rx="2.5"/><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3"/>
+  </svg>
+);
 const TodayIcon  = ({ size, strokeWidth }) => (
   <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1.5v3M11 1.5v3M2 7h12"/>
@@ -28,8 +37,8 @@ function hexToRgba(hex, alpha) {
 }
 
 const NAV_ITEMS = [
-  { id: "feeds",  Icon: List,       label: "Feeds",  special: "feeds" },
-  { id: "inbox",  Icon: Inbox,      label: "Inbox"  },
+  { id: "feeds",  Icon: ListIcon,   label: "Feeds",  special: "feeds" },
+  { id: "inbox",  Icon: InboxIcon,  label: "Inbox"  },
   { id: "today",  Icon: TodayIcon,  label: "Today"  },
   { id: "cards",  Icon: CardIcon,   label: "Cards"  },
   { id: "review", Icon: ReviewIcon, label: "Review" },
