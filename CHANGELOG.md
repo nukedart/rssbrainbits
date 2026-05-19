@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.180] — 2026-05-19
+
+- [Polish] Today desktop MagazineTile hero + medium: dark overlay and white text now conditional on hasImage — no-image tiles use T.text/T.textTertiary in Light and Distilled themes
+
 ## [1.46.179] — 2026-05-19
 
 - [Perf] BottomNav: replace lucide-react List/Inbox with inline SVGs — removes the only lucide-react usage, consistent icon weight with Sidebar

@@ -454,6 +454,10 @@ function MagazineTile({ item, isRead, onClick, variant, T }) {
   const isHero   = variant === "hero";
   const isMedium = variant === "medium";
 
+  const fg      = hasImage ? "#fff"                   : T.text;
+  const fgMuted = hasImage ? "rgba(255,255,255,.65)"  : T.textTertiary;
+  const fgDim   = hasImage ? "rgba(255,255,255,.45)"  : T.textTertiary;
+
   if (isHero) {
     return (
       <div
@@ -470,13 +474,13 @@ function MagazineTile({ item, isRead, onClick, variant, T }) {
         }}
       >
         {hasImage && <img src={item.image} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.style.display = "none"} />}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 25%, rgba(0,0,0,.85) 100%)" }} />
+        {hasImage && <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 25%, rgba(0,0,0,.85) 100%)" }} />}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 22px" }}>
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 9 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.7)", textTransform: "uppercase", letterSpacing: ".08em" }}>{item.source}</span>
-            {item.date && <span style={{ fontSize: 11, color: "rgba(255,255,255,.45)" }}>{relTime(item.date)}</span>}
+            <span style={{ fontSize: 11, fontWeight: 700, color: fgMuted, textTransform: "uppercase", letterSpacing: ".08em" }}>{item.source}</span>
+            {item.date && <span style={{ fontSize: 11, color: fgDim }}>{relTime(item.date)}</span>}
           </div>
-          <h2 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 22, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.25, letterSpacing: "-.02em", textShadow: "0 2px 8px rgba(0,0,0,.4)", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+          <h2 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 22, fontWeight: 800, color: fg, margin: 0, lineHeight: 1.25, letterSpacing: "-.02em", textShadow: hasImage ? "0 2px 8px rgba(0,0,0,.4)" : "none", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
             {item.title}
           </h2>
         </div>
@@ -500,10 +504,10 @@ function MagazineTile({ item, isRead, onClick, variant, T }) {
         }}
       >
         {hasImage && <img src={item.image} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} onError={e => e.target.style.display = "none"} />}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 15%, rgba(0,0,0,.82) 100%)" }} />
+        {hasImage && <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 15%, rgba(0,0,0,.82) 100%)" }} />}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.65)", textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 5 }}>{item.source}</div>
-          <h3 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 14, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: fgMuted, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 5 }}>{item.source}</div>
+          <h3 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 14, fontWeight: 700, color: fg, margin: 0, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
             {item.title}
           </h3>
         </div>
