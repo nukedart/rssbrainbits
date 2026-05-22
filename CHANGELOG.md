@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.186] — 2026-05-22
+
+- [Polish] Sidebar header: corrected brand name from "Feed Box" to "Feedbox" — consistent with product name throughout the app
+
 ## [1.46.185] — 2026-05-22
 
 - [Fix] Desktop list view: restored thumbnail layout (ListThumb with cardSize control); default cardSize changed to "lg" for large images out of the box

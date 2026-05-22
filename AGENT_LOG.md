@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-05-22 | v1.46.186 | Polish | Sidebar header: corrected "Feed Box" → "Feedbox" — consistent brand name | `Sidebar.jsx:352` | — |
 | 2026-05-15 | v1.46.170 | Nav | Today page added to mobile BottomNav; fixed feeds isActive bug that lit up Feeds when on Today | `BottomNav.jsx:25-31` | — |
 | 2026-05-15 | v1.46.171 | UX | Today page mobile: 2-col card grid → full-width list rows with 14px font and large tap targets | `TodayPage.jsx:467-544` | — |
 | 2026-05-15 | v1.46.172 | Feature | StatPills interactive: "cards due" → Review, "saved" → Read Later; onNavigate wired to TodayPage | `TodayPage.jsx:363-408`, `App.jsx:217` | — |
