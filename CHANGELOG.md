@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.187] — 2026-05-22
+
+- [Fix] New-articles banner count now decrements accurately: tracks which URLs arrived from background refresh, only counts down when those specific items are read; resets to 0 when switching source, folder, or filter
+
 ## [1.46.186] — 2026-05-22
 
 - [Polish] Sidebar header: corrected brand name from "Feed Box" to "Feedbox" — consistent with product name throughout the app

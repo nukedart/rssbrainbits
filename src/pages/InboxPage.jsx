@@ -54,6 +54,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [lastRefresh, setLastRefresh]       = useState(null);
   const [newArticleCount, setNewArticleCount] = useState(0);
   const prevItemUrlsRef = useRef(new Set());
+  const newItemUrlsRef = useRef(new Set()); // tracks which URLs arrived in background refreshes
   const [showOPML, setShowOPML]           = useState(false);
   const [opmlProgress, setOpmlProgress]   = useState(null); // null | { done, total }
   const [dragFeedId, setDragFeedId]         = useState(null);
@@ -160,8 +161,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item }); });
         const sorted = [...itemMap.values()].sort((a, b) => new Date(b.date) - new Date(a.date));
         if (prevItemUrlsRef.current.size > 0) {
-          const newCount = sorted.filter(i => !prevItemUrlsRef.current.has(i.url)).length;
-          if (newCount > 0) setNewArticleCount(n => n + newCount);
+          const freshUrls = sorted.filter(i => !prevItemUrlsRef.current.has(i.url)).map(i => i.url);
+          freshUrls.forEach(u => newItemUrlsRef.current.add(u));
+          if (freshUrls.length > 0) setNewArticleCount(n => n + freshUrls.length);
         }
         setAllItems(sorted);
         setLoadingItems(false);
@@ -272,6 +274,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   // Reset displayed count when the filtered set changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setDisplayedCount(60); }, [readFilter, liveSearch, activeSource, filterMode, allItems]);
+
+  // Reset new-article banner when the user switches source/folder/filter context
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { newItemUrlsRef.current = new Set(); setNewArticleCount(0); }, [activeSource, filterMode, folderDef?.id, feedDef?.id, smartFeedDef?.id]);
 
   // ── Open item by index ────────────────────────────────────────
   function openByIdx(idx) {
@@ -450,7 +456,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
       return next;
     });
-    setNewArticleCount(n => Math.max(0, n - 1));
+    if (newItemUrlsRef.current.has(url)) {
+      newItemUrlsRef.current.delete(url);
+      setNewArticleCount(n => Math.max(0, n - 1));
+    }
     // Persist in background — don't block the UI
     markRead(user.id, url).catch(console.error);
   }
@@ -934,7 +943,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* New articles banner — shown after a background refresh detects new items */}
           {newArticleCount > 0 && !loadingItems && (
             <button
-              onClick={() => { setNewArticleCount(0); listRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onClick={() => { newItemUrlsRef.current = new Set(); setNewArticleCount(0); listRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }}
               style={{
                 width: "100%", border: "none", background: T.accent, color: T.accentText,
                 padding: "10px 16px", cursor: "pointer", fontFamily: "inherit",
