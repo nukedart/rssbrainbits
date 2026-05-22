@@ -39,7 +39,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [expandedView, setExpandedView] = useState(false);
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
   const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "list"));
-  const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "lg");
+  const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
   const readUrlsRef = useRef(readUrls);
   useEffect(() => { readUrlsRef.current = readUrls; }, [readUrls]);
@@ -989,7 +989,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {viewMode === "card" ? (
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: isMobile ? 8 : (cardSize === "lg" ? 18 : 14) }}>
               {baseItems.slice(0, displayedCount).map((item, i) => (
-                <div key={item.url + i} style={i < 20 ? { animation: `fadeInUp .2s ease both`, animationDelay: `${i * 30}ms` } : {}}>
+                <div key={item.url + i}>
                 <FeedItem item={item} viewMode="card" cardSize={isMobile ? "sm" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
@@ -1004,7 +1004,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           ) : (
             baseItems.slice(0, displayedCount).map((item, i) => (
-              <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={i < 20 ? { animation: `fadeInUp .18s ease both`, animationDelay: `${i * 20}ms` } : {}}>
+              <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }}>
               <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
                 isRead={readUrls.has(item.url)}

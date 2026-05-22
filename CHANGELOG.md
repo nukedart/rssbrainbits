@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.188] — 2026-05-22
+
+- [Polish] List view: remove per-item fadeInUp animation (fired on every filter change — pure CPU overhead with no UX value)
+- [Polish] Default cardSize changed from "lg" back to "md" — large thumbnails made rows feel heavy; users can still toggle up
+- [Polish] Tighten list item row padding across all sizes (md: 11→8px vertical, lg: 15→13px) — more items visible, less visual bulk
+
 ## [1.46.187] — 2026-05-22
 
 - [Fix] New-articles banner count now decrements accurately: tracks which URLs arrived from background refresh, only counts down when those specific items are read; resets to 0 when switching source, folder, or filter

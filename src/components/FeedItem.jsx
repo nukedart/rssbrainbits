@@ -285,7 +285,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             onClick={swiped ? close : onClick}
             style={{
               display: "flex", alignItems: "flex-start", gap: 12,
-              padding: "11px 16px",
+              padding: "9px 14px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
             }}
@@ -342,7 +342,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   }
 
   // ── Desktop layout ─────────────────────────────────────────
-  const vPad = cardSize === "sm" ? "8px 16px" : cardSize === "lg" ? "15px 20px" : "11px 18px";
+  const vPad = cardSize === "sm" ? "6px 14px" : cardSize === "lg" ? "13px 18px" : "8px 14px";
   return (
     <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={false}>
       {({ swiped, close } = {}) => (

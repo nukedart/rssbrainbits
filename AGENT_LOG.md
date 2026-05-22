@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-05-22 | v1.46.188 | Polish | List view: remove fadeInUp animation, default cardSize lg→md, tighten row padding — less visual bulk | `InboxPage.jsx:42,992,1007`, `FeedItem.jsx:288,345` | — |
 | 2026-05-22 | v1.46.187 | Fix | New-articles banner count: track new URLs in ref, only decrement for new items, reset on source/folder/filter change | `InboxPage.jsx:55-56,163,275,453,938` | — |
 | 2026-05-22 | v1.46.186 | Polish | Sidebar header: corrected "Feed Box" → "Feedbox" — consistent brand name | `Sidebar.jsx:352` | — |
 | 2026-05-15 | v1.46.170 | Nav | Today page added to mobile BottomNav; fixed feeds isActive bug that lit up Feeds when on Today | `BottomNav.jsx:25-31` | — |
