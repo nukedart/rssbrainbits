@@ -28,10 +28,13 @@ function SeekBar({ audioRef, T, light }) {
   const dragging = useRef(false);
 
   // RAF loop — updates DOM directly without touching React state
+  // Throttled to ~2fps (500ms) — more than enough for a podcast seek bar
   useEffect(() => {
     let raf;
-    function tick() {
-      if (!dragging.current) {
+    let lastTs = 0;
+    function tick(ts) {
+      if (!dragging.current && ts - lastTs >= 500) {
+        lastTs = ts;
         const audio = audioRef.current;
         if (audio) {
           const ct  = audio.currentTime || 0;
@@ -288,21 +291,32 @@ export default function PodcastPlayer({ item, onClose }) {
     };
   }, [item?.audioUrl]);
 
-  // RAF loop for mini-bar progress strip (mobile only) — no React state needed
+  // RAF loop for mini-bar progress strip (mobile only) — throttled to 500ms
   useEffect(() => {
     if (!isMobile) return;
     let raf;
-    function tick() {
-      const audio = audioRef.current;
-      if (audio && miniBarFillRef.current) {
-        const pct = audio.duration ? audio.currentTime / audio.duration : 0;
-        miniBarFillRef.current.style.width = `${pct * 100}%`;
+    let lastTs = 0;
+    function tick(ts) {
+      if (ts - lastTs >= 500) {
+        lastTs = ts;
+        const audio = audioRef.current;
+        if (audio && miniBarFillRef.current) {
+          const pct = audio.duration ? audio.currentTime / audio.duration : 0;
+          miniBarFillRef.current.style.width = `${pct * 100}%`;
+        }
       }
       raf = requestAnimationFrame(tick);
     }
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [isMobile]);
+
+  // Auto-play when a new episode is set — user already clicked "Play episode"
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.play().catch(() => {}); // silently ignored if browser blocks (iOS policy)
+  }, [item?.audioUrl]);
 
   // Persist seek position every 10s (not on every timeupdate)
   useEffect(() => {
@@ -365,7 +379,7 @@ export default function PodcastPlayer({ item, onClose }) {
   if (isMobile) {
     return (
       <>
-        <audio ref={audioRef} src={item.audioUrl} preload="metadata" playsInline />
+        <audio ref={audioRef} src={item.audioUrl} preload="auto" playsInline />
 
         {/* ── Full-screen expanded ── */}
         {expanded && (
@@ -542,7 +556,7 @@ export default function PodcastPlayer({ item, onClose }) {
         animation: "fadeIn .2s ease",
       }}
     >
-      <audio ref={audioRef} src={item.audioUrl} preload="metadata" />
+      <audio ref={audioRef} src={item.audioUrl} preload="auto" />
 
       <div style={{
         width: 500, borderRadius: 24, overflow: "hidden",

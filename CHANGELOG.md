@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.184] — 2026-05-22
+
+- [Perf] PodcastPlayer: throttle SeekBar and mini-bar RAF loops from 60fps to 2fps (500ms) — 120× less CPU during playback; drag seek still responds immediately via event handlers
+- [Perf] PodcastPlayer: switch `preload="metadata"` → `preload="auto"` — browser buffers audio on player mount so pressing play is near-instant
+- [UX] PodcastPlayer: auto-play when episode is set — clicking "Play episode" now starts immediately, no second tap on mini-bar required
+
 ## [1.46.183] — 2026-05-22
 
 - [Feature] Desktop list view: Bazqux-style compact single-line rows (dot + fixed source column + title + date) — replaces thumbnail-heavy layout; ~32px row height fits 3–4× more articles on screen
