@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.183] — 2026-05-22
+
+- [Feature] Desktop list view: Bazqux-style compact single-line rows (dot + fixed source column + title + date) — replaces thumbnail-heavy layout; ~32px row height fits 3–4× more articles on screen
+- [Feature] Infinite scroll on both list and card views — renders 60 items initially, auto-loads 40 more when within 300px of the bottom; keyboard J/K also expands when near end of loaded items
+- [Polish] Desktop default view changed from card grid to compact list
+
 ## [1.46.182] — 2026-05-22
 
 ### Changes since v1.46.180

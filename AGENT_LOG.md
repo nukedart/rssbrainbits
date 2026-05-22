@@ -163,6 +163,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-03-31 | v1.46.79 | Polish | Scale list-view items ~10% larger — thumbnail, title font, and row padding increased on both mobile and desktop | `FeedItem.jsx:212,231,236,260,287,315,344,373` | — |
 | 2026-05-14 | v1.46.169 | Polish | BottomNav Cards/Review icons replaced with custom SVGs matching Sidebar — CreditCard and RefreshCw were semantically wrong | `BottomNav.jsx:2-14,22` | — |
 | 2026-05-22 | v1.46.181-182 | Fix | ReviewPage rating buttons bottom padding increased to clear fixed BottomNav pill on mobile | `ReviewPage.jsx:251` | — |
+| 2026-05-22 | v1.46.183 | Feature | Desktop Bazqux-style compact list + infinite scroll — 60 items initial, +40 on scroll near bottom; J/K expands; default view changed to list | `FeedItem.jsx:344-424`, `InboxPage.jsx:42,69,274,290,929,985` | — |
 
 ---
 

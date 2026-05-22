@@ -341,86 +341,76 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
     );
   }
 
-  // ── Desktop layout ─────────────────────────────────────────
-  const vPad = cardSize === "sm" ? "8px 16px" : cardSize === "lg" ? "15px 20px" : "11px 18px";
+  // ── Desktop layout — Bazqux-style compact single-line row ────
   return (
-    <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={false}>
-      {({ swiped, close } = {}) => (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: "relative",
+        display: "flex", alignItems: "center",
+        padding: "5px 14px 5px 12px",
+        borderBottom: `1px solid ${T.border}`,
+        minHeight: 32,
+        cursor: "pointer",
+        background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
+        transition: "background .1s",
+        userSelect: "none",
+      }}
+    >
+      {/* Unread dot — fixed 16px slot, always present */}
+      <span style={{ width: 16, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {!isRead && <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.accent, display: "block" }} />}
+      </span>
+
+      {/* Source — fixed 120px, truncated */}
+      <span style={{
+        width: 120, flexShrink: 0,
+        fontSize: 12, color: T.textTertiary,
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        paddingRight: 10,
+        fontWeight: isRead ? 400 : 500,
+      }}>
+        {item.source}
+      </span>
+
+      {/* Title — flex, single line */}
+      <span style={{
+        flex: 1, minWidth: 0,
+        fontSize: 13,
+        fontWeight: isRead ? 400 : 500,
+        color: isRead ? T.textTertiary : T.text,
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        letterSpacing: "-.01em",
+      }}>
+        {item.isPodcast && <span style={{ fontSize: 10, color: T.accent, marginRight: 5, verticalAlign: "middle" }}>▶</span>}
+        {item.title}
+      </span>
+
+      {/* Date — right-aligned, hidden when hovering to make room for actions */}
+      {!hovered && item.date && (
+        <span style={{ flexShrink: 0, fontSize: 11, color: T.textTertiary, paddingLeft: 12, width: 58, textAlign: "right" }}>
+          {formatDate(item.date)}
+        </span>
+      )}
+
+      {/* Action buttons — appear on hover, absolutely positioned */}
+      {hovered && (
         <div
-          onClick={swiped ? close : onClick}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          style={{
-            position: "relative",
-            display: "flex", alignItems: "center", gap: 12,
-            padding: vPad,
-            margin: "0 6px",
-            borderRadius: 12,
-            cursor: "pointer",
-            background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
-            transition: "background .15s",
-          }}
+          style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", display: "flex", gap: 0, background: isSelected ? T.accentSurface : T.surface, borderRadius: 7, boxShadow: `0 0 0 1px ${T.border}` }}
+          onClick={e => e.stopPropagation()}
         >
-          {/* Thumbnail (md/lg) or type icon (sm) */}
-          {cardSize !== "sm"
-            ? <ListThumb item={item} cardSize={cardSize} T={T} />
-            : <div style={{ width:26, height:26, flexShrink:0, borderRadius:7, background:hovered?T.accentSurface:T.surface, display:"flex", alignItems:"center", justifyContent:"center", color:hovered?T.accent:T.textTertiary, transition:"all .15s" }}><ContentTypeIcon item={item} /></div>
-          }
-
-          {/* Text block — layout never changes */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontFamily: cardSize !== "sm" ? "var(--reader-font-family)" : "inherit",
-              fontSize: cardSize === "lg" ? 19 : cardSize === "sm" ? 14 : 17,
-              fontWeight: isRead ? 400 : 600,
-              color: isRead ? T.textTertiary : T.text,
-              lineHeight: 1.35,
-              overflow: "hidden", textOverflow: "ellipsis",
-              whiteSpace: cardSize !== "sm" ? "normal" : "nowrap",
-              display: "-webkit-box", WebkitLineClamp: cardSize === "lg" ? 3 : 2, WebkitBoxOrient: "vertical",
-              letterSpacing: "-.01em",
-              marginBottom: 4,
-            }}>
-              {item.title}
-            </div>
-            {cardSize === "lg" && item.description && (
-              <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", marginBottom: 4 }}>
-                {item.description}
-              </div>
-            )}
-            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 1 }}>
-              {favicon && (
-                <img src={favicon} alt="" width={12} height={12}
-                  style={{ borderRadius: 2, opacity: 0.75, flexShrink: 0 }}
-                  onError={e => { e.target.style.display = "none"; }} />
-              )}
-              <span style={{ fontSize: 11, color: T.textTertiary }}>{item.source}</span>
-              {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
-              {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent }}>· {item.audioDuration}</span>}
-              {!item.isPodcast && item.description && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTime(item.description)}</span>}
-            </div>
-          </div>
-
-          {/* Unread dot — absolute so it doesn't affect layout */}
-          {!isRead && !hovered && (
-            <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", width: 6, height: 6, borderRadius: "50%", background: T.accent, pointerEvents: "none" }} />
+          {item.isPodcast && onPlayPodcast && (
+            <ActionBtn icon={<Ic.Play />} title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
           )}
-
-          {/* Action buttons — absolute overlay, right-aligned, never shifts layout */}
-          {hovered && (
-            <div style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", display: "flex", gap: 0, background: isSelected ? T.accentSurface : T.surface, borderRadius: 8 }} onClick={e => e.stopPropagation()}>
-              {item.isPodcast && onPlayPodcast && (
-                <ActionBtn icon={<Ic.Play />} title="Play episode" onClick={() => onPlayPodcast(item)} T={T} />
-              )}
-              <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
-              <ActionBtn icon={<Ic.Clock />} title="Save for later" onClick={onReadLater} T={T} />
-              <ActionBtn icon={isSaved ? <Ic.StarFilled /> : <Ic.Star />} title={isSaved ? "Starred" : "Star"} onClick={onSave} T={T} color={isSaved ? "#F59E0B" : undefined} />
-              <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
-            </div>
-          )}
+          <ActionBtn icon={isRead ? <Ic.Unread /> : <Ic.Read />} title={isRead ? "Mark unread" : "Mark read"} onClick={onMarkRead} T={T} />
+          <ActionBtn icon={<Ic.Clock />} title="Save for later" onClick={onReadLater} T={T} />
+          <ActionBtn icon={isSaved ? <Ic.StarFilled /> : <Ic.Star />} title={isSaved ? "Starred" : "Star"} onClick={onSave} T={T} color={isSaved ? "#F59E0B" : undefined} />
+          <ActionBtn icon={<Ic.External />} title="Open original" onClick={() => window.open(item.url, "_blank")} T={T} />
         </div>
       )}
-    </SwipeRow>
+    </div>
   );
 }
 

@@ -39,7 +39,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [openIdx, setOpenIdx]           = useState(-1);
   const [expandedView, setExpandedView] = useState(false);
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
-  const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "card"));
+  const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "list"));
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
   const [readUrls, setReadUrls]         = useState(new Set());
   const readUrlsRef = useRef(readUrls);
@@ -67,6 +67,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const pullStartY = useRef(null); // touch start Y for pull-to-refresh
   const fetchAllRef = useRef(null); // stable ref to fetchAll — accessible from PTR handlers
   const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
+  const [displayedCount, setDisplayedCount] = useState(60);
   const [viewMenuOpen, setViewMenuOpen]     = useState(false);
   const viewMenuRef = useRef(null);
   const [searchOpen, setSearchOpen]         = useState(false);
@@ -270,6 +271,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     return items.sort((a, b) => (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0));
   })();
 
+  // Reset displayed count when the filtered set changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setDisplayedCount(60); }, [readFilter, liveSearch, activeSource, filterMode, allItems]);
+
   // ── Open item by index ────────────────────────────────────────
   function openByIdx(idx) {
     if (idx < 0 || idx >= baseItems.length) return;
@@ -291,9 +296,13 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         case "j": case "ArrowDown":
           e.preventDefault();
           if (openItem) {
-            openByIdx(openIdx < baseItems.length - 1 ? openIdx + 1 : openIdx);
+            const nx = openIdx < baseItems.length - 1 ? openIdx + 1 : openIdx;
+            setDisplayedCount(c => nx >= c - 5 ? Math.min(c + 40, baseItems.length) : c);
+            openByIdx(nx);
           } else {
-            setCursorIdx(prev => Math.min(prev + 1, baseItems.length - 1));
+            const nx = Math.min(cursorIdx + 1, baseItems.length - 1);
+            setDisplayedCount(c => nx >= c - 5 ? Math.min(c + 40, baseItems.length) : c);
+            setCursorIdx(nx);
           }
           break;
         case "k": case "ArrowUp":
@@ -926,15 +935,20 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           onTouchStart={isMobile ? handlePTRStart : undefined}
           onTouchMove={isMobile ? handlePTRMove : undefined}
           onTouchEnd={isMobile ? handlePTREnd : undefined}
-          onScroll={isMobile ? (e => {
+          onScroll={e => {
             const el = e.currentTarget;
-            const top = el.scrollTop;
-            const prev = el._lastScrollTop ?? 0;
-            el._lastScrollTop = top;
-            if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
-            if (Math.abs(top - prev) < 4) return;
-            window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
-          }) : undefined}
+            if (isMobile) {
+              const top = el.scrollTop;
+              const prev = el._lastScrollTop ?? 0;
+              el._lastScrollTop = top;
+              if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
+              if (Math.abs(top - prev) < 4) return;
+              window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
+            }
+            if (el.scrollHeight - el.scrollTop - el.clientHeight < 300) {
+              setDisplayedCount(c => c < baseItems.length ? Math.min(c + 40, baseItems.length) : c);
+            }
+          }}
           style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 96px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "96px" : undefined, WebkitOverflowScrolling: "touch" }}>
           {/* New articles banner — shown after a background refresh detects new items */}
           {newArticleCount > 0 && !loadingItems && (
@@ -984,7 +998,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
           {viewMode === "card" ? (
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: isMobile ? 8 : (cardSize === "lg" ? 18 : 14) }}>
-              {baseItems.map((item, i) => (
+              {baseItems.slice(0, displayedCount).map((item, i) => (
                 <div key={item.url + i} style={i < 20 ? { animation: `fadeInUp .2s ease both`, animationDelay: `${i * 30}ms` } : {}}>
                 <FeedItem item={item} viewMode="card" cardSize={isMobile ? "sm" : cardSize}
                   isSelected={openItem?.url === item.url}
@@ -999,7 +1013,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               ))}
             </div>
           ) : (
-            baseItems.map((item, i) => (
+            baseItems.slice(0, displayedCount).map((item, i) => (
               <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={i < 20 ? { animation: `fadeInUp .18s ease both`, animationDelay: `${i * 20}ms` } : {}}>
               <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
@@ -1011,6 +1025,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 onPlayPodcast={onPlayPodcast}
               /></div>
             ))
+          )}
+
+          {/* Load-more indicator — shows while there are items beyond displayedCount */}
+          {!loadingItems && displayedCount < baseItems.length && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "18px 0", gap: 8, color: T.textTertiary, fontSize: 12 }}>
+              <div style={{ width: 10, height: 10, border: `1.5px solid ${T.textTertiary}`, borderTopColor: T.accent, borderRadius: "50%", animation: "spin .7s linear infinite" }} />
+              {baseItems.length - displayedCount} more
+            </div>
           )}
         </div>
       </div>
