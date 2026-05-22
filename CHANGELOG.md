@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.182] — 2026-05-22
+
+### Changes since v1.46.180
+- v1.46.181
+
+---
+
 ## [1.46.181] — 2026-05-22
 
 - [Fix] ReviewPage rating buttons: increase bottom padding to clear fixed BottomNav pill on mobile — buttons were partially obscured behind the pill on devices without safe-area insets
