@@ -642,7 +642,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       <div style={{ flex: !isMobile && openItem ? "0 0 420px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
-        <div style={{ padding: "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 62 : 54 }}>
+        <div style={{ padding: "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 62 : 54, borderBottom: `1px solid ${T.border}` }}>
 
           {/* Title + unread badge + error badge — hidden when search open */}
           {!searchOpen && (
@@ -1004,7 +1004,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           ) : (
             baseItems.slice(0, displayedCount).map((item, i) => (
-              <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }}>
+              <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={{ borderBottom: `1px solid ${T.border}` }}>
               <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
                 isRead={readUrls.has(item.url)}

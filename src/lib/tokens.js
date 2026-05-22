@@ -71,7 +71,7 @@ export const LIGHT = {
   accentHover:   "#3d5940",
   accentSurface: "rgba(79,111,82,0.07)",
   accentText:    "#ffffff",
-  card:          "#ffffff",
+  card:          "#FAFAFA",
   success:       "#4f6f52",
   warning:       "#aa8439",
   danger:        "#ba1a1a",

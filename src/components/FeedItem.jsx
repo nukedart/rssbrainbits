@@ -288,6 +288,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               padding: "9px 14px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
+              opacity: isRead ? 0.5 : 1, transition: "opacity .15s",
             }}
           >
             {/* Text LEFT */}
@@ -358,7 +359,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             borderRadius: 12,
             cursor: "pointer",
             background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
-            transition: "background .15s",
+            transition: "background .15s, opacity .15s",
+            opacity: isRead ? 0.5 : 1,
           }}
         >
           {/* Thumbnail (md/lg) or type icon (sm) */}

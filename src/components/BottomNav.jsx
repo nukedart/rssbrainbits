@@ -45,7 +45,7 @@ const NAV_ITEMS = [
 ];
 
 export default function BottomNav({ active, onNavigate, onOpenFeeds, unreadCount = 0 }) {
-  const { T } = useTheme();
+  const { T, isDark } = useTheme();
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function BottomNav({ active, onNavigate, onOpenFeeds, unreadCount
       display: "flex", alignItems: "center",
       borderRadius: 999,
       border: `1px solid ${T.border}`,
-      boxShadow: "0 8px 40px rgba(0,0,0,.22), 0 1px 0 rgba(255,255,255,.06) inset",
+      boxShadow: isDark ? "0 8px 40px rgba(0,0,0,.22), 0 1px 0 rgba(255,255,255,.06) inset" : "0 2px 16px rgba(0,0,0,.08)",
       padding: "0 8px",
       width: "max-content",
       maxWidth: "calc(100vw - 32px)",

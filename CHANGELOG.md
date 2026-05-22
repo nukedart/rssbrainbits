@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.190] — 2026-05-22
+
+- [Polish] List items: hairline borderBottom separator between rows — adds visual rhythm on the new white background
+- [Polish] Read items fade to 50% opacity row-wide — unread items pop forward without any extra decoration on them
+- [Polish] Toolbar: hairline bottom border added — clean visual division between header and list (no extra chrome)
+- [Polish] Light theme card token: #fff → #FAFAFA — elevated surfaces (popovers, cards) now visually distinct from the page background
+- [Polish] BottomNav shadow: theme-aware — heavy drop shadow on dark, soft 2px blur on light (matches iOS native tab bar)
+
 ## [1.46.189] — 2026-05-22
 
 - [Perf] Remove all Google Fonts (Poppins, Cormorant Garamond, Merriweather) — eliminates 2 network preconnects + 1 CSS @import; pages render with no font flash
