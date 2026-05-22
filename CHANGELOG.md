@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.191] — 2026-05-22
+
+- [Fix] Auto-mark-read cascade: fontWeight was changing 600→400 on mark-read, causing item height shift, which triggered more intersection events — fixed by using fixed fontWeight:500 (color+opacity still signals read state)
+- [Fix] Auto-mark-read debounce: observer now queues URLs and flushes after 200ms idle — fast scrolling batches into one update instead of per-pixel re-renders; added rootMargin:-20px buffer to prevent edge-of-viewport false triggers
+
 ## [1.46.190] — 2026-05-22
 
 - [Polish] List items: hairline borderBottom separator between rows — adds visual rhythm on the new white background

@@ -315,7 +315,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               <div style={{
                 fontFamily: "var(--reader-font-family)",
                 fontSize: 18,
-                fontWeight: isRead ? 400 : 600,
+                fontWeight: 500,
                 color: isRead ? T.textTertiary : T.text,
                 lineHeight: 1.35,
                 overflow: "hidden", display: "-webkit-box",
@@ -374,7 +374,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             <div style={{
               fontFamily: cardSize !== "sm" ? "var(--reader-font-family)" : "inherit",
               fontSize: cardSize === "lg" ? 19 : cardSize === "sm" ? 14 : 17,
-              fontWeight: isRead ? 400 : 600,
+              fontWeight: 500,
               color: isRead ? T.textTertiary : T.text,
               lineHeight: 1.35,
               overflow: "hidden", textOverflow: "ellipsis",
@@ -507,7 +507,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             <div style={{
               fontFamily: "var(--reader-font-family)",
               fontSize: cardSize === "lg" ? 16 : cardSize === "sm" ? 13 : 14,
-              fontWeight: isRead ? 400 : 600,
+              fontWeight: 500,
               color: isRead ? T.textTertiary : T.text,
               lineHeight: 1.35, marginBottom: 6,
               overflow: "hidden", display: "-webkit-box",

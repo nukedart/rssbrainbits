@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-05-22 | v1.46.191 | Fix | Auto-mark-read cascade: fixed fontWeight to 500 (no layout shift), debounce observer 200ms, rootMargin:-20px buffer | `FeedItem.jsx:318,377,510`, `InboxPage.jsx:590-610` | — |
 | 2026-05-22 | v1.46.190 | Polish | Row separators, read-item fade 50%, toolbar hairline, card≠bg, BottomNav shadow theme-aware | `FeedItem.jsx`, `InboxPage.jsx`, `tokens.js`, `BottomNav.jsx` | — |
 | 2026-05-22 | v1.46.189 | Perf | Drop all Google Fonts; switch to system font stack + ui-serif reader font; Light theme to crisp white/iOS-grey | 8 files | — |
 | 2026-05-22 | v1.46.188 | Polish | List view: remove fadeInUp animation, default cardSize lg→md, tighten row padding — less visual bulk | `InboxPage.jsx:42,992,1007`, `FeedItem.jsx:288,345` | — |

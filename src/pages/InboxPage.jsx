@@ -85,6 +85,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   }
   const listRef = useRef(null);
   const searchBarRef = useRef(null); // for f-key focus
+  const markReadQueueRef = useRef(new Set());
+  const markReadFlushRef = useRef(null);
 
   // BottomNav + button: open AddModal when App.jsx signals forceShowAdd
   useEffect(() => {
@@ -594,15 +596,25 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       return;
     }
     observerRef.current = new IntersectionObserver((entries) => {
+      let queued = false;
       entries.forEach(entry => {
-        // Fire when item has scrolled fully past the top of the scroll container
         if (!entry.isIntersecting && entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0)) {
           const url = entry.target.dataset.url;
-          if (url && !readUrlsRef.current.has(url)) handleMarkRead(url);
+          if (url && !readUrlsRef.current.has(url)) {
+            markReadQueueRef.current.add(url);
+            queued = true;
+          }
         }
       });
-    }, { root: listRef.current, threshold: 0 });
-    return () => observerRef.current?.disconnect();
+      if (!queued) return;
+      clearTimeout(markReadFlushRef.current);
+      markReadFlushRef.current = setTimeout(() => {
+        const urls = [...markReadQueueRef.current];
+        markReadQueueRef.current = new Set();
+        urls.forEach(url => handleMarkRead(url));
+      }, 200);
+    }, { root: listRef.current, threshold: 0, rootMargin: "-20px 0px 0px 0px" });
+    return () => { observerRef.current?.disconnect(); clearTimeout(markReadFlushRef.current); };
   }, [autoMarkRead]);
 
   // ── Pull-to-refresh (mobile) ─────────────────────────────
