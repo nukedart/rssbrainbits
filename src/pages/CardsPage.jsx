@@ -159,8 +159,8 @@ export default function CardsPage() {
                   }}>
                     <div style={{
                       fontSize: 15, color: T.text, lineHeight: 1.7,
-                      fontFamily: "'Cormorant Garamond', Georgia, serif",
-                      fontStyle: "italic", fontWeight: 500,
+                      fontFamily: "ui-serif, Georgia, serif",
+                      fontStyle: "italic", fontWeight: 400,
                     }}>
                       "{h.passage}"
                     </div>
@@ -315,7 +315,7 @@ export default function CardsPage() {
                     width: "100%", boxSizing: "border-box", minHeight: 90, resize: "vertical",
                     background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
                     padding: "10px 12px", fontSize: 14, color: T.text, lineHeight: 1.6,
-                    fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic",
+                    fontFamily: "ui-serif, Georgia, serif", fontStyle: "italic",
                     outline: "none",
                   }}
                   onFocus={e => e.target.style.borderColor = T.accent}

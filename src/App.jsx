@@ -232,7 +232,7 @@ function AppShell() {
     <div style={{
       height: "100dvh", display: "flex", flexDirection: "row",
       background: T.bg, color: T.text,
-      fontFamily: "'Poppins', system-ui, sans-serif",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif",
       WebkitFontSmoothing: "antialiased", overflow: "hidden",
     }}>
       <Sidebar

@@ -26,7 +26,7 @@ export const NOCTURNE = {
   blue:   { bg: "#1a2033",               text: "#9badb5" },
   purple: { bg: "#1f1a30",               text: "#a89fd5" },
   overlay: "rgba(0,0,0,0.65)",
-  readerFont: "'Merriweather', Georgia, serif",
+  readerFont: "ui-serif, Georgia, 'Times New Roman', serif",
 };
 
 // ── Theme 2: The Distilled Workspace ────────────────────────
@@ -54,22 +54,22 @@ export const DISTILLED = {
   blue:   { bg: "rgba(170,199,255,0.08)", text: "#aac7ff" },
   purple: { bg: "rgba(210,179,255,0.08)", text: "#d2b3ff" },
   overlay: "rgba(0,0,0,0.7)",
-  readerFont: "'Merriweather', Georgia, serif",
+  readerFont: "ui-serif, Georgia, 'Times New Roman', serif",
 };
 
 // ── Theme 3: Light (Parchment Editorial) ────────────────────
 export const LIGHT = {
-  bg:            "#f4f2ee",
-  surface:       "#eceae4",
-  surface2:      "#dedad0",
-  border:        "rgba(90,85,75,0.12)",
-  borderStrong:  "#b8b3a8",
+  bg:            "#ffffff",
+  surface:       "#F2F2F7",
+  surface2:      "#E5E5EA",
+  border:        "rgba(0,0,0,0.08)",
+  borderStrong:  "#C7C7CC",
   text:          "#1a1c1e",
   textSecondary: "#5a5750",
   textTertiary:  "#8a857c",
   accent:        "#4f6f52",
   accentHover:   "#3d5940",
-  accentSurface: "#e8f0e8",
+  accentSurface: "rgba(79,111,82,0.07)",
   accentText:    "#ffffff",
   card:          "#ffffff",
   success:       "#4f6f52",
@@ -81,7 +81,7 @@ export const LIGHT = {
   blue:   { bg: "#e8eef8", text: "#3a5a8a" },
   purple: { bg: "#f0eef8", text: "#5b4fa0" },
   overlay: "rgba(26,28,30,0.5)",
-  readerFont: "'Merriweather', Georgia, serif",
+  readerFont: "ui-serif, Georgia, 'Times New Roman', serif",
 };
 
 // backwards-compat alias

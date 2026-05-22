@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.189] — 2026-05-22
+
+- [Perf] Remove all Google Fonts (Poppins, Cormorant Garamond, Merriweather) — eliminates 2 network preconnects + 1 CSS @import; pages render with no font flash
+- [Polish] UI font switched to system stack (-apple-system / SF Pro Text) everywhere — native Mac/iOS feel, zero load time
+- [Polish] Reader font switched to ui-serif (New York on Apple, Georgia elsewhere) — beautiful native serif with no download
+- [Polish] Light theme refreshed: bg white (#fff), surfaces iOS-grey (#F2F2F7 / #E5E5EA), borders rgba(0,0,0,0.08) — crisp and clean instead of warm parchment
+
 ## [1.46.188] — 2026-05-22
 
 - [Polish] List view: remove per-item fadeInUp animation (fired on every filter change — pure CPU overhead with no UX value)

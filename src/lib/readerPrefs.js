@@ -34,8 +34,8 @@ export function applyReaderPrefs(prefs) {
   );
   root.style.setProperty("--reader-font-family",
     p.fontFamily === "sans"
-      ? "'Poppins', system-ui, sans-serif"
-      : "'Merriweather', Georgia, serif"
+      ? "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif"
+      : "ui-serif, Georgia, 'Times New Roman', serif"
   );
 }
 

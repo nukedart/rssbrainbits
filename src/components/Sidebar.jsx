@@ -348,7 +348,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
       {/* ── Header ── */}
       <div style={{ padding: collapsed ? "14px 8px 8px" : "16px 12px 8px", display:"flex", alignItems:"center", justifyContent: collapsed?"center":"space-between", flexShrink:0 }}>
         {!collapsed ? (
-          <div style={{ fontSize:16, fontWeight:700, color:T.text, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:"italic", letterSpacing:"-.02em", lineHeight:1.2, flex:1 }}>
+          <div style={{ fontSize:16, fontWeight:700, color:T.text, letterSpacing:"-.02em", lineHeight:1.2, flex:1 }}>
             Feedbox
           </div>
         ) : (
