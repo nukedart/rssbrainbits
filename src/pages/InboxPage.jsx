@@ -16,7 +16,6 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
 import { track } from "../lib/analytics";
-const DigestModal = lazy(() => import("../components/DigestModal"));
 
 export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, folderDef = null, ytFeedIds = null, onUnreadCount, onFeedErrors, onFeedUnreadCounts, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose, forceOpenSearch = false, onForcedSearchClose }) {
   const { T } = useTheme();
@@ -40,7 +39,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [expandedView, setExpandedView] = useState(false);
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
   const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "list"));
-  const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "md");
+  const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "lg");
   const [readUrls, setReadUrls]         = useState(new Set());
   const readUrlsRef = useRef(readUrls);
   useEffect(() => { readUrlsRef.current = readUrls; }, [readUrls]);
@@ -75,7 +74,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const errorPopoverRef = useRef(null);
   const [sourceDropOpen, setSourceDropOpen] = useState(false);
   const sourceDropRef = useRef(null);
-  const [digestOpen, setDigestOpen] = useState(false);
 
   function toggleFolderOpen(id) {
     setOpenFolders(prev => {
@@ -452,6 +450,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
       return next;
     });
+    setNewArticleCount(n => Math.max(0, n - 1));
     // Persist in background — don't block the UI
     markRead(user.id, url).catch(console.error);
   }
@@ -826,24 +825,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </svg>
           </button>
 
-          {/* AI Digest button — desktop only */}
-          {!isMobile && !searchOpen && allItems.length > 0 && (
-            <button onClick={() => setDigestOpen(true)} title="AI daily digest"
-              style={{
-                background: "transparent", border: "none", borderRadius: 8,
-                width: 30, height: 30, cursor: "pointer", flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: T.textTertiary, transition: "all .15s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8 1.5v2M8 12.5v2M2 8H.5M15.5 8H14M3.5 3.5l1.5 1.5M11 11l1.5 1.5M3.5 12.5L5 11M11 5l1.5-1.5"/>
-                <circle cx="8" cy="8" r="2.5"/>
-              </svg>
-            </button>
-          )}
 
           {/* Refresh button — desktop only; mobile uses pull-to-refresh */}
           {!isMobile && <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} style={{
@@ -1099,11 +1080,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         </Suspense>
       )}
       {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
-      {digestOpen && (
-        <Suspense fallback={null}>
-          <DigestModal items={baseItems.filter(i => !readUrls.has(i.url))} onClose={() => setDigestOpen(false)} />
-        </Suspense>
-      )}
       {opmlProgress && (
         <div style={{ position:"fixed", bottom: isMobile?80:24, left:"50%", transform:"translateX(-50%)", zIndex:2000, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, padding:"12px 20px", boxShadow:"0 4px 24px rgba(0,0,0,.15)", display:"flex", alignItems:"center", gap:12, minWidth:220 }}>
           <div style={{ width:10, height:10, border:`2px solid ${T.accent}`, borderTopColor:"transparent", borderRadius:"50%", animation:"spin .7s linear infinite", flexShrink:0 }} />

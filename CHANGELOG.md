@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.185] — 2026-05-22
+
+- [Fix] Desktop list view: restored thumbnail layout (ListThumb with cardSize control); default cardSize changed to "lg" for large images out of the box
+- [Fix] Auto-mark-read on scroll now decrements the "N new articles" banner count so it updates as you read through new items
+- [Feature] Removed AI Daily Digest button and DigestModal component — cleans up toolbar and removes dead AI dependency
+
 ## [1.46.184] — 2026-05-22
 
 - [Perf] PodcastPlayer: throttle SeekBar and mini-bar RAF loops from 60fps to 2fps (500ms) — 120× less CPU during playback; drag seek still responds immediately via event handlers
