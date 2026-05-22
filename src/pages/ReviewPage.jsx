@@ -248,7 +248,7 @@ export default function ReviewPage() {
       </div>
 
       {/* Rating buttons */}
-      <div style={{ padding: "8px 16px 36px", display: "flex", gap: 10, justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 80px)", display: "flex", gap: 10, justifyContent: "center", flexShrink: 0 }}>
         {[
           { rating: 0, label: "Forgot",   sub: nextLabel(0), accent: false },
           { rating: 1, label: "Got it",   sub: nextLabel(1), accent: true  },

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.181] — 2026-05-22
+
+- [Fix] ReviewPage rating buttons: increase bottom padding to clear fixed BottomNav pill on mobile — buttons were partially obscured behind the pill on devices without safe-area insets
+
 ## [1.46.180] — 2026-05-19
 
 - [Polish] Today desktop MagazineTile hero + medium: dark overlay and white text now conditional on hasImage — no-image tiles use T.text/T.textTertiary in Light and Distilled themes
