@@ -1,5 +1,5 @@
 // ── Feedbox Design Tokens ──
-// Three themes: NOCTURNE (sage dark), DISTILLED (blue dark), LIGHT (parchment)
+// Six themes: NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA
 
 // ── Theme 1: Editorial Nocturne ─────────────────────────────
 // "The Midnight Editor" — Noto Serif + Inter, sage-emerald on deep slate
@@ -82,6 +82,88 @@ export const LIGHT = {
   purple: { bg: "#f0eef8", text: "#5b4fa0" },
   overlay: "rgba(26,28,30,0.5)",
   readerFont: "ui-serif, Georgia, 'Times New Roman', serif",
+};
+
+// ── Theme 4: Cream (editorial light — cream/charcoal/sage) ──
+// Inspired by the design handoff: cream bg, hairline borders, sage accent
+export const CREAM = {
+  bg:            "#F5F1EA",
+  surface:       "#EFE8DC",
+  surface2:      "#E8DFCF",
+  border:        "rgba(42,37,32,0.08)",
+  borderStrong:  "rgba(42,37,32,0.25)",
+  text:          "#2A2520",
+  textSecondary: "#3A332C",
+  textTertiary:  "#6B5A4C",
+  accent:        "#7A8770",
+  accentHover:   "#5A6651",
+  accentSurface: "rgba(122,135,112,0.18)",
+  accentText:    "#FAF6EE",
+  card:          "#FAF6EE",
+  success:       "#7A8770",
+  warning:       "#9A6B3F",
+  danger:        "#B85C4A",
+  dangerText:    "#FAF6EE",
+  green:  { bg: "rgba(122,135,112,0.12)", text: "#5A6651" },
+  amber:  { bg: "rgba(154,107,63,0.10)",  text: "#9A6B3F" },
+  blue:   { bg: "rgba(90,102,81,0.10)",   text: "#5A6651" },
+  purple: { bg: "rgba(90,80,120,0.08)",   text: "#6A5A9A" },
+  overlay: "rgba(42,37,32,0.4)",
+  readerFont: "'Cormorant Garamond', Georgia, ui-serif, serif",
+};
+
+// ── Theme 5: Ink (editorial dark — warm charcoal) ────────────
+export const INK = {
+  bg:            "#1B1814",
+  surface:       "#181511",
+  surface2:      "#211D18",
+  border:        "rgba(245,241,234,0.08)",
+  borderStrong:  "rgba(245,241,234,0.14)",
+  text:          "#EFE8DC",
+  textSecondary: "#D9D0BE",
+  textTertiary:  "#A39885",
+  accent:        "#8E9C82",
+  accentHover:   "#A6B49A",
+  accentSurface: "rgba(142,156,130,0.18)",
+  accentText:    "#1B1814",
+  card:          "#211D18",
+  success:       "#8E9C82",
+  warning:       "#C9A050",
+  danger:        "#B85C4A",
+  dangerText:    "#EFE8DC",
+  green:  { bg: "rgba(142,156,130,0.10)", text: "#A6B49A" },
+  amber:  { bg: "rgba(200,160,80,0.10)",  text: "#C9A050" },
+  blue:   { bg: "rgba(100,120,160,0.10)", text: "#9BADB5" },
+  purple: { bg: "rgba(160,140,200,0.08)", text: "#A89FD5" },
+  overlay: "rgba(0,0,0,0.6)",
+  readerFont: "'Cormorant Garamond', Georgia, ui-serif, serif",
+};
+
+// ── Theme 6: Sepia ───────────────────────────────────────────
+export const SEPIA = {
+  bg:            "#ECE0CB",
+  surface:       "#E5D6BB",
+  surface2:      "#D8C9A8",
+  border:        "rgba(61,46,31,0.10)",
+  borderStrong:  "rgba(61,46,31,0.18)",
+  text:          "#3D2E1F",
+  textSecondary: "#4F3D2A",
+  textTertiary:  "#786040",
+  accent:        "#9A6B3F",
+  accentHover:   "#74502D",
+  accentSurface: "rgba(154,107,63,0.16)",
+  accentText:    "#FAF6EE",
+  card:          "#F1E7D4",
+  success:       "#9A6B3F",
+  warning:       "#74502D",
+  danger:        "#B85C4A",
+  dangerText:    "#FAF6EE",
+  green:  { bg: "rgba(154,107,63,0.12)", text: "#74502D" },
+  amber:  { bg: "rgba(180,120,50,0.10)", text: "#9A6B3F" },
+  blue:   { bg: "rgba(80,90,120,0.08)",  text: "#4A5A8A" },
+  purple: { bg: "rgba(100,80,130,0.08)", text: "#6A5A9A" },
+  overlay: "rgba(61,46,31,0.4)",
+  readerFont: "'Cormorant Garamond', Georgia, ui-serif, serif",
 };
 
 // backwards-compat alias

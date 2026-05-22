@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.192] — 2026-05-22
+
+- [Feature] Three new themes from design handoff: Cream (editorial light — cream/charcoal/sage), Ink (warm editorial dark), Sepia (amber warm)
+- [Feature] Cormorant Garamond loaded on demand only when Cream/Ink/Sepia active — zero font load penalty on default themes
+- [Polish] Theme picker replaced with color swatches in Settings and Sidebar — shows all 6 themes as palette circles with accent dots
+
 ## [1.46.191] — 2026-05-22
 
 - [Fix] Auto-mark-read cascade: fontWeight was changing 600→400 on mark-read, causing item height shift, which triggered more intersection events — fixed by using fixed fontWeight:500 (color+opacity still signals read state)

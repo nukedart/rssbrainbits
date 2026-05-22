@@ -692,20 +692,27 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               </div>
               <div style={{ fontSize: 12, color: T.textSecondary }}>{user?.email}</div>
             </div>
-            {/* Theme toggle — icon buttons */}
-            <div style={{ display: "flex", gap: 3, flexShrink: 0 }}>
+            {/* Theme swatches */}
+            <div style={{ display: "flex", gap: 5, flexShrink: 0, alignItems: "center" }}>
               {[
-                { id: "distilled", title: "Dark", icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M13.5 10.5A6 6 0 0 1 5.5 2.5a6 6 0 1 0 8 8z"/></svg> },
-                { id: "light",     title: "Light", icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg> },
-              ].map(({ id, title, icon }) => {
-                const active = theme === id || (id === "distilled" && theme === "nocturne");
+                { id: "light",    label: "Light",    bg: "#ffffff",  accent: "#4f6f52" },
+                { id: "cream",    label: "Cream",    bg: "#F5F1EA",  accent: "#7A8770" },
+                { id: "sepia",    label: "Sepia",    bg: "#ECE0CB",  accent: "#9A6B3F" },
+                { id: "ink",      label: "Ink",      bg: "#1B1814",  accent: "#8E9C82" },
+                { id: "distilled",label: "Distilled",bg: "#131315",  accent: "#aac7ff" },
+                { id: "nocturne", label: "Nocturne", bg: "#121416",  accent: "#accfae" },
+              ].map(({ id, label, bg, accent }) => {
+                const active = theme === id;
                 return (
-                  <button key={id} onClick={() => setTheme(id)} title={title} style={{
-                    width: 28, height: 28, borderRadius: 7, border: `1px solid ${active ? T.accent : T.border}`,
-                    background: active ? T.accentSurface : T.surface, cursor: "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: active ? T.accent : T.textTertiary, transition: "all .15s",
-                  }}>{icon}</button>
+                  <button key={id} onClick={() => setTheme(id)} title={label} style={{
+                    width: 22, height: 22, borderRadius: "50%", border: `2px solid ${active ? T.accent : T.border}`,
+                    background: bg, cursor: "pointer", padding: 0, position: "relative",
+                    boxShadow: active ? `0 0 0 2px ${T.bg}, 0 0 0 4px ${T.accent}` : "none",
+                    transition: "box-shadow .15s",
+                    flexShrink: 0,
+                  }}>
+                    <span style={{ position: "absolute", bottom: 2, right: 2, width: 6, height: 6, borderRadius: "50%", background: accent, display: "block" }} />
+                  </button>
                 );
               })}
             </div>
