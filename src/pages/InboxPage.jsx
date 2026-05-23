@@ -17,7 +17,7 @@ import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
 import { track } from "../lib/analytics";
 
-export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, folderDef = null, ytFeedIds = null, onUnreadCount, onFeedErrors, onFeedUnreadCounts, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose, forceOpenSearch = false, onForcedSearchClose }) {
+export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, folderDef = null, ytFeedIds = null, onUnreadCount, onFeedErrors, onFeedUnreadCounts, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose, forceOpenSearch = false, onForcedSearchClose, onNavigate }) {
   const { T } = useTheme();
   const { user: authUser } = useAuth();
   const user = propUser || authUser;
@@ -654,16 +654,16 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       <div style={{ flex: !isMobile && openItem ? "0 0 420px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
-        <div style={{ padding: "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 3 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 62 : 54, borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ padding: isMobile ? "0 14px" : "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 6 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 72 : 54, borderBottom: `1px solid ${T.border}` }}>
 
           {/* Title + unread badge + error badge — hidden when search open */}
           {!searchOpen && (
-            <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
-              <div style={{ fontSize: 17, fontWeight: 700, color: T.text, letterSpacing: "-.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
+              <div style={{ fontSize: isMobile ? 20 : 17, fontWeight: 700, color: T.text, letterSpacing: "-.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {activeFeedName}
               </div>
               {unreadCount > 0 && (
-                <span style={{ fontSize: 10, fontWeight: 600, background: T.accentSurface, color: T.accent, padding: "1px 7px", borderRadius: 10, flexShrink: 0 }}>
+                <span style={{ fontSize: isMobile ? 13 : 11, fontWeight: 600, background: T.accent, color: T.accentText, padding: isMobile ? "3px 10px" : "1px 7px", borderRadius: 20, flexShrink: 0, letterSpacing: "-.01em" }}>
                   {unreadCount}
                 </span>
               )}
@@ -782,15 +782,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {unreadCount > 0 && !searchOpen && (
             <button onClick={handleMarkAllRead} title="Mark all as read"
               style={{
-                background: "transparent", border: "none", borderRadius: 8,
-                width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+                background: "transparent", border: "none", borderRadius: 9,
+                width: isMobile ? 40 : 30, height: isMobile ? 40 : 30, cursor: "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: T.textTertiary, transition: "all .15s",
               }}
               onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width={isMobile ? 17 : 14} height={isMobile ? 17 : 14} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M1 9l4 4 10-10"/><path d="M1 5l4 4 10-10" strokeOpacity=".3"/>
               </svg>
             </button>
@@ -813,17 +813,17 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               }}
               title={`Image size: ${cardSize === "sm" ? "hidden" : cardSize === "md" ? "small" : "large"}`}
               style={{
-                background: cardSize !== "sm" ? T.accentSurface : "transparent", border: "none", borderRadius: 8,
-                width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+                background: cardSize !== "sm" ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
+                width: 40, height: 40, cursor: "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: cardSize !== "sm" ? T.accent : T.textTertiary, transition: "all .15s",
               }}
             >
               {cardSize === "sm"
-                ? <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="14" height="10" rx="2"/><line x1="1" y1="8" x2="15" y2="8" strokeOpacity=".3"/></svg>
+                ? <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="14" height="10" rx="2"/><line x1="1" y1="8" x2="15" y2="8" strokeOpacity=".3"/></svg>
                 : cardSize === "md"
-                ? <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M4.5 9.5l2-2.5 2 2 1.5-1.5 2 2" strokeWidth="1.5"/></svg>
-                : <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="2" width="14" height="12" rx="2"/><path d="M4 10.5l2.5-3 2.5 2.5 1.5-2 2 2.5" strokeWidth="1.5"/></svg>
+                ? <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M4.5 9.5l2-2.5 2 2 1.5-1.5 2 2" strokeWidth="1.5"/></svg>
+                : <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="2" width="14" height="12" rx="2"/><path d="M4 10.5l2.5-3 2.5 2.5 1.5-2 2 2.5" strokeWidth="1.5"/></svg>
               }
             </button>
           )}
@@ -833,18 +833,41 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
             title="Search"
             style={{
-              background: searchOpen ? T.accentSurface : "transparent", border: "none", borderRadius: 8,
-              width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+              background: searchOpen ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
+              width: isMobile ? 40 : 30, height: isMobile ? 40 : 30, cursor: "pointer", flexShrink: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
               color: searchOpen ? T.accent : T.textTertiary, transition: "all .15s",
             }}
             onMouseEnter={e => { if (!searchOpen) { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; } }}
             onMouseLeave={e => { if (!searchOpen) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <svg width={isMobile ? 18 : 14} height={isMobile ? 18 : 14} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
             </svg>
           </button>
+
+          {/* Settings — mobile only; not in sidebar/BottomNav */}
+          {isMobile && !searchOpen && onNavigate && (
+            <button
+              onClick={() => onNavigate("settings")}
+              title="Settings"
+              style={{
+                background: "transparent", border: "none", borderRadius: 9,
+                width: 40, height: 40, cursor: "pointer", flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: T.textTertiary, transition: "all .15s",
+                WebkitTapHighlightColor: "transparent",
+              }}
+              onTouchStart={e => { e.currentTarget.style.background = T.surface; }}
+              onTouchEnd={e => { e.currentTarget.style.background = "transparent"; }}
+              onTouchCancel={e => { e.currentTarget.style.background = "transparent"; }}
+            >
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="8" cy="8" r="2.5"/>
+                <path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.6 3.6l1.3 1.3M11.1 11.1l1.3 1.3M3.6 12.4l1.3-1.3M11.1 4.9l1.3-1.3"/>
+              </svg>
+            </button>
+          )}
 
 
           {/* Refresh button — desktop only; mobile uses pull-to-refresh */}

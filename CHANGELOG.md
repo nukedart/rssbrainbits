@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.196] — 2026-05-23
+
+- [Nav] Mobile: Settings gear button added to top toolbar — previously inaccessible on mobile
+- [UX] Mobile top toolbar: height 62→72px, icon buttons 30→40px tap targets, title 17→20px, icons 14→18px
+- [Polish] Unread count badge: filled accent background (was ghost/surface), larger on mobile (13px, more padding) — easier to read at a glance
+
 ## [1.46.195] — 2026-05-23
 
 - [Polish] BottomNav icons: strokeWidth reduced (inactive 1.7→1.2, active 2.2→1.7) — lighter, less visually heavy
