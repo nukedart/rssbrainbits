@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.193] — 2026-05-23
+
+- [Feature] Dedicated Appearance section in Settings with 6-theme swatch picker — sidebar restored to simple Light/Dark toggle only for quick access
+
 ## [1.46.192] — 2026-05-22
 
 - [Feature] Three new themes from design handoff: Cream (editorial light — cream/charcoal/sage), Ink (warm editorial dark), Sepia (amber warm)

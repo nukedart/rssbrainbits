@@ -497,21 +497,17 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
           </button>
         )}
 
-        {/* Theme swatches — collapsed sidebar */}
+        {/* Light / Dark quick toggle — collapsed sidebar */}
         {collapsed && (
-          <div style={{ display:"flex", flexWrap:"wrap", gap:3, marginTop:6, justifyContent:"center", padding:"0 4px" }}>
-            {[
-              { id:"light",    bg:"#ffffff",  accent:"#4f6f52" },
-              { id:"cream",    bg:"#F5F1EA",  accent:"#7A8770" },
-              { id:"sepia",    bg:"#ECE0CB",  accent:"#9A6B3F" },
-              { id:"ink",      bg:"#1B1814",  accent:"#8E9C82" },
-              { id:"distilled",bg:"#131315",  accent:"#aac7ff" },
-              { id:"nocturne", bg:"#121416",  accent:"#accfae" },
-            ].map(({ id, bg, accent }) => (
-              <button key={id} onClick={() => setTheme(id)} title={id.charAt(0).toUpperCase()+id.slice(1)}
-                style={{ width:16, height:16, borderRadius:"50%", border:`1.5px solid ${theme===id?T.accent:"transparent"}`, background:bg, cursor:"pointer", padding:0, flexShrink:0, transition:"border-color .15s" }}
-              />
-            ))}
+          <div style={{ display:"flex", gap:3, marginTop:6, justifyContent:"center" }}>
+            {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
+              const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
+              return (
+                <button key={label} onClick={() => setTheme(id)} title={label}
+                  style={{ width:24, height:22, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"all .15s" }}
+                ><Icon /></button>
+              );
+            })}
           </div>
         )}
 
@@ -537,20 +533,14 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
           </button>
           {!collapsed && (
             <>
-              {[
-                { id:"light",    bg:"#ffffff",  accent:"#4f6f52" },
-                { id:"cream",    bg:"#F5F1EA",  accent:"#7A8770" },
-                { id:"sepia",    bg:"#ECE0CB",  accent:"#9A6B3F" },
-                { id:"ink",      bg:"#1B1814",  accent:"#8E9C82" },
-                { id:"distilled",bg:"#131315",  accent:"#aac7ff" },
-                { id:"nocturne", bg:"#121416",  accent:"#accfae" },
-              ].map(({ id, bg, accent }) => (
-                <button key={id} onClick={() => setTheme(id)} title={id.charAt(0).toUpperCase()+id.slice(1)}
-                  style={{ width:18, height:18, borderRadius:"50%", border:`1.5px solid ${theme===id?T.accent:T.border}`, background:bg, cursor:"pointer", padding:0, flexShrink:0, transition:"border-color .15s", position:"relative" }}
-                >
-                  {theme===id && <span style={{ position:"absolute", inset:-3, borderRadius:"50%", border:`1.5px solid ${T.accent}`, pointerEvents:"none" }} />}
-                </button>
-              ))}
+              {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
+                const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
+                return (
+                  <button key={label} onClick={() => setTheme(id)} title={label}
+                    style={{ width:24, height:24, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, flexShrink:0, transition:"all .15s" }}
+                  ><Icon /></button>
+                );
+              })}
               <button onClick={() => setShortcutsOpen(v => !v)} title="Keyboard shortcuts"
                 style={{ width:24, height:24, borderRadius:6, border:`1px solid ${shortcutsOpen?T.accent:"transparent"}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontFamily:"inherit", flexShrink:0, transition:"all .12s" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accent; e.currentTarget.style.background=T.accentSurface; }}

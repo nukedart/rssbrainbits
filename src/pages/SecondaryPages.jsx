@@ -692,30 +692,6 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               </div>
               <div style={{ fontSize: 12, color: T.textSecondary }}>{user?.email}</div>
             </div>
-            {/* Theme swatches */}
-            <div style={{ display: "flex", gap: 5, flexShrink: 0, alignItems: "center" }}>
-              {[
-                { id: "light",    label: "Light",    bg: "#ffffff",  accent: "#4f6f52" },
-                { id: "cream",    label: "Cream",    bg: "#F5F1EA",  accent: "#7A8770" },
-                { id: "sepia",    label: "Sepia",    bg: "#ECE0CB",  accent: "#9A6B3F" },
-                { id: "ink",      label: "Ink",      bg: "#1B1814",  accent: "#8E9C82" },
-                { id: "distilled",label: "Distilled",bg: "#131315",  accent: "#aac7ff" },
-                { id: "nocturne", label: "Nocturne", bg: "#121416",  accent: "#accfae" },
-              ].map(({ id, label, bg, accent }) => {
-                const active = theme === id;
-                return (
-                  <button key={id} onClick={() => setTheme(id)} title={label} style={{
-                    width: 22, height: 22, borderRadius: "50%", border: `2px solid ${active ? T.accent : T.border}`,
-                    background: bg, cursor: "pointer", padding: 0, position: "relative",
-                    boxShadow: active ? `0 0 0 2px ${T.bg}, 0 0 0 4px ${T.accent}` : "none",
-                    transition: "box-shadow .15s",
-                    flexShrink: 0,
-                  }}>
-                    <span style={{ position: "absolute", bottom: 2, right: 2, width: 6, height: 6, borderRadius: "50%", background: accent, display: "block" }} />
-                  </button>
-                );
-              })}
-            </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
             <Button variant="secondary" size="sm" onClick={signOut}>Sign out</Button>
@@ -727,6 +703,42 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
               title="Refresh your account session — use this if your Pro status isn't showing"
             >↺ Refresh account</button>
+          </div>
+        </Card>
+
+        {/* Appearance — theme picker */}
+        <Card title="Appearance" T={T}>
+          <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14 }}>Choose a theme. Light and Dark can also be toggled from the sidebar.</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[
+              { id: "light",    label: "Light",    bg: "#ffffff",  accent: "#4f6f52" },
+              { id: "cream",    label: "Cream",    bg: "#F5F1EA",  accent: "#7A8770" },
+              { id: "sepia",    label: "Sepia",    bg: "#ECE0CB",  accent: "#9A6B3F" },
+              { id: "ink",      label: "Ink",      bg: "#1B1814",  accent: "#8E9C82" },
+              { id: "distilled",label: "Distilled",bg: "#131315",  accent: "#aac7ff" },
+              { id: "nocturne", label: "Nocturne", bg: "#121416",  accent: "#accfae" },
+            ].map(({ id, label, bg, accent }) => {
+              const active = theme === id;
+              return (
+                <button key={id} onClick={() => setTheme(id)} style={{
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
+                  background: active ? T.accentSurface : "transparent",
+                  border: `1px solid ${active ? T.accent : "transparent"}`,
+                  borderRadius: 10, padding: "10px 12px", cursor: "pointer",
+                  transition: "all .15s", minWidth: 68,
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%", background: bg,
+                    border: `2px solid ${active ? T.accent : "rgba(0,0,0,0.12)"}`,
+                    boxShadow: active ? `0 0 0 3px ${T.bg}, 0 0 0 5px ${T.accent}` : "none",
+                    position: "relative", transition: "box-shadow .15s", flexShrink: 0,
+                  }}>
+                    <span style={{ position: "absolute", bottom: 3, right: 3, width: 9, height: 9, borderRadius: "50%", background: accent, border: `1.5px solid ${bg}` }} />
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: active ? 600 : 400, color: active ? T.accent : T.textSecondary, whiteSpace: "nowrap" }}>{label}</span>
+                </button>
+              );
+            })}
           </div>
         </Card>
 
