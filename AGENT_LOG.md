@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-05-23 | v1.46.194 | Nav | Sidebar nav grouped into two clusters (Inbox/Today vs Saved/Review/Cards) with hairline divider; "Smart" and "Feeds" section labels added to feed tree | `Sidebar.jsx` | — |
 | 2026-05-23 | v1.46.193 | Feature | Appearance section in Settings: 6-theme swatch picker; sidebar Light/Dark toggle simplified (active for theme family) | `SecondaryPages.jsx`, `Sidebar.jsx` | — |
 | 2026-05-22 | v1.46.192 | Feature | 3 new themes: Cream, Ink, Sepia (editorial palette from design handoff); swatch picker; on-demand Cormorant loading | `tokens.js`, `useTheme.jsx`, `SecondaryPages.jsx`, `Sidebar.jsx` | — |
 | 2026-05-22 | v1.46.191 | Fix | Auto-mark-read cascade: fixed fontWeight to 500 (no layout shift), debounce observer 200ms, rootMargin:-20px buffer | `FeedItem.jsx:318,377,510`, `InboxPage.jsx:590-610` | — |

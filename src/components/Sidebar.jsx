@@ -324,12 +324,14 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
   // Separate feeds into categorized and uncategorized
   const uncategorized = feeds.filter(f => !f.folder_id);
 
-  const TOP_NAV = [
-    { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox",       badge: unreadCount },
-    { id:"today",     Icon:Icons.Today,     label:"Today",       badge: 0 },
-    { id:"readlater", Icon:Icons.ReadLater, label:"Saved",       badge: 0 },
-    { id:"review",    Icon:Icons.Review,    label:"Review",      badge: 0 },
-    { id:"cards",     Icon:Icons.Cards,     label:"Cards",       badge: 0 },
+  const PRIMARY_NAV = [
+    { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox",   badge: unreadCount },
+    { id:"today",     Icon:Icons.Today,     label:"Today",   badge: 0 },
+  ];
+  const LIBRARY_NAV = [
+    { id:"readlater", Icon:Icons.ReadLater, label:"Saved",   badge: 0 },
+    { id:"review",    Icon:Icons.Review,    label:"Review",  badge: 0 },
+    { id:"cards",     Icon:Icons.Cards,     label:"Cards",   badge: 0 },
   ];
 
   return (
@@ -373,8 +375,15 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
       </div>
 
       {/* ── Top nav ── */}
-      <nav style={{ padding: collapsed?"0 4px":"0 6px", display:"flex", flexDirection:"column", gap:1, flexShrink:0, marginBottom:4 }}>
-        {TOP_NAV.map(({ id, Icon, label, badge }) => (
+      <nav style={{ padding: collapsed?"0 4px":"0 6px", display:"flex", flexDirection:"column", gap:1, flexShrink:0, marginBottom:2 }}>
+        {PRIMARY_NAV.map(({ id, Icon, label, badge }) => (
+          <NavItem key={id} id={id} Icon={Icon} label={label}
+            active={active} badge={badge}
+            onNavigate={onNavigate} collapsed={collapsed} T={T}
+          />
+        ))}
+        <div style={{ height:1, background:T.border, margin:"3px 4px" }} />
+        {LIBRARY_NAV.map(({ id, Icon, label, badge }) => (
           <NavItem key={id} id={id} Icon={Icon} label={label}
             active={active} badge={badge}
             onNavigate={onNavigate} collapsed={collapsed} T={T}
@@ -388,15 +397,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
         {/* Smart feeds — shown above regular feeds */}
         {smartFeeds.length > 0 && (
           <>
-            {!collapsed && (
-              <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", flexShrink:0, justifyContent:"flex-end" }}>
-                <button onClick={onAddSmartFeed} title="New smart feed"
-                  style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
-                  onMouseEnter={e => e.currentTarget.style.color=T.accent}
-                  onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-                ><Icons.Plus /></button>
-              </div>
-            )}
+            {!collapsed && <SectionLabel label="Smart" action={onAddSmartFeed} actionTitle="New smart feed" T={T} />}
             {smartFeeds.map(sf => (
               <SmartRow key={sf.id} sf={sf} active={active} onNavigate={onNavigate} onEdit={onEditSmartFeed} collapsed={collapsed} T={T} />
             ))}
@@ -404,15 +405,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
         )}
 
         {/* Feeds section header */}
-        {!collapsed && (
-          <div style={{ display:"flex", alignItems:"center", padding:"8px 4px 4px", flexShrink:0, justifyContent:"flex-end" }}>
-            <button onClick={onAddFolder} title="New folder"
-              style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 4px", borderRadius:4, transition:"color .1s" }}
-              onMouseEnter={e => e.currentTarget.style.color=T.accent}
-              onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
-            ><Icons.Folder /></button>
-          </div>
-        )}
+        {!collapsed && <SectionLabel label="Feeds" action={onAddFolder} actionTitle="New folder" T={T} />}
 
         {/* Folders */}
         {folders.map(folder => {

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.194] — 2026-05-23
+
+- [Nav] Sidebar: split nav into two grouped clusters (Inbox/Today vs Saved/Review/Cards) with a hairline divider; added "Smart" and "Feeds" section labels to the feed tree — improves visual hierarchy and reduces clutter
+
 ## [1.46.193] — 2026-05-23
 
 - [Feature] Dedicated Appearance section in Settings with 6-theme swatch picker — sidebar restored to simple Light/Dark toggle only for quick access
