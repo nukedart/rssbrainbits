@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-05-23 | v1.46.197 | Fix | Saving broken: saveItem lacked is_read_later=true; reader save button now toggles; isSaved wired to list view; reader font 20px, wider column, better CSS | `supabase.js`, `ContentViewer.jsx`, `InboxPage.jsx`, `readerPrefs.js` | — |
 | 2026-05-23 | v1.46.196 | Nav | Mobile: Settings button in top toolbar; toolbar height 72px; 40px tap targets; larger title + icons; filled unread badge | `InboxPage.jsx`, `App.jsx` | — |
 | 2026-05-23 | v1.46.195 | UX | List items larger: mobile rows 14px pad/20px title/104px thumb; desktop vPad+fontSize up at all tiers; default cardSize→lg; BottomNav strokeWidth thinner | `FeedItem.jsx`, `BottomNav.jsx`, `InboxPage.jsx` | — |
 | 2026-05-23 | v1.46.194 | Nav | Sidebar nav grouped into two clusters (Inbox/Today vs Saved/Review/Cards) with hairline divider; "Smart" and "Feeds" section labels added to feed tree | `Sidebar.jsx` | — |

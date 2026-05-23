@@ -2,7 +2,7 @@
 // All stored in localStorage, applied via CSS custom properties on <body>.
 
 const DEFAULTS = {
-  fontSize:  19,          // px  — range 14–22
+  fontSize:  20,          // px  — range 14–24
   lineWidth: "medium",    // "narrow" | "medium" | "wide"
   fontFamily:"serif",     // "sans" | "serif" — default to editorial serif
   bionic:    false,       // bionic reading mode
@@ -30,7 +30,7 @@ export function applyReaderPrefs(prefs) {
   const root = document.documentElement;
   root.style.setProperty("--reader-font-size",   p.fontSize + "px");
   root.style.setProperty("--reader-line-width",
-    p.lineWidth === "narrow" ? "520px" : p.lineWidth === "wide" ? "780px" : "660px"
+    p.lineWidth === "narrow" ? "540px" : p.lineWidth === "wide" ? "800px" : "690px"
   );
   root.style.setProperty("--reader-font-family",
     p.fontFamily === "sans"

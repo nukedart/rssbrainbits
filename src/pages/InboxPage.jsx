@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react"
 import { useTheme } from "../hooks/useTheme";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
-import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem, getSaved,
-         addReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed } from "../lib/supabase";
+import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem, unsaveItem, getSaved,
+         addReadLater, removeReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed } from "../lib/supabase";
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChannelRSS } from "../lib/fetchers";
 import { getCachedFeed, invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem from "../components/FeedItem";
@@ -499,9 +499,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   }
 
   async function handleSaveItem(item) {
-    await saveItem(user.id, { ...item });
-    setSavedUrls(prev => { const next = new Set(prev); next.add(item.url); return next; });
-    showToast("⭐ Starred");
+    if (savedUrls.has(item.url)) {
+      await unsaveItem(user.id, item.url);
+      setSavedUrls(prev => { const next = new Set(prev); next.delete(item.url); return next; });
+      showToast("Removed from Saved");
+    } else {
+      await saveItem(user.id, { ...item });
+      setSavedUrls(prev => { const next = new Set(prev); next.add(item.url); return next; });
+      showToast("Saved");
+    }
   }
 
   async function handleSaveForLater({ url, type }) {
@@ -1043,6 +1049,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
                 isRead={readUrls.has(item.url)}
+                isSaved={savedUrls.has(item.url)}
                 onClick={() => { setCursorIdx(i); openByIdx(i); }}
                 onSave={() => handleSaveItem(item)}
                 onReadLater={() => handleReadLater(item)}
@@ -1080,6 +1087,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             <ContentViewer
               inline={true}
               item={openItem}
+              isSaved={savedUrls.has(openItem?.url)}
+              onSave={() => setSavedUrls(prev => { const n = new Set(prev); n.add(openItem.url); return n; })}
+              onUnsave={() => setSavedUrls(prev => { const n = new Set(prev); n.delete(openItem.url); return n; })}
               onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
               onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
               onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
@@ -1095,6 +1105,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         <Suspense fallback={null}>
           <ContentViewer
             item={openItem}
+            isSaved={savedUrls.has(openItem?.url)}
+            onSave={() => setSavedUrls(prev => { const n = new Set(prev); n.add(openItem.url); return n; })}
+            onUnsave={() => setSavedUrls(prev => { const n = new Set(prev); n.delete(openItem.url); return n; })}
             onClose={() => setExpandedView(false)}
             onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
             onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
@@ -1110,6 +1123,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         <Suspense fallback={null}>
           <ContentViewer
             item={openItem}
+            isSaved={savedUrls.has(openItem?.url)}
+            onSave={() => setSavedUrls(prev => { const n = new Set(prev); n.add(openItem.url); return n; })}
+            onUnsave={() => setSavedUrls(prev => { const n = new Set(prev); n.delete(openItem.url); return n; })}
             onClose={() => { setOpenItem(null); setOpenIdx(-1); window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }}
             onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
             onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}

@@ -9,7 +9,7 @@ import NotePanel from "./NotePanel";
 import HighlightsDrawer from "./HighlightsDrawer";
 import TagsInput from "./TagsInput";
 import {
-  saveItem, addHighlight, getHighlights, updateHighlightNote, updateHighlightTags, deleteHighlight,
+  saveItem, unsaveItem, addHighlight, getHighlights, updateHighlightNote, updateHighlightTags, deleteHighlight,
   getArticleTags, addArticleTag, deleteArticleTag, getAllTags,
   getReadingProgress, setReadingProgress,
   getAiUsageToday, incrementAiUsage,
@@ -20,7 +20,7 @@ import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/expo
 import { track } from "../lib/analytics";
 import { isProUser, PLANS } from "../lib/plan";
 
-export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false, currentIdx = -1, totalCount = 0, onExpand }) {
+export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false, currentIdx = -1, totalCount = 0, onExpand, isSaved = false, onSave, onUnsave }) {
   const { T } = useTheme();
   const { user } = useAuth();
   const { isMobile } = useBreakpoint();
@@ -29,7 +29,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const [content, setContent]     = useState(null);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState(null);
-  const [saved, setSaved]         = useState(false);
+  const [saved, setSaved]         = useState(isSaved);
+  useEffect(() => { setSaved(isSaved); }, [item?.url]);
 
   // AI summary
   const [summary, setSummary]         = useState(() => {
@@ -217,11 +218,18 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     setTags((prev) => prev.filter((t) => t !== tag));
   }
 
-  // ── Save ───────────────────────────────────────────────────
+  // ── Save toggle ────────────────────────────────────────────
   async function handleSave() {
     try { navigator.vibrate?.(8); } catch {}
-    await saveItem(user.id, { ...item, summary });
-    setSaved(true);
+    if (saved) {
+      await unsaveItem(user.id, item.url);
+      setSaved(false);
+      onUnsave?.();
+    } else {
+      await saveItem(user.id, { ...item, summary });
+      setSaved(true);
+      onSave?.();
+    }
   }
 
   function updatePref(key, val) {
@@ -485,12 +493,12 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             </div>
           )}
 
-          {/* Save */}
-          <button onClick={handleSave} disabled={saved} title={saved ? "Saved" : "Save"}
-            aria-label={saved ? "Saved" : "Save article"}
-            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: saved ? "default" : "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
-            onMouseEnter={e => { if (!saved) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
-            onMouseLeave={e => { if (!saved) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
+          {/* Save — tap to save, tap again to unsave */}
+          <button onClick={handleSave} title={saved ? "Remove from Saved" : "Save article"}
+            aria-label={saved ? "Remove from Saved" : "Save article"}
+            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = saved ? T.accentSurface : T.surface2; e.currentTarget.style.color = saved ? T.danger || "#ef4444" : T.textSecondary; }}
+            onMouseLeave={e => { e.currentTarget.style.background = saved ? T.accentSurface : "transparent"; e.currentTarget.style.color = saved ? T.accent : T.textTertiary; }}
           >
             <svg width="15" height="15" viewBox="0 0 16 16" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
@@ -696,7 +704,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             <div style={{
               maxWidth: "var(--reader-line-width)",
               margin: "0 auto",
-              padding: isMobile ? "4px 18px 140px" : "4px 32px 120px",
+              padding: isMobile ? "16px 20px 140px" : "16px 36px 120px",
               width: "100%",
             }}>
 
@@ -723,21 +731,22 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                 {content.bodyHtml && !readerPrefs.bionic ? (
                   <>
                     <style>{`
-                      .fb-article-body h1,.fb-article-body h2,.fb-article-body h3,.fb-article-body h4{margin:1.4em 0 .5em;font-weight:700;line-height:1.3}
-                      .fb-article-body h1{font-size:1.5em}.fb-article-body h2{font-size:1.25em}.fb-article-body h3{font-size:1.1em}.fb-article-body h4{font-size:1em}
-                      .fb-article-body p{margin:0 0 1em}.fb-article-body p:first-child{margin-top:0}
-                      .fb-article-body ul,.fb-article-body ol{margin:0 0 1em;padding-left:1.6em}
-                      .fb-article-body li{margin-bottom:.35em}
-                      .fb-article-body img{max-width:100%;height:auto;border-radius:8px;margin:1em 0;display:block}
-                      .fb-article-body a{color:var(--accent,#4f8ef7);text-decoration:underline;text-underline-offset:2px}
-                      .fb-article-body blockquote{border-left:3px solid currentColor;margin:1em 0;padding:.5em 1em;opacity:.75}
-                      .fb-article-body code{background:rgba(128,128,128,.15);border-radius:3px;padding:.1em .35em;font-family:ui-monospace,monospace;font-size:.88em}
-                      .fb-article-body pre{background:rgba(128,128,128,.12);border-radius:8px;padding:1em;overflow-x:auto;margin:0 0 1em}
+                      .fb-article-body h1,.fb-article-body h2,.fb-article-body h3,.fb-article-body h4{margin:1.8em 0 .65em;font-weight:700;line-height:1.25;letter-spacing:-.02em}
+                      .fb-article-body h1{font-size:1.55em}.fb-article-body h2{font-size:1.28em}.fb-article-body h3{font-size:1.1em}.fb-article-body h4{font-size:1em}
+                      .fb-article-body p{margin:0 0 1.3em}.fb-article-body p:first-child{margin-top:0}.fb-article-body p:last-child{margin-bottom:0}
+                      .fb-article-body ul,.fb-article-body ol{margin:0 0 1.3em;padding-left:1.7em}
+                      .fb-article-body li{margin-bottom:.5em;line-height:1.7}
+                      .fb-article-body img{max-width:100%;height:auto;border-radius:10px;margin:1.75em 0;display:block}
+                      .fb-article-body a{color:var(--accent,#4f8ef7);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+                      .fb-article-body blockquote{border-left:3px solid currentColor;margin:1.5em 0;padding:.7em 1.2em;opacity:.8;font-style:italic}
+                      .fb-article-body code{background:rgba(128,128,128,.13);border-radius:4px;padding:.15em .4em;font-family:ui-monospace,monospace;font-size:.87em}
+                      .fb-article-body pre{background:rgba(128,128,128,.1);border-radius:10px;padding:1.1em 1.2em;overflow-x:auto;margin:0 0 1.3em}
                       .fb-article-body pre code{background:none;padding:0}
-                      .fb-article-body figure{margin:1em 0}.fb-article-body figcaption{font-size:.85em;opacity:.6;margin-top:.3em}
-                      .fb-article-body table{border-collapse:collapse;width:100%;margin:0 0 1em;font-size:.9em}
-                      .fb-article-body th,.fb-article-body td{border:1px solid rgba(128,128,128,.25);padding:.4em .7em;text-align:left}
+                      .fb-article-body figure{margin:1.75em 0}.fb-article-body figcaption{font-size:.83em;opacity:.55;margin-top:.5em;text-align:center}
+                      .fb-article-body table{border-collapse:collapse;width:100%;margin:0 0 1.3em;font-size:.9em}
+                      .fb-article-body th,.fb-article-body td{border:1px solid rgba(128,128,128,.22);padding:.5em .8em;text-align:left}
                       .fb-article-body mark{border-radius:3px;padding:1px 0;cursor:pointer}
+                      .fb-article-body hr{border:none;border-top:1px solid rgba(128,128,128,.2);margin:2em 0}
                     `}</style>
                     <div
                       className="fb-article-body"

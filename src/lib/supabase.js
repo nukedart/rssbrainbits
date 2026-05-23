@@ -133,7 +133,7 @@ export async function getSaved(userId) {
 export async function saveItem(userId, item) {
   const { error } = await supabase.from("saved").upsert(
     { user_id: userId, url: item.url, title: item.title, source: item.source,
-      summary: item.summary || null, saved_at: new Date().toISOString() },
+      summary: item.summary || null, is_read_later: true, saved_at: new Date().toISOString() },
     { onConflict: "user_id,url" }
   );
   if (error) throw error;

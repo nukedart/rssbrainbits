@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.197] — 2026-05-23
+
+- [Fix] Saving broken: saveItem never set is_read_later=true so saved articles never appeared on Saved page — fixed across saveItem, ContentViewer, and InboxPage
+- [Fix] Save button in reader was one-way (disabled after saving) — now a proper toggle; save state persists when navigating between articles
+- [Fix] isSaved prop missing from list-view FeedItem — star icon never showed as filled in list mode
+- [Polish] Reader readability: larger default font (19→20px), wider column (660→690px), more paragraph spacing, better heading margins, cleaner blockquotes, more image breathing room
+
 ## [1.46.196] — 2026-05-23
 
 - [Nav] Mobile: Settings gear button added to top toolbar — previously inaccessible on mobile
