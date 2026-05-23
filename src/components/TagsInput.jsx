@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 
-export default function TagsInput({ tags, onAdd, onRemove, allTags = [] }) {
+export default function TagsInput({ tags, onAdd, onRemove, allTags = [], onTagClick }) {
   const { T } = useTheme();
   const [input, setInput] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -43,13 +43,17 @@ export default function TagsInput({ tags, onAdd, onRemove, allTags = [] }) {
           <span key={tag} style={{
             display: "inline-flex", alignItems: "center", gap: 4,
             padding: "3px 8px", borderRadius: 20,
-            background: T.accentSurface, color: T.accentText,
-            fontSize: 12, fontWeight: 600,
+            background: T.accentSurface, color: T.accent,
+            fontSize: 12, fontWeight: 500, border: `1px solid ${T.accent}33`,
           }}>
-            #{tag}
+            <span
+              onClick={onTagClick ? (e) => { e.stopPropagation(); onTagClick(tag); } : undefined}
+              style={{ cursor: onTagClick ? "pointer" : "default" }}
+            >#{tag}</span>
             <button onClick={(e) => { e.stopPropagation(); onRemove(tag); }} style={{
               background: "none", border: "none", cursor: "pointer",
-              color: T.accentText, fontSize: 14, padding: 0, lineHeight: 1, opacity: 0.6,
+              color: T.accent, fontSize: 13, padding: 0, lineHeight: 1, opacity: 0.5,
+              fontFamily: "inherit",
             }}>×</button>
           </span>
         ))}

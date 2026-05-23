@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.198] — 2026-05-23
+
+- [Feature] Cards & Tags first-class: CardsPage rebuilt with TagsInput autocomplete, left color stripe, hover-reveal delete, search within theme; bucket tiles get accent bar + colored count pill + source count
+- [Polish] TagsInput: accent-colored pill borders, clickable tags navigate to filtered view
+
 ## [1.46.197] — 2026-05-23
 
 - [Fix] Saving broken: saveItem never set is_read_later=true so saved articles never appeared on Saved page — fixed across saveItem, ContentViewer, and InboxPage
