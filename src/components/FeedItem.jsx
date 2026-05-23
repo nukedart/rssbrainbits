@@ -210,8 +210,8 @@ function ContentTypeIcon({ item }) {
 function ListThumb({ item, cardSize, T }) {
   const ph = sourcePlaceholder(item.source);
   const fav = faviconUrl(item.url);
-  const w = cardSize === "lg" ? 106 : 80;
-  const h = cardSize === "lg" ? 80 : 60;
+  const w = cardSize === "lg" ? 124 : cardSize === "md" ? 100 : 80;
+  const h = cardSize === "lg" ? 94 : cardSize === "md" ? 75 : 60;
   const [imgFailed, setImgFailed] = useState(false);
   const showImg = item.image && !imgFailed;
   const progress = getStoredProgress(item.url);
@@ -229,12 +229,12 @@ function ListThumb({ item, cardSize, T }) {
           onError={() => setImgFailed(true)}
         />
       ) : fav ? (
-        <img src={fav} alt="" width={cardSize === "lg" ? 31 : 24} height={cardSize === "lg" ? 31 : 24}
+        <img src={fav} alt="" width={cardSize === "lg" ? 36 : 28} height={cardSize === "lg" ? 36 : 28}
           style={{ borderRadius: 5, opacity: 0.9 }}
           onError={e => { e.target.style.display = "none"; }}
         />
       ) : (
-        <span style={{ fontSize: cardSize === "lg" ? 24 : 19, fontWeight: 800, color: ph.color, opacity: 0.9 }}>
+        <span style={{ fontSize: cardSize === "lg" ? 28 : 22, fontWeight: 800, color: ph.color, opacity: 0.9 }}>
           {ph.initial}
         </span>
       )}
@@ -258,7 +258,7 @@ function MobileThumb({ item, T }) {
   if (!src || failed) return null;  // no image = no thumb, text fills full width
   return (
     <div style={{
-      width: 92, height: 92, borderRadius: 11, flexShrink: 0,
+      width: 104, height: 104, borderRadius: 12, flexShrink: 0,
       overflow: "hidden", background: T.surface2,
     }}>
       <img src={src} alt="" loading="lazy"
@@ -284,8 +284,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           <div
             onClick={swiped ? close : onClick}
             style={{
-              display: "flex", alignItems: "flex-start", gap: 12,
-              padding: "9px 14px",
+              display: "flex", alignItems: "flex-start", gap: 14,
+              padding: "14px 16px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
               opacity: isRead ? 0.5 : 1, transition: "opacity .15s",
@@ -314,7 +314,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {/* Title */}
               <div style={{
                 fontFamily: "var(--reader-font-family)",
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: 500,
                 color: isRead ? T.textTertiary : T.text,
                 lineHeight: 1.35,
@@ -343,7 +343,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   }
 
   // ── Desktop layout ─────────────────────────────────────────
-  const vPad = cardSize === "sm" ? "6px 14px" : cardSize === "lg" ? "13px 18px" : "8px 14px";
+  const vPad = cardSize === "sm" ? "9px 14px" : cardSize === "lg" ? "18px 20px" : "13px 18px";
   return (
     <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={false}>
       {({ swiped, close } = {}) => (
@@ -373,7 +373,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontFamily: cardSize !== "sm" ? "var(--reader-font-family)" : "inherit",
-              fontSize: cardSize === "lg" ? 19 : cardSize === "sm" ? 14 : 17,
+              fontSize: cardSize === "lg" ? 22 : cardSize === "sm" ? 15 : 19,
               fontWeight: 500,
               color: isRead ? T.textTertiary : T.text,
               lineHeight: 1.35,

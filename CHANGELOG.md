@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.195] — 2026-05-23
+
+- [Polish] BottomNav icons: strokeWidth reduced (inactive 1.7→1.2, active 2.2→1.7) — lighter, less visually heavy
+- [UX] List items larger on all sizes: mobile rows taller (9px→14px padding, title 18→20px, thumb 92→104px); desktop lg/md/sm all get more vertical space and bigger thumbnails; default cardSize lg
+
 ## [1.46.194] — 2026-05-23
 
 - [Nav] Sidebar: split nav into two grouped clusters (Inbox/Today vs Saved/Review/Cards) with a hairline divider; added "Smart" and "Feeds" section labels to the feed tree — improves visual hierarchy and reduces clutter

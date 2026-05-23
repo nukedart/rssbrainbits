@@ -100,7 +100,7 @@ export default function BottomNav({ active, onNavigate, onOpenFeeds, unreadCount
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <Icon size={24} strokeWidth={isActive ? 2.2 : 1.7} />
+              <Icon size={24} strokeWidth={isActive ? 1.7 : 1.2} />
               <span style={{ fontSize: 11, fontWeight: isActive ? 600 : 400, letterSpacing: ".01em" }}>Feeds</span>
             </button>
           );
@@ -131,7 +131,7 @@ export default function BottomNav({ active, onNavigate, onOpenFeeds, unreadCount
             onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >
             <span style={{ position: "relative", display: "flex" }}>
-              <Icon size={24} strokeWidth={isActive ? 2.2 : 1.7} />
+              <Icon size={24} strokeWidth={isActive ? 1.7 : 1.2} />
               {id === "inbox" && unreadCount > 0 && (
                 <span style={{
                   position: "absolute", top: -2, right: -4,
