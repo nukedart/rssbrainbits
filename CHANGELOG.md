@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.199] — 2026-05-24
+
+- [Fix] Highlight color picker in reader now uses HIGHLIGHT_COLORS from SelectionToolbar — fixes "pink" ID mismatch with stored "purple", eliminating silent data inconsistency
+- [Polish] Save button hover in reader uses T.danger from token system; removed stale "#ef4444" hardcoded fallback
+- [Perf] Reader hero image gets loading="eager" decoding="async" for non-blocking decode; podcast/video thumbnail gets loading="lazy" decoding="async"
+
 ## [1.46.198] — 2026-05-23
 
 - [Feature] Cards & Tags first-class: CardsPage rebuilt with TagsInput autocomplete, left color stripe, hover-reveal delete, search within theme; bucket tiles get accent bar + colored count pill + source count

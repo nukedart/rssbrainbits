@@ -497,7 +497,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           <button onClick={handleSave} title={saved ? "Remove from Saved" : "Save article"}
             aria-label={saved ? "Remove from Saved" : "Save article"}
             style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = saved ? T.accentSurface : T.surface2; e.currentTarget.style.color = saved ? T.danger || "#ef4444" : T.textSecondary; }}
+            onMouseEnter={e => { e.currentTarget.style.background = saved ? T.accentSurface : T.surface2; e.currentTarget.style.color = saved ? T.danger : T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background = saved ? T.accentSurface : "transparent"; e.currentTarget.style.color = saved ? T.accent : T.textTertiary; }}
           >
             <svg width="15" height="15" viewBox="0 0 16 16" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -645,6 +645,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               {content.image ? (
                 <img
                   src={content.image} alt=""
+                  loading="eager" decoding="async"
                   style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%" }}
                   onError={e => { e.target.style.display = "none"; }}
                 />
@@ -1282,10 +1283,10 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighl
                   <span style={{ fontSize: 11, color: T.textSecondary, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     Highlight: "{pendingHighlight.text.slice(0, 40)}{pendingHighlight.text.length > 40 ? "…" : ""}"
                   </span>
-                  {["yellow", "green", "blue", "pink"].map(color => (
-                    <button key={color} onClick={() => commitHighlight(color)}
+                  {HIGHLIGHT_COLORS.map(({ id, bg }) => (
+                    <button key={id} onClick={() => commitHighlight(id)}
                       style={{ width: 18, height: 18, borderRadius: "50%", border: "2px solid transparent", cursor: "pointer",
-                        background: color === "yellow" ? "#FFD700" : color === "green" ? "#86EFAC" : color === "blue" ? "#93C5FD" : "#F9A8D4",
+                        background: bg,
                         transition: "border-color .1s",
                       }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = T.text}
@@ -1450,7 +1451,7 @@ function PodcastEpisodeView({ item, summary, summarizing, onSummarize, T }) {
         marginBottom: 24, marginTop: 8,
       }}>
         {item?.image
-          ? <img src={item.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ? <img src={item.image} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           : (
             <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${T.accent}44, ${T.accent}22)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke={T.accent} strokeWidth="1.5" opacity="0.6">
