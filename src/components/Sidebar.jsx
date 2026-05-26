@@ -69,7 +69,16 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
       <span style={{ color: isActive ? T.accent : T.textTertiary, display:"flex", flexShrink:0, position:"relative" }}>
         <Icon />
         {badge > 0 && collapsed && (
-          <span style={{ position:"absolute", top:-3, right:-4, width:5, height:5, borderRadius:"50%", background: bc }} />
+          <span style={{
+            position:"absolute", top:-5, right:-6,
+            minWidth:15, height:15, borderRadius:8,
+            background: bc, color: T.accentText,
+            fontSize:9, fontWeight:700, lineHeight:1,
+            display:"flex", alignItems:"center", justifyContent:"center",
+            padding:"0 3px", boxSizing:"border-box",
+          }}>
+            {badge > 99 ? "99+" : badge}
+          </span>
         )}
       </span>
       {!collapsed && (
@@ -78,7 +87,16 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
             {label}
           </span>
           {badge > 0 && (
-            <span style={{ width:6, height:6, borderRadius:"50%", background: badgeColor ? bc : T.accent, flexShrink:0 }} />
+            <span style={{
+              fontSize:10, fontWeight:700, lineHeight:1,
+              minWidth:20, height:17, borderRadius:9,
+              background: badgeColor ? bc + "22" : T.accentSurface,
+              color: badgeColor ? bc : T.accent,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              padding:"0 5px", boxSizing:"border-box", flexShrink:0,
+            }}>
+              {badge > 99 ? "99+" : badge}
+            </span>
           )}
         </>
       )}

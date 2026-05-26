@@ -40,7 +40,16 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
   const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "list"));
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "lg");
-  const [readUrls, setReadUrls]         = useState(new Set());
+  const [readUrls, setReadUrls]         = useState(() => {
+    // Seed synchronously from localStorage so the unread filter works on first render,
+    // preventing already-read items from flashing as unread while Supabase loads.
+    try {
+      const uid = propUser?.id;
+      if (!uid) return new Set();
+      const cached = localStorage.getItem(`fb-readurls-${uid}`);
+      return cached ? new Set(JSON.parse(cached)) : new Set();
+    } catch { return new Set(); }
+  });
   const readUrlsRef = useRef(readUrls);
   useEffect(() => { readUrlsRef.current = readUrls; }, [readUrls]);
   const [savedUrls, setSavedUrls]       = useState(new Set());
@@ -85,8 +94,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   }
   const listRef = useRef(null);
   const searchBarRef = useRef(null); // for f-key focus
-  const markReadQueueRef = useRef(new Set());
-  const markReadFlushRef = useRef(null);
+  const markReadFnRef = useRef(null);
+  const autoMarkReadRef = useRef(autoMarkRead);
+  const lastScrollRef = useRef(0); // timestamp of last real scroll — gates auto-mark-read
 
   // BottomNav + button: open AddModal when App.jsx signals forceShowAdd
   useEffect(() => {
@@ -122,13 +132,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     getFeeds(user.id).then(_setLocalFeeds).catch(console.error).finally(() => setLoadingFeeds(false));
     // Open all folders by default when component mounts
     if (folders.length > 0) setOpenFolders(new Set(folders.map(f => f.id)));
-    // Load read URLs — seed from localStorage cache first for instant unread counts,
-    // then merge with Supabase truth so the badge is never wrong after reload
+    // Merge Supabase read URLs (authoritative) with localStorage cache
     const cacheKey = `fb-readurls-${user.id}`;
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) setReadUrls(new Set(JSON.parse(cached)));
-    } catch {}
     getReadUrls(user.id).then(urls => {
       setReadUrls(urls);
       try { localStorage.setItem(cacheKey, JSON.stringify([...urls])); } catch {}
@@ -271,6 +276,19 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       );
     }
     return items.sort((a, b) => (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0));
+  })();
+
+  // ── Feed → folder color map (for per-feed colored dots in list rows) ────────
+  const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
+  const feedColorMap = (() => {
+    const map = {};
+    feeds.forEach(feed => {
+      if (feed.folder_id) {
+        const folder = folders.find(f => f.id === feed.folder_id);
+        if (folder?.color) map[feed.id] = FCOLS[folder.color] || "#8A9099";
+      }
+    });
+    return map;
   })();
 
   // Reset displayed count when the filtered set changes
@@ -465,6 +483,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     // Persist in background — don't block the UI
     markRead(user.id, url).catch(console.error);
   }
+  // Keep ref current every render so the IntersectionObserver callback never closes over a stale copy
+  markReadFnRef.current = handleMarkRead;
 
   function handleMarkUnread(url) {
     setReadUrls((prev) => {
@@ -473,6 +493,21 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       return next;
     });
     markUnread(user.id, url).catch(console.error);
+  }
+
+  function markAboveRead() {
+    if (!listRef.current) return;
+    const containerTop = listRef.current.getBoundingClientRect().top;
+    const urlsToMark = [];
+    listRef.current.querySelectorAll("[data-url]").forEach(el => {
+      if (el.getBoundingClientRect().bottom < containerTop) {
+        const u = el.dataset.url;
+        if (u && !readUrlsRef.current.has(u)) urlsToMark.push(u);
+      }
+    });
+    if (!urlsToMark.length) return;
+    urlsToMark.forEach(u => handleMarkRead(u));
+    showToast(`✓ ${urlsToMark.length} marked read`);
   }
 
   async function handleMarkAllRead() {
@@ -593,35 +628,48 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   }, [feedErrors]);
 
   // ── Auto-mark-read on scroll ─────────────────────────────
-  // Marks an item as read when it passes the TOP of the viewport — same
-  // behaviour as Reeder, Readwise Reader, and most dedicated RSS readers.
+  // Mark an item as read once its bottom edge has scrolled above the
+  // top of the list container (i.e. the user has fully scrolled past it).
+  //
+  // Design: one stable IntersectionObserver for the component's lifetime.
+  // All mutable values (handleMarkRead, autoMarkRead) are accessed via refs
+  // so the callback never closes over stale data.
+  useEffect(() => { autoMarkReadRef.current = autoMarkRead; }, [autoMarkRead]);
+
   const observerRef = useRef(null);
+
+  // Create the observer once after the list mounts. root=listRef.current is
+  // stable — React reuses the same DOM node for the lifetime of InboxPage.
   useEffect(() => {
-    if (!autoMarkRead) {
-      observerRef.current?.disconnect();
-      return;
-    }
-    observerRef.current = new IntersectionObserver((entries) => {
-      let queued = false;
+    const list = listRef.current;
+    if (!list) return;
+    const obs = new IntersectionObserver(entries => {
+      if (!autoMarkReadRef.current) return;
+      // Guard: only fire during/shortly after a real scroll event.
+      // Layout shifts (items disappearing when marked read) also trigger
+      // IntersectionObserver, which causes a cascade of all items being
+      // marked read. Scroll events don't fire during layout shifts.
+      if (Date.now() - lastScrollRef.current > 1200) return;
       entries.forEach(entry => {
-        if (!entry.isIntersecting && entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0)) {
+        // Only fire when the item's bottom has scrolled above the container top
+        if (!entry.isIntersecting && entry.boundingClientRect.bottom < (entry.rootBounds?.top ?? 0)) {
           const url = entry.target.dataset.url;
-          if (url && !readUrlsRef.current.has(url)) {
-            markReadQueueRef.current.add(url);
-            queued = true;
-          }
+          if (url && !readUrlsRef.current.has(url)) markReadFnRef.current?.(url);
         }
       });
-      if (!queued) return;
-      clearTimeout(markReadFlushRef.current);
-      markReadFlushRef.current = setTimeout(() => {
-        const urls = [...markReadQueueRef.current];
-        markReadQueueRef.current = new Set();
-        urls.forEach(url => handleMarkRead(url));
-      }, 200);
-    }, { root: listRef.current, threshold: 0, rootMargin: "-20px 0px 0px 0px" });
-    return () => { observerRef.current?.disconnect(); clearTimeout(markReadFlushRef.current); };
-  }, [autoMarkRead]);
+    }, { root: list, threshold: 0 });
+    observerRef.current = obs;
+    return () => obs.disconnect();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Register items with the observer whenever the list content changes.
+  // observe() on an already-observed element is a no-op, so this is safe.
+  useEffect(() => {
+    const obs = observerRef.current;
+    const list = listRef.current;
+    if (!obs || !list) return;
+    list.querySelectorAll("[data-url]").forEach(el => obs.observe(el));
+  }, [baseItems, displayedCount, autoMarkRead]);
 
   // ── Pull-to-refresh (mobile) ─────────────────────────────
   function handlePTRStart(e) {
@@ -669,9 +717,13 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 {activeFeedName}
               </div>
               {unreadCount > 0 && (
-                <span style={{ fontSize: isMobile ? 13 : 11, fontWeight: 600, background: T.accent, color: T.accentText, padding: isMobile ? "3px 10px" : "1px 7px", borderRadius: 20, flexShrink: 0, letterSpacing: "-.01em" }}>
+                <button
+                  onClick={markAboveRead}
+                  title="Tap to mark scrolled-past items as read"
+                  style={{ fontSize: isMobile ? 13 : 11, fontWeight: 600, background: T.accent, color: T.accentText, padding: isMobile ? "3px 10px" : "1px 7px", borderRadius: 20, flexShrink: 0, letterSpacing: "-.01em", border: "none", cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent" }}
+                >
                   {unreadCount}
-                </span>
+                </button>
               )}
               {/* Red ! error badge with popover */}
               {Object.keys(feedErrors).length > 0 && (
@@ -954,10 +1006,28 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             )}
           </div>}
 
-          <Button size="sm" onClick={() => setShowAdd(true)} style={{ height: isMobile ? 34 : 30, paddingLeft: isMobile ? 14 : 10, paddingRight: isMobile ? 14 : 10, flexShrink: 0 }}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ display:"block" }}><path d="M6 1v10M1 6h10"/></svg>
-            {!isMobile && <span style={{ marginLeft: 4, fontSize: 12 }}>Add</span>}
-          </Button>
+          <button
+            onClick={() => setShowAdd(true)}
+            title="Add feed or article"
+            aria-label="Add feed or article"
+            style={{
+              display:"flex", alignItems:"center", justifyContent:"center", gap: 5,
+              height: isMobile ? 34 : 30, padding: isMobile ? "0 14px" : "0 12px",
+              background: T.accent, color: T.accentText,
+              border:"none", borderRadius:8, cursor:"pointer",
+              fontFamily:"inherit", flexShrink:0,
+              fontSize:12, fontWeight:600, letterSpacing:"-.01em",
+              transition:"opacity .12s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = ".85"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <line x1="5" y1="1" x2="5" y2="9"/>
+              <line x1="1" y1="5" x2="9" y2="5"/>
+            </svg>
+            {!isMobile && "Add"}
+          </button>
         </div>
 
         {/* Article list / grid */}
@@ -967,6 +1037,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           onTouchMove={isMobile ? handlePTRMove : undefined}
           onTouchEnd={isMobile ? handlePTREnd : undefined}
           onScroll={e => {
+            lastScrollRef.current = Date.now();
             const el = e.currentTarget;
             if (isMobile) {
               const top = el.scrollTop;
@@ -1037,6 +1108,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 <FeedItem item={item} viewMode="card" cardSize={isMobile ? "sm" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
+                  feedColor={feedColorMap[item.feedId]}
                   onClick={() => { openByIdx(i); }}
                   onSave={() => handleSaveItem(item)}
                   isSaved={savedUrls.has(item.url)}
@@ -1048,11 +1120,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           ) : (
             baseItems.slice(0, displayedCount).map((item, i) => (
-              <div key={item.url + i} data-url={item.url} ref={el => { if (el && autoMarkRead && observerRef.current) observerRef.current.observe(el); }} style={{ borderBottom: `1px solid ${T.border}` }}>
+              <div key={item.url + i} data-url={item.url} style={{ borderBottom: `1px solid ${T.border}` }}>
               <FeedItem item={item} viewMode="list" cardSize={cardSize}
                 isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
                 isRead={readUrls.has(item.url)}
                 isSaved={savedUrls.has(item.url)}
+                feedColor={feedColorMap[item.feedId]}
                 onClick={() => { setCursorIdx(i); openByIdx(i); }}
                 onSave={() => handleSaveItem(item)}
                 onReadLater={() => handleReadLater(item)}

@@ -284,7 +284,7 @@ function MobileThumb({ item, T }) {
 }
 
 // ── List view item (Things 3 task-row pattern) ───────────────
-function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md" }) {
+function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -302,15 +302,19 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               padding: "10px 16px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
+              opacity: isRead ? 0.48 : 1,
+              transition: "opacity .3s",
             }}
           >
             {/* Text LEFT */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Source + unread dot + date */}
+              {/* Source + color dot + date */}
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-                {!isRead && (
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent, flexShrink: 0 }} />
-                )}
+                <span style={{
+                  width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
+                  background: feedColor || T.accent,
+                  opacity: isRead ? 0.5 : 1,
+                }} />
                 <span style={{
                   fontSize: 12, fontWeight: 400, color: T.textSecondary,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
@@ -328,13 +332,14 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               <div style={{
                 fontFamily: "var(--reader-font-family)",
                 fontSize: 17,
-                fontWeight: isRead ? 400 : 500,
-                color: isRead ? T.textTertiary : T.text,
-                lineHeight: 1.35,
+                fontWeight: isRead ? 400 : 600,
+                color: T.text,
+                lineHeight: 1.28,
                 overflow: "hidden", display: "-webkit-box",
                 WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                letterSpacing: "-.01em",
+                letterSpacing: "-.015em",
                 marginBottom: 6,
+                WebkitFontSmoothing: "antialiased",
               }}>
                 {item.title}
               </div>
@@ -369,7 +374,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             borderRadius: 12,
             cursor: "pointer",
             background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
-            transition: "background .15s",
+            opacity: isRead ? 0.48 : 1,
+            transition: "background .15s, opacity .3s",
           }}
         >
           {/* Thumbnail (md/lg) or type icon (sm) */}
@@ -383,24 +389,28 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             <div style={{
               fontFamily: cardSize !== "sm" ? "var(--reader-font-family)" : "inherit",
               fontSize: cardSize === "lg" ? 22 : cardSize === "sm" ? 15 : 19,
-              fontWeight: 500,
-              color: isRead ? T.textTertiary : T.text,
-              lineHeight: 1.35,
+              fontWeight: isRead ? 400 : 600,
+              color: T.text,
+              lineHeight: 1.28,
               overflow: "hidden", textOverflow: "ellipsis",
               whiteSpace: cardSize !== "sm" ? "normal" : "nowrap",
               display: "-webkit-box", WebkitLineClamp: cardSize === "lg" ? 3 : 2, WebkitBoxOrient: "vertical",
-              letterSpacing: "-.01em",
+              letterSpacing: "-.015em",
               marginBottom: 4,
+              WebkitFontSmoothing: "antialiased",
             }}>
               {item.title}
             </div>
             {cardSize === "lg" && item.description && (
-              <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", marginBottom: 4 }}>
+              <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", marginBottom: 4 }}>
                 {item.description}
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 1 }}>
-              {favicon && (
+              {feedColor && (
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: feedColor, flexShrink: 0 }} />
+              )}
+              {favicon && !feedColor && (
                 <img src={favicon} alt="" width={12} height={12}
                   style={{ borderRadius: 2, opacity: 0.75, flexShrink: 0 }}
                   onError={e => { e.target.style.display = "none"; }} />
@@ -412,9 +422,16 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             </div>
           </div>
 
-          {/* Unread dot — absolute so it doesn't affect layout */}
-          {!isRead && !hovered && (
-            <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", width: 6, height: 6, borderRadius: "50%", background: T.accent, pointerEvents: "none" }} />
+          {/* Feed-color dot or unread accent dot */}
+          {!hovered && (
+            <span style={{
+              position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
+              width: 6, height: 6, borderRadius: "50%",
+              background: feedColor || T.accent,
+              opacity: isRead ? 0 : 1,
+              transition: "opacity .3s",
+              pointerEvents: "none",
+            }} />
           )}
 
           {/* Action buttons — absolute overlay, right-aligned, never shifts layout */}
@@ -436,7 +453,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Card view item ────────────────────────────────────────────
-function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md" }) {
+function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -459,7 +476,8 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             background: isSelected ? T.accentSurface : hovered && !isMobile ? T.surface2 : T.card,
             borderRadius: 14, overflow: "hidden", cursor: "pointer",
             border: `1px solid ${isSelected ? T.accent + "55" : "transparent"}`,
-            transition: "background .15s",
+            opacity: isRead ? 0.48 : 1,
+            transition: "background .15s, opacity .3s",
             display: "flex", flexDirection: "column",
             height: "100%",
           }}
@@ -501,9 +519,10 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
             {/* Source + date */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-              {favicon && (
-                <img src={favicon} alt="" width={12} height={12} style={{ borderRadius: 2, opacity: 0.7 }} onError={e => { e.target.style.display = "none"; }} />
-              )}
+              {feedColor
+                ? <span style={{ width: 6, height: 6, borderRadius: "50%", background: feedColor, flexShrink: 0 }} />
+                : favicon && <img src={favicon} alt="" width={12} height={12} style={{ borderRadius: 2, opacity: 0.7 }} onError={e => { e.target.style.display = "none"; }} />
+              }
               <span style={{ fontSize: 11, fontWeight: 500, color: T.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {item.source}
               </span>
@@ -570,16 +589,17 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Public export ─────────────────────────────────────────────
-export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false }) {
+export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false, feedColor }) {
   if (viewMode === "card") {
-    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} />;
+    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} />;
   }
-  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} />;
+  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} />;
 }, (prev, next) =>
   prev.item === next.item &&
   prev.isSelected === next.isSelected &&
   prev.isRead === next.isRead &&
   prev.isSaved === next.isSaved &&
   prev.viewMode === next.viewMode &&
-  prev.cardSize === next.cardSize
+  prev.cardSize === next.cardSize &&
+  prev.feedColor === next.feedColor
 );

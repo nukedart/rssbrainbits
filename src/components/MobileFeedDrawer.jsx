@@ -117,19 +117,11 @@ export default function MobileFeedDrawer({
   onAddSource,
 }) {
   const { T } = useTheme();
-  const [expandedFolders, setExpandedFolders] = useState(() => new Set(folders.map(f => f.id)));
+  const [expandedFolders, setExpandedFolders] = useState(() => new Set());
   const sheetRef = useRef(null);
   // Drag-to-dismiss state
   const dragRef = useRef({ startY: 0, dragging: false });
   const [dragY, setDragY] = useState(0);
-
-  useEffect(() => {
-    setExpandedFolders(prev => {
-      const next = new Set(prev);
-      folders.forEach(f => next.add(f.id));
-      return next;
-    });
-  }, [folders]);
 
   function toggleFolder(id) {
     setExpandedFolders(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -232,8 +224,9 @@ export default function MobileFeedDrawer({
         {/* Quick-nav: pages not in the bottom pill */}
         <div style={{ display:"flex", gap:8, padding:"0 16px 12px", flexShrink:0 }}>
           {[
-            { id:"today",     label:"Today"  },
-            { id:"readlater", label:"Saved"  },
+            { id:"today",     label:"Today"    },
+            { id:"readlater", label:"Saved"    },
+            { id:"settings",  label:"Settings" },
           ].map(({ id, label }) => {
             const isActive = active === id;
             return (

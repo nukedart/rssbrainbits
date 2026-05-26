@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-05-26 | v1.46.201 | Feature/UX/Fix | Podcast search tab in AddModal (Apple Podcasts); mobile folders collapsed by default; Settings chip added to mobile drawer | `AddModal.jsx`, `MobileFeedDrawer.jsx` | — |
 | 2026-05-24 | v1.46.199 | Fix/Polish/Perf | Highlight picker: HIGHLIGHT_COLORS fixes pink/purple mismatch; save hover uses T.danger; hero image decoding="async" | `ContentViewer.jsx:1285,500,646,1453` | — |
 | 2026-05-23 | v1.46.198 | Feature | Cards first-class: TagsInput with autocomplete, color stripe, hover-delete, search, accent tiles; TagsInput accent pill borders + click-to-filter | `CardsPage.jsx`, `TagsInput.jsx` | — |
 | 2026-05-23 | v1.46.197 | Fix | Saving broken: saveItem lacked is_read_later=true; reader save button now toggles; isSaved wired to list view; reader font 20px, wider column, better CSS | `supabase.js`, `ContentViewer.jsx`, `InboxPage.jsx`, `readerPrefs.js` | — |

@@ -46,6 +46,9 @@ const DISCOVER_FEEDS = {
 export default function AddModal({ onAdd, onClose, onSaveForLater }) {
   const { T } = useTheme();
 
+  const [activeTab, setActiveTab]   = useState("url");
+
+  // URL tab state
   const [url, setUrl]               = useState("");
   const [feedName, setFeedName]     = useState("");
   const [detected, setDetected]     = useState(null);
@@ -55,6 +58,43 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
   const [error, setError]             = useState("");
   const [showDiscover, setShowDiscover] = useState(false);
   const discoverTimerRef = useRef(null);
+
+  // Podcast search tab state
+  const [podcastQuery, setPodcastQuery]     = useState("");
+  const [podcastResults, setPodcastResults] = useState([]);
+  const [podcastSearching, setPodcastSearching] = useState(false);
+  const [podcastError, setPodcastError]     = useState("");
+  const [subscribingId, setSubscribingId]   = useState(null);
+  const podcastTimerRef = useRef(null);
+
+  function handlePodcastSearch(val) {
+    setPodcastQuery(val);
+    setPodcastError("");
+    clearTimeout(podcastTimerRef.current);
+    if (!val.trim()) { setPodcastResults([]); return; }
+    setPodcastSearching(true);
+    podcastTimerRef.current = setTimeout(async () => {
+      try {
+        const results = await searchApplePodcasts(val.trim());
+        setPodcastResults(results || []);
+      } catch {
+        setPodcastError("Search failed. Please try again.");
+      } finally {
+        setPodcastSearching(false);
+      }
+    }, 400);
+  }
+
+  async function subscribePodcast(podcast) {
+    setSubscribingId(podcast.feedUrl);
+    try {
+      await onAdd({ url: podcast.feedUrl, type: "rss", name: podcast.title });
+      onClose();
+    } catch (err) {
+      setPodcastError(err.message || "Failed to subscribe.");
+      setSubscribingId(null);
+    }
+  }
 
   function handleUrlChange(val) {
     setUrl(val); setError(""); setDiscovered(null);
@@ -187,10 +227,123 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
           >×</button>
         </div>
 
+        {/* Tabs */}
+        <div style={{ display: "flex", borderBottom: `1px solid ${T.border}` }}>
+          {[
+            { id: "url",      label: "Add URL"  },
+            { id: "podcasts", label: "Podcasts" },
+          ].map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              style={{
+                flex: 1, padding: "11px 0",
+                background: "none", border: "none",
+                fontSize: 13, fontWeight: activeTab === id ? 700 : 500,
+                color: activeTab === id ? T.accent : T.textSecondary,
+                cursor: "pointer", fontFamily: "inherit",
+                borderBottom: `2px solid ${activeTab === id ? T.accent : "transparent"}`,
+                marginBottom: -1,
+                WebkitTapHighlightColor: "transparent",
+                transition: "color .12s",
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Body */}
         <div style={{ padding: "20px 18px 22px" }}>
 
+          {/* Podcast search pane */}
+          {activeTab === "podcasts" && (
+            <div>
+              <input
+                value={podcastQuery}
+                onChange={e => handlePodcastSearch(e.target.value)}
+                placeholder="Search Apple Podcasts…"
+                autoFocus
+                style={{
+                  width: "100%", boxSizing: "border-box",
+                  background: T.surface, border: `1.5px solid ${T.border}`,
+                  borderRadius: 12, padding: "13px 16px",
+                  fontSize: 15, color: T.text,
+                  fontFamily: "inherit", outline: "none",
+                }}
+                onFocus={e => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = `0 0 0 3px ${T.accent}22`; }}
+                onBlur={e => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
+              />
+
+              {podcastSearching && (
+                <div style={{ display: "flex", justifyContent: "center", padding: "20px 0" }}>
+                  <Spinner size={20} />
+                </div>
+              )}
+
+              {podcastError && (
+                <div style={{ fontSize: 13, color: T.danger, padding: "9px 13px", background: `${T.danger}18`, borderRadius: 10, marginTop: 12 }}>
+                  {podcastError}
+                </div>
+              )}
+
+              {!podcastSearching && podcastResults.length > 0 && (
+                <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 2, maxHeight: 360, overflowY: "auto" }}>
+                  {podcastResults.map(p => (
+                    <div
+                      key={p.feedUrl}
+                      style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px", borderRadius: 12, background: T.surface }}
+                    >
+                      {p.artworkUrl ? (
+                        <img src={p.artworkUrl} alt="" width={44} height={44}
+                          style={{ borderRadius: 8, flexShrink: 0, objectFit: "cover" }}
+                          onError={e => { e.target.style.display = "none"; }}
+                        />
+                      ) : (
+                        <div style={{ width: 44, height: 44, borderRadius: 8, background: T.surface2, flexShrink: 0 }} />
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
+                        <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.artistName}</div>
+                        {p.trackCount > 0 && <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 1 }}>{p.trackCount} episodes</div>}
+                      </div>
+                      <button
+                        onClick={() => subscribePodcast(p)}
+                        disabled={!!subscribingId}
+                        style={{
+                          flexShrink: 0, padding: "7px 14px", borderRadius: 20,
+                          background: subscribingId === p.feedUrl ? T.surface2 : T.accentSurface,
+                          border: `1px solid ${T.accent}44`,
+                          color: T.accent, fontSize: 12, fontWeight: 700,
+                          cursor: subscribingId ? "default" : "pointer",
+                          fontFamily: "inherit",
+                          WebkitTapHighlightColor: "transparent",
+                        }}
+                      >
+                        {subscribingId === p.feedUrl ? "Adding…" : "+ Follow"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!podcastSearching && podcastQuery && podcastResults.length === 0 && !podcastError && (
+                <div style={{ textAlign: "center", padding: "24px 0", color: T.textTertiary, fontSize: 13 }}>
+                  No podcasts found for "{podcastQuery}"
+                </div>
+              )}
+
+              {!podcastQuery && (
+                <div style={{ textAlign: "center", padding: "24px 0", color: T.textTertiary, fontSize: 13 }}>
+                  Search for any podcast by name or topic
+                </div>
+              )}
+            </div>
+          )}
+
           {/* URL input — larger and more spacious */}
+          {activeTab === "url" && <>
+
           <div style={{ position: "relative" }}>
             <input
               value={url}
@@ -319,6 +472,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
               </div>
             )}
           </div>
+          </>}
         </div>
       </div>
     </div>

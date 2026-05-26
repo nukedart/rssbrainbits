@@ -3,6 +3,18 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.201] — 2026-05-26
+
+- [Feature] Add source modal gains a Podcasts tab — search Apple Podcasts by name, see artwork/artist/episode count, subscribe in one tap
+- [UX] Mobile feed drawer: folders now collapsed by default for a cleaner initial state; tap the chevron to expand
+- [Fix] Settings accessible on mobile — added Settings chip to the mobile feed drawer quick-nav (was missing from BottomNav)
+- [Fix] Auto-mark-read cascade: gated IntersectionObserver on real scroll events — layout shifts from items disappearing no longer trigger a chain of spurious mark-reads
+- [Fix] Read items reappearing on login: readUrls state now seeds from localStorage synchronously on first render, so the unread filter is accurate before Supabase responds
+- [Polish] Read items fade to 48% opacity with 300ms transition instead of abrupt color change — Reeder-style gentle dimming
+- [Polish] Per-feed color dot in list rows — shows folder color as a 6px circle next to the source name, giving instant feed identity at a glance
+- [Polish] Typography tightened: title lineHeight 1.28 (from 1.35), fontWeight 600/400 (unread/read), antialiasing enabled — measurably crisper feel
+- [Feature] Unread count badge in toolbar is now tappable — marks all items scrolled above the current position as read in one tap
+
 ## [1.46.200] — 2026-05-26
 
 - [Feature] Review page rebuilt Anki-style: passage shown first, tap to reveal annotation, then binary Know / Don't Know rating — forces active recall instead of passive reading
