@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.202] — 2026-05-26
+
+- [Feature] Review page rebuilt: slide-card transitions (exit left/right), source visible before reveal, 6px progress bar, full-width "Show Answer" button, renamed ratings to "Again" / "Got it", keyboard shortcuts (Space=reveal, ←/J=Again, →/K=Got it)
+- [Feature] Cards page rebuilt: theme tiles show large 44px count number instead of accent bar + avatar; CardItem passage tinted with highlight color + left accent border; review chip moved to card footer row
+
 ## [1.46.201] — 2026-05-26
 
 - [Feature] Add source modal gains a Podcasts tab — search Apple Podcasts by name, see artwork/artist/episode count, subscribe in one tap

@@ -451,44 +451,38 @@ export default function CardsPage() {
             <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? 160 : 200}px, 1fr))`, gap: isMobile ? 10 : 12 }}>
               {buckets.map(([theme, cards]) => {
                 const av = themeAvatar(theme);
-                const preview = cards[0]?.passage?.slice(0, 80) + (cards[0]?.passage?.length > 80 ? "…" : "");
+                const preview = cards[0]?.passage?.slice(0, 90) + (cards[0]?.passage?.length > 90 ? "…" : "");
                 const sources = new Set(cards.map(c => c.article_url).filter(Boolean)).size;
+                const dueCount = cards.filter(c => dueSet.has(c.id)).length;
                 return (
                   <button key={theme} onClick={() => setSelectedTheme(theme)} style={{
                     background: T.card, border: `1px solid ${T.border}`,
-                    borderRadius: 14, padding: 0, overflow: "hidden",
+                    borderRadius: 16, padding: 0, overflow: "hidden",
                     cursor: "pointer", textAlign: "left", fontFamily: "inherit",
                     transition: "border-color .15s, box-shadow .15s", display: "flex", flexDirection: "column",
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = av.color; e.currentTarget.style.boxShadow = `0 4px 16px ${av.color}22`; }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = av.color; e.currentTarget.style.boxShadow = `0 4px 20px ${av.color}1a`; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
                   >
-                    {/* Accent bar */}
-                    <div style={{ height: 3, background: av.color, width: "100%", flexShrink: 0 }} />
-                    <div style={{ padding: isMobile ? "12px 14px 12px" : "14px 16px 14px", flex: 1, display: "flex", flexDirection: "column" }}>
-                      {/* Letter avatar */}
-                      <div style={{
-                        width: 32, height: 32, borderRadius: 9, marginBottom: 10,
-                        background: av.color + "18", border: `1px solid ${av.color}33`,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 14, fontWeight: 700, color: av.color,
-                      }}>{av.letter}</div>
+                    <div style={{ padding: isMobile ? "16px" : "18px", flex: 1, display: "flex", flexDirection: "column" }}>
+                      {/* Large count — primary visual */}
+                      <div style={{ fontSize: 44, fontWeight: 800, color: av.color, letterSpacing: "-.05em", lineHeight: 1, marginBottom: 10 }}>
+                        {cards.length}
+                      </div>
                       {/* Theme name */}
-                      <div style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4, letterSpacing: "-.01em" }}>{theme}</div>
-                      {/* Metadata */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: preview ? 8 : 0 }}>
-                        <span style={{
-                          fontSize: 11, fontWeight: 600, background: av.color + "20", color: av.color,
-                          padding: "1px 7px", borderRadius: 20,
-                        }}>{cards.length}</span>
-                        {(() => { const n = cards.filter(c => dueSet.has(c.id)).length; return n > 0 ? (
-                          <span style={{ fontSize: 11, fontWeight: 600, background: T.accentSurface, color: T.accent, padding: "1px 7px", borderRadius: 20 }}>
-                            {n} due
-                          </span>
-                        ) : null; })()}
+                      <div style={{ fontSize: 15, fontWeight: 700, color: T.text, letterSpacing: "-.01em", marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {theme}
+                      </div>
+                      {/* Meta: sources + due */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: preview ? 10 : 0 }}>
                         {sources > 0 && (
                           <span style={{ fontSize: 11, color: T.textTertiary }}>
                             {sources} source{sources !== 1 ? "s" : ""}
+                          </span>
+                        )}
+                        {dueCount > 0 && (
+                          <span style={{ fontSize: 11, fontWeight: 700, background: T.accentSurface, color: T.accent, padding: "2px 8px", borderRadius: 20 }}>
+                            {dueCount} due
                           </span>
                         )}
                       </div>
@@ -509,24 +503,19 @@ export default function CardsPage() {
               {untagged.length > 0 && (
                 <button onClick={() => setSelectedTheme("__untagged__")} style={{
                   background: T.card, border: `1px solid ${T.border}`,
-                  borderRadius: 14, padding: 0, overflow: "hidden",
+                  borderRadius: 16, padding: 0, overflow: "hidden",
                   cursor: "pointer", textAlign: "left", fontFamily: "inherit",
-                  transition: "border-color .15s", display: "flex", flexDirection: "column", opacity: 0.7,
+                  transition: "border-color .15s", display: "flex", flexDirection: "column", opacity: 0.55,
                 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = T.textTertiary; e.currentTarget.style.opacity = "1"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.opacity = "0.7"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.opacity = "0.55"; }}
                 >
-                  <div style={{ height: 3, background: T.border, width: "100%", flexShrink: 0 }} />
-                  <div style={{ padding: isMobile ? "12px 14px 12px" : "14px 16px 14px" }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 9, marginBottom: 10,
-                      background: T.surface2, display: "flex", alignItems: "center",
-                      justifyContent: "center", fontSize: 14, color: T.textTertiary,
-                    }}>?</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.textSecondary, marginBottom: 4 }}>Untagged</div>
-                    <span style={{ fontSize: 11, fontWeight: 600, background: T.surface2, color: T.textTertiary, padding: "1px 7px", borderRadius: 20 }}>
+                  <div style={{ padding: isMobile ? "16px" : "18px" }}>
+                    <div style={{ fontSize: 44, fontWeight: 800, color: T.textTertiary, letterSpacing: "-.05em", lineHeight: 1, marginBottom: 10 }}>
                       {untagged.length}
-                    </span>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.textSecondary, letterSpacing: "-.01em" }}>Untagged</div>
+                    <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 4 }}>no theme yet</div>
                   </div>
                 </button>
               )}
@@ -558,114 +547,124 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: T.card, borderRadius: 14,
-        border: `1px solid ${isEditing ? T.accent : hovered ? T.borderStrong || T.border : T.border}`,
+        background: T.card, borderRadius: 16,
+        border: `1px solid ${isEditing ? T.accent : hovered ? T.borderStrong || col.border + "55" : T.border}`,
         overflow: "hidden", transition: "border-color .15s",
         position: "relative",
       }}
     >
-      <div style={{ minWidth: 0 }}>
-        {/* Passage */}
-        <div style={{ padding: "16px 18px 12px", position: "relative" }}>
-          <span style={{
-            position: "absolute", top: 14, right: 14,
-            fontSize: 10, fontWeight: 600, letterSpacing: ".03em",
-            padding: "2px 8px", borderRadius: 20,
-            background: chip.bg, color: chip.color,
-          }}>{chip.label}</span>
-          <div style={{
-            fontSize: 15, color: T.text, lineHeight: 1.75,
-            fontFamily: "var(--reader-font-family)",
-            fontStyle: "italic", fontWeight: 400,
-            paddingRight: 60,
-          }}>
-            "{h.passage}"
-          </div>
+      {/* Passage — tinted with highlight color, left accent border */}
+      <div style={{
+        padding: "18px 20px 16px",
+        background: col.bg + "55",
+        borderLeft: `3px solid ${col.border}`,
+        position: "relative",
+      }}>
+        <div style={{
+          fontSize: 16, color: T.text, lineHeight: 1.72,
+          fontFamily: "var(--reader-font-family)",
+          fontStyle: "italic", fontWeight: 400,
+          WebkitFontSmoothing: "antialiased",
+          paddingRight: hovered ? 36 : 0,
+          transition: "padding-right .12s",
+        }}>
+          "{h.passage}"
         </div>
 
-        <div style={{ padding: "0 18px 14px", borderTop: `1px solid ${T.border}`, paddingTop: 12 }}>
-          {/* Annotation */}
-          {isEditing ? (
-            <textarea
-              autoFocus
-              value={editNote}
-              onChange={e => onEditChange(e.target.value)}
-              onBlur={onEditSave}
-              onKeyDown={e => { if (e.key === "Escape") onEditCancel(); if (e.key === "Enter" && e.metaKey) onEditSave(); }}
-              placeholder="Your annotation in your own words…"
-              style={{
-                width: "100%", boxSizing: "border-box", fontSize: 13, color: T.text,
-                background: T.surface, border: `1px solid ${T.accent}`, borderRadius: 9,
-                padding: "9px 11px", marginBottom: 12, lineHeight: 1.6, resize: "vertical",
-                fontFamily: "inherit", outline: "none", minHeight: 72,
-              }}
-            />
-          ) : (
-            <div
-              onClick={onEditStart}
-              title="Click to annotate"
-              style={{
-                fontSize: 13, borderRadius: 9, padding: h.note ? "9px 11px" : "8px 11px",
-                marginBottom: 12, lineHeight: 1.6, cursor: "text", minHeight: 40,
-                color: h.note ? T.textSecondary : T.textTertiary,
-                background: h.note ? T.surface : "transparent",
-                border: `1px ${h.note ? "solid" : "dashed"} ${h.note ? T.border : T.border + "88"}`,
-                fontStyle: h.note ? "normal" : "italic",
-                transition: "background .12s",
-              }}
-            >
-              {h.note || <span style={{ opacity: .6 }}>+ Add annotation…</span>}
-            </div>
-          )}
-
-          {/* Source */}
-          {h.article_title && (
-            <a
-              href={h.article_url || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                fontSize: 11, color: T.textTertiary, marginBottom: 12,
-                textDecoration: "none", transition: "color .12s",
-              }}
-              onMouseEnter={e => e.currentTarget.style.color = T.accent}
-              onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
-            >
-              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2.5h4.5V7M9.5 6.5l4-4M7 3H3.5A1 1 0 0 0 2.5 4v8.5A1 1 0 0 0 3.5 13.5H12A1 1 0 0 0 13 12.5V9"/></svg>
-              {h.article_title}
-            </a>
-          )}
-
-          {/* Tags via TagsInput */}
-          <TagsInput
-            tags={h.tags || []}
-            onAdd={tag => onUpdateTags([...new Set([...(h.tags || []), tag])])}
-            onRemove={tag => onUpdateTags((h.tags || []).filter(t => t !== tag))}
-            allTags={allExistingTags}
-            onTagClick={onTagClick}
-          />
-        </div>
+        {/* Delete — top-right of passage, hover reveal */}
+        {hovered && (
+          <button
+            onClick={onDelete}
+            title="Delete card"
+            style={{
+              position: "absolute", top: 10, right: 10,
+              background: "rgba(0,0,0,.08)", border: "none", borderRadius: 7,
+              width: 28, height: 28, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: T.textSecondary, transition: "all .12s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,0,0,.08)"; e.currentTarget.style.color = T.textSecondary; }}
+          >
+            <TrashIcon />
+          </button>
+        )}
       </div>
 
-      {/* Delete button — hover reveal */}
-      {hovered && (
-        <button
-          onClick={onDelete}
-          title="Delete card"
-          style={{
-            position: "absolute", top: 10, right: 10,
-            background: T.surface2, border: "none", borderRadius: 7,
-            width: 28, height: 28, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: T.textTertiary, transition: "all .12s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.textTertiary; }}
-        >
-          <TrashIcon />
-        </button>
-      )}
+      {/* Annotation + tags + footer */}
+      <div style={{ padding: "14px 20px 16px" }}>
+        {/* Annotation editor */}
+        {isEditing ? (
+          <textarea
+            autoFocus
+            value={editNote}
+            onChange={e => onEditChange(e.target.value)}
+            onBlur={onEditSave}
+            onKeyDown={e => { if (e.key === "Escape") onEditCancel(); if (e.key === "Enter" && e.metaKey) onEditSave(); }}
+            placeholder="Your annotation in your own words…"
+            style={{
+              width: "100%", boxSizing: "border-box", fontSize: 13, color: T.text,
+              background: T.surface, border: `1px solid ${T.accent}`, borderRadius: 9,
+              padding: "9px 11px", marginBottom: 12, lineHeight: 1.6, resize: "vertical",
+              fontFamily: "inherit", outline: "none", minHeight: 72,
+            }}
+          />
+        ) : (
+          <div
+            onClick={onEditStart}
+            title="Click to annotate"
+            style={{
+              fontSize: 13, borderRadius: 9, padding: h.note ? "9px 11px" : "8px 11px",
+              marginBottom: 12, lineHeight: 1.6, cursor: "text", minHeight: 38,
+              color: h.note ? T.textSecondary : T.textTertiary,
+              background: h.note ? T.surface : "transparent",
+              border: `1px ${h.note ? "solid" : "dashed"} ${h.note ? T.border : T.border + "88"}`,
+              fontStyle: h.note ? "normal" : "italic",
+              transition: "background .12s",
+            }}
+          >
+            {h.note || <span style={{ opacity: .55 }}>+ Add annotation…</span>}
+          </div>
+        )}
+
+        {/* Tags */}
+        <TagsInput
+          tags={h.tags || []}
+          onAdd={tag => onUpdateTags([...new Set([...(h.tags || []), tag])])}
+          onRemove={tag => onUpdateTags((h.tags || []).filter(t => t !== tag))}
+          allTags={allExistingTags}
+          onTagClick={onTagClick}
+        />
+
+        {/* Footer: source link + review chip */}
+        {(h.article_title || chip.label) && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
+            {h.article_title ? (
+              <a
+                href={h.article_url || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  fontSize: 11, color: T.textTertiary, textDecoration: "none",
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  flex: 1, minWidth: 0, transition: "color .12s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = T.accent}
+                onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
+              >
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2.5h4.5V7M9.5 6.5l4-4M7 3H3.5A1 1 0 0 0 2.5 4v8.5A1 1 0 0 0 3.5 13.5H12A1 1 0 0 0 13 12.5V9"/></svg>
+                {h.article_title}
+              </a>
+            ) : <span />}
+            <span style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: ".04em",
+              padding: "3px 9px", borderRadius: 20, flexShrink: 0,
+              background: chip.bg, color: chip.color, marginLeft: 8,
+            }}>{chip.label}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
