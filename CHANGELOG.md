@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.205] — 2026-05-26
+
+- [UX] Mobile: removed per-item swipe actions (left/right swipe on feed rows) — gesture was fighting with scroll and the new screen-level nav swipe
+- [Feature] Mobile: drag right from the left edge of the screen to open the nav/feed drawer — works on any page, 28px activation zone, subtle drag preview
+
 ## [1.46.204] — 2026-05-26
 
 - [Fix] Feed scroll: items no longer disappear mid-scroll when marked read — readUrls snapshot is frozen at session/filter start (Reeder-style), so the list stays stable while scrolling; visual read-dimming still updates live

@@ -1,4 +1,4 @@
-import { useState, useRef, memo } from "react";
+import { useState, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { parseYouTubeUrl } from "../lib/fetchers";
@@ -93,108 +93,10 @@ function ActionBtn({ icon, title, onClick, T, color }) {
   );
 }
 
-// ── Swipe wrapper — only active on mobile ─────────────────────
-// Left-swipe: reveals Read / Later / Star action buttons
-// Right-swipe: directly marks read (green flash + haptic)
-function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobile }) {
-  const ACTION_W  = 140;
-  const RIGHT_SNAP = 64;   // px to drag right before snapping to mark-read
-  const [swipeX, setSwipeX] = useState(0);
-  const [swiped, setSwiped]  = useState(false);
-  const [rightX, setRightX] = useState(0);
-  const touchRef = useRef(null);
-
-  if (!isMobile) return <>{typeof children === "function" ? children({ swiped: false, close: () => {} }) : children}</>;
-
-  function haptic() { try { navigator.vibrate?.(8); } catch {} }
-
-  function onTouchStart(e) {
-    touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  }
-  function onTouchMove(e) {
-    if (!touchRef.current) return;
-    const dx = e.touches[0].clientX - touchRef.current.x;
-    const dy = e.touches[0].clientY - touchRef.current.y;
-    if (Math.abs(dy) > Math.abs(dx) + 8) { touchRef.current = null; return; }
-    if (dx < 0) {
-      e.preventDefault();
-      setSwipeX(Math.max(dx, -ACTION_W));
-      setRightX(0);
-    } else if (swiped && dx > 0) {
-      // Close the left panel
-      e.preventDefault();
-      setSwipeX(Math.min(0, -ACTION_W + dx));
-    } else if (!swiped && dx > 0) {
-      // Right swipe — mark-read reveal
-      e.preventDefault();
-      setRightX(Math.min(dx, RIGHT_SNAP + 16));
-    }
-  }
-  function onTouchEnd() {
-    touchRef.current = null;
-    if (rightX >= RIGHT_SNAP) {
-      haptic();
-      onMarkRead?.();
-      setRightX(0);
-      setSwipeX(0);
-      setSwiped(false);
-    } else if (swipeX < -ACTION_W / 2) {
-      setSwipeX(-ACTION_W); setSwiped(true);
-    } else {
-      setSwipeX(0); setSwiped(false);
-    }
-    setRightX(0);
-  }
-  function close() { setSwipeX(0); setSwiped(false); }
-
-  const revealProgress = Math.min(rightX / RIGHT_SNAP, 1);
-
-  return (
-    <div style={{ position: "relative", overflow: "hidden" }}>
-      {/* Left-side green mark-read reveal (right swipe) — only mounted when dragging */}
-      {rightX > 0 && (
-        <div style={{
-          position: "absolute", left: 0, top: 0, bottom: 0, width: rightX,
-          background: T.success,
-          display: "flex", alignItems: "center", paddingLeft: 16,
-          overflow: "hidden",
-        }}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke={T.accentText} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-            style={{ opacity: Math.min(revealProgress * 2, 1), transform: `scale(${0.5 + revealProgress * 0.5})`, flexShrink: 0 }}>
-            <path d="M3 10l5 5 9-9"/>
-          </svg>
-        </div>
-      )}
-      {/* Revealed action buttons (left-swipe → right side, iOS Mail style) */}
-      <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: ACTION_W, display: "flex" }}>
-        <button onClick={e => { e.stopPropagation(); haptic(); onMarkRead?.(); close(); }}
-          style={{ flex: 1, border: "none", background: isRead ? T.surface2 : T.accent, color: isRead ? T.text : T.accentText, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
-          {isRead ? <Ic.Unread /> : <Ic.Read />}
-          {isRead ? "Unread" : "Read"}
-        </button>
-        <button onClick={e => { e.stopPropagation(); haptic(); onReadLater?.(); close(); }}
-          style={{ flex: 1, border: "none", background: T.warning, color: T.accentText, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
-          <Ic.Clock />
-          Later
-        </button>
-        <button onClick={e => { e.stopPropagation(); haptic(); onSave?.(); close(); }}
-          style={{ flex: 1, border: "none", background: T.success, color: T.accentText, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, letterSpacing: "-.01em" }}>
-          <Ic.Star />
-          Star
-        </button>
-      </div>
-      {/* Sliding row — translates for both left and right swipe */}
-      <div
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onTouchCancel={() => { touchRef.current = null; setSwipeX(0); setRightX(0); setSwiped(false); }}
-        style={{ transform: `translateX(${swipeX + rightX}px)`, transition: touchRef.current ? "none" : "transform .25s cubic-bezier(.25,.46,.45,.94)", position: "relative", zIndex: 1 }}
-      >
-        {typeof children === "function" ? children({ swiped, close }) : children}
-      </div>
-    </div>
-  );
+// ── Swipe wrapper — passthrough; swipe gestures handled at screen level ───────
+function SwipeRow({ children }) {
+  const noSwipe = { swiped: false, close: () => {} };
+  return typeof children === "function" ? children(noSwipe) : children;
 }
 
 // ── Content type icon ─────────────────────────────────────────

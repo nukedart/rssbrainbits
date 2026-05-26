@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { ThemeProvider, useTheme } from "./hooks/useTheme";
 import { Spinner, ErrorBoundary } from "./components/UI";
@@ -70,6 +70,8 @@ function AppShell() {
   const [feedErrorCount, setFeedErrorCount] = useState(0);
   const [feedUnreadCounts, setFeedUnreadCounts] = useState({});
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [edgeDx, setEdgeDx] = useState(0);
+  const edgeTouchRef = useRef(null);
 
   useEffect(() => { identify(user); }, [user]);
 
@@ -228,6 +230,29 @@ function AppShell() {
     }
   }
 
+  // ── Left-edge swipe to open nav drawer (mobile) ─────────────
+  function onEdgeTouchStart(e) {
+    if (!isMobile || mobileDrawerOpen) return;
+    const x = e.touches[0].clientX;
+    if (x < 28) edgeTouchRef.current = { x, y: e.touches[0].clientY, active: false };
+  }
+  function onEdgeTouchMove(e) {
+    const t = edgeTouchRef.current;
+    if (!t) return;
+    const dx = e.touches[0].clientX - t.x;
+    const dy = e.touches[0].clientY - t.y;
+    if (!t.active) {
+      if (Math.abs(dy) > Math.abs(dx) + 8) { edgeTouchRef.current = null; return; }
+      if (dx > 6) t.active = true; else return;
+    }
+    setEdgeDx(Math.min(dx, 100));
+  }
+  function onEdgeTouchEnd() {
+    if (edgeTouchRef.current && edgeDx > 55) setMobileDrawerOpen(true);
+    edgeTouchRef.current = null;
+    setEdgeDx(0);
+  }
+
   return (
     <div style={{
       height: "100dvh", display: "flex", flexDirection: "row",
@@ -253,7 +278,16 @@ function AppShell() {
         onToggle={() => setSidebarOpen(v => !v)}
         onAddSource={handleGlobalAdd}
       />
-      <div style={{ flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column" }}>
+      <div
+        onTouchStart={onEdgeTouchStart}
+        onTouchMove={onEdgeTouchMove}
+        onTouchEnd={onEdgeTouchEnd}
+        onTouchCancel={() => { edgeTouchRef.current = null; setEdgeDx(0); }}
+        style={{
+          flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column",
+          transform: edgeDx > 0 ? `translateX(${edgeDx * 0.25}px)` : "none",
+          transition: edgeTouchRef.current ? "none" : "transform .22s ease",
+        }}>
         <div key={page} style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", animation: "fadeInScale .18s ease" }}>
           <ErrorBoundary>
             <Suspense fallback={<PageSpinner T={T} />}>
