@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.204] — 2026-05-26
+
+- [Fix] Feed scroll: items no longer disappear mid-scroll when marked read — readUrls snapshot is frozen at session/filter start (Reeder-style), so the list stays stable while scrolling; visual read-dimming still updates live
+
 ## [1.46.203] — 2026-05-26
 
 - [Feature] Review: Readwise-style daily quota (default 5 cards/day, caps each session) — progress bar says "X of 5 today" so the goal feels achievable

@@ -52,6 +52,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   });
   const readUrlsRef = useRef(readUrls);
   useEffect(() => { readUrlsRef.current = readUrls; }, [readUrls]);
+  // Snapshot of readUrls used for list filtering — frozen at session/filter start so
+  // marking items read during scroll doesn't remove them from the list mid-scroll.
+  // Live readUrls still drives the visual isRead state (dimming/opacity).
+  const sessionFilterUrlsRef = useRef(new Set(readUrls));
   const [savedUrls, setSavedUrls]       = useState(new Set());
   const [readFilter, setReadFilter]     = useState("unread"); // "all" | "unread"
   const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
@@ -244,7 +248,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       items = items.filter((i) => i.date && new Date(i.date) > yesterday);
     }
     if (filterMode === "unread") {
-      items = items.filter((i) => !readUrls.has(i.url));
+      items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
     }
     if (filterMode === "smart") {
       if (!smartFeedDef) return []; // still loading — return empty
@@ -263,8 +267,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       const folderFeedIds = feeds.filter(f => f.folder_id === folderDef.id).map(f => f.id);
       items = items.filter((i) => folderFeedIds.includes(i.feedId));
     }
-    if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !readUrls.has(i.url));
-    if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  readUrls.has(i.url));
+    if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
+    if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  sessionFilterUrlsRef.current.has(i.url));
     // Client-side live search across in-memory items
     if (liveSearch.trim().length > 1) {
       const q = liveSearch.toLowerCase();
@@ -291,9 +295,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     return map;
   })();
 
-  // Reset displayed count when the filtered set changes
+  // Reset displayed count and refresh the read-URL snapshot when the view changes.
+  // Deliberately excludes readUrls from deps — we only want to re-snapshot on
+  // explicit navigation (source/filter change), not on every mark-read action.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { setDisplayedCount(60); }, [readFilter, liveSearch, activeSource, filterMode, allItems]);
+  useEffect(() => {
+    setDisplayedCount(60);
+    sessionFilterUrlsRef.current = new Set(readUrlsRef.current);
+  }, [readFilter, liveSearch, activeSource, filterMode, allItems]);
 
   // Reset new-article banner when the user switches source/folder/filter context
   // eslint-disable-next-line react-hooks/exhaustive-deps
