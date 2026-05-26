@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.203] — 2026-05-26
+
+- [Feature] Review: Readwise-style daily quota (default 5 cards/day, caps each session) — progress bar says "X of 5 today" so the goal feels achievable
+- [Feature] Review: streak counter persisted in localStorage — consecutive days reviewed shown large on the completion screen to reinforce the daily habit
+
 ## [1.46.202] — 2026-05-26
 
 - [Feature] Review page rebuilt: slide-card transitions (exit left/right), source visible before reveal, 6px progress bar, full-width "Show Answer" button, renamed ratings to "Again" / "Got it", keyboard shortcuts (Space=reveal, ←/J=Again, →/K=Got it)

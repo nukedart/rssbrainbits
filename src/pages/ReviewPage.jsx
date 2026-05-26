@@ -38,6 +38,55 @@ function intervalLabel(interval) {
   return `in ${Math.round(interval / 30)}mo`;
 }
 
+// ── Daily quota helpers ──────────────────────────────────────────
+function getDailyQuota() {
+  return parseInt(localStorage.getItem("fb-review-quota") || "5", 10);
+}
+
+function getTodayCount(userId) {
+  try {
+    const raw = localStorage.getItem(`fb-today-${userId}`);
+    if (!raw) return 0;
+    const { date, count } = JSON.parse(raw);
+    return date === todayStr() ? count : 0;
+  } catch { return 0; }
+}
+
+function incTodayCount(userId) {
+  const today = todayStr();
+  try {
+    const raw = localStorage.getItem(`fb-today-${userId}`);
+    const prev = raw ? JSON.parse(raw) : { date: today, count: 0 };
+    const newCount = (prev.date === today ? prev.count : 0) + 1;
+    localStorage.setItem(`fb-today-${userId}`, JSON.stringify({ date: today, count: newCount }));
+  } catch {}
+}
+
+// ── Streak helpers ───────────────────────────────────────────────
+function getStoredStreak(userId) {
+  try {
+    const raw = localStorage.getItem(`fb-streak-${userId}`);
+    if (!raw) return { streak: 0, lastDate: null };
+    return JSON.parse(raw);
+  } catch { return { streak: 0, lastDate: null }; }
+}
+
+function updateAndGetStreak(userId) {
+  const { streak, lastDate } = getStoredStreak(userId);
+  const today = todayStr();
+  const yesterday = addDays(today, -1);
+  let newStreak;
+  if (lastDate === today) {
+    newStreak = streak; // already recorded today
+  } else if (lastDate === yesterday) {
+    newStreak = streak + 1; // consecutive day
+  } else {
+    newStreak = 1; // new or broken streak
+  }
+  localStorage.setItem(`fb-streak-${userId}`, JSON.stringify({ streak: newStreak, lastDate: today }));
+  return newStreak;
+}
+
 export default function ReviewPage() {
   const { T } = useTheme();
   const { user } = useAuth();
@@ -50,6 +99,8 @@ export default function ReviewPage() {
   const [sessionCount, setSessionCount] = useState(0);
   const [cardKey, setCardKey]       = useState(0);
   const [exitAnim, setExitAnim]     = useState(null); // "left" | "right"
+  const [sessionQuota, setSessionQuota] = useState(null); // cards left in today's quota at session start
+  const [finalStreak, setFinalStreak]   = useState(null);
 
   // Stable refs so keyboard/touch handlers never capture stale closures
   const revealedRef   = useRef(false);
@@ -57,6 +108,7 @@ export default function ReviewPage() {
   const touchStartRef = useRef(null);
   const touchDirRef   = useRef(null);
   const handleRatingRef = useRef(null);
+  const streakSavedRef  = useRef(false);
 
   revealedRef.current = revealed;
   exitAnimRef.current = exitAnim;
@@ -83,22 +135,44 @@ export default function ReviewPage() {
           } catch {}
         }
         setReviews(map);
+        // Compute how many cards remain in today's quota
+        const quota = getDailyQuota();
+        const doneToday = getTodayCount(user.id);
+        setSessionQuota(Math.max(0, quota - doneToday));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user]);
 
-  const queue   = useMemo(() => highlights.filter(h => isDue(reviews[h.id])), [highlights, reviews]);
+  // Update streak once when session completes
+  useEffect(() => {
+    if (!loading && queueIdx > 0 && user && finalStreak === null && !streakSavedRef.current) {
+      const done = sessionQuota !== null && queueIdx >= Math.min(sessionQuota, highlights.filter(h => isDue(reviews[h.id])).length);
+      if (done && sessionCount > 0) {
+        streakSavedRef.current = true;
+        setFinalStreak(updateAndGetStreak(user.id));
+      }
+    }
+  }, [queueIdx, loading, user, sessionCount, sessionQuota, highlights, reviews, finalStreak]);
+
+  const allDue = useMemo(() => highlights.filter(h => isDue(reviews[h.id])), [highlights, reviews]);
+  // Cap queue to today's remaining quota
+  const queue   = useMemo(() => {
+    if (sessionQuota === null) return [];
+    return allDue.slice(0, sessionQuota);
+  }, [allDue, sessionQuota]);
   const current = queue[queueIdx];
-  const done    = !loading && queueIdx >= queue.length;
+  const done    = !loading && sessionQuota !== null && queueIdx >= queue.length;
   const total   = queue.length;
-  const progress = total > 0 ? queueIdx / total : 1;
+  const progress = total > 0 ? queueIdx / total : (done ? 1 : 0);
+  const dailyQuota = getDailyQuota();
 
   function handleRating(knew) {
     if (!current || !user || exitAnimRef.current) return;
     const updated = rate(reviews[current.id], knew);
     setReviews(prev => ({ ...prev, [current.id]: { highlight_id: current.id, ...updated } }));
     upsertHighlightReview(user.id, current.id, updated).catch(console.error);
+    incTodayCount(user.id);
     setExitAnim(knew ? "left" : "right");
     setTimeout(() => {
       setExitAnim(null);
@@ -165,25 +239,51 @@ export default function ReviewPage() {
   );
 
   if (done) {
+    const streak = finalStreak ?? getStoredStreak(user?.id).streak;
+    const dueCount = allDue.length;
     const dueTomorrow = highlights.filter(h => {
       const r = reviews[h.id];
       return r && r.next_review === addDays(todayStr(), 1);
     }).length;
+    const quotaMet = sessionQuota === 0; // arrived already done
     return (
       <div style={center}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.accentSurface, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        {/* Streak display */}
+        {streak > 0 && (
+          <div style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+            marginBottom: 8,
+          }}>
+            <div style={{
+              fontSize: 52, fontWeight: 900, color: T.accent,
+              letterSpacing: "-.04em", lineHeight: 1,
+            }}>{streak}</div>
+            <div style={{
+              fontSize: 13, fontWeight: 600, color: T.accent,
+              letterSpacing: ".06em", textTransform: "uppercase",
+            }}>day streak</div>
+          </div>
+        )}
+
+        {/* Check circle */}
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.accentSurface, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 6L9 17l-5-5"/>
           </svg>
         </div>
-        <div style={{ fontSize: 28, fontWeight: 800, color: T.text, letterSpacing: "-.03em" }}>
-          {sessionCount > 0 ? `${sessionCount} reviewed` : "All caught up"}
+
+        <div style={{ fontSize: 24, fontWeight: 800, color: T.text, letterSpacing: "-.03em" }}>
+          {quotaMet ? "All done for today" : sessionCount > 0 ? `${sessionCount} reviewed` : "All caught up"}
         </div>
         <div style={{ fontSize: 15, color: T.textSecondary }}>
-          {sessionCount > 0 ? "Great session." : "Nothing due — come back tomorrow."}
+          {quotaMet
+            ? `Come back tomorrow — ${dueCount > dailyQuota ? dueCount - dailyQuota : 0} more cards waiting.`
+            : sessionCount > 0
+              ? `Daily goal hit. See you tomorrow.`
+              : "Nothing due — come back tomorrow."}
         </div>
         {dueTomorrow > 0 && (
-          <div style={{ fontSize: 13, color: T.textTertiary }}>
+          <div style={{ fontSize: 13, color: T.textTertiary, marginTop: 4 }}>
             {dueTomorrow} due tomorrow · {highlights.length} total
           </div>
         )}
@@ -216,7 +316,7 @@ export default function ReviewPage() {
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 7 }}>
           <span style={{ fontSize: 12, color: T.textTertiary }}>{queueIdx} done</span>
-          <span style={{ fontSize: 12, fontWeight: 600, color: T.textSecondary }}>{queueIdx + 1} of {total}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: T.textSecondary }}>{queueIdx + 1} of {total} today</span>
         </div>
       </div>
 
