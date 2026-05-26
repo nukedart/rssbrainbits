@@ -195,4 +195,5 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 
 | Date | Iterations | Focus | Session Cost |
 |------|-----------|-------|-------------|
+| 2026-05-26 | 1 | Feature: Anki-style Review + Supabase SR persistence + Cards due status + scroll fix + FeedItem perf + Reeder-style mobile density | — |
 | 2026-03-27 | 2 | Nav: label consistency, touch cancel fix | — |

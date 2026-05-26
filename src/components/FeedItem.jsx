@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { parseYouTubeUrl } from "../lib/fetchers";
@@ -21,28 +21,42 @@ function readingTime(text) {
   return `${mins} min read`;
 }
 
+const _faviconCache = new Map();
 function faviconUrl(url) {
+  if (!url) return null;
+  if (_faviconCache.has(url)) return _faviconCache.get(url);
   try {
     const domain = new URL(url).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-  } catch { return null; }
+    const result = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    _faviconCache.set(url, result);
+    return result;
+  } catch { _faviconCache.set(url, null); return null; }
 }
 
+const _progressCache = new Map();
 function getStoredProgress(url) {
   if (!url) return 0;
-  try { return parseInt(localStorage.getItem(`fb-prog-${encodeURIComponent(url)}`), 10) || 0; } catch { return 0; }
+  if (_progressCache.has(url)) return _progressCache.get(url);
+  try {
+    const val = parseInt(localStorage.getItem(`fb-prog-${encodeURIComponent(url)}`), 10) || 0;
+    _progressCache.set(url, val);
+    return val;
+  } catch { _progressCache.set(url, 0); return 0; }
 }
 
+const _placeholderCache = new Map();
 function sourcePlaceholder(source) {
-  // Deterministic color from source name
+  if (_placeholderCache.has(source)) return _placeholderCache.get(source);
   let hash = 0;
   for (let i = 0; i < (source || "").length; i++) hash = (hash * 31 + source.charCodeAt(i)) & 0xffffffff;
   const hue = Math.abs(hash) % 360;
-  return {
+  const result = {
     bg: `linear-gradient(135deg, hsl(${hue},45%,28%) 0%, hsl(${(hue+40)%360},35%,18%) 100%)`,
     initial: (source || "?")[0].toUpperCase(),
     color: `hsl(${hue},60%,75%)`,
   };
+  _placeholderCache.set(source, result);
+  return result;
 }
 
 // ── Cohesive SVG icon set for feed item actions ───────────────
@@ -258,7 +272,7 @@ function MobileThumb({ item, T }) {
   if (!src || failed) return null;  // no image = no thumb, text fills full width
   return (
     <div style={{
-      width: 104, height: 104, borderRadius: 12, flexShrink: 0,
+      width: 72, height: 72, borderRadius: 9, flexShrink: 0,
       overflow: "hidden", background: T.surface2,
     }}>
       <img src={src} alt="" loading="lazy"
@@ -284,11 +298,10 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           <div
             onClick={swiped ? close : onClick}
             style={{
-              display: "flex", alignItems: "flex-start", gap: 14,
-              padding: "14px 16px",
+              display: "flex", alignItems: "flex-start", gap: 12,
+              padding: "10px 16px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
-              opacity: isRead ? 0.5 : 1, transition: "opacity .15s",
             }}
           >
             {/* Text LEFT */}
@@ -314,8 +327,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {/* Title */}
               <div style={{
                 fontFamily: "var(--reader-font-family)",
-                fontSize: 20,
-                fontWeight: 500,
+                fontSize: 17,
+                fontWeight: isRead ? 400 : 500,
                 color: isRead ? T.textTertiary : T.text,
                 lineHeight: 1.35,
                 overflow: "hidden", display: "-webkit-box",
@@ -326,12 +339,9 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                 {item.title}
               </div>
 
-              {/* Reading time / podcast duration */}
-              <div style={{ fontSize: 12, color: T.textTertiary }}>
-                {item.isPodcast && item.audioDuration
-                  ? `▶ ${item.audioDuration}`
-                  : item.description ? readingTime(item.description) : null}
-              </div>
+              {item.isPodcast && item.audioDuration && (
+                <div style={{ fontSize: 12, color: T.textTertiary }}>▶ {item.audioDuration}</div>
+              )}
             </div>
 
             {/* Square image RIGHT */}
@@ -359,8 +369,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             borderRadius: 12,
             cursor: "pointer",
             background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
-            transition: "background .15s, opacity .15s",
-            opacity: isRead ? 0.5 : 1,
+            transition: "background .15s",
           }}
         >
           {/* Thumbnail (md/lg) or type icon (sm) */}
@@ -561,9 +570,16 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Public export ─────────────────────────────────────────────
-export default function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false }) {
+export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false }) {
   if (viewMode === "card") {
     return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} />;
   }
   return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} />;
-}
+}, (prev, next) =>
+  prev.item === next.item &&
+  prev.isSelected === next.isSelected &&
+  prev.isRead === next.isRead &&
+  prev.isSaved === next.isSaved &&
+  prev.viewMode === next.viewMode &&
+  prev.cardSize === next.cardSize
+);

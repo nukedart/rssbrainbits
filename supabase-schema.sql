@@ -206,6 +206,27 @@ ALTER TABLE smart_feeds ADD COLUMN IF NOT EXISTS feed_ids TEXT[] DEFAULT NULL;
 --   WHERE email = 'user@example.com';
 -- ============================================================
 
+-- ============================================================
+-- Migration: Spaced Repetition Reviews
+-- Run in Supabase SQL Editor to enable persisted review schedules
+-- ============================================================
+CREATE TABLE IF NOT EXISTS highlight_reviews (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  highlight_id  UUID NOT NULL REFERENCES highlights(id) ON DELETE CASCADE,
+  ease          FLOAT DEFAULT 2.5,
+  interval      INTEGER DEFAULT 1,
+  next_review   DATE DEFAULT CURRENT_DATE,
+  reviewed_at   TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, highlight_id)
+);
+CREATE INDEX IF NOT EXISTS highlight_reviews_user_idx ON highlight_reviews(user_id);
+ALTER TABLE highlight_reviews ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own reviews select" ON highlight_reviews FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "own reviews insert" ON highlight_reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "own reviews update" ON highlight_reviews FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "own reviews delete" ON highlight_reviews FOR DELETE USING (auth.uid() = user_id);
+
 -- Optional: track subscription events for auditing
 CREATE TABLE IF NOT EXISTS subscription_events (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -65,6 +65,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const scrollContainerRef = useRef(null);
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollYRef = useRef(0);
+  const headerAccRef = useRef(0);
 
   const articleRef = useRef(null);
   const lastSavedProgressRef = useRef(0);
@@ -244,11 +245,15 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     if (max <= 0) return;
     const pct = Math.round((el.scrollTop / max) * 100);
     setReadProgress(pct);
-    // Auto-hide header: hide on scroll-down, reveal on scroll-up
+    // Auto-hide header: accumulate 60px of net movement before toggling
     const delta = el.scrollTop - lastScrollYRef.current;
     lastScrollYRef.current = el.scrollTop;
-    if (delta > 8 && el.scrollTop > 60) setHeaderVisible(false);
-    else if (delta < -8) setHeaderVisible(true);
+    if (el.scrollTop < 80) { headerAccRef.current = 0; setHeaderVisible(true); }
+    else if (Math.abs(delta) >= 1) {
+      headerAccRef.current += delta;
+      if (headerAccRef.current > 60) { headerAccRef.current = 0; setHeaderVisible(false); }
+      else if (headerAccRef.current < -60) { headerAccRef.current = 0; setHeaderVisible(true); }
+    }
     // Debounce Supabase write — only save every 5% change
     if (Math.abs(pct - lastSavedProgressRef.current) >= 5) {
       lastSavedProgressRef.current = pct;

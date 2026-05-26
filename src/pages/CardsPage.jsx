@@ -7,7 +7,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { Spinner } from "../components/UI";
 import TagsInput from "../components/TagsInput";
-import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags, deleteHighlight } from "../lib/supabase";
+import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags, deleteHighlight, getHighlightReviews } from "../lib/supabase";
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 
 const AVATAR_COLORS = ["#2F6FED","#AA8439","#65D5C4","#8B5CF6","#EF4444","#22C55E","#F97316","#EC4899"];
@@ -18,11 +18,15 @@ function themeAvatar(name) {
 }
 
 function navDirScroll(e) {
-  const el = e.currentTarget, top = el.scrollTop, prev = el._lastScrollTop ?? 0;
-  el._lastScrollTop = top;
-  if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
-  if (Math.abs(top - prev) < 4) return;
-  window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
+  const el = e.currentTarget;
+  const top = el.scrollTop;
+  const delta = top - (el._lastTop ?? top);
+  el._lastTop = top;
+  if (top < 80) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
+  if (Math.abs(delta) < 1) return;
+  el._acc = (el._acc ?? 0) + delta;
+  if (el._acc > 60) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "down" })); }
+  else if (el._acc < -60) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }
 }
 
 function TrashIcon() {
@@ -38,6 +42,7 @@ export default function CardsPage() {
   const { user } = useAuth();
   const { isMobile } = useBreakpoint();
   const [highlights, setHighlights] = useState([]);
+  const [reviews, setReviews] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -51,6 +56,16 @@ export default function CardsPage() {
   const allExistingTags = useMemo(() =>
     [...new Set(highlights.flatMap(h => h.tags || []))].sort(),
   [highlights]);
+
+  const dueSet = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const s = new Set();
+    highlights.forEach(h => {
+      const r = reviews[h.id];
+      if (!r || r.next_review <= today) s.add(h.id);
+    });
+    return s;
+  }, [highlights, reviews]);
 
   async function saveNote(h) {
     const note = editNote.trim();
@@ -83,8 +98,13 @@ export default function CardsPage() {
 
   useEffect(() => {
     if (!user) return;
-    getAllHighlights(user.id)
-      .then(setHighlights)
+    Promise.all([getAllHighlights(user.id), getHighlightReviews(user.id)])
+      .then(([hs, rs]) => {
+        setHighlights(hs);
+        const map = {};
+        rs.forEach(r => { map[r.highlight_id] = r; });
+        setReviews(map);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user]);
@@ -209,6 +229,7 @@ export default function CardsPage() {
                   key={h.id}
                   h={h}
                   col={col}
+                  reviewEntry={reviews[h.id]}
                   isEditing={isEditing}
                   editNote={editNote}
                   allExistingTags={allExistingTags}
@@ -455,11 +476,16 @@ export default function CardsPage() {
                       {/* Theme name */}
                       <div style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4, letterSpacing: "-.01em" }}>{theme}</div>
                       {/* Metadata */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: preview ? 8 : 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: preview ? 8 : 0 }}>
                         <span style={{
                           fontSize: 11, fontWeight: 600, background: av.color + "20", color: av.color,
                           padding: "1px 7px", borderRadius: 20,
                         }}>{cards.length}</span>
+                        {(() => { const n = cards.filter(c => dueSet.has(c.id)).length; return n > 0 ? (
+                          <span style={{ fontSize: 11, fontWeight: 600, background: T.accentSurface, color: T.accent, padding: "1px 7px", borderRadius: 20 }}>
+                            {n} due
+                          </span>
+                        ) : null; })()}
                         {sources > 0 && (
                           <span style={{ fontSize: 11, color: T.textTertiary }}>
                             {sources} source{sources !== 1 ? "s" : ""}
@@ -512,9 +538,20 @@ export default function CardsPage() {
   );
 }
 
+// ── Review status chip helper ─────────────────────────────────
+function reviewChip(entry, T) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (!entry) return { label: "New", color: T.textTertiary, bg: T.surface2 };
+  if (entry.next_review <= today) return { label: "Due", color: T.accent, bg: T.accentSurface };
+  const days = Math.round((new Date(entry.next_review) - new Date(today)) / 86400000);
+  const label = days < 7 ? `In ${days}d` : days < 30 ? `In ${Math.round(days / 7)}w` : `In ${Math.round(days / 30)}mo`;
+  return { label, color: T.textTertiary, bg: T.surface2 };
+}
+
 // ── Card item component ───────────────────────────────────────
-function CardItem({ h, col, isEditing, editNote, allExistingTags, T, onEditStart, onEditChange, onEditSave, onEditCancel, onUpdateTags, onTagClick, onDelete }) {
+function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T, onEditStart, onEditChange, onEditSave, onEditCancel, onUpdateTags, onTagClick, onDelete }) {
   const [hovered, setHovered] = useState(false);
+  const chip = reviewChip(reviewEntry, T);
 
   return (
     <div
@@ -522,22 +559,25 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, T, onEditStart
       onMouseLeave={() => setHovered(false)}
       style={{
         background: T.card, borderRadius: 14,
-        border: `1px solid ${isEditing ? T.accent : hovered ? col.border + "88" : T.border}`,
+        border: `1px solid ${isEditing ? T.accent : hovered ? T.borderStrong || T.border : T.border}`,
         overflow: "hidden", transition: "border-color .15s",
         position: "relative",
-        display: "flex",
       }}
     >
-      {/* Left color stripe */}
-      <div style={{ width: 4, background: col.border, flexShrink: 0 }} />
-
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ minWidth: 0 }}>
         {/* Passage */}
-        <div style={{ padding: "16px 18px 12px" }}>
+        <div style={{ padding: "16px 18px 12px", position: "relative" }}>
+          <span style={{
+            position: "absolute", top: 14, right: 14,
+            fontSize: 10, fontWeight: 600, letterSpacing: ".03em",
+            padding: "2px 8px", borderRadius: 20,
+            background: chip.bg, color: chip.color,
+          }}>{chip.label}</span>
           <div style={{
-            fontSize: 16, color: T.text, lineHeight: 1.75,
+            fontSize: 15, color: T.text, lineHeight: 1.75,
             fontFamily: "var(--reader-font-family)",
             fontStyle: "italic", fontWeight: 400,
+            paddingRight: 60,
           }}>
             "{h.passage}"
           </div>

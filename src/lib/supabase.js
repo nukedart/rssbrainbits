@@ -546,6 +546,23 @@ export async function getAllHighlightsWithNotes(userId) {
   return data;
 }
 
+export async function getHighlightReviews(userId) {
+  const { data, error } = await supabase
+    .from("highlight_reviews").select("*").eq("user_id", userId);
+  if (error) throw error;
+  return data;
+}
+
+export async function upsertHighlightReview(userId, highlightId, { ease, interval, next_review }) {
+  const { error } = await supabase
+    .from("highlight_reviews")
+    .upsert(
+      { user_id: userId, highlight_id: highlightId, ease, interval, next_review, reviewed_at: new Date().toISOString() },
+      { onConflict: "user_id,highlight_id" }
+    );
+  if (error) throw error;
+}
+
 // ── Reading progress ──────────────────────────────────────────
 export async function getReadingProgress(userId, articleUrl) {
   const { data } = await supabase

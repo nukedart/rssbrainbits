@@ -970,11 +970,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             const el = e.currentTarget;
             if (isMobile) {
               const top = el.scrollTop;
-              const prev = el._lastScrollTop ?? 0;
-              el._lastScrollTop = top;
-              if (top < 60) { window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
-              if (Math.abs(top - prev) < 4) return;
-              window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: top > prev ? "down" : "up" }));
+              const delta = top - (el._lastTop ?? top);
+              el._lastTop = top;
+              if (top < 80) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }
+              else if (Math.abs(delta) >= 1) {
+                el._acc = (el._acc ?? 0) + delta;
+                if (el._acc > 60) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "down" })); }
+                else if (el._acc < -60) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }
+              }
             }
             if (el.scrollHeight - el.scrollTop - el.clientHeight < 300) {
               setDisplayedCount(c => c < baseItems.length ? Math.min(c + 40, baseItems.length) : c);

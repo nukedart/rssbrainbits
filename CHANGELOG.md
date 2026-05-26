@@ -3,6 +3,16 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.200] — 2026-05-26
+
+- [Feature] Review page rebuilt Anki-style: passage shown first, tap to reveal annotation, then binary Know / Don't Know rating — forces active recall instead of passive reading
+- [Feature] Spaced repetition schedule now persists to Supabase (highlight_reviews table) — survives clearing localStorage, syncs across devices; auto-migrates existing localStorage data on first load
+- [Feature] Cards page shows per-card review status chip (Due / In Xd / New) and "X due" badge on theme tiles — connects Cards and Review at a glance
+- [Polish] Card items: removed left color stripe for a cleaner, flush layout
+- [Fix] Scroll direction detection rebuilt with accumulated-delta algorithm (60px threshold) — BottomNav and reader header no longer flicker on trackpad or fast mobile scroll
+- [Perf] FeedItem wrapped in React.memo with custom comparator — skips re-renders when only callbacks change; module-level caches for favicon URLs, source placeholders, and reading progress
+- [UX] Mobile feed rows: tighter padding, smaller thumbnail (72px), lighter title weight, reading time removed — closer to Reeder iOS density
+
 ## [1.46.199] — 2026-05-24
 
 - [Fix] Highlight color picker in reader now uses HIGHLIGHT_COLORS from SelectionToolbar — fixes "pink" ID mismatch with stored "purple", eliminating silent data inconsistency
