@@ -387,6 +387,16 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     return () => window.removeEventListener("keydown", onKey);
   }, [openIdx, openItem, baseItems, readUrls]);
 
+  useEffect(() => {
+    function onMarkFeedRead(e) {
+      const urls = e.detail?.urls || [];
+      if (!urls.length) return;
+      setReadUrls(prev => { const n = new Set(prev); urls.forEach(u => n.add(u)); return n; });
+    }
+    window.addEventListener("fb-mark-feed-read", onMarkFeedRead);
+    return () => window.removeEventListener("fb-mark-feed-read", onMarkFeedRead);
+  }, []);
+
   // ── Action handlers ───────────────────────────────────────────
   const handleAdd = useCallback(async ({ url, type, name }) => {
     if (type === "rss" || type === "podcast") {

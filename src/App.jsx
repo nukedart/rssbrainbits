@@ -7,7 +7,8 @@ import BottomNav from "./components/BottomNav";
 import { useBreakpoint } from "./hooks/useBreakpoint.js";
 import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
          getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder,
-         getFeeds, deleteFeed } from "./lib/supabase";
+         getFeeds, deleteFeed, markAllRead } from "./lib/supabase";
+import { getCachedFeed } from "./lib/feedCache.js";
 import { checkLimit } from "./lib/plan";
 import { identify, track } from "./lib/analytics";
 
@@ -148,6 +149,15 @@ function AppShell() {
   function handleFeedAdded(record) { setFeeds(prev => [...prev, record]); }
   function handleFeedDeleted(feedId) { setFeeds(prev => prev.filter(f => f.id !== feedId)); }
 
+  async function handleMarkFeedAllRead(feed) {
+    if (!user) return;
+    const cached = getCachedFeed(feed.url);
+    const urls = (cached?.data?.items || []).map(i => i.url).filter(Boolean);
+    if (!urls.length) return;
+    await markAllRead(user.id, urls);
+    window.dispatchEvent(new CustomEvent("fb-mark-feed-read", { detail: { urls } }));
+  }
+
   async function handleOnboardingAdd({ url, type, name }) {
     const { addFeed } = await import("./lib/supabase");
     const { fetchRSSFeed } = await import("./lib/fetchers");
@@ -278,6 +288,7 @@ function AppShell() {
         onToggle={() => setSidebarOpen(v => !v)}
         onAddSource={handleGlobalAdd}
         onUnsubscribeFeed={async (feedId) => { await deleteFeed(feedId); handleFeedDeleted(feedId); }}
+        onMarkFeedAllRead={handleMarkFeedAllRead}
       />
       <div
         onTouchStart={onEdgeTouchStart}

@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.207] — 2026-05-27
+
+- [Feature] Cards: Export all highlights to Markdown grouped by theme — works with Obsidian and any PKM tool, downloads as a dated .md file
+- [Feature] Cards: Global search across all highlights and notes (cross-theme) — replaces bucket grid while active, click a tag to jump into that theme
+- [Feature] Sidebar: right-click any feed → "Mark all as read" — instantly dims read items in the inbox without a reload
+
 ## [1.46.206] — 2026-05-27
 
 - [UX] Right-click any feed in the desktop sidebar to unsubscribe — inline confirmation prevents accidental removal, menu portal avoids clipping, flips near viewport edges

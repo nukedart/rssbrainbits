@@ -51,6 +51,7 @@ export default function CardsPage() {
   const [sortAZ, setSortAZ] = useState(false);
   const [filterQuery, setFilterQuery] = useState("");
   const [cardSearch, setCardSearch] = useState("");
+  const [globalSearch, setGlobalSearch] = useState("");
   const [newCard, setNewCard] = useState({ passage: "", note: "", color: "yellow", tags: [] });
 
   const allExistingTags = useMemo(() =>
@@ -96,6 +97,34 @@ export default function CardsPage() {
     } catch {}
   }
 
+  function handleExport() {
+    const today = new Date().toISOString().slice(0, 10);
+    const lines = [`# Feedbox Highlights`, `*Exported ${today} · ${highlights.length} highlight${highlights.length !== 1 ? "s" : ""} · ${buckets.length} theme${buckets.length !== 1 ? "s" : ""}*`, ""];
+    buckets.forEach(([tag, cards]) => {
+      lines.push(`## ${tag}`, "");
+      cards.forEach(h => {
+        lines.push(`> ${(h.passage || "").replace(/\n/g, "\n> ")}`, "");
+        if (h.note) lines.push(`**Note:** ${h.note}`, "");
+        if ((h.tags || []).length > 1) lines.push(`*Tags: ${h.tags.join(", ")}*`, "");
+        lines.push("---", "");
+      });
+    });
+    if (untagged.length) {
+      lines.push("## Untagged", "");
+      untagged.forEach(h => {
+        lines.push(`> ${(h.passage || "").replace(/\n/g, "\n> ")}`, "");
+        if (h.note) lines.push(`**Note:** ${h.note}`, "");
+        lines.push("---", "");
+      });
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `feedbox-highlights-${today}.md`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   useEffect(() => {
     if (!user) return;
     Promise.all([getAllHighlights(user.id), getHighlightReviews(user.id)])
@@ -134,6 +163,16 @@ export default function CardsPage() {
   const totalTagged = useMemo(() =>
     new Set(highlights.filter(h => (h.tags || []).length > 0).map(h => h.id)).size,
   [highlights]);
+
+  const globalResults = useMemo(() => {
+    const q = globalSearch.trim().toLowerCase();
+    if (!q) return null;
+    return highlights.filter(h =>
+      (h.passage || "").toLowerCase().includes(q) ||
+      (h.note || "").toLowerCase().includes(q) ||
+      (h.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+  }, [highlights, globalSearch]);
 
   if (loading) return (
     <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: T.bg }}>
@@ -269,6 +308,19 @@ export default function CardsPage() {
               {totalTagged} highlight{totalTagged !== 1 ? "s" : ""} · {buckets.length} theme{buckets.length !== 1 ? "s" : ""}
             </div>
           </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+            {highlights.length > 0 && (
+              <button
+                onClick={handleExport}
+                title="Export highlights as Markdown"
+                style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", color:T.textTertiary, border:`1px solid ${T.border}`, borderRadius:10, padding:"7px 12px", cursor:"pointer", fontSize:13, fontFamily:"inherit", transition:"all .12s" }}
+                onMouseEnter={e => { e.currentTarget.style.color=T.text; e.currentTarget.style.borderColor=T.borderStrong; }}
+                onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.borderColor=T.border; }}
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2v9M4 8l4 4 4-4M2 14h12"/></svg>
+                {!isMobile && "Export"}
+              </button>
+            )}
           <button
             onClick={() => setShowNewCard(true)}
             style={{
@@ -284,6 +336,31 @@ export default function CardsPage() {
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>
             New card
           </button>
+          </div>
+        </div>
+
+        {/* Global search */}
+        <div style={{ marginBottom: 16, position: "relative" }}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+            style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.textTertiary, pointerEvents: "none" }}>
+            <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
+          </svg>
+          <input
+            value={globalSearch}
+            onChange={e => setGlobalSearch(e.target.value)}
+            placeholder="Search all highlights and notes…"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              background: T.surface, border: `1px solid ${globalSearch ? T.accent : T.border}`, borderRadius: 10,
+              padding: "9px 12px 9px 32px", fontSize: 13, color: T.text, fontFamily: "inherit",
+              outline: "none", transition: "border-color .12s",
+            }}
+            onFocus={e => e.target.style.borderColor = T.accent}
+            onBlur={e => { if (!globalSearch) e.target.style.borderColor = T.border; }}
+          />
+          {globalSearch && (
+            <button onClick={() => setGlobalSearch("")} style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:T.textTertiary, fontSize:16, lineHeight:1, padding:2 }}>×</button>
+          )}
         </div>
 
         {/* New Card Modal */}
@@ -396,8 +473,46 @@ export default function CardsPage() {
           </div>
         )}
 
+        {/* Global search results */}
+        {globalResults && (
+          <div>
+            <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14 }}>
+              {globalResults.length} result{globalResults.length !== 1 ? "s" : ""} for "{globalSearch}"
+            </div>
+            {globalResults.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "40px 0", color: T.textTertiary, fontSize: 13 }}>No highlights match your search.</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {globalResults.map(h => {
+                  const col = HIGHLIGHT_COLORS.find(c => c.id === h.color) || HIGHLIGHT_COLORS[0];
+                  const isEditing = editingId === h.id;
+                  return (
+                    <CardItem
+                      key={h.id}
+                      h={h}
+                      col={col}
+                      reviewEntry={reviews[h.id]}
+                      isEditing={isEditing}
+                      editNote={editNote}
+                      allExistingTags={allExistingTags}
+                      T={T}
+                      onEditStart={() => { setEditingId(h.id); setEditNote(h.note || ""); }}
+                      onEditChange={setEditNote}
+                      onEditSave={() => saveNote(h)}
+                      onEditCancel={() => setEditingId(null)}
+                      onUpdateTags={(tags) => updateTags(h, tags)}
+                      onTagClick={t => { setGlobalSearch(""); setSelectedTheme(t); setCardSearch(""); }}
+                      onDelete={() => handleDeleteCard(h.id)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Filter + sort bar */}
-        {(buckets.length > 0 || untagged.length > 0) && (
+        {!globalResults && (buckets.length > 0 || untagged.length > 0) && (
           <div style={{ display: "flex", gap: 8, marginBottom: 18, alignItems: "center" }}>
             <div style={{ flex: 1, position: "relative" }}>
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
@@ -431,8 +546,8 @@ export default function CardsPage() {
           </div>
         )}
 
-        {/* Empty state */}
-        {buckets.length === 0 && untagged.length === 0 ? (
+        {/* Empty state / bucket grid — hidden during global search */}
+        {!globalResults && buckets.length === 0 && untagged.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 24px" }}>
             <div style={{ fontSize: 38, marginBottom: 14 }}>🗂</div>
             <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 8, letterSpacing: "-.01em" }}>No cards yet</div>
@@ -445,7 +560,7 @@ export default function CardsPage() {
               fontFamily: "inherit",
             }}>+ Create your first card</button>
           </div>
-        ) : (
+        ) : !globalResults ? (
           <>
             {/* Theme grid */}
             <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? 160 : 200}px, 1fr))`, gap: isMobile ? 10 : 12 }}>
@@ -521,7 +636,7 @@ export default function CardsPage() {
               )}
             </div>
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );

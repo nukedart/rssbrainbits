@@ -106,7 +106,7 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
 }
 
 // ── Feed right-click context menu ────────────────────────────
-function FeedContextMenu({ feed, x, y, onClose, onUnsubscribe, T }) {
+function FeedContextMenu({ feed, x, y, onClose, onUnsubscribe, onMarkAllRead, T }) {
   const [confirm, setConfirm] = useState(false);
   const menuRef = useRef(null);
   const name = feedDisplayName(feed);
@@ -119,9 +119,11 @@ function FeedContextMenu({ feed, x, y, onClose, onUnsubscribe, T }) {
     return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
   }, [onClose]);
 
-  const menuW = 180, menuH = confirm ? 92 : 44;
+  const menuW = 180, menuH = confirm ? 92 : 82;
   const left = x + menuW > window.innerWidth - 8 ? x - menuW : x;
   const top  = y + menuH > window.innerHeight - 8 ? y - menuH : y;
+
+  const itemStyle = { display:"block", width:"100%", textAlign:"left", padding:"9px 14px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", fontSize:13, transition:"background .1s" };
 
   return createPortal(
     <div ref={menuRef} style={{
@@ -131,14 +133,25 @@ function FeedContextMenu({ feed, x, y, onClose, onUnsubscribe, T }) {
       minWidth: menuW, userSelect: "none", overflow: "hidden",
     }}>
       {!confirm ? (
-        <button
-          onClick={() => setConfirm(true)}
-          style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 14px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", fontSize:13, color:T.danger, transition:"background .1s" }}
-          onMouseEnter={e => e.currentTarget.style.background = T.surface}
-          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-        >
-          Unsubscribe
-        </button>
+        <>
+          <button
+            onClick={() => { onMarkAllRead?.(feed); onClose(); }}
+            style={{ ...itemStyle, color: T.text }}
+            onMouseEnter={e => e.currentTarget.style.background = T.surface}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            Mark all as read
+          </button>
+          <div style={{ height:1, background:T.border, margin:"2px 0" }} />
+          <button
+            onClick={() => setConfirm(true)}
+            style={{ ...itemStyle, color: T.danger }}
+            onMouseEnter={e => e.currentTarget.style.background = T.surface}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            Unsubscribe
+          </button>
+        </>
       ) : (
         <div style={{ padding:"10px 12px" }}>
           <div style={{ fontSize:12, color:T.textSecondary, marginBottom:8, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
@@ -362,7 +375,7 @@ function SectionLabel({ label, action, actionTitle, T }) {
   );
 }
 
-export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCount=0, feedUnreadCounts={}, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, onMoveFeedToFolder, isOpen=true, onToggle, onAddSource, onUnsubscribeFeed }) {
+export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCount=0, feedUnreadCounts={}, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, onMoveFeedToFolder, isOpen=true, onToggle, onAddSource, onUnsubscribeFeed, onMarkFeedAllRead }) {
   const { T, theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { isTablet, isMobile } = useBreakpoint();
@@ -651,6 +664,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
           y={ctxMenu.y}
           onClose={() => setCtxMenu(null)}
           onUnsubscribe={onUnsubscribeFeed}
+          onMarkAllRead={onMarkFeedAllRead}
           T={T}
         />
       )}
