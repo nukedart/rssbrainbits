@@ -7,7 +7,7 @@ import BottomNav from "./components/BottomNav";
 import { useBreakpoint } from "./hooks/useBreakpoint.js";
 import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
          getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder,
-         getFeeds } from "./lib/supabase";
+         getFeeds, deleteFeed } from "./lib/supabase";
 import { checkLimit } from "./lib/plan";
 import { identify, track } from "./lib/analytics";
 
@@ -277,6 +277,7 @@ function AppShell() {
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(v => !v)}
         onAddSource={handleGlobalAdd}
+        onUnsubscribeFeed={async (feedId) => { await deleteFeed(feedId); handleFeedDeleted(feedId); }}
       />
       <div
         onTouchStart={onEdgeTouchStart}

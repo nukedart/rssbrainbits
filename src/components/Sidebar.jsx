@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
@@ -104,8 +105,64 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
   );
 }
 
+// ── Feed right-click context menu ────────────────────────────
+function FeedContextMenu({ feed, x, y, onClose, onUnsubscribe, T }) {
+  const [confirm, setConfirm] = useState(false);
+  const menuRef = useRef(null);
+  const name = feedDisplayName(feed);
+
+  useEffect(() => {
+    function onDown(e) { if (!menuRef.current?.contains(e.target)) onClose(); }
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [onClose]);
+
+  const menuW = 180, menuH = confirm ? 92 : 44;
+  const left = x + menuW > window.innerWidth - 8 ? x - menuW : x;
+  const top  = y + menuH > window.innerHeight - 8 ? y - menuH : y;
+
+  return createPortal(
+    <div ref={menuRef} style={{
+      position: "fixed", left, top, zIndex: 9000,
+      background: T.card, border: `1px solid ${T.borderStrong}`,
+      borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,.18)",
+      minWidth: menuW, userSelect: "none", overflow: "hidden",
+    }}>
+      {!confirm ? (
+        <button
+          onClick={() => setConfirm(true)}
+          style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 14px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", fontSize:13, color:T.danger, transition:"background .1s" }}
+          onMouseEnter={e => e.currentTarget.style.background = T.surface}
+          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+        >
+          Unsubscribe
+        </button>
+      ) : (
+        <div style={{ padding:"10px 12px" }}>
+          <div style={{ fontSize:12, color:T.textSecondary, marginBottom:8, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+            Remove "{name}"?
+          </div>
+          <div style={{ display:"flex", gap:6 }}>
+            <button
+              onClick={() => { onUnsubscribe(feed.id); onClose(); }}
+              style={{ flex:1, padding:"5px 0", border:"none", borderRadius:6, background:T.danger, color:T.dangerText, cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:600 }}
+            >Remove</button>
+            <button
+              onClick={onClose}
+              style={{ flex:1, padding:"5px 0", border:`1px solid ${T.border}`, borderRadius:6, background:"transparent", color:T.text, cursor:"pointer", fontFamily:"inherit", fontSize:12 }}
+            >Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>,
+    document.body
+  );
+}
+
 // ── Individual feed row (nested under folder or uncategorized) ─
-function FeedRow({ feed, unread, active, onNavigate, T, indent = 0 }) {
+function FeedRow({ feed, unread, active, onNavigate, onCtxMenu, T, indent = 0 }) {
   const favicon = feedFavicon(feed.url);
   const isActive = active === `feed:${feed.id}`;
   const name = feedDisplayName(feed);
@@ -114,6 +171,7 @@ function FeedRow({ feed, unread, active, onNavigate, T, indent = 0 }) {
     <button
       draggable
       onDragStart={e => { e.dataTransfer.setData("feedId", feed.id); e.dataTransfer.effectAllowed = "move"; }}
+      onContextMenu={e => { e.preventDefault(); onCtxMenu?.(feed, e.clientX, e.clientY); }}
       onClick={() => onNavigate(`feed:${feed.id}`)}
       title={name}
       style={{
@@ -153,7 +211,7 @@ function FeedRow({ feed, unread, active, onNavigate, T, indent = 0 }) {
 }
 
 // ── Folder row with nested feeds ──────────────────────────────
-function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, expanded, onToggle, T, collapsed, onMoveFeedToFolder, onEditFolder }) {
+function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, expanded, onToggle, T, collapsed, onMoveFeedToFolder, onEditFolder, onCtxMenu }) {
   const [dragOver, setDragOver] = useState(false);
   const [hovered, setHovered] = useState(false);
   const dot = FCOLS[folder.color] || "#8A9099";
@@ -250,7 +308,7 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
 
       {/* Nested feeds */}
       {expanded && folderFeeds.map(feed => (
-        <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} indent={14} T={T} />
+        <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} onCtxMenu={onCtxMenu} indent={14} T={T} />
       ))}
     </div>
   );
@@ -304,12 +362,13 @@ function SectionLabel({ label, action, actionTitle, T }) {
   );
 }
 
-export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCount=0, feedUnreadCounts={}, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, onMoveFeedToFolder, isOpen=true, onToggle, onAddSource }) {
+export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCount=0, feedUnreadCounts={}, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, onMoveFeedToFolder, isOpen=true, onToggle, onAddSource, onUnsubscribeFeed }) {
   const { T, theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { isTablet, isMobile } = useBreakpoint();
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [ctxMenu, setCtxMenu] = useState(null); // { feed, x, y }
   const [expandedFolders, setExpandedFolders] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("fb-sidebar-folders") || "[]");
@@ -442,6 +501,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
               collapsed={collapsed}
               onMoveFeedToFolder={onMoveFeedToFolder}
               onEditFolder={onEditFolder}
+              onCtxMenu={(feed, x, y) => setCtxMenu({ feed, x, y })}
             />
           );
         })}
@@ -453,7 +513,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
               <div style={{ height:1, background:T.border, margin:"6px 4px 4px", flexShrink:0 }} />
             )}
             {uncategorized.map(feed => (
-              <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} T={T} />
+              <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} onCtxMenu={(feed, x, y) => setCtxMenu({ feed, x, y })} T={T} />
             ))}
           </>
         )}
@@ -582,6 +642,18 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
           </div>
         )}
       </div>
+
+      {/* Feed context menu portal */}
+      {ctxMenu && (
+        <FeedContextMenu
+          feed={ctxMenu.feed}
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          onClose={() => setCtxMenu(null)}
+          onUnsubscribe={onUnsubscribeFeed}
+          T={T}
+        />
+      )}
     </aside>
   );
 }

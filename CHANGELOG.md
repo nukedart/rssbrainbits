@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.206] — 2026-05-27
+
+- [UX] Right-click any feed in the desktop sidebar to unsubscribe — inline confirmation prevents accidental removal, menu portal avoids clipping, flips near viewport edges
+
 ## [1.46.205] — 2026-05-26
 
 - [UX] Mobile: removed per-item swipe actions (left/right swipe on feed rows) — gesture was fighting with scroll and the new screen-level nav swipe
