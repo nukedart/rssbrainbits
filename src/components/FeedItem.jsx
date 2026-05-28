@@ -164,7 +164,7 @@ function ListThumb({ item, cardSize, T }) {
 }
 
 // ── Square image thumbnail for mobile rows (always rendered) ─
-function MobileThumb({ item, T }) {
+function MobileThumb({ item, T, size = 72 }) {
   const ph = sourcePlaceholder(item.source);
   const fav = faviconUrl(item.url);
   const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
@@ -175,7 +175,7 @@ function MobileThumb({ item, T }) {
   const showImg = src && !failed;
   return (
     <div style={{
-      width: 72, height: 72, borderRadius: 10, flexShrink: 0,
+      width: size, height: size, borderRadius: Math.round(size * 0.14), flexShrink: 0,
       overflow: "hidden",
       background: showImg ? T.surface2 : ph.bg,
       display: "flex", alignItems: "center", justifyContent: "center",
@@ -200,16 +200,18 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
   const favicon = faviconUrl(item.url);
-  const imgPos  = displayPrefs.imgPosition  || "left";
+  const imgPos   = displayPrefs.imgPosition  || "left";
   const previewN = displayPrefs.previewLines ?? 2;
-  const titleSize = displayPrefs.fontSize === "large" ? 18 : 16;
+  const imgSize  = displayPrefs.imgSize ?? 72;
+  const rawFont  = displayPrefs.fontSize;
+  const titleSize = typeof rawFont === "number" ? rawFont : rawFont === "large" ? 18 : 16;
 
   // ── Mobile: Reeder-style row — image left/right/none, configurable preview ──
   if (isMobile) {
     const preview = previewN > 0 && !item.isPodcast
       ? (item.description || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 300)
       : null;
-    const thumb = <MobileThumb item={item} T={T} />;
+    const thumb = imgPos !== "none" ? <MobileThumb item={item} T={T} size={imgSize} /> : null;
     return (
       <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
         {({ swiped, close } = {}) => (

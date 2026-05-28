@@ -55,11 +55,17 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
   const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "list"));
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "lg");
-  const [displayPrefs, setDisplayPrefs]   = useState(() => ({
-    imgPosition:  localStorage.getItem("fb-img-pos")        || "left",
-    previewLines: parseInt(localStorage.getItem("fb-preview-lines") ?? "2", 10),
-    fontSize:     localStorage.getItem("fb-list-font")      || "standard",
-  }));
+  const [displayPrefs, setDisplayPrefs]   = useState(() => {
+    const raw = localStorage.getItem("fb-list-font");
+    const fontSize = raw && !isNaN(Number(raw)) ? Number(raw) : 16;
+    const rawImg = localStorage.getItem("fb-img-size");
+    return {
+      imgPosition:  localStorage.getItem("fb-img-pos") || "left",
+      previewLines: parseInt(localStorage.getItem("fb-preview-lines") ?? "2", 10),
+      fontSize,
+      imgSize: rawImg ? parseInt(rawImg, 10) : 72,
+    };
+  });
   const [showDisplaySheet, setShowDisplaySheet] = useState(false);
   const [readUrls, setReadUrls]         = useState(() => {
     // Seed synchronously from localStorage so the unread filter works on first render,
@@ -637,7 +643,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
   function updateDisplayPref(key, val) {
     setDisplayPrefs(p => ({ ...p, [key]: val }));
-    const storageKey = key === "imgPosition" ? "fb-img-pos" : key === "previewLines" ? "fb-preview-lines" : "fb-list-font";
+    const storageKey = key === "imgPosition" ? "fb-img-pos" : key === "previewLines" ? "fb-preview-lines" : key === "imgSize" ? "fb-img-size" : "fb-list-font";
     localStorage.setItem(storageKey, val);
   }
 
@@ -1270,44 +1276,73 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               </div>
             </div>
 
+            {/* Image Size */}
+            {displayPrefs.imgPosition !== "none" && (
+              <div style={{ marginBottom:24 }}>
+                <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", marginBottom:12 }}>
+                  <span style={{ fontSize:12, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".07em" }}>Image Size</span>
+                  <span style={{ fontSize:13, fontWeight:600, color:T.textSecondary }}>{displayPrefs.imgSize}px</span>
+                </div>
+                <input
+                  type="range" min={44} max={96} step={4}
+                  value={displayPrefs.imgSize}
+                  onChange={e => updateDisplayPref("imgSize", parseInt(e.target.value, 10))}
+                  style={{ width:"100%", height:28, cursor:"pointer", accentColor: T.accent }}
+                  className="fb-slider"
+                />
+                <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+                  <span style={{ fontSize:10, color:T.textTertiary }}>Small</span>
+                  <span style={{ fontSize:10, color:T.textTertiary }}>Large</span>
+                </div>
+              </div>
+            )}
+
             {/* Preview lines */}
-            <div style={{ marginBottom:20 }}>
-              <div style={{ fontSize:12, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".07em", marginBottom:10 }}>Preview Lines</div>
-              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-                <button onClick={() => updateDisplayPref("previewLines", Math.max(0, displayPrefs.previewLines-1))} style={{
-                  width:36, height:36, borderRadius:9, border:`1px solid ${T.border}`,
-                  background:"transparent", color:T.textSecondary, cursor:"pointer",
-                  fontSize:20, display:"flex", alignItems:"center", justifyContent:"center",
-                  fontFamily:"inherit", WebkitTapHighlightColor:"transparent",
-                }}>−</button>
-                <span style={{ fontSize:22, fontWeight:700, color:T.text, minWidth:20, textAlign:"center" }}>{displayPrefs.previewLines}</span>
-                <button onClick={() => updateDisplayPref("previewLines", Math.min(4, displayPrefs.previewLines+1))} style={{
-                  width:36, height:36, borderRadius:9, border:`1px solid ${T.border}`,
-                  background:"transparent", color:T.textSecondary, cursor:"pointer",
-                  fontSize:20, display:"flex", alignItems:"center", justifyContent:"center",
-                  fontFamily:"inherit", WebkitTapHighlightColor:"transparent",
-                }}>+</button>
+            <div style={{ marginBottom:24 }}>
+              <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", marginBottom:12 }}>
+                <span style={{ fontSize:12, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".07em" }}>Preview Lines</span>
+                <span style={{ fontSize:13, fontWeight:600, color:T.textSecondary }}>{displayPrefs.previewLines}</span>
+              </div>
+              <input
+                type="range" min={0} max={4} step={1}
+                value={displayPrefs.previewLines}
+                onChange={e => updateDisplayPref("previewLines", parseInt(e.target.value, 10))}
+                style={{ width:"100%", height:28, cursor:"pointer", accentColor: T.accent }}
+                className="fb-slider"
+              />
+              <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+                <span style={{ fontSize:10, color:T.textTertiary }}>None</span>
+                <span style={{ fontSize:10, color:T.textTertiary }}>4 lines</span>
               </div>
             </div>
 
-            {/* Text size */}
+            {/* Text Size */}
             <div>
-              <div style={{ fontSize:12, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".07em", marginBottom:10 }}>Text Size</div>
-              <div style={{ display:"flex", gap:6 }}>
-                {[["standard","Standard"],["large","Large"]].map(([val,label]) => (
-                  <button key={val} onClick={() => updateDisplayPref("fontSize", val)} style={{
-                    flex:1, padding:"10px 0", borderRadius:10, border:"none",
-                    background: displayPrefs.fontSize===val ? T.accentSurface : T.surface,
-                    color: displayPrefs.fontSize===val ? T.accent : T.textSecondary,
-                    fontWeight: displayPrefs.fontSize===val ? 700 : 500,
-                    fontSize:14, cursor:"pointer", fontFamily:"inherit",
-                    WebkitTapHighlightColor:"transparent",
-                    transition:"all .1s",
-                  }}>{label}</button>
-                ))}
+              <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", marginBottom:12 }}>
+                <span style={{ fontSize:12, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".07em" }}>Text Size</span>
+                <span style={{ fontSize: displayPrefs.fontSize, fontWeight:600, color:T.text, lineHeight:1 }}>Aa</span>
+              </div>
+              <input
+                type="range" min={14} max={22} step={1}
+                value={displayPrefs.fontSize}
+                onChange={e => updateDisplayPref("fontSize", parseInt(e.target.value, 10))}
+                style={{ width:"100%", height:28, cursor:"pointer", accentColor: T.accent }}
+                className="fb-slider"
+              />
+              <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+                <span style={{ fontSize:10, color:T.textTertiary }}>Small</span>
+                <span style={{ fontSize:10, color:T.textTertiary }}>Large</span>
               </div>
             </div>
           </div>
+
+          <style>{`
+            .fb-slider { -webkit-appearance: none; appearance: none; background: transparent; outline: none; }
+            .fb-slider::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: ${T.border}; }
+            .fb-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: ${T.accent}; border: 3px solid ${T.card}; box-shadow: 0 1px 6px rgba(0,0,0,.22); margin-top: -10px; cursor: grab; }
+            .fb-slider::-moz-range-track { height: 4px; border-radius: 2px; background: ${T.border}; }
+            .fb-slider::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: ${T.accent}; border: 3px solid ${T.card}; box-shadow: 0 1px 6px rgba(0,0,0,.22); cursor: grab; }
+          `}</style>
         </>
       )}
 

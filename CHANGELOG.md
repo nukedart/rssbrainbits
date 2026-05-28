@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.214] — 2026-05-28
+
+- [UX] Display settings sliders — replace Standard/Large text size buttons with smooth range sliders for Image Size (44–96px) and Text Size (14–22px); live "Aa" preview reflects current font size; Image Size slider hidden when images are set to None; Preview Lines also uses a slider
+
 ## [1.46.213] — 2026-05-28
 
 - [UX] Rebuild mobile bottom navigation from scratch — single context-aware element: inbox pages show Reeder-style filter bar (Search | ★ Saved | ● UNREAD | ≡ Display | ✓ Mark read) via custom event bus; all other pages show standard nav tabs; eliminates two-competing-bars layout bug and restores correct scroll padding
