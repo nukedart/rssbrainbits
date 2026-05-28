@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.215] — 2026-05-28
+
+- [UX] Search bar — clean pill shape, no border at rest, accent ring on focus, Cancel button on mobile
+- [UX] Bottom nav — icon-only by default on all items; active item reveals its text label with a smooth expand animation; UNREAD replaced with a dot indicator (count badge when inactive, label when active)
+- [UX] Mobile toolbar — hamburger ☰ button opens feeds drawer; Settings icon removed from toolbar
+
 ## [1.46.214] — 2026-05-28
 
 - [UX] Display settings sliders — replace Standard/Large text size buttons with smooth range sliders for Image Size (44–96px) and Text Size (14–22px); live "Aa" preview reflects current font size; Image Size slider hidden when images are set to None; Preview Lines also uses a slider

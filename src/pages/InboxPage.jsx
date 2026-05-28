@@ -791,7 +791,28 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       <div style={{ flex: !isMobile && openItem ? "0 0 420px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
-        <div style={{ padding: isMobile ? "0 14px" : "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 6 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 72 : 54, borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ padding: isMobile ? "0 12px" : "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 6 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 64 : 54, borderBottom: `1px solid ${T.border}` }}>
+
+          {/* ☰ Hamburger — mobile only, opens feeds drawer, hidden when search open */}
+          {isMobile && !searchOpen && (
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("fb-open-feeds"))}
+              style={{
+                width: 36, height: 36, borderRadius: 10, border: "none",
+                background: "transparent", cursor: "pointer", flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: T.textSecondary,
+                WebkitTapHighlightColor: "transparent", transition: "color .12s",
+              }}
+              onTouchStart={e => { e.currentTarget.style.color = T.text; }}
+              onTouchEnd={e => { e.currentTarget.style.color = T.textSecondary; }}
+              onTouchCancel={e => { e.currentTarget.style.color = T.textSecondary; }}
+            >
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                <path d="M2 4h12M2 8h12M2 11.5h8"/>
+              </svg>
+            </button>
+          )}
 
           {/* Title + unread badge + error badge — hidden when search open */}
           {!searchOpen && (
@@ -937,15 +958,25 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </button>
           )}
 
-          {/* Search input — expands when open */}
+          {/* Search input (mobile: full-width with Cancel; desktop: shown when open) */}
           {searchOpen && (
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <>
               <SearchBar ref={searchBarRef} onSelectResult={(item) => { setSearchResult(item); setSearchOpen(false); setLiveSearch(""); }} onLiveSearch={setLiveSearch} onClose={() => { setLiveSearch(""); setSearchOpen(false); }} allItems={allItems} />
-            </div>
+              {isMobile && (
+                <button
+                  onClick={() => { setSearchOpen(false); setLiveSearch(""); }}
+                  style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    color: T.accent, fontSize: 15, fontWeight: 500,
+                    fontFamily: "inherit", flexShrink: 0, padding: "0 2px",
+                    WebkitTapHighlightColor: "transparent",
+                  }}
+                >Cancel</button>
+              )}
+            </>
           )}
 
-
-          {/* Search icon toggle — desktop only; mobile uses bottom bar search */}
+          {/* Search icon toggle — desktop only */}
           {!isMobile && (
             <button
               onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
@@ -961,29 +992,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                 <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
-              </svg>
-            </button>
-          )}
-
-          {/* Settings — mobile only; not in sidebar/BottomNav */}
-          {isMobile && !searchOpen && onNavigate && (
-            <button
-              onClick={() => onNavigate("settings")}
-              title="Settings"
-              style={{
-                background: "transparent", border: "none", borderRadius: 9,
-                width: 40, height: 40, cursor: "pointer", flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: T.textTertiary, transition: "all .15s",
-                WebkitTapHighlightColor: "transparent",
-              }}
-              onTouchStart={e => { e.currentTarget.style.background = T.surface; }}
-              onTouchEnd={e => { e.currentTarget.style.background = "transparent"; }}
-              onTouchCancel={e => { e.currentTarget.style.background = "transparent"; }}
-            >
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="8" cy="8" r="2.5"/>
-                <path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.6 3.6l1.3 1.3M11.1 11.1l1.3 1.3M3.6 12.4l1.3-1.3M11.1 4.9l1.3-1.3"/>
               </svg>
             </button>
           )}

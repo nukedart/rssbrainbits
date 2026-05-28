@@ -84,6 +84,12 @@ function AppShell() {
   }, []);
 
   useEffect(() => {
+    function onOpenFeeds() { setMobileDrawerOpen(true); }
+    window.addEventListener("fb-open-feeds", onOpenFeeds);
+    return () => window.removeEventListener("fb-open-feeds", onOpenFeeds);
+  }, []);
+
+  useEffect(() => {
     if (!user) return;
     getSmartFeeds(user.id)
       .then(setSmartFeeds)
