@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.216] — 2026-05-28
+
+- [UX] List skeleton redesigned to match Reeder-style row layout — 72px image placeholder + title (2 lines) + preview (2 lines) + source, staggered shimmer with 3 cycling width patterns
+- [UX] Article loading skeleton replaces spinner — hero image → title → byline → two paragraphs, mirrors actual layout so content feels instant
+- [UX] Reader typography — richer blockquote (accent border + tinted background), first paragraph slightly enlarged, inline images get soft shadow, hr narrows to 60% width, selection highlight uses accent colour, reading time shown in byline
+
 ## [1.46.215] — 2026-05-28
 
 - [UX] Search bar — clean pill shape, no border at rest, accent ring on focus, Cancel button on mobile

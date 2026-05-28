@@ -620,10 +620,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           </div>
         )}
 
-        {/* Article loading */}
-        {!yt.isYouTube && loading && (
-          <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}><Spinner size={28} /></div>
-        )}
+        {/* Article loading — skeleton matches real article layout */}
+        {!yt.isYouTube && loading && <ArticleSkeleton isMobile={isMobile} />}
 
         {/* Article error */}
         {!yt.isYouTube && error && (
@@ -663,9 +661,9 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             }}>
 
               {/* Source + favicon */}
-              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
-                {item.url && (() => { try { return <img src={`https://www.google.com/s2/favicons?domain=${new URL(item.url).hostname}&sz=32`} alt="" width={16} height={16} style={{ borderRadius: 3, flexShrink: 0 }} onError={e => { e.target.style.display="none"; }} />; } catch { return null; } })()}
-                <span style={{ fontSize: 13, fontWeight: 600, color: T.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
+                {item.url && (() => { try { return <img src={`https://www.google.com/s2/favicons?domain=${new URL(item.url).hostname}&sz=32`} alt="" width={15} height={15} style={{ borderRadius: 3, flexShrink: 0, opacity: .85 }} onError={e => { e.target.style.display="none"; }} />; } catch { return null; } })()}
+                <span style={{ fontSize: 12, fontWeight: 600, color: T.textTertiary, letterSpacing: ".02em", textTransform: "uppercase", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {item.source}
                 </span>
               </div>
@@ -673,28 +671,28 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               {/* Title */}
               <h1 style={{
                 fontFamily: "var(--reader-font-family)",
-                fontSize: isMobile ? 26 : 34,
+                fontSize: isMobile ? 27 : 36,
                 fontWeight: 800,
                 color: T.text,
-                margin: "0 0 10px",
-                lineHeight: 1.15,
-                letterSpacing: "-.025em",
+                margin: "0 0 14px",
+                lineHeight: 1.12,
+                letterSpacing: "-.03em",
               }}>
                 <a href={item.url} target="_blank" rel="noopener noreferrer"
                   style={{ color: "inherit", textDecoration: "none" }}
-                  onMouseEnter={e => { e.currentTarget.style.textDecoration = "underline"; }}
-                  onMouseLeave={e => { e.currentTarget.style.textDecoration = "none"; }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = ".8"; }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
                 >
                   {content.title || item.title}
                 </a>
               </h1>
 
-              {/* Date · author */}
-              {(item.date || item.author) && (
-                <div style={{ fontSize: 13, color: T.textTertiary, marginBottom: 20, lineHeight: 1.5 }}>
-                  {[item.date ? new Date(item.date).toLocaleDateString("en-US", { weekday: "short", month: "long", day: "numeric", year: "numeric" }) : null, item.author || null].filter(Boolean).join("  ·  ")}
-                </div>
-              )}
+              {/* Date · author · reading time */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 28, fontSize: 13, color: T.textTertiary, lineHeight: 1.5 }}>
+                {item.date && <span>{new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>}
+                {item.author && <><span style={{ opacity: .4 }}>·</span><span>{item.author}</span></>}
+                {content.bodyText && (() => { const mins = Math.max(1, Math.round(content.bodyText.split(/\s+/).length / 238)); return <><span style={{ opacity: .4 }}>·</span><span>{mins} min read</span></>; })()}
+              </div>
 
               {/* AI Summarize */}
               <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} bodyText={content?.bodyText} articleTitle={content?.title || item?.title} />
@@ -719,22 +717,25 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                 {content.bodyHtml && !readerPrefs.bionic ? (
                   <>
                     <style>{`
-                      .fb-article-body h1,.fb-article-body h2,.fb-article-body h3,.fb-article-body h4{margin:1.8em 0 .65em;font-weight:700;line-height:1.25;letter-spacing:-.02em}
-                      .fb-article-body h1{font-size:1.55em}.fb-article-body h2{font-size:1.28em}.fb-article-body h3{font-size:1.1em}.fb-article-body h4{font-size:1em}
-                      .fb-article-body p{margin:0 0 1.3em}.fb-article-body p:first-child{margin-top:0}.fb-article-body p:last-child{margin-bottom:0}
-                      .fb-article-body ul,.fb-article-body ol{margin:0 0 1.3em;padding-left:1.7em}
-                      .fb-article-body li{margin-bottom:.5em;line-height:1.7}
-                      .fb-article-body img{max-width:100%;height:auto;border-radius:10px;margin:1.75em 0;display:block}
-                      .fb-article-body a{color:var(--accent,#4f8ef7);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
-                      .fb-article-body blockquote{border-left:3px solid currentColor;margin:1.5em 0;padding:.7em 1.2em;opacity:.8;font-style:italic}
-                      .fb-article-body code{background:rgba(128,128,128,.13);border-radius:4px;padding:.15em .4em;font-family:ui-monospace,monospace;font-size:.87em}
-                      .fb-article-body pre{background:rgba(128,128,128,.1);border-radius:10px;padding:1.1em 1.2em;overflow-x:auto;margin:0 0 1.3em}
-                      .fb-article-body pre code{background:none;padding:0}
-                      .fb-article-body figure{margin:1.75em 0}.fb-article-body figcaption{font-size:.83em;opacity:.55;margin-top:.5em;text-align:center}
-                      .fb-article-body table{border-collapse:collapse;width:100%;margin:0 0 1.3em;font-size:.9em}
-                      .fb-article-body th,.fb-article-body td{border:1px solid rgba(128,128,128,.22);padding:.5em .8em;text-align:left}
+                      .fb-article-body h1,.fb-article-body h2,.fb-article-body h3,.fb-article-body h4{margin:2em 0 .6em;font-weight:700;line-height:1.22;letter-spacing:-.022em}
+                      .fb-article-body h1{font-size:1.5em}.fb-article-body h2{font-size:1.25em}.fb-article-body h3{font-size:1.08em}.fb-article-body h4{font-size:1em}
+                      .fb-article-body p{margin:0 0 1.35em}.fb-article-body p:first-of-type{font-size:1.06em;line-height:1.8}.fb-article-body p:last-child{margin-bottom:0}
+                      .fb-article-body ul,.fb-article-body ol{margin:0 0 1.35em;padding-left:1.6em}
+                      .fb-article-body li{margin-bottom:.55em;line-height:1.7}
+                      .fb-article-body img{max-width:100%;height:auto;border-radius:12px;margin:2em 0;display:block;box-shadow:0 4px 20px rgba(0,0,0,.09)}
+                      .fb-article-body a{color:var(--accent,#4f8ef7);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;transition:opacity .12s}
+                      .fb-article-body a:hover{opacity:.75}
+                      .fb-article-body blockquote{border-left:3px solid var(--accent,#4f8ef7);margin:1.75em 0;padding:.85em 1.2em .85em 1.4em;background:rgba(128,128,128,.06);border-radius:0 10px 10px 0;font-style:italic;font-size:1.04em;line-height:1.75}
+                      .fb-article-body code{background:rgba(128,128,128,.12);border-radius:5px;padding:.15em .42em;font-family:ui-monospace,'SF Mono',monospace;font-size:.85em}
+                      .fb-article-body pre{background:rgba(128,128,128,.09);border:1px solid rgba(128,128,128,.14);border-radius:12px;padding:1.1em 1.3em;overflow-x:auto;margin:0 0 1.35em}
+                      .fb-article-body pre code{background:none;padding:0;font-size:.9em}
+                      .fb-article-body figure{margin:2em 0}.fb-article-body figcaption{font-size:.82em;opacity:.5;margin-top:.55em;text-align:center;font-style:italic}
+                      .fb-article-body table{border-collapse:collapse;width:100%;margin:0 0 1.35em;font-size:.88em}
+                      .fb-article-body th,.fb-article-body td{border:1px solid rgba(128,128,128,.2);padding:.5em .85em;text-align:left}
+                      .fb-article-body th{background:rgba(128,128,128,.07);font-weight:600}
                       .fb-article-body mark{border-radius:3px;padding:1px 0;cursor:pointer}
-                      .fb-article-body hr{border:none;border-top:1px solid rgba(128,128,128,.2);margin:2em 0}
+                      .fb-article-body hr{border:none;height:1px;background:rgba(128,128,128,.18);margin:2.5em auto;width:60%}
+                      .fb-article-body ::selection{background:var(--accent,#4f8ef7)44}
                     `}</style>
                     <div
                       className="fb-article-body"
@@ -1588,5 +1589,34 @@ function HighlightIcon({ size = 14, color = "currentColor" }) {
       <path d="M10.5 2.5l3 3-7 7H3.5v-3l7-7z"/>
       <path d="M2 14h4" strokeWidth="1.5"/>
     </svg>
+  );
+}
+
+// ── Article loading skeleton — mirrors real article layout ─────
+function ArticleSkeleton({ isMobile }) {
+  const pad = isMobile ? "20px 20px 80px" : "28px 36px 80px";
+  return (
+    <div style={{ animation: "fadeIn .2s ease" }}>
+      {/* Hero image placeholder */}
+      <div className="skeleton" style={{ width: "100%", aspectRatio: "16/9", borderRadius: 0 }} />
+      <div style={{ maxWidth: 690, margin: "0 auto", padding: pad }}>
+        {/* Source line */}
+        <div className="skeleton" style={{ height: 11, width: 80, borderRadius: 4, marginBottom: 18 }} />
+        {/* Title — two lines */}
+        <div className="skeleton" style={{ height: isMobile ? 28 : 36, width: "95%", borderRadius: 6, marginBottom: 10 }} />
+        <div className="skeleton" style={{ height: isMobile ? 28 : 36, width: "72%", borderRadius: 6, marginBottom: 18 }} />
+        {/* Byline */}
+        <div className="skeleton" style={{ height: 12, width: 180, borderRadius: 4, marginBottom: 36 }} />
+        {/* Paragraph 1 */}
+        {[96, 100, 88, 100, 82].map((w, i) => (
+          <div key={i} className="skeleton" style={{ height: 15, width: `${w}%`, borderRadius: 4, marginBottom: 11 }} />
+        ))}
+        <div style={{ height: 20 }} />
+        {/* Paragraph 2 */}
+        {[92, 100, 76, 100, 90, 58].map((w, i) => (
+          <div key={i + 10} className="skeleton" style={{ height: 15, width: `${w}%`, borderRadius: 4, marginBottom: 11 }} />
+        ))}
+      </div>
+    </div>
   );
 }

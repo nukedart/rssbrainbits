@@ -1534,17 +1534,30 @@ function classifyFeedError(msg = "") {
 // ── Source sidebar item ───────────────────────────────────────
 
 // ── Skeleton loading row ──────────────────────────────────────
+// Widths cycle through 3 visual patterns so rows don't look identical
+const SK_PATTERNS = [
+  { t1: 88, t2: 70, p1: 96, p2: 82, src: 38 },
+  { t1: 75, t2: 58, p1: 88, p2: 74, src: 44 },
+  { t1: 92, t2: 79, p1: 78, p2: 91, src: 33 },
+];
 function SkeletonRow({ delay = 0, T }) {
+  const p = SK_PATTERNS[Math.round(delay / 40) % 3];
   return (
     <div style={{
-      display: "flex", alignItems: "center", gap: 12,
-      padding: "10px 16px",
-      opacity: 0, animation: `fadeIn .3s ease ${delay}ms forwards`,
+      display: "flex", alignItems: "flex-start", gap: 12,
+      padding: "12px 16px",
+      borderBottom: `1px solid ${T.border}`,
+      opacity: 0, animation: `fadeIn .25s ease ${delay}ms forwards`,
     }}>
-      <div style={{ width: 20, height: 20, borderRadius: 4, background: T.surface2, animation: "shimmer 1.4s infinite", flexShrink: 0 }} />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-        <div style={{ height: 13, borderRadius: 4, background: T.surface2, animation: "shimmer 1.4s infinite", width: `${60 + Math.random() * 30}%` }} />
-        <div style={{ height: 11, borderRadius: 4, background: T.surface2, animation: "shimmer 1.4s infinite", width: `${30 + Math.random() * 20}%` }} />
+      {/* Image placeholder — matches MobileThumb default 72px */}
+      <div className="skeleton" style={{ width: 72, height: 72, borderRadius: 10, flexShrink: 0 }} />
+      {/* Text block */}
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 7, paddingTop: 2 }}>
+        <div className="skeleton" style={{ height: 15, width: `${p.t1}%`, borderRadius: 4 }} />
+        <div className="skeleton" style={{ height: 15, width: `${p.t2}%`, borderRadius: 4 }} />
+        <div className="skeleton" style={{ height: 13, width: `${p.p1}%`, borderRadius: 3, opacity: 0.62, marginTop: 2 }} />
+        <div className="skeleton" style={{ height: 13, width: `${p.p2}%`, borderRadius: 3, opacity: 0.62 }} />
+        <div className="skeleton" style={{ height: 11, width: `${p.src}%`, borderRadius: 3, opacity: 0.42, marginTop: 5 }} />
       </div>
     </div>
   );
