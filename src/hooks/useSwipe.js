@@ -9,6 +9,7 @@ import { useRef } from "react";
 export function useSwipe({
   onSwipeLeft,
   onSwipeRight,
+  onSwipeRightBody, // right swipe that did NOT start at edge (body swipe = prev article)
   onSwipeDown,
   threshold = 60,
   edgeOnly = false,
@@ -46,9 +47,12 @@ export function useSwipe({
     const valid = Math.abs(dx) > threshold || velocity > velocityThreshold;
     if (!valid) { touch.current = null; return; }
 
-    if (dx > 0 && onSwipeRight) {
-      if (edgeOnly && !touch.current.edgeStart) { touch.current = null; return; }
-      onSwipeRight();
+    if (dx > 0) {
+      if (edgeOnly && !touch.current.edgeStart) {
+        if (onSwipeRightBody) onSwipeRightBody();
+        touch.current = null; return;
+      }
+      if (onSwipeRight) onSwipeRight();
     } else if (dx < 0 && onSwipeLeft) {
       onSwipeLeft();
     }

@@ -866,8 +866,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Spacer — pushes controls right when title is visible */}
           {!searchOpen && <div style={{ flex: 1 }} />}
 
-          {/* All / Unread toggle */}
-          {filterMode !== "unread" && !searchOpen && (
+          {/* All / Unread toggle — desktop only; moved to bottom bar on mobile */}
+          {filterMode !== "unread" && !searchOpen && !isMobile && (
             <div style={{ display: "flex", background: T.surface, borderRadius: 100, padding: 2, gap: 0, flexShrink: 0 }}>
               {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }].map(({ label, val }) => (
                 <button key={label} onClick={() => setReadFilter(val)} style={{
@@ -882,8 +882,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           )}
 
-          {/* Mark all read — icon button */}
-          {unreadCount > 0 && !searchOpen && (
+          {/* Mark all read — desktop only; moved to bottom bar on mobile */}
+          {unreadCount > 0 && !searchOpen && !isMobile && (
             <button onClick={handleMarkAllRead} title="Mark all as read"
               style={{
                 background: "transparent", border: "none", borderRadius: 9,
@@ -907,8 +907,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           )}
 
-          {/* Display settings — mobile list view only */}
-          {isMobile && viewMode === "list" && !searchOpen && (
+          {/* Display settings — moved to bottom bar; this slot kept for card view toggle */}
+          {false && isMobile && viewMode === "list" && !searchOpen && (
             <button
               onClick={() => setShowDisplaySheet(true)}
               title="Display settings"
@@ -928,23 +928,25 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </button>
           )}
 
-          {/* Search icon toggle */}
-          <button
-            onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
-            title="Search"
-            style={{
-              background: searchOpen ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
-              width: isMobile ? 40 : 30, height: isMobile ? 40 : 30, cursor: "pointer", flexShrink: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: searchOpen ? T.accent : T.textTertiary, transition: "all .15s",
-            }}
-            onMouseEnter={e => { if (!searchOpen) { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; } }}
-            onMouseLeave={e => { if (!searchOpen) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
-          >
-            <svg width={isMobile ? 18 : 14} height={isMobile ? 18 : 14} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-              <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
-            </svg>
-          </button>
+          {/* Search icon toggle — desktop only; mobile uses bottom bar search */}
+          {!isMobile && (
+            <button
+              onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
+              title="Search"
+              style={{
+                background: searchOpen ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
+                width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: searchOpen ? T.accent : T.textTertiary, transition: "all .15s",
+              }}
+              onMouseEnter={e => { if (!searchOpen) { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; } }}
+              onMouseLeave={e => { if (!searchOpen) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
+              </svg>
+            </button>
+          )}
 
           {/* Settings — mobile only; not in sidebar/BottomNav */}
           {isMobile && !searchOpen && onNavigate && (
@@ -1096,7 +1098,25 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               setDisplayedCount(c => c < baseItems.length ? Math.min(c + 40, baseItems.length) : c);
             }
           }}
-          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 96px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "96px" : undefined, WebkitOverflowScrolling: "touch" }}>
+          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 12px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "12px" : undefined, WebkitOverflowScrolling: "touch" }}>
+          {/* Pull-to-refresh indicator */}
+          {isMobile && (pullY > 0 || refreshing) && (
+            <div style={{
+              display:"flex", justifyContent:"center", alignItems:"center",
+              height: refreshing ? 48 : pullY,
+              overflow:"hidden",
+              transition: refreshing ? "height .15s ease" : "none",
+              flexShrink: 0,
+            }}>
+              <svg width="26" height="26" viewBox="0 0 26 26" fill="none"
+                style={{ animation: refreshing ? "spin .75s linear infinite" : "none" }}>
+                <circle cx="13" cy="13" r="10" stroke={T.border} strokeWidth="2.2"/>
+                <path d="M13 3a10 10 0 0 1 10 10" stroke={T.accent} strokeWidth="2.5" strokeLinecap="round"
+                  style={{ transformOrigin:"13px 13px", transform: !refreshing ? `rotate(${(pullY/72)*300}deg)` : undefined }}/>
+              </svg>
+            </div>
+          )}
+
           {/* New articles banner — shown after a background refresh detects new items */}
           {newArticleCount > 0 && !loadingItems && (
             <button
@@ -1204,6 +1224,68 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           )}
         </div>
+
+        {/* ── Mobile bottom action bar ── */}
+        {isMobile && (
+          <div style={{
+            display:"flex", alignItems:"center", justifyContent:"space-around",
+            height:52, flexShrink:0,
+            borderTop:`1px solid ${T.border}`,
+            background:T.bg,
+            paddingBottom:"env(safe-area-inset-bottom, 0px)",
+          }}>
+            {/* Search */}
+            <button
+              onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
+              style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, color: searchOpen ? T.accent : T.textTertiary, WebkitTapHighlightColor:"transparent" }}
+            >
+              <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/></svg>
+              <span style={{ fontSize:10, fontWeight:500 }}>Search</span>
+            </button>
+
+            {/* Unread / All filter */}
+            {filterMode !== "unread" && (
+              <button
+                onClick={() => setReadFilter(f => f === "unread" ? "all" : "unread")}
+                style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, color: readFilter === "unread" ? T.accent : T.textTertiary, WebkitTapHighlightColor:"transparent" }}
+              >
+                <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  {readFilter === "unread"
+                    ? <><circle cx="8" cy="8" r="6.5"/><circle cx="8" cy="8" r="2.5" fill="currentColor" stroke="none"/></>
+                    : <><circle cx="8" cy="8" r="6.5"/><circle cx="8" cy="8" r="2.5"/></>
+                  }
+                </svg>
+                <span style={{ fontSize:10, fontWeight:500 }}>{readFilter === "unread" ? "Unread" : "All"}</span>
+              </button>
+            )}
+
+            {/* Display settings */}
+            {viewMode === "list" && (
+              <button
+                onClick={() => setShowDisplaySheet(true)}
+                style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, color: showDisplaySheet ? T.accent : T.textTertiary, WebkitTapHighlightColor:"transparent" }}
+              >
+                <svg width="19" height="19" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                  <line x1="2" y1="5" x2="16" y2="5"/><circle cx="6" cy="5" r="2" fill="currentColor" stroke="none"/>
+                  <line x1="2" y1="9" x2="16" y2="9"/><circle cx="12" cy="9" r="2" fill="currentColor" stroke="none"/>
+                  <line x1="2" y1="13" x2="16" y2="13"/><circle cx="7" cy="13" r="2" fill="currentColor" stroke="none"/>
+                </svg>
+                <span style={{ fontSize:10, fontWeight:500 }}>Display</span>
+              </button>
+            )}
+
+            {/* Mark all read */}
+            <button
+              onClick={unreadCount > 0 ? handleMarkAllRead : undefined}
+              style={{ flex:1, height:"100%", background:"none", border:"none", cursor: unreadCount > 0 ? "pointer" : "default", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, color: unreadCount > 0 ? T.textTertiary : T.textTertiary, opacity: unreadCount > 0 ? 1 : 0.35, WebkitTapHighlightColor:"transparent" }}
+            >
+              <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 9l4 4 10-10"/><path d="M1 5l4 4 10-10" strokeOpacity=".4"/>
+              </svg>
+              <span style={{ fontSize:10, fontWeight:500 }}>Mark Read</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Display settings bottom sheet */}

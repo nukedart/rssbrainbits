@@ -340,13 +340,12 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
   // ── Swipe gestures (mobile) ──────────────────────────────
   const swipeHandlers = useSwipe({
-    // Swipe right from left edge = go back (close)
-    onSwipeRight: () => { if (isMobile) onClose(); },
+    onSwipeRight:     () => { if (isMobile) onClose(); },          // edge swipe = back
+    onSwipeRightBody: () => { if (isMobile && onPrev) onPrev(); }, // body swipe = prev article
+    onSwipeLeft:      () => { if (isMobile && onNext) onNext(); }, // swipe left = next
     edgeOnly: true,
     edgePx: 40,
     threshold: 50,
-    // Swipe left = next article
-    onSwipeLeft: () => { if (isMobile && onNext) onNext(); },
   });
 
   if (!item) return null;
@@ -397,30 +396,34 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           WebkitTapHighlightColor: "transparent",
         }}>←</button>
 
-        {/* Prev — both mobile and desktop */}
-        {onPrev && (
+        {/* Prev — desktop only; mobile uses swipe-right-body */}
+        {!isMobile && onPrev && (
           <button onClick={onPrev} title="Previous article (k)"
-            style={{ background: "transparent", border: "none", borderRadius: 8, width: isMobile ? 38 : 28, height: isMobile ? 38 : 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: isMobile ? 16 : 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "all .12s" }}
+            style={{ background: "transparent", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "all .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
           >‹</button>
         )}
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: isMobile ? 14 : 13, fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {item.source || "Feedbox"}
-          </div>
-          {!isMobile && totalCount > 0 && currentIdx >= 0 && (
-            <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 1 }}>
-              {currentIdx + 1} of {totalCount}
+        {/* Source name — desktop only; shown in article header on mobile */}
+        {!isMobile && (
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {item.source || "Feedbox"}
             </div>
-          )}
-        </div>
+            {totalCount > 0 && currentIdx >= 0 && (
+              <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 1 }}>
+                {currentIdx + 1} of {totalCount}
+              </div>
+            )}
+          </div>
+        )}
+        {isMobile && <div style={{ flex: 1 }} />}
 
-        {/* Next — both mobile and desktop */}
-        {onNext && (
+        {/* Next — desktop only; mobile uses swipe-left */}
+        {!isMobile && onNext && (
           <button onClick={onNext} title="Next article (j)"
-            style={{ background: "transparent", border: "none", borderRadius: 8, width: isMobile ? 38 : 28, height: isMobile ? 38 : 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: isMobile ? 16 : 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "all .12s" }}
+            style={{ background: "transparent", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "all .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
           >›</button>

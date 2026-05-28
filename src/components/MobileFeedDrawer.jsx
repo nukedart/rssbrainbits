@@ -253,6 +253,28 @@ export default function MobileFeedDrawer({
           </button>
         )}
 
+        {/* Saved row */}
+        <button
+          onClick={() => navigate("readlater")}
+          style={{
+            display:"flex", alignItems:"center",
+            padding:"10px 20px",
+            width:"100%", border:"none",
+            background: active === "readlater" ? T.accentSurface : "transparent",
+            cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+            WebkitTapHighlightColor:"transparent",
+            transition:"background .1s",
+            flexShrink:0,
+          }}
+        >
+          <span style={{ flex:1, fontSize:17, fontWeight: active === "readlater" ? 700 : 500, color: active === "readlater" ? T.accent : T.textSecondary, letterSpacing:"-.02em" }}>
+            Saved
+          </span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill={active === "readlater" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ color: active === "readlater" ? T.accent : T.textTertiary, flexShrink:0 }}>
+            <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
+          </svg>
+        </button>
+
         {/* Quick-nav: pages not in the bottom pill */}
         <div style={{ display:"flex", gap:8, padding:"0 16px 12px", flexShrink:0 }}>
           {[

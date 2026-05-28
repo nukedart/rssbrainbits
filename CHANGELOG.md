@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.211] — 2026-05-28
+
+- [UX] Article reader: swipe right from body = previous article; swipe left = next; edge swipe right = back — full gesture navigation with no buttons needed
+- [UX] Reader toolbar streamlined on mobile — prev/next arrows and source name removed (source is in article header now); desktop toolbar unchanged
+- [UX] Mobile bottom action bar: persistent bar above bottom nav with Search, Unread/All toggle, Display settings, and Mark Read — most-used controls now in the thumb zone
+- [UX] Feeds drawer: "Saved" row with bookmark icon added below "All Unread" for one-tap access
+- [UX] Pull-to-refresh: arc indicator fills as you pull (rotates to show progress), spins when refresh is in flight
+
 ## [1.46.210] — 2026-05-28
 
 - [Feature] Mobile list view display settings sheet — tap the sliders icon to set image position (Left/Right/None), preview lines (0–4), and text size (Standard/Large); all settings persist across sessions
