@@ -140,6 +140,30 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
   }, [forceOpenSearch]);
 
+  // ── BottomNav filter-bar action listener ─────────────────
+  const inboxActionRef = useRef(null);
+  inboxActionRef.current = (e) => {
+    const action = e.detail;
+    if (action === "search") {
+      const next = !searchOpen;
+      setSearchOpen(next);
+      if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50);
+      else setLiveSearch("");
+    } else if (action === "display") {
+      setShowDisplaySheet(true);
+    } else if (action === "markAll") {
+      handleMarkAllRead();
+    } else if (action?.type === "filter") {
+      setReadFilter(action.value);
+    }
+  };
+  useEffect(() => {
+    if (!isMobile) return;
+    const handler = (e) => inboxActionRef.current?.(e);
+    window.addEventListener("fb-inbox-action", handler);
+    return () => window.removeEventListener("fb-inbox-action", handler);
+  }, [isMobile]);
+
   // ── Background sync: listen for SW "BG_SYNC" message ─────
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
@@ -674,6 +698,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     onFeedErrors?.(Object.keys(feedErrors).length);
   }, [feedErrors]);
 
+  // Broadcast filter + unread state to BottomNav filter bar
+  useEffect(() => {
+    if (!isMobile) return;
+    window.dispatchEvent(new CustomEvent("fb-inbox-state", { detail: { readFilter, unreadCount } }));
+  }, [readFilter, unreadCount, isMobile]);
+
   // ── Auto-mark-read on scroll ─────────────────────────────
   // Mark an item as read once its bottom edge has scrolled above the
   // top of the list container (i.e. the user has fully scrolled past it).
@@ -1079,7 +1109,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               setDisplayedCount(c => c < baseItems.length ? Math.min(c + 40, baseItems.length) : c);
             }
           }}
-          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 12px" : "14px") : "0", paddingBottom: viewMode !== "card" && isMobile ? "12px" : undefined, WebkitOverflowScrolling: "touch" }}>
+          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 12px" : "14px") : "0", paddingBottom: isMobile ? "calc(80px + env(safe-area-inset-bottom, 16px))" : undefined, WebkitOverflowScrolling: "touch" }}>
           {/* Pull-to-refresh indicator */}
           {isMobile && (pullY > 0 || refreshing) && (
             <div style={{
@@ -1206,82 +1236,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           )}
         </div>
 
-        {/* ── Mobile bottom action bar — Reeder-style ── */}
-        {isMobile && (
-          <div style={{
-            display:"flex", alignItems:"center",
-            height:52, flexShrink:0,
-            borderTop:`1px solid ${T.border}`,
-            background:T.bg,
-            paddingBottom:"env(safe-area-inset-bottom, 0px)",
-            paddingLeft:8, paddingRight:8,
-          }}>
-            {/* Search */}
-            <button
-              onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
-              style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color: searchOpen ? T.accent : T.textSecondary, WebkitTapHighlightColor:"transparent" }}
-            >
-              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/></svg>
-            </button>
-
-            {/* ★ Saved / Starred filter */}
-            <button
-              onClick={() => setReadFilter(f => f === "saved" ? "all" : "saved")}
-              style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color: readFilter === "saved" ? T.accent : T.textSecondary, WebkitTapHighlightColor:"transparent" }}
-            >
-              <svg width="20" height="20" viewBox="0 0 16 16" fill={readFilter === "saved" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
-              </svg>
-            </button>
-
-            {/* ● UNREAD pill */}
-            {filterMode !== "unread" && (
-              <button
-                onClick={() => setReadFilter(f => f === "unread" ? "all" : "unread")}
-                style={{
-                  flex:"0 0 auto", height:32, paddingLeft:12, paddingRight:14,
-                  display:"flex", alignItems:"center", gap:7,
-                  borderRadius:16, border:"none",
-                  background: readFilter === "unread" ? T.text : T.surface,
-                  cursor:"pointer", fontFamily:"inherit",
-                  WebkitTapHighlightColor:"transparent",
-                  transition:"background .15s",
-                  margin:"0 4px",
-                }}
-              >
-                <span style={{
-                  width:8, height:8, borderRadius:"50%", flexShrink:0,
-                  background: readFilter === "unread" ? T.bg : T.accent,
-                }} />
-                <span style={{
-                  fontSize:12, fontWeight:700, letterSpacing:".04em",
-                  color: readFilter === "unread" ? T.bg : T.textSecondary,
-                  textTransform:"uppercase",
-                }}>Unread</span>
-              </button>
-            )}
-
-            {/* ≡ Display settings */}
-            <button
-              onClick={() => setShowDisplaySheet(true)}
-              style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color: showDisplaySheet ? T.accent : T.textSecondary, WebkitTapHighlightColor:"transparent" }}
-            >
-              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                <path d="M2 4h12M4 8h8M6 12h4"/>
-              </svg>
-            </button>
-
-            {/* ✓ Mark all read */}
-            <button
-              onClick={unreadCount > 0 ? handleMarkAllRead : undefined}
-              style={{ flex:1, height:"100%", background:"none", border:"none", cursor: unreadCount > 0 ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", color: T.textSecondary, opacity: unreadCount > 0 ? 1 : 0.3, WebkitTapHighlightColor:"transparent" }}
-            >
-              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M1 9l4 4 10-10"/><path d="M1 5l4 4 10-10" strokeOpacity=".4"/>
-              </svg>
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Display settings bottom sheet */}

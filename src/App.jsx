@@ -73,8 +73,15 @@ function AppShell() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [edgeDx, setEdgeDx] = useState(0);
   const edgeTouchRef = useRef(null);
+  const [inboxState, setInboxState] = useState({ readFilter: "unread", unreadCount: 0 });
 
   useEffect(() => { identify(user); }, [user]);
+
+  useEffect(() => {
+    function onInboxState(e) { setInboxState(e.detail); }
+    window.addEventListener("fb-inbox-state", onInboxState);
+    return () => window.removeEventListener("fb-inbox-state", onInboxState);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -307,7 +314,7 @@ function AppShell() {
             </Suspense>
           </ErrorBoundary>
         </div>
-        {isMobile && <BottomNav active={page} onNavigate={navigateTo} onAdd={handleGlobalAdd} unreadCount={unreadCount} onOpenFeeds={() => setMobileDrawerOpen(true)} />}
+        {isMobile && <BottomNav active={page} onNavigate={navigateTo} onAdd={handleGlobalAdd} unreadCount={unreadCount} onOpenFeeds={() => setMobileDrawerOpen(true)} inboxFilter={inboxState.readFilter} inboxUnreadCount={inboxState.unreadCount} />}
         {!isMobile && (
           <button onClick={handleGlobalAdd} title="Add source" aria-label="Add source" style={{
             position:"fixed", right:20, bottom:20, width:44, height:44, borderRadius:"50%",

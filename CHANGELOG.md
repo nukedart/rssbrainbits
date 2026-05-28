@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.213] — 2026-05-28
+
+- [UX] Rebuild mobile bottom navigation from scratch — single context-aware element: inbox pages show Reeder-style filter bar (Search | ★ Saved | ● UNREAD | ≡ Display | ✓ Mark read) via custom event bus; all other pages show standard nav tabs; eliminates two-competing-bars layout bug and restores correct scroll padding
+
 ## [1.46.212] — 2026-05-28
 
 - [UX] Mobile bottom bar rebuilt Reeder-style: Search | ★ Saved | ● UNREAD pill | ≡ Display | ✓ Mark read — tap ★ to filter inbox to saved articles, tap UNREAD pill to toggle unread-only; tap again to return to All
