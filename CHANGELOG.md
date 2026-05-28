@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.209] — 2026-05-28
+
+- [UX] Mobile list items redesigned Reeder-style: image moves to left side (72px square placeholder always shown), preview text (2 lines) between title and source/time row — more info at a glance
+- [UX] Feed list shows date section headers ("Today", "Yesterday", day name, or date) grouping items in list view — both mobile and desktop
+- [UX] Mobile Feeds drawer upgraded: 36px rounded-rect favicons, "All Unread" total row at top with count, "Feeds" title cleaner and larger
+- [Polish] inspo images/ folder added to .gitignore
+
 ## [1.46.208] — 2026-05-27
 
 - [Fix] Today: review streak now shows the spaced-repetition streak (not article-reading streak) — the meaningful habit metric

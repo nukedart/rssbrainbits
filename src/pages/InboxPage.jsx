@@ -17,6 +17,21 @@ import SearchBar from "../components/SearchBar";
 import OPMLImport from "../components/OPMLImport";
 import { track } from "../lib/analytics";
 
+function dateBucket(dateStr) {
+  if (!dateStr) return null;
+  try {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const itemStart  = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffDays = Math.round((todayStart - itemStart) / 86400000);
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7)   return d.toLocaleDateString("en-US", { weekday: "long" });
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  } catch { return null; }
+}
+
 export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, folderDef = null, ytFeedIds = null, onUnreadCount, onFeedErrors, onFeedUnreadCounts, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose, forceOpenSearch = false, onForcedSearchClose, onNavigate }) {
   const { T } = useTheme();
   const { user: authUser } = useAuth();
@@ -1137,22 +1152,40 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 /></div>
               ))}
             </div>
-          ) : (
-            baseItems.slice(0, displayedCount).map((item, i) => (
-              <div key={item.url + i} data-url={item.url} style={{ borderBottom: `1px solid ${T.border}` }}>
-              <FeedItem item={item} viewMode="list" cardSize={cardSize}
-                isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
-                isRead={readUrls.has(item.url)}
-                isSaved={savedUrls.has(item.url)}
-                feedColor={feedColorMap[item.feedId]}
-                onClick={() => { setCursorIdx(i); openByIdx(i); }}
-                onSave={() => handleSaveItem(item)}
-                onReadLater={() => handleReadLater(item)}
-                onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
-                onPlayPodcast={onPlayPodcast}
-              /></div>
-            ))
-          )}
+          ) : (() => {
+            const rows = [];
+            let lastBucket = null;
+            baseItems.slice(0, displayedCount).forEach((item, i) => {
+              const bucket = dateBucket(item.date);
+              if (bucket && bucket !== lastBucket) {
+                lastBucket = bucket;
+                rows.push(
+                  <div key={`hdr-${bucket}-${i}`} style={{
+                    padding: isMobile ? "14px 16px 6px" : "14px 20px 6px",
+                    fontSize: 11, fontWeight: 700, letterSpacing: ".08em",
+                    textTransform: "uppercase", color: T.textTertiary,
+                    userSelect: "none",
+                  }}>{bucket}</div>
+                );
+              }
+              rows.push(
+                <div key={item.url + i} data-url={item.url} style={{ borderBottom: `1px solid ${T.border}` }}>
+                  <FeedItem item={item} viewMode="list" cardSize={cardSize}
+                    isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
+                    isRead={readUrls.has(item.url)}
+                    isSaved={savedUrls.has(item.url)}
+                    feedColor={feedColorMap[item.feedId]}
+                    onClick={() => { setCursorIdx(i); openByIdx(i); }}
+                    onSave={() => handleSaveItem(item)}
+                    onReadLater={() => handleReadLater(item)}
+                    onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
+                    onPlayPodcast={onPlayPodcast}
+                  />
+                </div>
+              );
+            });
+            return rows;
+          })()}
 
           {/* Load-more indicator — shows while there are items beyond displayedCount */}
           {!loadingItems && displayedCount < baseItems.length && (

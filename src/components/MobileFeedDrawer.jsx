@@ -20,8 +20,8 @@ function FeedRow({ feed, unread, active, onNavigate, T }) {
     <button
       onClick={() => onNavigate(`feed:${feed.id}`)}
       style={{
-        display:"flex", alignItems:"center", gap:10,
-        padding:"11px 20px 11px 36px",
+        display:"flex", alignItems:"center", gap:12,
+        padding:"10px 20px",
         width:"100%", border:"none",
         background: isActive ? T.accentSurface : "transparent",
         cursor:"pointer", fontFamily:"inherit", textAlign:"left",
@@ -29,21 +29,26 @@ function FeedRow({ feed, unread, active, onNavigate, T }) {
         transition:"background .1s",
       }}
     >
-      <span style={{ width:18, height:18, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      {/* Large favicon — 36px rounded rect */}
+      <span style={{
+        width:36, height:36, flexShrink:0, borderRadius:8,
+        overflow:"hidden", background: T.surface2,
+        display:"flex", alignItems:"center", justifyContent:"center",
+      }}>
         {favicon
-          ? <img src={favicon} alt="" width={16} height={16} style={{ borderRadius:3, opacity:.85 }} onError={e => { e.target.style.display="none"; }} />
-          : <span style={{ width:6, height:6, borderRadius:"50%", background:T.textTertiary, display:"block" }} />
+          ? <img src={favicon} alt="" width={36} height={36} style={{ borderRadius:8, display:"block" }} onError={e => { e.target.style.display="none"; }} />
+          : <span style={{ fontSize:15, fontWeight:700, color:T.textTertiary }}>{name[0]?.toUpperCase()}</span>
         }
       </span>
       <span style={{
-        flex:1, fontSize:15,
+        flex:1, fontSize:16,
         overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
         color: isActive ? T.accent : unread > 0 ? T.text : T.textSecondary,
-        fontWeight: unread > 0 ? 600 : 400, letterSpacing:"-.01em",
+        fontWeight: unread > 0 ? 600 : 400, letterSpacing:"-.015em",
       }}>{name}</span>
       {unread > 0 && (
-        <span style={{ fontSize:12, fontWeight:700, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
-          {unread > 99 ? "99+" : unread}
+        <span style={{ fontSize:13, fontWeight:600, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
+          {unread > 999 ? "999+" : unread}
         </span>
       )}
     </button>
@@ -87,7 +92,9 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
         </button>
       </div>
       {expanded && folderFeeds.map(feed => (
-        <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} T={T} />
+        <div key={feed.id} style={{ paddingLeft: 16 }}>
+          <FeedRow feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} T={T} />
+        </div>
       ))}
     </div>
   );
@@ -148,6 +155,7 @@ export default function MobileFeedDrawer({
   }
 
   const uncategorized = feeds.filter(f => !f.folder_id);
+  const totalUnread = Object.values(feedUnreadCounts).reduce((s, n) => s + n, 0);
 
   return (
     <>
@@ -198,10 +206,10 @@ export default function MobileFeedDrawer({
         {/* Header */}
         <div style={{
           display:"flex", alignItems:"center",
-          padding:"2px 20px 12px",
+          padding:"2px 20px 8px",
           flexShrink:0,
         }}>
-          <span style={{ fontSize:20, fontWeight:800, color:T.text, flex:1, letterSpacing:"-.025em" }}>My Feeds</span>
+          <span style={{ fontSize:22, fontWeight:800, color:T.text, flex:1, letterSpacing:"-.03em" }}>Feeds</span>
           <button
             onClick={onAddSource}
             style={{
@@ -220,6 +228,30 @@ export default function MobileFeedDrawer({
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M10 4v12M4 10h12"/></svg>
           </button>
         </div>
+
+        {/* Total unread row */}
+        {totalUnread > 0 && (
+          <button
+            onClick={() => navigate("all")}
+            style={{
+              display:"flex", alignItems:"center",
+              padding:"10px 20px",
+              width:"100%", border:"none",
+              background: active === "all" ? T.accentSurface : "transparent",
+              cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+              WebkitTapHighlightColor:"transparent",
+              transition:"background .1s",
+              flexShrink:0,
+            }}
+          >
+            <span style={{ flex:1, fontSize:17, fontWeight:700, color: active === "all" ? T.accent : T.text, letterSpacing:"-.02em" }}>
+              All Unread
+            </span>
+            <span style={{ fontSize:17, fontWeight:600, color: active === "all" ? T.accent : T.textSecondary }}>
+              {totalUnread > 9999 ? "9999+" : totalUnread.toLocaleString()}
+            </span>
+          </button>
+        )}
 
         {/* Quick-nav: pages not in the bottom pill */}
         <div style={{ display:"flex", gap:8, padding:"0 16px 12px", flexShrink:0 }}>

@@ -163,24 +163,33 @@ function ListThumb({ item, cardSize, T }) {
   );
 }
 
-// ── Square image thumbnail for mobile rows ────────────────────
+// ── Square image thumbnail for mobile rows (always rendered) ─
 function MobileThumb({ item, T }) {
   const ph = sourcePlaceholder(item.source);
+  const fav = faviconUrl(item.url);
   const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
   const src = yt.isYouTube
     ? `https://img.youtube.com/vi/${yt.videoId}/mqdefault.jpg`
     : item.image || null;
   const [failed, setFailed] = useState(false);
-  if (!src || failed) return null;  // no image = no thumb, text fills full width
+  const showImg = src && !failed;
   return (
     <div style={{
-      width: 72, height: 72, borderRadius: 9, flexShrink: 0,
-      overflow: "hidden", background: T.surface2,
+      width: 72, height: 72, borderRadius: 10, flexShrink: 0,
+      overflow: "hidden",
+      background: showImg ? T.surface2 : ph.bg,
+      display: "flex", alignItems: "center", justifyContent: "center",
     }}>
-      <img src={src} alt="" loading="lazy"
-        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-        onError={() => setFailed(true)}
-      />
+      {showImg ? (
+        <img src={src} alt="" loading="lazy"
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          onError={() => setFailed(true)}
+        />
+      ) : fav ? (
+        <img src={fav} alt="" width={28} height={28} style={{ borderRadius: 5, opacity: .85 }} onError={e => { e.target.style.display = "none"; }} />
+      ) : (
+        <span style={{ fontSize: 24, fontWeight: 800, color: ph.color, opacity: .9 }}>{ph.initial}</span>
+      )}
     </div>
   );
 }
@@ -192,8 +201,11 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   const [hovered, setHovered] = useState(false);
   const favicon = faviconUrl(item.url);
 
-  // ── Mobile: iOS-style row — text left, square image right ──
+  // ── Mobile: Reeder-style row — image left, text right ──
   if (isMobile) {
+    const preview = item.description
+      ? item.description.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 200)
+      : null;
     return (
       <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
         {({ swiped, close } = {}) => (
@@ -201,24 +213,58 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             onClick={swiped ? close : onClick}
             style={{
               display: "flex", alignItems: "flex-start", gap: 12,
-              padding: "10px 16px",
+              padding: "12px 16px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
-              opacity: isRead ? 0.48 : 1,
+              opacity: isRead ? 0.5 : 1,
               transition: "opacity .3s",
             }}
           >
-            {/* Text LEFT */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Source + color dot + date */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+            {/* Image LEFT */}
+            <MobileThumb item={item} T={T} />
+
+            {/* Text RIGHT */}
+            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
+              {/* Title */}
+              <div style={{
+                fontFamily: "var(--reader-font-family)",
+                fontSize: 16,
+                fontWeight: isRead ? 400 : 600,
+                color: T.text,
+                lineHeight: 1.3,
+                overflow: "hidden", display: "-webkit-box",
+                WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                letterSpacing: "-.012em",
+                WebkitFontSmoothing: "antialiased",
+              }}>
+                {item.title}
+              </div>
+
+              {/* Preview text */}
+              {preview && !item.isPodcast && (
+                <div style={{
+                  fontSize: 13, color: T.textSecondary, lineHeight: 1.4,
+                  overflow: "hidden", display: "-webkit-box",
+                  WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                }}>
+                  {preview}
+                </div>
+              )}
+
+              {item.isPodcast && item.audioDuration && (
+                <div style={{ fontSize: 12, color: T.textTertiary }}>▶ {item.audioDuration}</div>
+              )}
+
+              {/* Source · time */}
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
+                {!isRead && (
+                  <span style={{
+                    width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
+                    background: feedColor || T.accent,
+                  }} />
+                )}
                 <span style={{
-                  width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
-                  background: feedColor || T.accent,
-                  opacity: isRead ? 0.5 : 1,
-                }} />
-                <span style={{
-                  fontSize: 12, fontWeight: 400, color: T.textSecondary,
+                  fontSize: 11, color: T.textTertiary,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
                 }}>
                   {item.source}
@@ -229,30 +275,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                   </span>
                 )}
               </div>
-
-              {/* Title */}
-              <div style={{
-                fontFamily: "var(--reader-font-family)",
-                fontSize: 17,
-                fontWeight: isRead ? 400 : 600,
-                color: T.text,
-                lineHeight: 1.28,
-                overflow: "hidden", display: "-webkit-box",
-                WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                letterSpacing: "-.015em",
-                marginBottom: 6,
-                WebkitFontSmoothing: "antialiased",
-              }}>
-                {item.title}
-              </div>
-
-              {item.isPodcast && item.audioDuration && (
-                <div style={{ fontSize: 12, color: T.textTertiary }}>▶ {item.audioDuration}</div>
-              )}
             </div>
-
-            {/* Square image RIGHT */}
-            <MobileThumb item={item} T={T} />
           </div>
         )}
       </SwipeRow>

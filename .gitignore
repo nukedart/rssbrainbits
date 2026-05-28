@@ -41,3 +41,6 @@ npm-debug.log*
 # Ignore local permission settings (machine-specific)
 .claude/settings.local.json
 .claude/worktrees/
+
+# ── Inspiration images ────────────────────────────────────────
+inspo images/
