@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.217] — 2026-05-28
+
+- [Nav] Bottom nav label reveal fixed — each icon expands to show its label when active and collapses cleanly when not; removed horizontal padding jitter by using fixed button sizing with minWidth; uppercase tracked labels with smoother cubic-bezier transition; filter bar action buttons now reserve label space for visual consistency
+
 ## [1.46.216] — 2026-05-28
 
 - [UX] List skeleton redesigned to match Reeder-style row layout — 72px image placeholder + title (2 lines) + preview (2 lines) + source, staggered shimmer with 3 cycling width patterns

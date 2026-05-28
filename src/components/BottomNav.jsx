@@ -53,15 +53,16 @@ function RevealLabel({ label, isActive }) {
     <span style={{
       display: "block",
       overflow: "hidden",
-      maxHeight: isActive ? "16px" : "0px",
+      maxHeight: isActive ? "14px" : "0px",
       opacity: isActive ? 1 : 0,
       fontSize: 10,
-      fontWeight: 600,
-      letterSpacing: ".01em",
+      fontWeight: 700,
+      letterSpacing: ".04em",
       lineHeight: 1,
-      marginTop: isActive ? 4 : 0,
-      transition: "max-height .18s ease, opacity .15s, margin-top .18s",
+      marginTop: isActive ? 3 : 0,
+      transition: "max-height .22s cubic-bezier(.4,0,.2,1), opacity .18s ease, margin-top .22s cubic-bezier(.4,0,.2,1)",
       whiteSpace: "nowrap",
+      textTransform: "uppercase",
     }}>{label}</span>
   );
 }
@@ -119,7 +120,7 @@ export default function BottomNav({
   const btnStyle = (isActive, isDisabled) => ({
     display: "flex", flexDirection: "column",
     alignItems: "center", justifyContent: "center",
-    padding: isActive ? "10px 18px" : "10px 14px",
+    padding: "9px 13px",
     border: "none",
     background: isActive ? T.accentSurface : "transparent",
     borderRadius: 10,
@@ -128,8 +129,9 @@ export default function BottomNav({
     cursor: isDisabled ? "default" : "pointer",
     fontFamily: "inherit",
     WebkitTapHighlightColor: "transparent",
-    transition: "color .12s, background .12s, padding .18s",
+    transition: "color .12s, background .12s",
     flexShrink: 0,
+    minWidth: 44,
   });
 
   // ── Filter bar (inbox pages) ───────────────────────────────
@@ -151,6 +153,7 @@ export default function BottomNav({
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
             <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
           </svg>
+          <RevealLabel label="Search" isActive={false} />
         </button>
 
         {/* ★ Saved */}
@@ -212,6 +215,7 @@ export default function BottomNav({
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
             <path d="M2 4h12M4 8h8M6 12h4"/>
           </svg>
+          <RevealLabel label="Display" isActive={false} />
         </button>
 
         {/* ✓ Mark all read */}
@@ -225,6 +229,7 @@ export default function BottomNav({
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M1 9l4 4 10-10"/><path d="M1 5l4 4 10-10" strokeOpacity=".4"/>
           </svg>
+          <RevealLabel label="Read All" isActive={false} />
         </button>
       </nav>
     );
