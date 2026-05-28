@@ -290,6 +290,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
     if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  sessionFilterUrlsRef.current.has(i.url));
+    if (readFilter === "saved") items = items.filter((i) => savedUrls.has(i.url));
     // Client-side live search across in-memory items
     if (liveSearch.trim().length > 1) {
       const q = liveSearch.toLowerCase();
@@ -907,26 +908,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           )}
 
-          {/* Display settings — moved to bottom bar; this slot kept for card view toggle */}
-          {false && isMobile && viewMode === "list" && !searchOpen && (
-            <button
-              onClick={() => setShowDisplaySheet(true)}
-              title="Display settings"
-              style={{
-                background: showDisplaySheet ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
-                width: 40, height: 40, cursor: "pointer", flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: showDisplaySheet ? T.accent : T.textTertiary, transition: "all .15s",
-                WebkitTapHighlightColor: "transparent",
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                <line x1="2" y1="5" x2="16" y2="5"/><circle cx="6" cy="5" r="2" fill="currentColor" stroke="none"/>
-                <line x1="2" y1="9" x2="16" y2="9"/><circle cx="12" cy="9" r="2" fill="currentColor" stroke="none"/>
-                <line x1="2" y1="13" x2="16" y2="13"/><circle cx="7" cy="13" r="2" fill="currentColor" stroke="none"/>
-              </svg>
-            </button>
-          )}
 
           {/* Search icon toggle — desktop only; mobile uses bottom bar search */}
           {!isMobile && (
@@ -1225,64 +1206,79 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           )}
         </div>
 
-        {/* ── Mobile bottom action bar ── */}
+        {/* ── Mobile bottom action bar — Reeder-style ── */}
         {isMobile && (
           <div style={{
-            display:"flex", alignItems:"center", justifyContent:"space-around",
+            display:"flex", alignItems:"center",
             height:52, flexShrink:0,
             borderTop:`1px solid ${T.border}`,
             background:T.bg,
             paddingBottom:"env(safe-area-inset-bottom, 0px)",
+            paddingLeft:8, paddingRight:8,
           }}>
             {/* Search */}
             <button
               onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
-              style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, color: searchOpen ? T.accent : T.textTertiary, WebkitTapHighlightColor:"transparent" }}
+              style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color: searchOpen ? T.accent : T.textSecondary, WebkitTapHighlightColor:"transparent" }}
             >
-              <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/></svg>
-              <span style={{ fontSize:10, fontWeight:500 }}>Search</span>
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/></svg>
             </button>
 
-            {/* Unread / All filter */}
+            {/* ★ Saved / Starred filter */}
+            <button
+              onClick={() => setReadFilter(f => f === "saved" ? "all" : "saved")}
+              style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color: readFilter === "saved" ? T.accent : T.textSecondary, WebkitTapHighlightColor:"transparent" }}
+            >
+              <svg width="20" height="20" viewBox="0 0 16 16" fill={readFilter === "saved" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
+              </svg>
+            </button>
+
+            {/* ● UNREAD pill */}
             {filterMode !== "unread" && (
               <button
                 onClick={() => setReadFilter(f => f === "unread" ? "all" : "unread")}
-                style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, color: readFilter === "unread" ? T.accent : T.textTertiary, WebkitTapHighlightColor:"transparent" }}
+                style={{
+                  flex:"0 0 auto", height:32, paddingLeft:12, paddingRight:14,
+                  display:"flex", alignItems:"center", gap:7,
+                  borderRadius:16, border:"none",
+                  background: readFilter === "unread" ? T.text : T.surface,
+                  cursor:"pointer", fontFamily:"inherit",
+                  WebkitTapHighlightColor:"transparent",
+                  transition:"background .15s",
+                  margin:"0 4px",
+                }}
               >
-                <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  {readFilter === "unread"
-                    ? <><circle cx="8" cy="8" r="6.5"/><circle cx="8" cy="8" r="2.5" fill="currentColor" stroke="none"/></>
-                    : <><circle cx="8" cy="8" r="6.5"/><circle cx="8" cy="8" r="2.5"/></>
-                  }
-                </svg>
-                <span style={{ fontSize:10, fontWeight:500 }}>{readFilter === "unread" ? "Unread" : "All"}</span>
+                <span style={{
+                  width:8, height:8, borderRadius:"50%", flexShrink:0,
+                  background: readFilter === "unread" ? T.bg : T.accent,
+                }} />
+                <span style={{
+                  fontSize:12, fontWeight:700, letterSpacing:".04em",
+                  color: readFilter === "unread" ? T.bg : T.textSecondary,
+                  textTransform:"uppercase",
+                }}>Unread</span>
               </button>
             )}
 
-            {/* Display settings */}
-            {viewMode === "list" && (
-              <button
-                onClick={() => setShowDisplaySheet(true)}
-                style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, color: showDisplaySheet ? T.accent : T.textTertiary, WebkitTapHighlightColor:"transparent" }}
-              >
-                <svg width="19" height="19" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                  <line x1="2" y1="5" x2="16" y2="5"/><circle cx="6" cy="5" r="2" fill="currentColor" stroke="none"/>
-                  <line x1="2" y1="9" x2="16" y2="9"/><circle cx="12" cy="9" r="2" fill="currentColor" stroke="none"/>
-                  <line x1="2" y1="13" x2="16" y2="13"/><circle cx="7" cy="13" r="2" fill="currentColor" stroke="none"/>
-                </svg>
-                <span style={{ fontSize:10, fontWeight:500 }}>Display</span>
-              </button>
-            )}
+            {/* ≡ Display settings */}
+            <button
+              onClick={() => setShowDisplaySheet(true)}
+              style={{ flex:1, height:"100%", background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color: showDisplaySheet ? T.accent : T.textSecondary, WebkitTapHighlightColor:"transparent" }}
+            >
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                <path d="M2 4h12M4 8h8M6 12h4"/>
+              </svg>
+            </button>
 
-            {/* Mark all read */}
+            {/* ✓ Mark all read */}
             <button
               onClick={unreadCount > 0 ? handleMarkAllRead : undefined}
-              style={{ flex:1, height:"100%", background:"none", border:"none", cursor: unreadCount > 0 ? "pointer" : "default", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, color: unreadCount > 0 ? T.textTertiary : T.textTertiary, opacity: unreadCount > 0 ? 1 : 0.35, WebkitTapHighlightColor:"transparent" }}
+              style={{ flex:1, height:"100%", background:"none", border:"none", cursor: unreadCount > 0 ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", color: T.textSecondary, opacity: unreadCount > 0 ? 1 : 0.3, WebkitTapHighlightColor:"transparent" }}
             >
-              <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M1 9l4 4 10-10"/><path d="M1 5l4 4 10-10" strokeOpacity=".4"/>
               </svg>
-              <span style={{ fontSize:10, fontWeight:500 }}>Mark Read</span>
             </button>
           </div>
         )}

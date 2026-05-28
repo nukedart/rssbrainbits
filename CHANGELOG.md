@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.212] — 2026-05-28
+
+- [UX] Mobile bottom bar rebuilt Reeder-style: Search | ★ Saved | ● UNREAD pill | ≡ Display | ✓ Mark read — tap ★ to filter inbox to saved articles, tap UNREAD pill to toggle unread-only; tap again to return to All
+
 ## [1.46.211] — 2026-05-28
 
 - [UX] Article reader: swipe right from body = previous article; swipe left = next; edge swipe right = back — full gesture navigation with no buttons needed
