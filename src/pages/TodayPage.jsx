@@ -7,7 +7,7 @@ import { fetchRSSFeed } from "../lib/fetchers";
 import { getCachedFeed } from "../lib/feedCache";
 import { Spinner } from "../components/UI";
 import ContentViewer from "../components/ContentViewer";
-import { supabase, getReadingStats } from "../lib/supabase";
+import { supabase, getReadingStats, getHighlightReviews } from "../lib/supabase";
 
 const TWENTY_FOUR_HOURS = 86400000;
 const MAX_PER_FEED = 10;
@@ -42,14 +42,18 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
   useEffect(() => {
     if (!user) return;
     getReadingStats(user.id).then(s => {
-      setStreak(s.streak ?? 0);
       setThisWeek(s.thisWeek ?? 0);
     }).catch(() => {});
+    // SR review streak from localStorage (set by ReviewPage)
     try {
-      const schedule = JSON.parse(localStorage.getItem(`fb-sr-${user.id}`) || "{}");
-      const today = new Date().toISOString().slice(0, 10);
-      setReviewDue(Object.values(schedule).filter(e => !e.nextReview || e.nextReview <= today).length);
+      const raw = localStorage.getItem(`fb-streak-${user.id}`);
+      setStreak(raw ? (JSON.parse(raw).streak ?? 0) : 0);
     } catch {}
+    // Due cards from Supabase highlight_reviews
+    const today = new Date().toISOString().slice(0, 10);
+    getHighlightReviews(user.id).then(reviews => {
+      setReviewDue(reviews.filter(r => !r.next_review || r.next_review <= today).length);
+    }).catch(() => {});
     supabase.from("saved").select("url", { count: "exact", head: true })
       .eq("user_id", user.id)
       .then(({ count }) => { if (count != null) setSavedCount(count); })
@@ -618,7 +622,7 @@ function PageHeader({ T, dateLabel, total, readCount, progress, loading, onStart
 // ── Stat pills ────────────────────────────────────────────────
 function StatPills({ T, streak, thisWeek, reviewDue, savedCount, onNavigate }) {
   const pills = [
-    { icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M8 1.5C8 1.5 4 5 4 8.5a4 4 0 0 0 8 0C12 5 8 1.5 8 1.5z"/></svg>, value: streak, label: "day streak", highlight: streak >= 7 },
+    { icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13.5 8a5.5 5.5 0 0 1-9.9 3.3M2.5 8a5.5 5.5 0 0 1 9.9-3.3"/><path d="M11.5 4.5l.9-2.1 2.1.9"/><path d="M4.5 11.5l-.9 2.1-2.1-.9"/></svg>, value: streak, label: streak === 1 ? "day streak" : "day streak", highlight: streak >= 3, onClick: onNavigate ? () => onNavigate("review") : null },
     { icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 12L6 4l4 6 3-4 3 6"/></svg>, value: thisWeek, label: "this week" },
     { icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 7h6M5 10h4"/></svg>, value: reviewDue, label: reviewDue === 1 ? "card due" : "cards due", cta: reviewDue > 0, onClick: reviewDue > 0 && onNavigate ? () => onNavigate("review") : null },
     { icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/></svg>, value: savedCount, label: "saved", onClick: onNavigate ? () => onNavigate("readlater") : null },

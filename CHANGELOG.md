@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.208] — 2026-05-27
+
+- [Fix] Today: review streak now shows the spaced-repetition streak (not article-reading streak) — the meaningful habit metric
+- [Fix] Today: "cards due" count now reads from Supabase highlight_reviews (was reading stale localStorage format after migration)
+- [Fix] Reading time now uses full article content from RSS feed instead of the truncated description excerpt — estimates are accurate
+- [Feature] Settings: OPML import — paste in an OPML file from Feedly, Reeder, or any RSS reader to batch-add all subscriptions; progress shown inline
+
 ## [1.46.207] — 2026-05-27
 
 - [Feature] Cards: Export all highlights to Markdown grouped by theme — works with Obsidian and any PKM tool, downloads as a dated .md file

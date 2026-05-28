@@ -234,7 +234,7 @@ function AppShell() {
       case "review":       return <ReviewPage />;
       case "cards":        return <CardsPage />;
       case "analytics":    return <AnalyticsPage />;
-      case "settings":     return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onNavigate={navigateTo} />;
+      case "settings":     return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFeedAdded={handleFeedAdded} onNavigate={navigateTo} />;
       case "manage-feeds": return <ManageFeedsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFeedDeleted={handleFeedDeleted} onNavigate={navigateTo} onAddFolder={() => setEditingFolder("new")} onFolderUpdate={(id, data) => setFolders(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFolderDeleted={(id) => setFolders(prev => prev.filter(f => f.id !== id))} onAddSource={handleGlobalAdd} />;
       default:             return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} onNavigate={navigateTo} />;
     }

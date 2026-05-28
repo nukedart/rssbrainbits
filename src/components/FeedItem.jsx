@@ -320,7 +320,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               <span style={{ fontSize: 11, color: T.textTertiary }}>{item.source}</span>
               {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
               {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent }}>· {item.audioDuration}</span>}
-              {!item.isPodcast && item.description && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTime(item.description)}</span>}
+              {!item.isPodcast && (item.fullText || item.description) && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTime(item.fullText || item.description)}</span>}
             </div>
           </div>
 
@@ -458,12 +458,12 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             {/* Reading time — md/lg only; sm cards are too compact */}
             {cardSize !== "sm" && (
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, marginBottom: 8 }}>
-                {!item.isPodcast && item.description && (
+                {!item.isPodcast && (item.fullText || item.description) && (
                   <span style={{ fontSize: 10, color: T.textTertiary }}>
-                    {readingTime(item.description)}
+                    {readingTime(item.fullText || item.description)}
                   </span>
                 )}
-                {!item.isPodcast && item.date && item.description && <span style={{ fontSize: 10, color: T.textTertiary }}>·</span>}
+                {!item.isPodcast && item.date && (item.fullText || item.description) && <span style={{ fontSize: 10, color: T.textTertiary }}>·</span>}
                 {item.isPodcast && item.audioDuration && (
                   <span style={{ fontSize: 10, color: T.accent }}>▶ {item.audioDuration}</span>
                 )}

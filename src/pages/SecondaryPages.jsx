@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabase";
 import { getHistory, clearHistory, getReadLater, removeReadLater,
          getSaved, unsaveItem, saveItem,
          getFeeds, getFolders, setFeedFolder, updateFeedSettings, deleteFeed,
-         updateFolder, deleteFolder,
+         updateFolder, deleteFolder, addFeed,
          getReadingStats } from "../lib/supabase";
 import { parseYouTubeUrl, isPodcastUrl } from "../lib/fetchers";
 import FeedItem from "../components/FeedItem";
@@ -653,10 +653,12 @@ function NotificationsCard({ T }) {
   );
 }
 
-export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onNavigate }) {
+export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], onFeedUpdate, onNavigate, onFeedAdded }) {
   const { T, theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const planName = getPlanName(user);
+  const opmlInputRef = useRef(null);
+  const [opmlState, setOpmlState] = useState(null); // null | { status: "importing"|"done"|"error", added, failed, total }
   const shortcuts = [
     { key: "J / ↓",   action: "Next article" },
     { key: "K / ↑",   action: "Previous article" },
@@ -826,16 +828,57 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         {/* Data & Export */}
         <Card title="Data &amp; Export" T={T}>
           <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7, marginBottom: 14 }}>
-            Export your feed subscriptions as an OPML file, importable into any RSS reader.
+            Import subscriptions from another RSS reader, or export yours as an OPML file.
           </div>
-          <button onClick={async () => {
-            const feeds = await getFeeds(user.id);
-            const xml = feedsToOPML(feeds);
-            downloadFile(xml, "feedbox-subscriptions.opml", "text/x-opml");
-          }} style={{
-            background: T.accent, border: "none", borderRadius: 9, padding: "9px 18px",
-            cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.accentText, fontFamily: "inherit",
-          }}>↓ Export OPML</button>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            {/* Hidden file input */}
+            <input ref={opmlInputRef} type="file" accept=".opml,.xml" style={{ display: "none" }}
+              onChange={async e => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file || !user) return;
+                const text = await file.text();
+                const doc = new DOMParser().parseFromString(text, "text/xml");
+                const outlines = [...doc.querySelectorAll("outline[xmlUrl]")];
+                if (!outlines.length) { setOpmlState({ status: "error", added: 0, failed: 0, total: 0 }); return; }
+                setOpmlState({ status: "importing", added: 0, failed: 0, total: outlines.length });
+                let added = 0, failed = 0;
+                for (const o of outlines) {
+                  const url = o.getAttribute("xmlUrl");
+                  const name = o.getAttribute("title") || o.getAttribute("text") || "";
+                  try {
+                    const record = await addFeed(user.id, { url, name, type: "rss" });
+                    added++;
+                    onFeedAdded?.(record);
+                  } catch { failed++; }
+                  setOpmlState({ status: "importing", added, failed, total: outlines.length });
+                }
+                setOpmlState({ status: "done", added, failed, total: outlines.length });
+              }}
+            />
+            <button onClick={() => { setOpmlState(null); opmlInputRef.current?.click(); }} style={{
+              background: T.surface, border: `1px solid ${T.border}`, borderRadius: 9, padding: "8px 16px",
+              cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "inherit", transition: "border-color .12s",
+            }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = T.accent}
+              onMouseLeave={e => e.currentTarget.style.borderColor = T.border}
+            >↑ Import OPML</button>
+            <button onClick={async () => {
+              const feeds = await getFeeds(user.id);
+              const xml = feedsToOPML(feeds);
+              downloadFile(xml, "feedbox-subscriptions.opml", "text/x-opml");
+            }} style={{
+              background: T.accent, border: "none", borderRadius: 9, padding: "9px 18px",
+              cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.accentText, fontFamily: "inherit",
+            }}>↓ Export OPML</button>
+          </div>
+          {opmlState && (
+            <div style={{ marginTop: 12, fontSize: 13, color: opmlState.status === "error" ? T.danger : opmlState.status === "done" ? T.success || T.accent : T.textSecondary, lineHeight: 1.5 }}>
+              {opmlState.status === "importing" && `Importing… ${opmlState.added + opmlState.failed}/${opmlState.total}`}
+              {opmlState.status === "done" && `Done — ${opmlState.added} feed${opmlState.added !== 1 ? "s" : ""} added${opmlState.failed > 0 ? `, ${opmlState.failed} skipped (already subscribed or invalid)` : ""}.`}
+              {opmlState.status === "error" && "No feeds found in this file. Make sure it's a valid OPML file."}
+            </div>
+          )}
         </Card>
 
         <PlanCard T={T} user={user} feedCount={appFeeds.length} planName={planName} />
