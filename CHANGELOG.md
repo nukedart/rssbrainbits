@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.218] — 2026-05-28
+
+- [Fix] Saved articles rebuilt — reads directly from Supabase on mount instead of filtering RSS feed items; saved items appear instantly without waiting for feeds to load, and articles that have aged out of RSS feeds are no longer lost
+- [Nav] Bottom nav minimised — icons 20px with thinner strokes, tighter padding, no background on active state (accent colour only), softer pill border and shadow
+- [UX] Display sheet sliders — larger 28px thumb with active scale feedback, 5px track for easier dragging on mobile
+
 ## [1.46.217] — 2026-05-28
 
 - [Nav] Bottom nav label reveal fixed — each icon expands to show its label when active and collapses cleanly when not; removed horizontal padding jitter by using fixed button sizing with minWidth; uppercase tracked labels with smoother cubic-bezier transition; filter bar action buttons now reserve label space for visual consistency

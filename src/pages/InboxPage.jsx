@@ -84,6 +84,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   // Live readUrls still drives the visual isRead state (dimming/opacity).
   const sessionFilterUrlsRef = useRef(new Set(readUrls));
   const [savedUrls, setSavedUrls]       = useState(new Set());
+  const [savedItems, setSavedItems]     = useState([]);
   const [readFilter, setReadFilter]     = useState("unread"); // "all" | "unread"
   const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
   const [toast, setToast]               = useState(null);
@@ -193,7 +194,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       setReadUrls(urls);
       try { localStorage.setItem(cacheKey, JSON.stringify([...urls])); } catch {}
     }).catch(console.error);
-    getSaved(user.id).then(items => setSavedUrls(new Set(items.map(i => i.url)))).catch(() => {});
+    getSaved(user.id).then(items => {
+      setSavedUrls(new Set(items.map(i => i.url)));
+      setSavedItems(items);
+    }).catch(() => {});
   }, [user]);
 
   useEffect(() => {
@@ -293,6 +297,24 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
   // ── Filtered + sorted item list ───────────────────────────────
   const baseItems = (() => {
+    // Saved filter: use Supabase data directly — no waiting for RSS feeds
+    if (readFilter === "saved") {
+      const rssMap = new Map(allItems.map(i => [i.url, i]));
+      let items = savedItems.map(s => rssMap.get(s.url) || {
+        url: s.url, title: s.title, source: s.source,
+        description: s.summary, image: s.image || null,
+        date: s.saved_at, feedId: null,
+      });
+      if (liveSearch.trim().length > 1) {
+        const q = liveSearch.toLowerCase();
+        items = items.filter(i =>
+          (i.title||"").toLowerCase().includes(q) ||
+          (i.description||"").toLowerCase().includes(q) ||
+          (i.source||"").toLowerCase().includes(q)
+        );
+      }
+      return items;
+    }
     let items = activeSource === "all" ? allItems : allItems.filter((i) => i.feedId === activeSource);
     if (filterMode === "today") {
       const yesterday = Date.now() - 86400000;
@@ -320,7 +342,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
     if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  sessionFilterUrlsRef.current.has(i.url));
-    if (readFilter === "saved") items = items.filter((i) => savedUrls.has(i.url));
     // Client-side live search across in-memory items
     if (liveSearch.trim().length > 1) {
       const q = liveSearch.toLowerCase();
@@ -608,10 +629,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     if (savedUrls.has(item.url)) {
       await unsaveItem(user.id, item.url);
       setSavedUrls(prev => { const next = new Set(prev); next.delete(item.url); return next; });
+      setSavedItems(prev => prev.filter(i => i.url !== item.url));
       showToast("Removed from Saved");
     } else {
       await saveItem(user.id, { ...item });
       setSavedUrls(prev => { const next = new Set(prev); next.add(item.url); return next; });
+      setSavedItems(prev => [{ url: item.url, title: item.title, source: item.source, summary: item.description || item.summary || null, image: item.image || null, saved_at: new Date().toISOString() }, ...prev]);
       showToast("Saved");
     }
   }
@@ -1345,11 +1368,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           </div>
 
           <style>{`
-            .fb-slider { -webkit-appearance: none; appearance: none; background: transparent; outline: none; }
-            .fb-slider::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: ${T.border}; }
-            .fb-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: ${T.accent}; border: 3px solid ${T.card}; box-shadow: 0 1px 6px rgba(0,0,0,.22); margin-top: -10px; cursor: grab; }
-            .fb-slider::-moz-range-track { height: 4px; border-radius: 2px; background: ${T.border}; }
-            .fb-slider::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: ${T.accent}; border: 3px solid ${T.card}; box-shadow: 0 1px 6px rgba(0,0,0,.22); cursor: grab; }
+            .fb-slider { -webkit-appearance: none; appearance: none; background: transparent; outline: none; width: 100%; }
+            .fb-slider::-webkit-slider-runnable-track { height: 5px; border-radius: 3px; background: ${T.border}; }
+            .fb-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: ${T.accent}; border: 3px solid ${T.card}; box-shadow: 0 2px 8px rgba(0,0,0,.18); margin-top: -12px; cursor: grab; }
+            .fb-slider::-webkit-slider-thumb:active { transform: scale(1.15); }
+            .fb-slider::-moz-range-track { height: 5px; border-radius: 3px; background: ${T.border}; }
+            .fb-slider::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: ${T.accent}; border: 3px solid ${T.card}; box-shadow: 0 2px 8px rgba(0,0,0,.18); cursor: grab; }
           `}</style>
         </>
       )}

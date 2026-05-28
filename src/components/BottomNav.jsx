@@ -98,40 +98,40 @@ export default function BottomNav({
 
   const pillBase = {
     position: "fixed",
-    bottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
+    bottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
     left: "50%",
     zIndex: 600,
-    background: hexToRgba(T.card, 0.94),
-    backdropFilter: "blur(28px) saturate(200%)",
-    WebkitBackdropFilter: "blur(28px) saturate(200%)",
+    background: hexToRgba(T.card, 0.92),
+    backdropFilter: "blur(24px) saturate(180%)",
+    WebkitBackdropFilter: "blur(24px) saturate(180%)",
     transform: `translateX(-50%) translateY(${visible ? "0" : "120px"})`,
     transition: "transform .3s cubic-bezier(.4,0,.2,1)",
     display: "flex",
     alignItems: "center",
     borderRadius: 999,
-    border: `1px solid ${T.border}`,
+    border: `1px solid ${hexToRgba(T.border, 0.6)}`,
     boxShadow: isDark
-      ? "0 8px 40px rgba(0,0,0,.22), 0 1px 0 rgba(255,255,255,.06) inset"
-      : "0 2px 16px rgba(0,0,0,.08)",
-    padding: "0 6px",
+      ? "0 4px 24px rgba(0,0,0,.28)"
+      : "0 2px 12px rgba(0,0,0,.07)",
+    padding: "0 4px",
     maxWidth: "calc(100vw - 32px)",
   };
 
   const btnStyle = (isActive, isDisabled) => ({
     display: "flex", flexDirection: "column",
     alignItems: "center", justifyContent: "center",
-    padding: "9px 13px",
+    padding: "7px 10px",
     border: "none",
-    background: isActive ? T.accentSurface : "transparent",
-    borderRadius: 10,
+    background: "transparent",
+    borderRadius: 8,
     color: isActive ? T.accent : isDisabled ? T.textTertiary : T.textSecondary,
-    opacity: isDisabled ? 0.35 : 1,
+    opacity: isDisabled ? 0.3 : 1,
     cursor: isDisabled ? "default" : "pointer",
     fontFamily: "inherit",
     WebkitTapHighlightColor: "transparent",
-    transition: "color .12s, background .12s",
+    transition: "color .14s",
     flexShrink: 0,
-    minWidth: 44,
+    minWidth: 40,
   });
 
   // ── Filter bar (inbox pages) ───────────────────────────────
@@ -248,11 +248,11 @@ export default function BottomNav({
               onClick={onOpenFeeds}
               aria-label="Open feeds"
               style={btnStyle(isActive, false)}
-              onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; }}
+              onTouchStart={e => { e.currentTarget.style.opacity = "0.5"; }}
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <Icon size={22} sw={isActive ? 1.8 : 1.4} />
+              <Icon size={20} sw={isActive ? 1.7 : 1.3} />
               <RevealLabel label="Feeds" isActive={isActive} />
             </button>
           );
@@ -266,21 +266,20 @@ export default function BottomNav({
             aria-label={label}
             aria-current={isActive ? "page" : undefined}
             style={btnStyle(isActive, false)}
-            onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; }}
+            onTouchStart={e => { e.currentTarget.style.opacity = "0.5"; }}
             onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
             onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >
             <span style={{ position: "relative", display: "flex" }}>
-              <Icon size={22} sw={isActive ? 1.8 : 1.4} />
+              <Icon size={20} sw={isActive ? 1.7 : 1.3} />
               {id === "inbox" && unreadCount > 0 && !isActive && (
                 <span style={{
-                  position: "absolute", top: -5, right: -7,
-                  minWidth: 14, height: 14, borderRadius: 7,
+                  position: "absolute", top: -4, right: -6,
+                  minWidth: 13, height: 13, borderRadius: 7,
                   background: T.accent, color: T.accentText,
-                  fontSize: 8, fontWeight: 700, lineHeight: 1,
+                  fontSize: 7, fontWeight: 700, lineHeight: 1,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   padding: "0 3px", boxSizing: "border-box",
-                  boxShadow: "0 1px 4px rgba(0,0,0,.2)",
                 }}>
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
