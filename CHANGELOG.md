@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.210] — 2026-05-28
+
+- [Feature] Mobile list view display settings sheet — tap the sliders icon to set image position (Left/Right/None), preview lines (0–4), and text size (Standard/Large); all settings persist across sessions
+- [UX] Article reader redesigned Reeder-style: hero image is now full-bleed with no text overlay; title, source (with favicon), and date·author appear cleanly in the content column below the image
+
 ## [1.46.209] — 2026-05-28
 
 - [UX] Mobile list items redesigned Reeder-style: image moves to left side (72px square placeholder always shown), preview text (2 lines) between title and source/time row — more info at a glance

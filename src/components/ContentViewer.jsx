@@ -639,80 +639,59 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         {!yt.isYouTube && content && (
           <div>
 
-            {/* ── Hero section — full bleed ── */}
-            <div style={{
-              position: "relative",
-              minHeight: isMobile ? 260 : 360,
-              overflow: "hidden",
-              flexShrink: 0,
-            }}>
-              {/* Background: image or atmospheric gradient */}
-              {content.image ? (
+            {/* ── Hero image — full bleed, no text overlay ── */}
+            {content.image && (
+              <div style={{ width: "100%", aspectRatio: "16/9", overflow: "hidden", flexShrink: 0, background: T.surface2 }}>
                 <img
                   src={content.image} alt=""
                   loading="eager" decoding="async"
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%" }}
-                  onError={e => { e.target.style.display = "none"; }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%", display: "block" }}
+                  onError={e => { e.target.parentElement.style.display = "none"; }}
                 />
-              ) : (
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: `radial-gradient(ellipse at 50% -10%, ${T.accent}22 0%, transparent 65%), ${T.surface}`,
-                }} />
-              )}
-              {/* Gradient overlay — blends hero into page bg */}
-              <div style={{
-                position: "absolute", inset: 0,
-                background: `linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.42) 52%, ${T.bg} 92%)`,
-              }} />
-              {/* Title + source overlaid on hero */}
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0,
-                padding: isMobile ? "28px 20px 20px" : "36px 48px 24px",
-                textAlign: "center",
-              }}>
-                {(item.source || item.date) && (
-                  <div style={{
-                    fontSize: 10, fontWeight: 700, letterSpacing: ".14em",
-                    textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.55)",
-                    marginBottom: 10,
-                  }}>
-                    {[item.source, item.date ? new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null].filter(Boolean).join("  ·  ")}
-                  </div>
-                )}
-                <h1 style={{
-                  fontFamily: "var(--reader-font-family)",
-                  fontSize: isMobile ? 24 : 32,
-                  fontWeight: 700,
-                  color: "#ffffff",
-                  margin: "0 auto",
-                  lineHeight: 1.18,
-                  letterSpacing: "-.025em",
-                  textShadow: "0 2px 28px rgba(0,0,0,0.55)",
-                  maxWidth: 600,
-                }}>
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "inherit", textDecoration: "none" }}
-                    onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
-                    onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
-                  >
-                    {content.title || item.title}
-                  </a>
-                </h1>
               </div>
-            </div>
+            )}
 
             {/* ── Content column ── */}
             <div style={{
               maxWidth: "var(--reader-line-width)",
               margin: "0 auto",
-              padding: isMobile ? "16px 20px 140px" : "16px 36px 120px",
+              padding: isMobile ? "20px 20px 140px" : "28px 36px 120px",
               width: "100%",
             }}>
+
+              {/* Source + favicon */}
+              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
+                {item.url && (() => { try { return <img src={`https://www.google.com/s2/favicons?domain=${new URL(item.url).hostname}&sz=32`} alt="" width={16} height={16} style={{ borderRadius: 3, flexShrink: 0 }} onError={e => { e.target.style.display="none"; }} />; } catch { return null; } })()}
+                <span style={{ fontSize: 13, fontWeight: 600, color: T.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {item.source}
+                </span>
+              </div>
+
+              {/* Title */}
+              <h1 style={{
+                fontFamily: "var(--reader-font-family)",
+                fontSize: isMobile ? 26 : 34,
+                fontWeight: 800,
+                color: T.text,
+                margin: "0 0 10px",
+                lineHeight: 1.15,
+                letterSpacing: "-.025em",
+              }}>
+                <a href={item.url} target="_blank" rel="noopener noreferrer"
+                  style={{ color: "inherit", textDecoration: "none" }}
+                  onMouseEnter={e => { e.currentTarget.style.textDecoration = "underline"; }}
+                  onMouseLeave={e => { e.currentTarget.style.textDecoration = "none"; }}
+                >
+                  {content.title || item.title}
+                </a>
+              </h1>
+
+              {/* Date · author */}
+              {(item.date || item.author) && (
+                <div style={{ fontSize: 13, color: T.textTertiary, marginBottom: 20, lineHeight: 1.5 }}>
+                  {[item.date ? new Date(item.date).toLocaleDateString("en-US", { weekday: "short", month: "long", day: "numeric", year: "numeric" }) : null, item.author || null].filter(Boolean).join("  ·  ")}
+                </div>
+              )}
 
               {/* AI Summarize */}
               <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} bodyText={content?.bodyText} articleTitle={content?.title || item?.title} />

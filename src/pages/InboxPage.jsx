@@ -55,6 +55,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
   const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "list"));
   const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "lg");
+  const [displayPrefs, setDisplayPrefs]   = useState(() => ({
+    imgPosition:  localStorage.getItem("fb-img-pos")        || "left",
+    previewLines: parseInt(localStorage.getItem("fb-preview-lines") ?? "2", 10),
+    fontSize:     localStorage.getItem("fb-list-font")      || "standard",
+  }));
+  const [showDisplaySheet, setShowDisplaySheet] = useState(false);
   const [readUrls, setReadUrls]         = useState(() => {
     // Seed synchronously from localStorage so the unread filter works on first render,
     // preventing already-read items from flashing as unread while Supabase loads.
@@ -604,6 +610,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
   function toggleViewMode(mode) { setViewMode(mode); localStorage.setItem(isMobile ? "fb-viewmode-mobile" : "fb-viewmode", mode); }
 
+  function updateDisplayPref(key, val) {
+    setDisplayPrefs(p => ({ ...p, [key]: val }));
+    const storageKey = key === "imgPosition" ? "fb-img-pos" : key === "previewLines" ? "fb-preview-lines" : "fb-list-font";
+    localStorage.setItem(storageKey, val);
+  }
+
   useEffect(() => {
     if (!viewMenuOpen) return;
     const h = e => { if (viewMenuRef.current && !viewMenuRef.current.contains(e.target)) setViewMenuOpen(false); };
@@ -895,28 +907,24 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </div>
           )}
 
-          {/* Image size toggle — mobile list view only */}
+          {/* Display settings — mobile list view only */}
           {isMobile && viewMode === "list" && !searchOpen && (
             <button
-              onClick={() => {
-                const next = cardSize === "sm" ? "md" : cardSize === "md" ? "lg" : "sm";
-                setCardSize(next);
-                localStorage.setItem("fb-cardsize", next);
-              }}
-              title={`Image size: ${cardSize === "sm" ? "hidden" : cardSize === "md" ? "small" : "large"}`}
+              onClick={() => setShowDisplaySheet(true)}
+              title="Display settings"
               style={{
-                background: cardSize !== "sm" ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
+                background: showDisplaySheet ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
                 width: 40, height: 40, cursor: "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: cardSize !== "sm" ? T.accent : T.textTertiary, transition: "all .15s",
+                color: showDisplaySheet ? T.accent : T.textTertiary, transition: "all .15s",
+                WebkitTapHighlightColor: "transparent",
               }}
             >
-              {cardSize === "sm"
-                ? <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="14" height="10" rx="2"/><line x1="1" y1="8" x2="15" y2="8" strokeOpacity=".3"/></svg>
-                : cardSize === "md"
-                ? <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M4.5 9.5l2-2.5 2 2 1.5-1.5 2 2" strokeWidth="1.5"/></svg>
-                : <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="2" width="14" height="12" rx="2"/><path d="M4 10.5l2.5-3 2.5 2.5 1.5-2 2 2.5" strokeWidth="1.5"/></svg>
-              }
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                <line x1="2" y1="5" x2="16" y2="5"/><circle cx="6" cy="5" r="2" fill="currentColor" stroke="none"/>
+                <line x1="2" y1="9" x2="16" y2="9"/><circle cx="12" cy="9" r="2" fill="currentColor" stroke="none"/>
+                <line x1="2" y1="13" x2="16" y2="13"/><circle cx="7" cy="13" r="2" fill="currentColor" stroke="none"/>
+              </svg>
             </button>
           )}
 
@@ -1175,6 +1183,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                     isRead={readUrls.has(item.url)}
                     isSaved={savedUrls.has(item.url)}
                     feedColor={feedColorMap[item.feedId]}
+                    displayPrefs={isMobile ? displayPrefs : undefined}
                     onClick={() => { setCursorIdx(i); openByIdx(i); }}
                     onSave={() => handleSaveItem(item)}
                     onReadLater={() => handleReadLater(item)}
@@ -1196,6 +1205,79 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           )}
         </div>
       </div>
+
+      {/* Display settings bottom sheet */}
+      {showDisplaySheet && (
+        <>
+          <div onClick={() => setShowDisplaySheet(false)} style={{ position:"fixed", inset:0, zIndex:1200, background:"rgba(0,0,0,.45)" }} />
+          <div style={{
+            position:"fixed", bottom:0, left:0, right:0, zIndex:1201,
+            background: T.card, borderRadius:"20px 20px 0 0",
+            padding:`20px 20px calc(20px + env(safe-area-inset-bottom, 16px))`,
+            boxShadow:"0 -8px 40px rgba(0,0,0,.22)",
+            animation:"slideInUp .2s cubic-bezier(.22,.68,0,1.12)",
+          }}>
+            <div style={{ width:40, height:4, borderRadius:2, background:T.textTertiary, opacity:.3, margin:"0 auto 20px" }} />
+            <div style={{ fontSize:16, fontWeight:700, color:T.text, marginBottom:22, letterSpacing:"-.015em" }}>Display</div>
+
+            {/* Images */}
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:12, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".07em", marginBottom:10 }}>Images</div>
+              <div style={{ display:"flex", gap:6 }}>
+                {[["left","Left"],["right","Right"],["none","None"]].map(([val,label]) => (
+                  <button key={val} onClick={() => updateDisplayPref("imgPosition", val)} style={{
+                    flex:1, padding:"10px 0", borderRadius:10, border:"none",
+                    background: displayPrefs.imgPosition===val ? T.accentSurface : T.surface,
+                    color: displayPrefs.imgPosition===val ? T.accent : T.textSecondary,
+                    fontWeight: displayPrefs.imgPosition===val ? 700 : 500,
+                    fontSize:14, cursor:"pointer", fontFamily:"inherit",
+                    WebkitTapHighlightColor:"transparent",
+                    transition:"all .1s",
+                  }}>{label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Preview lines */}
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:12, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".07em", marginBottom:10 }}>Preview Lines</div>
+              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                <button onClick={() => updateDisplayPref("previewLines", Math.max(0, displayPrefs.previewLines-1))} style={{
+                  width:36, height:36, borderRadius:9, border:`1px solid ${T.border}`,
+                  background:"transparent", color:T.textSecondary, cursor:"pointer",
+                  fontSize:20, display:"flex", alignItems:"center", justifyContent:"center",
+                  fontFamily:"inherit", WebkitTapHighlightColor:"transparent",
+                }}>−</button>
+                <span style={{ fontSize:22, fontWeight:700, color:T.text, minWidth:20, textAlign:"center" }}>{displayPrefs.previewLines}</span>
+                <button onClick={() => updateDisplayPref("previewLines", Math.min(4, displayPrefs.previewLines+1))} style={{
+                  width:36, height:36, borderRadius:9, border:`1px solid ${T.border}`,
+                  background:"transparent", color:T.textSecondary, cursor:"pointer",
+                  fontSize:20, display:"flex", alignItems:"center", justifyContent:"center",
+                  fontFamily:"inherit", WebkitTapHighlightColor:"transparent",
+                }}>+</button>
+              </div>
+            </div>
+
+            {/* Text size */}
+            <div>
+              <div style={{ fontSize:12, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".07em", marginBottom:10 }}>Text Size</div>
+              <div style={{ display:"flex", gap:6 }}>
+                {[["standard","Standard"],["large","Large"]].map(([val,label]) => (
+                  <button key={val} onClick={() => updateDisplayPref("fontSize", val)} style={{
+                    flex:1, padding:"10px 0", borderRadius:10, border:"none",
+                    background: displayPrefs.fontSize===val ? T.accentSurface : T.surface,
+                    color: displayPrefs.fontSize===val ? T.accent : T.textSecondary,
+                    fontWeight: displayPrefs.fontSize===val ? 700 : 500,
+                    fontSize:14, cursor:"pointer", fontFamily:"inherit",
+                    WebkitTapHighlightColor:"transparent",
+                    transition:"all .1s",
+                  }}>{label}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Toast */}
       {toast && (

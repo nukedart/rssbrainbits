@@ -195,17 +195,21 @@ function MobileThumb({ item, T }) {
 }
 
 // ── List view item (Things 3 task-row pattern) ───────────────
-function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor }) {
+function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor, displayPrefs = {} }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
   const favicon = faviconUrl(item.url);
+  const imgPos  = displayPrefs.imgPosition  || "left";
+  const previewN = displayPrefs.previewLines ?? 2;
+  const titleSize = displayPrefs.fontSize === "large" ? 18 : 16;
 
-  // ── Mobile: Reeder-style row — image left, text right ──
+  // ── Mobile: Reeder-style row — image left/right/none, configurable preview ──
   if (isMobile) {
-    const preview = item.description
-      ? item.description.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 200)
+    const preview = previewN > 0 && !item.isPodcast
+      ? (item.description || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 300)
       : null;
+    const thumb = <MobileThumb item={item} T={T} />;
     return (
       <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
         {({ swiped, close } = {}) => (
@@ -220,15 +224,14 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               transition: "opacity .3s",
             }}
           >
-            {/* Image LEFT */}
-            <MobileThumb item={item} T={T} />
+            {imgPos === "left" && thumb}
 
-            {/* Text RIGHT */}
+            {/* Text block */}
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
               {/* Title */}
               <div style={{
                 fontFamily: "var(--reader-font-family)",
-                fontSize: 16,
+                fontSize: titleSize,
                 fontWeight: isRead ? 400 : 600,
                 color: T.text,
                 lineHeight: 1.3,
@@ -241,11 +244,11 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               </div>
 
               {/* Preview text */}
-              {preview && !item.isPodcast && (
+              {preview && (
                 <div style={{
-                  fontSize: 13, color: T.textSecondary, lineHeight: 1.4,
+                  fontSize: titleSize - 3, color: T.textSecondary, lineHeight: 1.4,
                   overflow: "hidden", display: "-webkit-box",
-                  WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: previewN, WebkitBoxOrient: "vertical",
                 }}>
                   {preview}
                 </div>
@@ -258,15 +261,9 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {/* Source · time */}
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
                 {!isRead && (
-                  <span style={{
-                    width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
-                    background: feedColor || T.accent,
-                  }} />
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: feedColor || T.accent }} />
                 )}
-                <span style={{
-                  fontSize: 11, color: T.textTertiary,
-                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
-                }}>
+                <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                   {item.source}
                 </span>
                 {item.date && (
@@ -276,6 +273,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                 )}
               </div>
             </div>
+
+            {imgPos === "right" && thumb}
           </div>
         )}
       </SwipeRow>
@@ -514,11 +513,11 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Public export ─────────────────────────────────────────────
-export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false, feedColor }) {
+export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false, feedColor, displayPrefs }) {
   if (viewMode === "card") {
     return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} />;
   }
-  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} />;
+  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} displayPrefs={displayPrefs} />;
 }, (prev, next) =>
   prev.item === next.item &&
   prev.isSelected === next.isSelected &&
@@ -526,5 +525,6 @@ export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md"
   prev.isSaved === next.isSaved &&
   prev.viewMode === next.viewMode &&
   prev.cardSize === next.cardSize &&
-  prev.feedColor === next.feedColor
+  prev.feedColor === next.feedColor &&
+  prev.displayPrefs === next.displayPrefs
 );
