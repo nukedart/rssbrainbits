@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.219] — 2026-05-28
+
+- [Fix] Today page mobile — snap deck now uses position:absolute scroll container so card height:100% resolves correctly; date header + stat pills added above deck; skeleton shimmer replaces bare spinner; last card margin accounts for new BottomNav position; streak/review badges moved to stat pills, removed from individual cards; cards rounded with 18px radius and backdrop-blur source pill
+
 ## [1.46.218] — 2026-05-28
 
 - [Fix] Saved articles rebuilt — reads directly from Supabase on mount instead of filtering RSS feed items; saved items appear instantly without waiting for feeds to load, and articles that have aged out of RSS feeds are no longer lost

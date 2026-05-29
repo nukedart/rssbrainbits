@@ -122,7 +122,7 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
   const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   const showSplit = !isMobile && openItem;
 
-  // ── Mobile: full-screen card deck ────────────────────────────
+  // ── Mobile: header + stat pills + snap deck ──────────────────
   if (isMobile) {
     if (openItem) {
       return (
@@ -137,18 +137,50 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
         />
       );
     }
+
+    const unread = items.filter(i => !readUrls.has(i.url)).length;
+
     return (
-      <ScrollDeck
-        items={items}
-        readUrls={readUrls}
-        loading={loading}
-        feeds={feeds}
-        onOpen={(item, i) => { setOpenItem(item); setOpenIdx(i); markRead(item.url); }}
-        streak={streak}
-        reviewDue={reviewDue}
-        onNavigate={onNavigate}
-        T={T}
-      />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Compact header */}
+        <div style={{
+          flexShrink: 0, padding: "10px 16px 8px",
+          borderBottom: `1px solid ${T.border}`,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.accent, textTransform: "uppercase", letterSpacing: ".12em", marginBottom: 1 }}>{dateLabel}</div>
+            <div style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 22, fontWeight: 700, color: T.text, letterSpacing: "-.025em", lineHeight: 1.1 }}>Today</div>
+          </div>
+          {!loading && items.length > 0 && (
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: unread > 0 ? T.text : T.accent }}>
+                {unread > 0 ? `${unread} unread` : "All read ✓"}
+              </div>
+              <div style={{ height: 3, background: T.surface2, borderRadius: 2, overflow: "hidden", marginTop: 5, width: 56 }}>
+                <div style={{ height: "100%", width: `${progress}%`, background: progress === 100 ? T.success : T.accent, borderRadius: 2, transition: "width .4s ease" }} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Stat pills */}
+        <div style={{ flexShrink: 0 }}>
+          <StatPills T={T} streak={streak} thisWeek={thisWeek} reviewDue={reviewDue} savedCount={savedCount} onNavigate={onNavigate} />
+        </div>
+
+        {/* Snap deck — wrapper gives scroll container a definite size */}
+        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+          <ScrollDeck
+            items={items}
+            readUrls={readUrls}
+            loading={loading}
+            feeds={feeds}
+            onOpen={(item, i) => { setOpenItem(item); setOpenIdx(i); markRead(item.url); }}
+            T={T}
+          />
+        </div>
+      </div>
     );
   }
 
@@ -234,16 +266,23 @@ export default function TodayPage({ feeds = [], onPlayPodcast, onNavigate }) {
 }
 
 // ── Mobile: CSS scroll-snap card feed ────────────────────────
-// Browser handles all touch physics — no custom gesture code needed.
-function ScrollDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue, onNavigate, T }) {
+function ScrollDeck({ items, readUrls, loading, feeds, onOpen, T }) {
   if (loading && !items.length) {
-    return <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}><Spinner size={28} /></div>;
+    return (
+      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", gap: 10, padding: "10px 12px" }}>
+        {[1, 0.7, 0.45].map((op, i) => (
+          <div key={i} className="skeleton" style={{ flex: i === 0 ? 2 : 1, borderRadius: 18, opacity: op }} />
+        ))}
+      </div>
+    );
   }
-  if (!loading && !items.length) return <EmptyState feeds={feeds} T={T} />;
+  if (!loading && !items.length) {
+    return <div style={{ position: "absolute", inset: 0 }}><EmptyState feeds={feeds} T={T} /></div>;
+  }
 
   return (
     <div style={{
-      flex: 1,
+      position: "absolute", inset: 0,
       overflowY: "scroll",
       overflowX: "hidden",
       scrollSnapType: "y mandatory",
@@ -257,9 +296,6 @@ function ScrollDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue
           total={items.length}
           isRead={readUrls.has(item.url)}
           onOpen={() => onOpen(item, i)}
-          streak={i === 0 ? streak : 0}
-          reviewDue={i === 0 ? reviewDue : 0}
-          onNavigate={onNavigate}
           T={T}
           isLast={i === items.length - 1}
         />
@@ -268,38 +304,33 @@ function ScrollDeck({ items, readUrls, loading, feeds, onOpen, streak, reviewDue
   );
 }
 
-// ── Single snap card (full-screen, tap to open) ───────────────
-function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavigate, T, isLast }) {
+// ── Single snap card — fills 100% of its scroll container ────
+function SnapCard({ item, idx, total, isRead, onOpen, T, isLast }) {
   const hasImage = !!item.image;
 
-  // Image cards: always dark (overlay over photo). No-image: theme-native.
-  const fg        = hasImage ? "#fff"                    : T.text;
-  const fgMuted   = hasImage ? "rgba(255,255,255,.48)"   : T.textTertiary;
-  const srcBg     = hasImage ? "rgba(255,255,255,.13)"   : T.border;
-  const srcFg     = hasImage ? "rgba(255,255,255,.78)"   : T.textSecondary;
-  const ctrBg     = hasImage ? "rgba(0,0,0,.45)"         : T.border;
-  const ctrFg     = hasImage ? "rgba(255,255,255,.85)"   : T.textSecondary;
-  const streakBg  = hasImage ? "rgba(255,255,255,.18)"   : T.accent + "22";
-  const streakFg  = hasImage ? "#fff"                    : T.accent;
-  const chevronFg = hasImage ? "rgba(255,255,255,.3)"    : T.textTertiary;
+  const fg      = hasImage ? "#fff"                  : T.text;
+  const fgMuted = hasImage ? "rgba(255,255,255,.5)"  : T.textTertiary;
+  const srcBg   = hasImage ? "rgba(255,255,255,.12)" : T.surface;
+  const srcFg   = hasImage ? "rgba(255,255,255,.8)"  : T.textSecondary;
+  const ctrBg   = hasImage ? "rgba(0,0,0,.4)"        : T.surface;
+  const ctrFg   = hasImage ? "rgba(255,255,255,.8)"  : T.textSecondary;
 
   return (
     <div
       onClick={onOpen}
       style={{
-        // Each card fills viewport minus room for the BottomNav pill + a peek of the next card.
-        // env(safe-area-inset-bottom) handles iPhone home-bar devices.
-        height: "calc(100% - env(safe-area-inset-bottom, 0px) - 108px)",
+        // 100% of the scroll container viewport (works because parent is position:absolute;inset:0)
+        height: "calc(100% - 16px)",
         scrollSnapAlign: "start",
-        scrollSnapStop: "always", // prevents skipping cards on fast swipe
-        flexShrink: 0,
+        scrollSnapStop: "always",
         position: "relative",
         overflow: "hidden",
         cursor: "pointer",
+        borderRadius: 18,
         background: hasImage ? "#0a0a0a" : `linear-gradient(160deg, ${T.accent}18, ${T.surface2} 70%)`,
         WebkitTapHighlightColor: "transparent",
-        // Gap between cards doubles as the peek strip
-        marginBottom: isLast ? "calc(env(safe-area-inset-bottom, 0px) + 72px)" : 10,
+        margin: "8px 12px",
+        marginBottom: isLast ? `calc(env(safe-area-inset-bottom, 0px) + 84px)` : 0,
       }}
     >
       {/* Full-bleed image */}
@@ -310,116 +341,82 @@ function SnapCard({ item, idx, total, isRead, onOpen, streak, reviewDue, onNavig
             position: "absolute", inset: 0,
             width: "100%", height: "100%",
             objectFit: "cover",
-            opacity: isRead ? 0.45 : 0.86,
+            opacity: isRead ? 0.4 : 0.82,
+            transition: "opacity .3s",
           }}
           onError={e => { e.target.style.display = "none"; }}
         />
       )}
 
-      {/* Cinematic gradient — only on image cards; no-image cards use theme bg instead */}
+      {/* Gradient overlay */}
       {hasImage && (
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, rgba(0,0,0,.6) 0%, transparent 28%, transparent 38%, rgba(0,0,0,.94) 100%)",
+          background: "linear-gradient(to bottom, rgba(0,0,0,.5) 0%, transparent 30%, transparent 40%, rgba(0,0,0,.92) 100%)",
         }} />
       )}
 
-      {/* Top bar: streak + review badge left, counter right */}
+      {/* Top: counter */}
       <div style={{
-        position: "absolute", top: 0, left: 0, right: 0,
-        padding: "20px 16px 0",
-        display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+        position: "absolute", top: 16, right: 16,
+        fontSize: 11, fontWeight: 700, color: ctrFg,
+        background: ctrBg, backdropFilter: "blur(8px)",
+        padding: "4px 10px", borderRadius: 100,
       }}>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {streak > 0 && (
-            <span style={{
-              fontSize: 11, fontWeight: 700, color: streakFg,
-              background: streakBg, padding: "4px 10px", borderRadius: 100,
-            }}>
-              🔥 {streak}d streak
-            </span>
-          )}
-          {reviewDue > 0 && (
-            <span
-              onClick={e => { e.stopPropagation(); onNavigate?.("review"); }}
-              style={{
-                fontSize: 11, fontWeight: 700, color: T.accentText,
-                background: T.accent, padding: "4px 10px", borderRadius: 100, cursor: "pointer",
-              }}
-            >
-              {reviewDue} card{reviewDue !== 1 ? "s" : ""} due →
-            </span>
-          )}
-        </div>
-        <span style={{
-          fontSize: 12, fontWeight: 700, color: ctrFg,
-          background: ctrBg, padding: "4px 11px", borderRadius: 100, flexShrink: 0,
-        }}>
-          {idx + 1} / {total}
-        </span>
+        {idx + 1} / {total}
       </div>
+
+      {/* Read badge */}
+      {isRead && (
+        <div style={{
+          position: "absolute", top: 16, left: 16,
+          fontSize: 11, fontWeight: 700,
+          color: T.accentText, background: T.accent,
+          padding: "4px 10px", borderRadius: 100,
+        }}>
+          ✓ Read
+        </div>
+      )}
 
       {/* Bottom content */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
-        padding: "0 20px 26px",
+        padding: "0 20px 24px",
       }}>
-        {/* Source + time + read badge */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+        {/* Source + time */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
           <span style={{
             fontSize: 11, fontWeight: 700, color: srcFg,
             textTransform: "uppercase", letterSpacing: ".07em",
-            background: srcBg, padding: "3px 9px", borderRadius: 100,
+            background: srcBg, backdropFilter: "blur(8px)",
+            padding: "3px 9px", borderRadius: 100,
           }}>
             {item.source}
           </span>
-          {item.date && (
-            <span style={{ fontSize: 11, color: fgMuted }}>{relTime(item.date)}</span>
-          )}
-          {isRead && (
-            <span style={{
-              marginLeft: "auto", fontSize: 11, fontWeight: 700,
-              color: T.accentText, background: T.accent, padding: "3px 9px", borderRadius: 100,
-            }}>
-              ✓ Read
-            </span>
-          )}
+          {item.date && <span style={{ fontSize: 11, color: fgMuted }}>{relTime(item.date)}</span>}
         </div>
 
         {/* Headline */}
         <h2 style={{
           fontFamily: "var(--reader-font-family)", fontStyle: "italic",
-          fontSize: 24, fontWeight: 800, color: fg,
-          margin: "0 0 16px", lineHeight: 1.26, letterSpacing: "-.02em",
-          textShadow: hasImage ? "0 2px 14px rgba(0,0,0,.55)" : "none",
+          fontSize: 26, fontWeight: 800, color: fg,
+          margin: "0 0 18px", lineHeight: 1.24, letterSpacing: "-.02em",
+          textShadow: hasImage ? "0 2px 16px rgba(0,0,0,.6)" : "none",
           display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden",
         }}>
           {item.title}
         </h2>
 
-        {/* Tap hint */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 6,
-          color: fgMuted, fontSize: 12, fontWeight: 600,
-        }}>
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M3 2.5a1 1 0 0 1 1.447-.894l9 4.5a1 1 0 0 1 0 1.788l-9 4.5A1 1 0 0 1 3 11.5v-9z"/>
-          </svg>
-          Tap to read
-        </div>
+        {/* Scroll hint */}
+        {!isLast && (
+          <div style={{ display: "flex", alignItems: "center", gap: 5, color: fgMuted, fontSize: 11, fontWeight: 600 }}>
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 5l6 6 6-6"/>
+            </svg>
+            Swipe for next
+          </div>
+        )}
       </div>
-
-      {/* Scroll hint chevron — only on cards that have a next */}
-      {!isLast && (
-        <div style={{
-          position: "absolute", bottom: 6, left: "50%", transform: "translateX(-50%)",
-          color: chevronFg, pointerEvents: "none", lineHeight: 1,
-        }}>
-          <svg width="18" height="10" viewBox="0 0 18 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 2l7 6 7-6"/>
-          </svg>
-        </div>
-      )}
     </div>
   );
 }
