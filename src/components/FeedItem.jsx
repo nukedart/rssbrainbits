@@ -217,13 +217,16 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
         {({ swiped, close } = {}) => (
           <div
             onClick={swiped ? close : onClick}
+            onTouchStart={e => { if (!swiped) e.currentTarget.style.background = T.surface; }}
+            onTouchEnd={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.bg; }}
+            onTouchCancel={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.bg; }}
             style={{
               display: "flex", alignItems: "flex-start", gap: 12,
               padding: "12px 16px",
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
-              opacity: isRead ? 0.5 : 1,
-              transition: "opacity .3s",
+              opacity: isRead ? 0.48 : 1,
+              transition: "opacity .25s",
             }}
           >
             {imgPos === "left" && thumb}
@@ -263,7 +266,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {/* Source · time */}
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
                 {!isRead && (
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: feedColor || T.accent }} />
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", flexShrink: 0, background: feedColor || T.accent }} />
                 )}
                 <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                   {item.source}

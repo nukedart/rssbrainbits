@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.220] — 2026-05-28
+
+- [Polish] Mobile touch targets — hamburger 36→44px, Add button 34→44px, search clear ×→22px; all meet 44px Apple HIG minimum
+- [Polish] List row tap feedback — brief surface highlight on touchstart; unread dot 6→7px; read-item opacity 0.50→0.48
+- [Fix] Toast position now uses env(safe-area-inset-bottom) so it clears the BottomNav pill on notched iPhones
+- [Polish] Search result rows now have touch feedback; clear button correctly resets live search too
+
 ## [1.46.219] — 2026-05-28
 
 - [Fix] Today page mobile — snap deck now uses position:absolute scroll container so card height:100% resolves correctly; date header + stat pills added above deck; skeleton shimmer replaces bare spinner; last card margin accounts for new BottomNav position; streak/review badges moved to stat pills, removed from individual cards; cards rounded with 18px radius and backdrop-blur source pill

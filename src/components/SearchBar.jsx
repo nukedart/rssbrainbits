@@ -106,15 +106,19 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
         />
         {query && (
           <button
-            onClick={() => { setQuery(""); setResults([]); inputRef.current?.focus(); }}
+            onClick={() => { setQuery(""); setResults([]); onLiveSearch?.(""); inputRef.current?.focus(); }}
             style={{
-              width: 18, height: 18, borderRadius: "50%",
-              background: T.textTertiary + "44",
+              width: 22, height: 22, borderRadius: "50%",
+              background: T.textTertiary + "38",
               border: "none", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               color: T.textSecondary, flexShrink: 0, padding: 0,
-              fontSize: 13, lineHeight: 1,
+              fontSize: 14, lineHeight: 1,
+              WebkitTapHighlightColor: "transparent",
             }}
+            onTouchStart={e => { e.currentTarget.style.opacity = "0.6"; }}
+            onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
+            onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >×</button>
         )}
       </div>
@@ -151,15 +155,19 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
             return (
               <div
                 key={item.url}
-                onClick={() => { track("search_performed", { query_length: query.length, results: results.length }); onSelectResult(item); setQuery(""); setResults([]); }}
+                onClick={() => { track("search_performed", { query_length: query.length, results: results.length }); onSelectResult(item); setQuery(""); setResults([]); onLiveSearch?.(""); }}
                 style={{
                   display: "flex", alignItems: "flex-start", gap: 10,
-                  padding: "10px 16px", cursor: "pointer",
+                  padding: "12px 16px", cursor: "pointer",
                   borderBottom: `1px solid ${T.border}`,
                   transition: "background .08s",
+                  WebkitTapHighlightColor: "transparent",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                onTouchStart={e => { e.currentTarget.style.background = T.surface; }}
+                onTouchEnd={e => { e.currentTarget.style.background = "transparent"; }}
+                onTouchCancel={e => { e.currentTarget.style.background = "transparent"; }}
               >
                 <div style={{ width: 20, height: 20, borderRadius: 5, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
                   {favicon

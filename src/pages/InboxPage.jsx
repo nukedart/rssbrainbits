@@ -821,15 +821,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("fb-open-feeds"))}
               style={{
-                width: 36, height: 36, borderRadius: 10, border: "none",
+                width: 44, height: 44, borderRadius: 10, border: "none",
                 background: "transparent", cursor: "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: T.textSecondary,
-                WebkitTapHighlightColor: "transparent", transition: "color .12s",
+                WebkitTapHighlightColor: "transparent",
               }}
-              onTouchStart={e => { e.currentTarget.style.color = T.text; }}
-              onTouchEnd={e => { e.currentTarget.style.color = T.textSecondary; }}
-              onTouchCancel={e => { e.currentTarget.style.color = T.textSecondary; }}
+              onTouchStart={e => { e.currentTarget.style.opacity = "0.55"; }}
+              onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
+              onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
               <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
                 <path d="M2 4h12M2 8h12M2 11.5h8"/>
@@ -1104,7 +1104,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             aria-label="Add feed or article"
             style={{
               display:"flex", alignItems:"center", justifyContent:"center", gap: 5,
-              height: isMobile ? 34 : 30, padding: isMobile ? "0 14px" : "0 12px",
+              height: isMobile ? 44 : 32, padding: isMobile ? "0 16px" : "0 12px",
               background: T.accent, color: T.accentText,
               border:"none", borderRadius:8, cursor:"pointer",
               fontFamily:"inherit", flexShrink:0,
@@ -1381,7 +1381,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       {/* Toast */}
       {toast && (
         <div style={{
-          position: "fixed", bottom: isMobile ? 72 : 24, left: "50%", transform: "translateX(-50%)",
+          position: "fixed", bottom: isMobile ? "calc(80px + env(safe-area-inset-bottom, 0px))" : 24, left: "50%", transform: "translateX(-50%)",
           background: T.text, color: T.bg, borderRadius: 20,
           padding: "8px 18px", fontSize: 13, fontWeight: 600,
           boxShadow: "0 4px 16px rgba(0,0,0,.2)", zIndex: 1100,
