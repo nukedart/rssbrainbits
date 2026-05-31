@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
-import { getAllHighlights, getHighlightReviews, upsertHighlightReview } from "../lib/supabase";
+import { getAllHighlights, getHighlightReviews, upsertHighlightReview, updateHighlightNote } from "../lib/supabase";
 import { Spinner } from "../components/UI";
 
 const MIN_EASE = 1.3;
@@ -101,6 +101,9 @@ export default function ReviewPage() {
   const [exitAnim, setExitAnim]     = useState(null); // "left" | "right"
   const [sessionQuota, setSessionQuota] = useState(null); // cards left in today's quota at session start
   const [finalStreak, setFinalStreak]   = useState(null);
+  const [addingNote, setAddingNote]     = useState(false);
+  const [noteText, setNoteText]         = useState("");
+  const [swipeHintDone, setSwipeHintDone] = useState(() => !!localStorage.getItem("fb-swipe-hint-done"));
 
   // Stable refs so keyboard/touch handlers never capture stale closures
   const revealedRef   = useRef(false);
@@ -177,6 +180,8 @@ export default function ReviewPage() {
     setTimeout(() => {
       setExitAnim(null);
       setRevealed(false);
+      setAddingNote(false);
+      setNoteText("");
       setQueueIdx(i => i + 1);
       setSessionCount(n => n + 1);
       setCardKey(k => k + 1);
@@ -214,10 +219,21 @@ export default function ReviewPage() {
     }
   }
   function onTouchEnd() {
-    if (touchDirRef.current === "right") handleRatingRef.current(true);
-    else if (touchDirRef.current === "left") handleRatingRef.current(false);
+    if (touchDirRef.current === "right") { handleRatingRef.current(true); dismissSwipeHint(); }
+    else if (touchDirRef.current === "left") { handleRatingRef.current(false); dismissSwipeHint(); }
     touchStartRef.current = null;
     touchDirRef.current = null;
+  }
+
+  function dismissSwipeHint() {
+    if (!swipeHintDone) { localStorage.setItem("fb-swipe-hint-done", "1"); setSwipeHintDone(true); }
+  }
+
+  async function handleSaveNote() {
+    if (!current || !noteText.trim()) return;
+    await updateHighlightNote(current.id, noteText.trim());
+    setHighlights(prev => prev.map(h => h.id === current.id ? { ...h, note: noteText.trim() } : h));
+    setAddingNote(false);
   }
 
   const center = {
@@ -230,7 +246,7 @@ export default function ReviewPage() {
 
   if (highlights.length === 0) return (
     <div style={center}>
-      <div style={{ fontSize: 44, opacity: 0.18 }}>○</div>
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: T.textTertiary, opacity: 0.4 }}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       <div style={{ fontSize: 22, fontWeight: 800, color: T.text, letterSpacing: "-.025em" }}>No highlights yet</div>
       <div style={{ fontSize: 14, color: T.textSecondary, textAlign: "center", maxWidth: 280, lineHeight: 1.65 }}>
         Select text while reading to create a highlight. Cards appear here for daily review.
@@ -366,9 +382,8 @@ export default function ReviewPage() {
             {/* Revealed answer — fades in */}
             {revealed && (
               <div style={{ animation: "rv-reveal .22s ease" }}>
-                <div style={{ height: 1, background: T.border }} />
-                <div style={{ padding: "20px 24px" }}>
-                  {current.note ? (
+                <div style={{ padding: "20px 24px 20px" }}>
+                  {current.note && !addingNote ? (
                     <div style={{
                       fontSize: 15, color: T.textSecondary, lineHeight: 1.68,
                       borderLeft: `3px solid ${T.accent}`,
@@ -378,10 +393,46 @@ export default function ReviewPage() {
                     }}>
                       {current.note}
                     </div>
-                  ) : (
-                    <div style={{ fontSize: 13, color: T.textTertiary, fontStyle: "italic", marginBottom: current.tags?.length ? 16 : 0 }}>
-                      No annotation — tap the card in Cards to add one.
+                  ) : addingNote ? (
+                    <div style={{ marginBottom: current.tags?.length ? 16 : 0 }}>
+                      <textarea
+                        autoFocus
+                        value={noteText}
+                        onChange={e => setNoteText(e.target.value)}
+                        placeholder="Write your annotation…"
+                        rows={3}
+                        style={{
+                          width: "100%", boxSizing: "border-box", resize: "none",
+                          fontSize: 14, lineHeight: 1.6, fontFamily: "inherit",
+                          padding: "10px 12px", borderRadius: 10,
+                          border: `1px solid ${T.accent}`,
+                          background: T.bg, color: T.text, outline: "none",
+                        }}
+                      />
+                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <button onClick={handleSaveNote} style={{
+                          flex: 1, padding: "9px", borderRadius: 10, border: "none",
+                          background: T.accent, color: T.accentText,
+                          fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+                        }}>Save</button>
+                        <button onClick={() => { setAddingNote(false); setNoteText(""); }} style={{
+                          padding: "9px 16px", borderRadius: 10,
+                          border: `1px solid ${T.border}`, background: "transparent",
+                          color: T.textSecondary, fontSize: 13, fontFamily: "inherit", cursor: "pointer",
+                        }}>Cancel</button>
+                      </div>
                     </div>
+                  ) : (
+                    <button
+                      onClick={() => { setAddingNote(true); setNoteText(""); }}
+                      style={{
+                        width: "100%", padding: "12px", borderRadius: 10, cursor: "pointer",
+                        border: `1px dashed ${T.border}`, background: "transparent",
+                        color: T.textTertiary, fontSize: 13, fontFamily: "inherit",
+                        fontStyle: "italic", textAlign: "center",
+                        marginBottom: current.tags?.length ? 16 : 0,
+                      }}
+                    >+ Add annotation</button>
                   )}
                   {current.tags?.length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -475,8 +526,14 @@ export default function ReviewPage() {
         </button>
       </div>
 
-      {/* Keyboard hint — desktop only */}
-      {!isMobile && (
+      {/* Hint row — swipe on mobile, keyboard on desktop */}
+      {isMobile ? (
+        !swipeHintDone && revealed && (
+          <div style={{ textAlign: "center", fontSize: 11, color: T.textTertiary, paddingBottom: 8, opacity: .5, letterSpacing: ".01em", transition: "opacity .3s" }}>
+            ← swipe to rate →
+          </div>
+        )
+      ) : (
         <div style={{ textAlign: "center", fontSize: 11, color: T.textTertiary, paddingBottom: 8, opacity: .4, letterSpacing: ".01em" }}>
           space · show answer &nbsp;·&nbsp; ← again &nbsp;·&nbsp; got it →
         </div>

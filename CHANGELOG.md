@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.222] — 2026-05-31
+
+- [UX] Review page: remove 1px divider between passage and revealed answer — padding gap is sufficient
+- [UX] Review page: "No annotation" dead end replaced with inline "+ Add annotation" dashed button; saves directly to Supabase without leaving the review session
+- [UX] Review page: swipe hint "← swipe to rate →" on mobile after first reveal, disappears permanently after first swipe
+- [Polish] Review page: empty state ○ character replaced with BookOpen SVG icon — consistent across all devices
+
 ## [1.46.221] — 2026-05-31
 
 - [UX] Tags bar — removed borderBottom divider and redundant "TAGS" uppercase label; the TagsInput widget is self-explanatory, border was double chrome competing with content
