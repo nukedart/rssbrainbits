@@ -816,8 +816,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         {/* Toolbar */}
         <div style={{ padding: isMobile ? "0 12px" : "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 6 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 64 : 54, borderBottom: `1px solid ${T.border}` }}>
 
-          {/* ☰ Hamburger — mobile only, opens feeds drawer, hidden when search open */}
-          {isMobile && !searchOpen && (
+          {/* ☰ Hamburger — mobile only, opens feeds drawer */}
+          {isMobile && (
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("fb-open-feeds"))}
               style={{
@@ -837,8 +837,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </button>
           )}
 
-          {/* Title + unread badge + error badge — hidden when search open */}
-          {!searchOpen && (
+          {/* Title + unread badge + error badge — hidden when desktop search open */}
+          {(!searchOpen || isMobile) && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
               <div style={{ fontSize: isMobile ? 20 : 17, fontWeight: 700, color: T.text, letterSpacing: "-.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {activeFeedName}
@@ -945,7 +945,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           )}
 
           {/* Spacer — pushes controls right when title is visible */}
-          {!searchOpen && <div style={{ flex: 1 }} />}
+          {(!searchOpen || isMobile) && <div style={{ flex: 1 }} />}
 
           {/* All / Unread toggle — desktop only; moved to bottom bar on mobile */}
           {filterMode !== "unread" && !searchOpen && !isMobile && (
@@ -981,22 +981,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </button>
           )}
 
-          {/* Search input (mobile: full-width with Cancel; desktop: shown when open) */}
-          {searchOpen && (
-            <>
-              <SearchBar ref={searchBarRef} onSelectResult={(item) => { setSearchResult(item); setSearchOpen(false); setLiveSearch(""); }} onLiveSearch={setLiveSearch} onClose={() => { setLiveSearch(""); setSearchOpen(false); }} allItems={allItems} />
-              {isMobile && (
-                <button
-                  onClick={() => { setSearchOpen(false); setLiveSearch(""); }}
-                  style={{
-                    background: "none", border: "none", cursor: "pointer",
-                    color: T.accent, fontSize: 15, fontWeight: 500,
-                    fontFamily: "inherit", flexShrink: 0, padding: "0 2px",
-                    WebkitTapHighlightColor: "transparent",
-                  }}
-                >Cancel</button>
-              )}
-            </>
+          {/* Search input — desktop only (mobile uses overlay below) */}
+          {searchOpen && !isMobile && (
+            <SearchBar ref={searchBarRef} onSelectResult={(item) => { setSearchResult(item); setSearchOpen(false); setLiveSearch(""); }} onLiveSearch={setLiveSearch} onClose={() => { setLiveSearch(""); setSearchOpen(false); }} allItems={allItems} />
           )}
 
           {/* Search icon toggle — desktop only */}
@@ -1427,6 +1414,48 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       )}
 
       {showAdd && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} onSaveForLater={handleSaveForLater} />}
+
+      {/* Mobile search overlay — Spotlight-style */}
+      {isMobile && searchOpen && (
+        <div
+          onClick={() => { setSearchOpen(false); setLiveSearch(""); }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 1100,
+            background: "rgba(0,0,0,0.5)",
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+            animation: "fadeIn .15s ease",
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: "absolute",
+              top: "18%",
+              left: 16, right: 16,
+            }}
+          >
+            <SearchBar
+              ref={searchBarRef}
+              onSelectResult={(item) => { setSearchResult(item); setSearchOpen(false); setLiveSearch(""); }}
+              onLiveSearch={setLiveSearch}
+              onClose={() => { setLiveSearch(""); setSearchOpen(false); }}
+              allItems={allItems}
+            />
+            <button
+              onClick={() => { setSearchOpen(false); setLiveSearch(""); }}
+              style={{
+                display: "block", width: "100%", marginTop: 10,
+                background: "rgba(128,128,128,0.18)", border: "none",
+                borderRadius: 14, padding: "13px",
+                color: T.text, fontSize: 15, fontWeight: 500,
+                fontFamily: "inherit", cursor: "pointer",
+                WebkitTapHighlightColor: "transparent",
+              }}
+            >Cancel</button>
+          </div>
+        </div>
+      )}
       {/* Mobile: ContentViewer as full-screen overlay */}
       {openItem && isMobile && (
         <Suspense fallback={null}>

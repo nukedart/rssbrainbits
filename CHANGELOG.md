@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.224] — 2026-05-31
+
+- [UX] Mobile search: Spotlight-style full-screen overlay replaces cramped inline toolbar search; blurred backdrop, input at 18% from top, Cancel button below; toolbar title/hamburger stay visible behind it
+- [Fix] SearchBar input font bumped to 16px to prevent iOS auto-zoom on focus
+
 ## [1.46.223] — 2026-05-31
 
 - [Nav] Mobile bottom nav: remove label-reveal animation entirely — icon + accent colour is sufficient; pill is shorter and less animated

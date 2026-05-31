@@ -100,7 +100,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
           placeholder="Search…"
           style={{
             flex: 1, background: "none", border: "none", outline: "none",
-            fontSize: 15, color: T.text, fontFamily: "inherit",
+            fontSize: 16, color: T.text, fontFamily: "inherit",
             minWidth: 0,
           }}
         />
