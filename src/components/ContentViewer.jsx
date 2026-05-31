@@ -565,9 +565,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
       {/* ── Tags bar ── */}
       {showTags && (
-        <div style={{ background: T.surface, borderBottom: `1px solid ${T.border}`, padding: "10px 16px", flexShrink: 0 }}>
+        <div style={{ background: T.surface, padding: "10px 16px", flexShrink: 0 }}>
           <div style={{ maxWidth: 680, margin: "0 auto" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, marginBottom: 8 }}>Tags</div>
             {isProUser(user) ? (
               <>
                 <TagsInput tags={tags} onAdd={handleAddTag} onRemove={handleRemoveTag} allTags={allTags} />

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.221] — 2026-05-31
+
+- [UX] Tags bar — removed borderBottom divider and redundant "TAGS" uppercase label; the TagsInput widget is self-explanatory, border was double chrome competing with content
+
 ## [1.46.220] — 2026-05-28
 
 - [Polish] Mobile touch targets — hamburger 36→44px, Add button 34→44px, search clear ×→22px; all meet 44px Apple HIG minimum
