@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.223] — 2026-05-31
+
+- [Nav] Mobile bottom nav: remove label-reveal animation entirely — icon + accent colour is sufficient; pill is shorter and less animated
+- [Nav] Inbox unread badge: replace number count with a 6px accent dot — less noise, consistent with filter bar's dot style
+
 ## [1.46.222] — 2026-05-31
 
 - [UX] Review page: remove 1px divider between passage and revealed answer — padding gap is sufficient

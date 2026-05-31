@@ -47,25 +47,6 @@ function isInboxPage(active) {
   );
 }
 
-// ── Shared label reveal: animates in when isActive ─────────────
-function RevealLabel({ label, isActive }) {
-  return (
-    <span style={{
-      display: "block",
-      overflow: "hidden",
-      maxHeight: isActive ? "14px" : "0px",
-      opacity: isActive ? 1 : 0,
-      fontSize: 10,
-      fontWeight: 700,
-      letterSpacing: ".04em",
-      lineHeight: 1,
-      marginTop: isActive ? 3 : 0,
-      transition: "max-height .22s cubic-bezier(.4,0,.2,1), opacity .18s ease, margin-top .22s cubic-bezier(.4,0,.2,1)",
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-    }}>{label}</span>
-  );
-}
 
 const NAV_ITEMS = [
   { id: "feeds",  Icon: ListIcon,   label: "Feeds",  special: "feeds" },
@@ -118,9 +99,8 @@ export default function BottomNav({
   };
 
   const btnStyle = (isActive, isDisabled) => ({
-    display: "flex", flexDirection: "column",
-    alignItems: "center", justifyContent: "center",
-    padding: "7px 10px",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    padding: "10px 12px",
     border: "none",
     background: "transparent",
     borderRadius: 8,
@@ -131,7 +111,6 @@ export default function BottomNav({
     WebkitTapHighlightColor: "transparent",
     transition: "color .14s",
     flexShrink: 0,
-    minWidth: 40,
   });
 
   // ── Filter bar (inbox pages) ───────────────────────────────
@@ -153,7 +132,6 @@ export default function BottomNav({
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
             <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
           </svg>
-          <RevealLabel label="Search" isActive={false} />
         </button>
 
         {/* ★ Saved */}
@@ -167,7 +145,6 @@ export default function BottomNav({
           <svg width="20" height="20" viewBox="0 0 16 16" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
           </svg>
-          <RevealLabel label="Saved" isActive={isSaved} />
         </button>
 
         {/* ● Unread — dot replaces old pill */}
@@ -201,7 +178,6 @@ export default function BottomNav({
               </span>
             )}
           </span>
-          <RevealLabel label="Unread" isActive={isUnread} />
         </button>
 
         {/* ≡ Display */}
@@ -215,7 +191,6 @@ export default function BottomNav({
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
             <path d="M2 4h12M4 8h8M6 12h4"/>
           </svg>
-          <RevealLabel label="Display" isActive={false} />
         </button>
 
         {/* ✓ Mark all read */}
@@ -229,7 +204,6 @@ export default function BottomNav({
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M1 9l4 4 10-10"/><path d="M1 5l4 4 10-10" strokeOpacity=".4"/>
           </svg>
-          <RevealLabel label="Read All" isActive={false} />
         </button>
       </nav>
     );
@@ -253,7 +227,6 @@ export default function BottomNav({
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
               <Icon size={20} sw={isActive ? 1.7 : 1.3} />
-              <RevealLabel label="Feeds" isActive={isActive} />
             </button>
           );
         }
@@ -274,18 +247,12 @@ export default function BottomNav({
               <Icon size={20} sw={isActive ? 1.7 : 1.3} />
               {id === "inbox" && unreadCount > 0 && !isActive && (
                 <span style={{
-                  position: "absolute", top: -4, right: -6,
-                  minWidth: 13, height: 13, borderRadius: 7,
-                  background: T.accent, color: T.accentText,
-                  fontSize: 7, fontWeight: 700, lineHeight: 1,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  padding: "0 3px", boxSizing: "border-box",
-                }}>
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
+                  position: "absolute", top: -2, right: -4,
+                  width: 6, height: 6, borderRadius: "50%",
+                  background: T.accent,
+                }} />
               )}
             </span>
-            <RevealLabel label={label} isActive={isActive} />
           </button>
         );
       })}
