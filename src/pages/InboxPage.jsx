@@ -15,7 +15,7 @@ import PlanGate from "../components/PlanGate";
 import { checkLimit } from "../lib/plan";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
-import MobileSearchOverlay from "../components/MobileSearchOverlay";
+const MobileSearchOverlay = lazy(() => import("../components/MobileSearchOverlay"));
 import { track } from "../lib/analytics";
 
 function dateBucket(dateStr) {
@@ -1454,12 +1454,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
       {/* Mobile search — full-screen overlay */}
       {isMobile && searchOpen && (
-        <MobileSearchOverlay
-          allItems={allItems}
-          onClose={() => { setSearchOpen(false); setLiveSearch(""); }}
-          onSelectResult={(item) => { setSearchResult(item); setSearchOpen(false); setLiveSearch(""); }}
-          onLiveSearch={setLiveSearch}
-        />
+        <Suspense fallback={null}>
+          <MobileSearchOverlay
+            allItems={allItems}
+            onClose={() => { setSearchOpen(false); setLiveSearch(""); }}
+            onSelectResult={(item) => { setSearchResult(item); setSearchOpen(false); setLiveSearch(""); }}
+            onLiveSearch={setLiveSearch}
+          />
+        </Suspense>
       )}
       {/* Mobile: ContentViewer as full-screen overlay */}
       {openItem && isMobile && (

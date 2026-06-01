@@ -486,11 +486,15 @@ export async function getReadingStats(userId) {
     } catch {}
   }
 
-  // Fetch recent reads with timestamps for per-day chart + streak
+  // Fetch recent reads with timestamps for per-day chart + streak.
+  // Use a date filter instead of limit so heavy readers don't get their
+  // streak cut off at ~167 days (500 rows ÷ 3/day).
   try {
+    const yearAgo = new Date(Date.now() - 366 * 86400000).toISOString();
     const { data, error } = await supabase
       .from("read_items").select("url, read_at")
-      .eq("user_id", userId).order("read_at", { ascending: false }).limit(500);
+      .eq("user_id", userId).gte("read_at", yearAgo)
+      .order("read_at", { ascending: false });
     if (!error && data) recentData = data;
   } catch {}
 
@@ -537,14 +541,6 @@ export async function getAllHighlights(userId, limit = 500) {
   return data;
 }
 
-export async function getAllHighlightsWithNotes(userId) {
-  const { data, error } = await supabase
-    .from("highlights").select("*").eq("user_id", userId)
-    .not("note", "is", null).not("note", "eq", "")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data;
-}
 
 export async function getHighlightReviews(userId, limit = 200) {
   const { data, error } = await supabase

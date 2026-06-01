@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.232] — 2026-06-01
+
+- [Fix] Reading streak now correct for heavy readers — switched from limit(500) to a 366-day date filter in getReadingStats so users reading 3+ articles/day no longer see their streak cut off at ~167 days
+- [Perf] Lazy-load MobileSearchOverlay in InboxPage — InboxPage chunk now 15 kB gz (down from 21 kB gz at session start, -30% total)
+- [Fix] Remove unused getAllHighlightsWithNotes export from supabase.js
+
 ## [1.46.231] — 2026-06-01
 
 - [Fix] Validate Cloudflare Worker proxy response with looksLikeBlockPage — bot-challenge HTML pages no longer pass through as feed content; Worker now correctly falls back to public proxies when the target blocks it
