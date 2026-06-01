@@ -56,7 +56,7 @@ async function proxiedFetch(targetUrl) {
       const res = await fetchWithTimeout(OWN_PROXY + enc, 4000);
       if (res.ok) {
         const text = await res.text();
-        if (text?.trim()) return text;
+        if (text?.trim() && !looksLikeBlockPage(text)) return text;
       }
     } catch {
       // Worker unreachable — fall through to public proxies

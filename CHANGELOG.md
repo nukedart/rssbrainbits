@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.231] — 2026-06-01
+
+- [Fix] Validate Cloudflare Worker proxy response with looksLikeBlockPage — bot-challenge HTML pages no longer pass through as feed content; Worker now correctly falls back to public proxies when the target blocks it
+
 ## [1.46.230] — 2026-06-01
 
 - [Perf] Lazy-load AddModal and OPMLImport inside InboxPage — cuts the primary landing chunk from 21 kB to 16 kB gz; both components now load only on first user interaction
