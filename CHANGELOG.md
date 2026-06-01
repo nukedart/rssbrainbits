@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.229] — 2026-06-01
+
+- [Perf] Add row limits to getSaved (200), getAllHighlights (500), and getHighlightReviews (200) to cap Supabase egress cost and prevent slowdowns as user data grows; highlight reviews now order by next_review ascending so due cards surface first
+
 ## [1.46.228] — 2026-06-01
 
 - [Fix] Bottom nav always reappears on page navigation — previously a scroll-hidden nav would stay hidden when switching to Inbox, making it look like a different nav

@@ -122,10 +122,10 @@ export async function clearHistory(userId) {
 }
 
 // ── Saved / Bookmarks ─────────────────────────────────────────
-export async function getSaved(userId) {
+export async function getSaved(userId, limit = 200) {
   const { data, error } = await supabase
     .from("saved").select("*").eq("user_id", userId)
-    .order("saved_at", { ascending: false });
+    .order("saved_at", { ascending: false }).limit(limit);
   if (error) throw error;
   return data;
 }
@@ -529,10 +529,10 @@ export async function getReadingStats(userId) {
   return { thisWeek: weekData.length, allTime, streak, perDay };
 }
 
-export async function getAllHighlights(userId) {
+export async function getAllHighlights(userId, limit = 500) {
   const { data, error } = await supabase
     .from("highlights").select("*").eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }).limit(limit);
   if (error) throw error;
   return data;
 }
@@ -546,9 +546,10 @@ export async function getAllHighlightsWithNotes(userId) {
   return data;
 }
 
-export async function getHighlightReviews(userId) {
+export async function getHighlightReviews(userId, limit = 200) {
   const { data, error } = await supabase
-    .from("highlight_reviews").select("*").eq("user_id", userId);
+    .from("highlight_reviews").select("*").eq("user_id", userId)
+    .order("next_review", { ascending: true }).limit(limit);
   if (error) throw error;
   return data;
 }
