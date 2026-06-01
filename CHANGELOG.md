@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.225] — 2026-05-31
+
+- [UX] Mobile search rebuilt as MobileSearchOverlay — purpose-built full-screen modal, search bar pinned at top with safe-area padding, results scroll inline (no floating dropdown), 2-line title clamp, favicon fallback SVG, bottom padding clears BottomNav pill
+
 ## [1.46.224] — 2026-05-31
 
 - [UX] Mobile search: Spotlight-style full-screen overlay replaces cramped inline toolbar search; blurred backdrop, input at 18% from top, Cancel button below; toolbar title/hamburger stay visible behind it

@@ -14,6 +14,7 @@ import PlanGate from "../components/PlanGate";
 import { checkLimit } from "../lib/plan";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
+import MobileSearchOverlay from "../components/MobileSearchOverlay";
 import OPMLImport from "../components/OPMLImport";
 import { track } from "../lib/analytics";
 
@@ -154,8 +155,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     if (action === "search") {
       const next = !searchOpen;
       setSearchOpen(next);
-      if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50);
-      else setLiveSearch("");
+      if (!next) setLiveSearch("");
+      // mobile: MobileSearchOverlay handles its own focus on mount
+      if (next && searchBarRef.current) setTimeout(() => searchBarRef.current?.focusInput?.(), 50);
     } else if (action === "display") {
       setShowDisplaySheet(true);
     } else if (action === "markAll") {
@@ -1415,46 +1417,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
       {showAdd && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} onSaveForLater={handleSaveForLater} />}
 
-      {/* Mobile search overlay — Spotlight-style */}
+      {/* Mobile search — full-screen overlay */}
       {isMobile && searchOpen && (
-        <div
-          onClick={() => { setSearchOpen(false); setLiveSearch(""); }}
-          style={{
-            position: "fixed", inset: 0, zIndex: 1100,
-            background: "rgba(0,0,0,0.5)",
-            backdropFilter: "blur(4px)",
-            WebkitBackdropFilter: "blur(4px)",
-            animation: "fadeIn .15s ease",
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              position: "absolute",
-              top: "18%",
-              left: 16, right: 16,
-            }}
-          >
-            <SearchBar
-              ref={searchBarRef}
-              onSelectResult={(item) => { setSearchResult(item); setSearchOpen(false); setLiveSearch(""); }}
-              onLiveSearch={setLiveSearch}
-              onClose={() => { setLiveSearch(""); setSearchOpen(false); }}
-              allItems={allItems}
-            />
-            <button
-              onClick={() => { setSearchOpen(false); setLiveSearch(""); }}
-              style={{
-                display: "block", width: "100%", marginTop: 10,
-                background: "rgba(128,128,128,0.18)", border: "none",
-                borderRadius: 14, padding: "13px",
-                color: T.text, fontSize: 15, fontWeight: 500,
-                fontFamily: "inherit", cursor: "pointer",
-                WebkitTapHighlightColor: "transparent",
-              }}
-            >Cancel</button>
-          </div>
-        </div>
+        <MobileSearchOverlay
+          allItems={allItems}
+          onClose={() => { setSearchOpen(false); setLiveSearch(""); }}
+          onSelectResult={(item) => { setSearchResult(item); setSearchOpen(false); setLiveSearch(""); }}
+          onLiveSearch={setLiveSearch}
+        />
       )}
       {/* Mobile: ContentViewer as full-screen overlay */}
       {openItem && isMobile && (
