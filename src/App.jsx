@@ -73,15 +73,7 @@ function AppShell() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [edgeDx, setEdgeDx] = useState(0);
   const edgeTouchRef = useRef(null);
-  const [inboxState, setInboxState] = useState({ readFilter: "unread", unreadCount: 0 });
-
   useEffect(() => { identify(user); }, [user]);
-
-  useEffect(() => {
-    function onInboxState(e) { setInboxState(e.detail); }
-    window.addEventListener("fb-inbox-state", onInboxState);
-    return () => window.removeEventListener("fb-inbox-state", onInboxState);
-  }, []);
 
   useEffect(() => {
     function onOpenFeeds() { setMobileDrawerOpen(true); }
@@ -238,6 +230,7 @@ function AppShell() {
       return <InboxPage filterMode="youtube-all" ytFeedIds={ytFeeds.map(f => f.id)} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} onNavigate={navigateTo} />;
     }
     switch (page) {
+      case "catch-up":     return <InboxPage filterMode="catch-up" onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} onNavigate={navigateTo} />;
       case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} forceOpenSearch={forceOpenSearch} onForcedSearchClose={() => setForceOpenSearch(false)} onNavigate={navigateTo} />;
       case "today":        return <TodayPage feeds={feeds} onPlayPodcast={setPodcastItem} onNavigate={navigateTo} />;
       case "readlater":    return <ReadLaterPage />;
@@ -320,7 +313,7 @@ function AppShell() {
             </Suspense>
           </ErrorBoundary>
         </div>
-        {isMobile && <BottomNav active={page} onNavigate={navigateTo} onAdd={handleGlobalAdd} unreadCount={unreadCount} onOpenFeeds={() => setMobileDrawerOpen(true)} inboxFilter={inboxState.readFilter} inboxUnreadCount={inboxState.unreadCount} />}
+        {isMobile && <BottomNav active={page} onNavigate={navigateTo} unreadCount={unreadCount} onOpenFeeds={() => setMobileDrawerOpen(true)} />}
         {!isMobile && (
           <button onClick={handleGlobalAdd} title="Add source" aria-label="Add source" style={{
             position:"fixed", right:20, bottom:20, width:44, height:44, borderRadius:"50%",

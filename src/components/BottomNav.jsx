@@ -42,17 +42,6 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function isInboxPage(active) {
-  return (
-    active === "inbox" ||
-    active === "all" ||
-    active.startsWith("feed:") ||
-    active.startsWith("folder:") ||
-    active.startsWith("smart:")
-  );
-}
-
-
 const NAV_ITEMS = [
   { id: "feeds",     Icon: ListIcon,   label: "Feeds",  special: "feeds" },
   { id: "inbox",     Icon: InboxIcon,  label: "Inbox"  },
@@ -67,8 +56,6 @@ export default function BottomNav({
   onNavigate,
   onOpenFeeds,
   unreadCount = 0,
-  inboxFilter = "unread",
-  inboxUnreadCount = 0,
 }) {
   const { T, isDark } = useTheme();
   const [visible, setVisible] = useState(true);
@@ -78,10 +65,6 @@ export default function BottomNav({
     window.addEventListener("fb-nav-dir", onNavDir);
     return () => window.removeEventListener("fb-nav-dir", onNavDir);
   }, []);
-
-  function sendAction(action) {
-    window.dispatchEvent(new CustomEvent("fb-inbox-action", { detail: action }));
-  }
 
   const pillBase = {
     position: "fixed",
@@ -119,109 +102,12 @@ export default function BottomNav({
     flexShrink: 0,
   });
 
-  // ── Filter bar (inbox pages) ───────────────────────────────
-  if (isInboxPage(active)) {
-    const isSaved  = inboxFilter === "saved";
-    const isUnread = inboxFilter === "unread";
-    const noUnread = inboxUnreadCount === 0;
-
-    return (
-      <nav style={pillBase}>
-        {/* Search */}
-        <button
-          style={btnStyle(false, false)}
-          onClick={() => sendAction("search")}
-          onTouchStart={e => { e.currentTarget.style.opacity = "0.55"; }}
-          onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
-          onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
-        >
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-            <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
-          </svg>
-        </button>
-
-        {/* ★ Saved */}
-        <button
-          style={btnStyle(isSaved, false)}
-          onClick={() => sendAction({ type: "filter", value: isSaved ? "all" : "saved" })}
-          onTouchStart={e => { e.currentTarget.style.opacity = "0.55"; }}
-          onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
-          onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
-        >
-          <svg width="20" height="20" viewBox="0 0 16 16" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
-          </svg>
-        </button>
-
-        {/* ● Unread — dot replaces old pill */}
-        <button
-          onClick={() => sendAction({ type: "filter", value: isUnread ? "all" : "unread" })}
-          onTouchStart={e => { e.currentTarget.style.opacity = "0.55"; }}
-          onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
-          onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
-          style={btnStyle(isUnread, false)}
-        >
-          {/* Dot with optional count badge */}
-          <span style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{
-              width: isUnread ? 10 : 8, height: isUnread ? 10 : 8,
-              borderRadius: "50%",
-              background: isUnread ? T.bg : T.accent,
-              border: isUnread ? `2px solid ${T.accent}` : "none",
-              display: "block",
-              transition: "all .18s",
-            }} />
-            {inboxUnreadCount > 0 && !isUnread && (
-              <span style={{
-                position: "absolute", top: -6, right: -8,
-                minWidth: 14, height: 14, borderRadius: 7,
-                background: T.accent, color: T.accentText,
-                fontSize: 8, fontWeight: 700,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                padding: "0 3px", boxSizing: "border-box",
-              }}>
-                {inboxUnreadCount > 99 ? "99+" : inboxUnreadCount}
-              </span>
-            )}
-          </span>
-        </button>
-
-        {/* ≡ Display */}
-        <button
-          style={btnStyle(false, false)}
-          onClick={() => sendAction("display")}
-          onTouchStart={e => { e.currentTarget.style.opacity = "0.55"; }}
-          onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
-          onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
-        >
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-            <path d="M2 4h12M4 8h8M6 12h4"/>
-          </svg>
-        </button>
-
-        {/* ✓ Mark all read */}
-        <button
-          style={btnStyle(false, noUnread)}
-          onClick={noUnread ? undefined : () => sendAction("markAll")}
-          onTouchStart={e => { if (!noUnread) e.currentTarget.style.opacity = "0.55"; }}
-          onTouchEnd={e => { e.currentTarget.style.opacity = noUnread ? "0.35" : "1"; }}
-          onTouchCancel={e => { e.currentTarget.style.opacity = noUnread ? "0.35" : "1"; }}
-        >
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M1 9l4 4 10-10"/><path d="M1 5l4 4 10-10" strokeOpacity=".4"/>
-          </svg>
-        </button>
-      </nav>
-    );
-  }
-
-  // ── Nav tabs (non-inbox pages) ─────────────────────────────
   return (
     <nav style={{ ...pillBase, padding: "0 6px" }}>
       {NAV_ITEMS.map(({ id, Icon, label, special }) => {
 
         if (special === "feeds") {
-          const isActive = active === "readlater" || active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:");
+          const isActive = active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:") || active === "catch-up";
           return (
             <button
               key="feeds"

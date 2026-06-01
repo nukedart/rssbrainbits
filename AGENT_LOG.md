@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-01 | v1.46.227 | UX/Feature | Review summary badges; Cards color stripes; mobile tap-to-select sentence; Catch up smart feed | `ReviewPage.jsx`, `CardsPage.jsx`, `SelectionToolbar.jsx`, `Sidebar.jsx`, `InboxPage.jsx`, `App.jsx` | — |
 | 2026-05-31 | v1.46.221 | UX | Tags bar: remove borderBottom divider + "TAGS" uppercase label — less chrome, content feels closer | `ContentViewer.jsx:568,570` | — |
 | 2026-05-31 | v1.46.222 | UX/Polish | Review page: remove divider, inline Add annotation, swipe hint, BookOpen empty state icon | `ReviewPage.jsx` | — |
 | 2026-05-31 | v1.46.223 | Nav | BottomNav: remove RevealLabel entirely; inbox count badge → 6px dot | `BottomNav.jsx` | — |

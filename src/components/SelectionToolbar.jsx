@@ -17,6 +17,7 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
   const { T } = useTheme();
   const [toolbar, setToolbar] = useState(null);
   const toolbarRef = useRef(null);
+  const tapStartRef = useRef(null);
 
   useEffect(() => {
     function handleSelectionEnd() {
@@ -36,13 +37,53 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
       if (toolbarRef.current && !toolbarRef.current.contains(e.target)) setToolbar(null);
     }
 
+    function handleTouchStart(e) {
+      tapStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+
+    function handleTouchEnd(e) {
+      const start = tapStartRef.current;
+      tapStartRef.current = null;
+      if (!start) return;
+      const touch = e.changedTouches[0];
+      if (Math.abs(touch.clientX - start.x) > 15 || Math.abs(touch.clientY - start.y) > 15) return;
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) return;
+      const range = document.caretRangeFromPoint?.(touch.clientX, touch.clientY);
+      if (!range) return;
+      const node = range.startContainer;
+      if (node.nodeType !== Node.TEXT_NODE) return;
+      if (!containerRef.current?.contains(node)) return;
+      const text = node.textContent || "";
+      const pos = range.startOffset;
+      let s = 0;
+      for (let i = pos - 1; i >= 1; i--) {
+        if (/[.!?]/.test(text[i - 1])) { s = i; break; }
+      }
+      while (s < pos && /\s/.test(text[s])) s++;
+      let end = text.length;
+      for (let i = pos; i < text.length; i++) {
+        if (/[.!?]/.test(text[i])) { end = i + 1; break; }
+      }
+      if (end - s < 10) return;
+      const r = document.createRange();
+      r.setStart(node, s);
+      r.setEnd(node, end);
+      sel.removeAllRanges();
+      sel.addRange(r);
+    }
+
     document.addEventListener("mouseup", handleSelectionEnd);
     document.addEventListener("touchend", handleSelectionEnd);
     document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("touchstart", handleTouchStart, { passive: true });
+    document.addEventListener("touchend", handleTouchEnd);
     return () => {
       document.removeEventListener("mouseup", handleSelectionEnd);
       document.removeEventListener("touchend", handleSelectionEnd);
       document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, [containerRef]);
 

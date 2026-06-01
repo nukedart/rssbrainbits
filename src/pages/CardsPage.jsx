@@ -579,6 +579,7 @@ export default function CardsPage() {
                     onMouseEnter={e => { e.currentTarget.style.borderColor = av.color; e.currentTarget.style.boxShadow = `0 4px 20px ${av.color}1a`; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
                   >
+                    <div style={{ height: 4, background: av.color + "88", flexShrink: 0 }} />
                     <div style={{ padding: isMobile ? "16px" : "18px", flex: 1, display: "flex", flexDirection: "column" }}>
                       {/* Large count — primary visual */}
                       <div style={{ fontSize: 44, fontWeight: 800, color: av.color, letterSpacing: "-.05em", lineHeight: 1, marginBottom: 10 }}>

@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.227] — 2026-06-01
+
+- [UX] Review session summary: "Got it / Again" split badges appear on the done screen — closes the SRS feedback loop so every session ends with a score
+- [Polish] Cards theme tiles: 4px color stripe at top of each tile makes themes visually distinct at a glance — the map of ideas is now immediately scannable
+- [Feature] Reader: tap any sentence on mobile to auto-select it for highlighting — no more fighting iOS text selection; a single tap picks the sentence, toolbar appears
+- [Feature] Smart feed "Catch up" always visible in sidebar — surfaces unread articles older than 7 days so nothing ages out unseen
+- [Nav] Mobile bottom nav: single consistent nav pill (Feeds · Inbox · Saved · Today · Cards · Review) on every screen — inbox filter actions (Search, Unread toggle, Display) moved into the main toolbar row alongside the title, no second bar
+
 ## [1.46.226] — 2026-05-31
 
 - [Fix] Bookmark save was only updating savedUrls set, not savedItems list — the ★ Saved filter showed nothing after bookmarking from reader; fixed via handleViewerSave/handleViewerUnsave helpers that keep both in sync

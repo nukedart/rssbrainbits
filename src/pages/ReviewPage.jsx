@@ -97,6 +97,8 @@ export default function ReviewPage() {
   const [queueIdx, setQueueIdx]     = useState(0);
   const [revealed, setRevealed]     = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
+  const [sessionGot, setSessionGot]     = useState(0);
+  const [sessionAgain, setSessionAgain] = useState(0);
   const [cardKey, setCardKey]       = useState(0);
   const [exitAnim, setExitAnim]     = useState(null); // "left" | "right"
   const [sessionQuota, setSessionQuota] = useState(null); // cards left in today's quota at session start
@@ -176,6 +178,7 @@ export default function ReviewPage() {
     setReviews(prev => ({ ...prev, [current.id]: { highlight_id: current.id, ...updated } }));
     upsertHighlightReview(user.id, current.id, updated).catch(console.error);
     incTodayCount(user.id);
+    if (knew) setSessionGot(n => n + 1); else setSessionAgain(n => n + 1);
     setExitAnim(knew ? "left" : "right");
     setTimeout(() => {
       setExitAnim(null);
@@ -291,6 +294,18 @@ export default function ReviewPage() {
         <div style={{ fontSize: 24, fontWeight: 800, color: T.text, letterSpacing: "-.03em" }}>
           {quotaMet ? "All done for today" : sessionCount > 0 ? `${sessionCount} reviewed` : "All caught up"}
         </div>
+        {sessionCount > 0 && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, padding: "4px 14px", borderRadius: 20, background: T.accentSurface, color: T.accent }}>
+              {sessionGot} got it
+            </span>
+            {sessionAgain > 0 && (
+              <span style={{ fontSize: 13, fontWeight: 700, padding: "4px 14px", borderRadius: 20, background: T.surface2, color: T.textSecondary }}>
+                {sessionAgain} again
+              </span>
+            )}
+          </div>
+        )}
         <div style={{ fontSize: 15, color: T.textSecondary }}>
           {quotaMet
             ? `Come back tomorrow — ${dueCount > dailyQuota ? dueCount - dailyQuota : 0} more cards waiting.`

@@ -148,30 +148,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
   }, [forceOpenSearch]);
 
-  // ── BottomNav filter-bar action listener ─────────────────
-  const inboxActionRef = useRef(null);
-  inboxActionRef.current = (e) => {
-    const action = e.detail;
-    if (action === "search") {
-      const next = !searchOpen;
-      setSearchOpen(next);
-      if (!next) setLiveSearch("");
-      // mobile: MobileSearchOverlay handles its own focus on mount
-      if (next && searchBarRef.current) setTimeout(() => searchBarRef.current?.focusInput?.(), 50);
-    } else if (action === "display") {
-      setShowDisplaySheet(true);
-    } else if (action === "markAll") {
-      handleMarkAllRead();
-    } else if (action?.type === "filter") {
-      setReadFilter(action.value);
-    }
-  };
-  useEffect(() => {
-    if (!isMobile) return;
-    const handler = (e) => inboxActionRef.current?.(e);
-    window.addEventListener("fb-inbox-action", handler);
-    return () => window.removeEventListener("fb-inbox-action", handler);
-  }, [isMobile]);
 
   // ── Background sync: listen for SW "BG_SYNC" message ─────
   useEffect(() => {
@@ -341,6 +317,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       if (!folderDef) return [];
       const folderFeedIds = feeds.filter(f => f.folder_id === folderDef.id).map(f => f.id);
       items = items.filter((i) => folderFeedIds.includes(i.feedId));
+    }
+    if (filterMode === "catch-up") {
+      const sevenDaysAgo = Date.now() - 7 * 86400000;
+      items = items.filter((i) => i.date && new Date(i.date).getTime() < sevenDaysAgo && !sessionFilterUrlsRef.current.has(i.url));
     }
     if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
     if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  sessionFilterUrlsRef.current.has(i.url));
@@ -715,6 +695,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
   const activeFeedName = filterMode === "today"       ? "Today"
     : filterMode === "unread"     ? "Unread"
+    : filterMode === "catch-up"   ? "Catch up"
     : filterMode === "smart"      ? (smartFeedDef?.name || "Smart Feed")
     : filterMode === "feed"       ? (feedDef?.name || "Feed")
     : filterMode === "folder"     ? (folderDef?.name || "Folder")
@@ -746,11 +727,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     onFeedErrors?.(Object.keys(feedErrors).length);
   }, [feedErrors]);
 
-  // Broadcast filter + unread state to BottomNav filter bar
-  useEffect(() => {
-    if (!isMobile) return;
-    window.dispatchEvent(new CustomEvent("fb-inbox-state", { detail: { readFilter, unreadCount } }));
-  }, [readFilter, unreadCount, isMobile]);
 
   // Refresh saved items from Supabase whenever the saved filter is activated
   useEffect(() => {
@@ -1112,6 +1088,35 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               </div>
             )}
           </div>}
+
+          {/* Mobile icon cluster — Search · Unread · Display */}
+          {isMobile && (<>
+            <button onClick={() => setSearchOpen(true)}
+              style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
+              onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
+            >
+              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/></svg>
+            </button>
+            <button onClick={() => setReadFilter(v => v === "unread" ? "all" : "unread")}
+              style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color: readFilter==="unread"?T.accent:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
+              onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
+            >
+              <span style={{ position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <span style={{ width:readFilter==="unread"?10:8, height:readFilter==="unread"?10:8, borderRadius:"50%", background:readFilter==="unread"?T.bg:T.accent, border:readFilter==="unread"?`2px solid ${T.accent}`:"none", display:"block", transition:"all .18s" }} />
+                {unreadCount > 0 && readFilter !== "unread" && (
+                  <span style={{ position:"absolute", top:-5, right:-7, minWidth:13, height:13, borderRadius:7, background:T.accent, color:T.accentText, fontSize:8, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 3px", boxSizing:"border-box" }}>
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </span>
+            </button>
+            <button onClick={() => setShowDisplaySheet(true)}
+              style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
+              onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
+            >
+              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg>
+            </button>
+          </>)}
 
           <button
             onClick={() => setShowAdd(true)}
