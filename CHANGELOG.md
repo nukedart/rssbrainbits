@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.226] — 2026-05-31
+
+- [Fix] Bookmark save was only updating savedUrls set, not savedItems list — the ★ Saved filter showed nothing after bookmarking from reader; fixed via handleViewerSave/handleViewerUnsave helpers that keep both in sync
+- [Fix] ★ Saved filter now refreshes from Supabase every time it's activated — no more stale in-memory list from mount
+- [Fix] Saved filter empty state shows "Nothing saved yet" instead of "Fetching articles…"
+- [Nav] Saved (readlater) tab added to mobile BottomNav with filled bookmark icon — first-class navigation alongside Inbox, Today, Cards, Review
+- [Fix] ReadLaterPage ContentViewer now shows bookmark as filled and unsaving removes the item from the list immediately
+
 ## [1.46.225] — 2026-05-31
 
 - [UX] Mobile search rebuilt as MobileSearchOverlay — purpose-built full-screen modal, search bar pinned at top with safe-area padding, results scroll inline (no floating dropdown), 2-line title clamp, favicon fallback SVG, bottom padding clears BottomNav pill

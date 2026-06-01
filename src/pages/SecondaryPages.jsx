@@ -196,7 +196,18 @@ export function ReadLaterPage() {
           </div>
         )}
       </div>
-      {openItem && <ContentViewer item={openItem} onClose={() => setOpenItem(null)} />}
+      {openItem && (
+        <ContentViewer
+          item={openItem}
+          isSaved={true}
+          onUnsave={() => {
+            unsaveItem(user.id, openItem.url).catch(() => {});
+            setItems(prev => prev.filter(i => i.url !== openItem.url));
+            setOpenItem(null);
+          }}
+          onClose={() => setOpenItem(null)}
+        />
+      )}
     </PageShell>
   );
 }

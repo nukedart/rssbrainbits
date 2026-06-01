@@ -8,6 +8,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-05-31 | v1.46.223 | Nav | BottomNav: remove RevealLabel entirely; inbox count badge → 6px dot | `BottomNav.jsx` | — |
 | 2026-05-31 | v1.46.224 | UX | Mobile search: Spotlight overlay (blur backdrop, 18% from top) replaces toolbar inline; iOS zoom fix | `InboxPage.jsx`, `SearchBar.jsx` | — |
 | 2026-05-31 | v1.46.225 | UX | Mobile search rebuilt as MobileSearchOverlay — full-screen, search bar pinned top, results scroll inline | `MobileSearchOverlay.jsx`, `InboxPage.jsx` | — |
+| 2026-05-31 | v1.46.226 | Fix/Nav | Bookmark rebuild: onSave/onUnsave sync savedItems; saved filter refreshes on activate; Saved tab in BottomNav | `InboxPage.jsx`, `BottomNav.jsx`, `SecondaryPages.jsx` | — |
 | 2026-05-26 | v1.46.201 | Feature/UX/Fix | Podcast search tab in AddModal (Apple Podcasts); mobile folders collapsed by default; Settings chip added to mobile drawer | `AddModal.jsx`, `MobileFeedDrawer.jsx` | — |
 | 2026-05-24 | v1.46.199 | Fix/Polish/Perf | Highlight picker: HIGHLIGHT_COLORS fixes pink/purple mismatch; save hover uses T.danger; hero image decoding="async" | `ContentViewer.jsx:1285,500,646,1453` | — |
 | 2026-05-23 | v1.46.198 | Feature | Cards first-class: TagsInput with autocomplete, color stripe, hover-delete, search, accent tiles; TagsInput accent pill borders + click-to-filter | `CardsPage.jsx`, `TagsInput.jsx` | — |

@@ -28,6 +28,11 @@ const ReviewIcon = ({ size, sw }) => (
     <path d="M11.5 4.5l.9-2.1 2.1.9"/><path d="M4.5 11.5l-.9 2.1-2.1-.9"/>
   </svg>
 );
+const SavedIcon = ({ size, sw, filled }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
+  </svg>
+);
 
 function hexToRgba(hex, alpha) {
   const h = hex.replace("#", "");
@@ -49,11 +54,12 @@ function isInboxPage(active) {
 
 
 const NAV_ITEMS = [
-  { id: "feeds",  Icon: ListIcon,   label: "Feeds",  special: "feeds" },
-  { id: "inbox",  Icon: InboxIcon,  label: "Inbox"  },
-  { id: "today",  Icon: TodayIcon,  label: "Today"  },
-  { id: "cards",  Icon: CardIcon,   label: "Cards"  },
-  { id: "review", Icon: ReviewIcon, label: "Review" },
+  { id: "feeds",     Icon: ListIcon,   label: "Feeds",  special: "feeds" },
+  { id: "inbox",     Icon: InboxIcon,  label: "Inbox"  },
+  { id: "readlater", Icon: SavedIcon,  label: "Saved"  },
+  { id: "today",     Icon: TodayIcon,  label: "Today"  },
+  { id: "cards",     Icon: CardIcon,   label: "Cards"  },
+  { id: "review",    Icon: ReviewIcon, label: "Review" },
 ];
 
 export default function BottomNav({
@@ -244,7 +250,7 @@ export default function BottomNav({
             onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >
             <span style={{ position: "relative", display: "flex" }}>
-              <Icon size={20} sw={isActive ? 1.7 : 1.3} />
+              <Icon size={20} sw={isActive ? 1.7 : 1.3} filled={isActive} />
               {id === "inbox" && unreadCount > 0 && !isActive && (
                 <span style={{
                   position: "absolute", top: -2, right: -4,

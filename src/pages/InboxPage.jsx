@@ -641,6 +641,23 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
   }
 
+  // Used by ContentViewer's onSave/onUnsave — keeps savedUrls AND savedItems in sync
+  function handleViewerSave(item) {
+    saveItem(user.id, item).catch(() => {});
+    setSavedUrls(prev => { const n = new Set(prev); n.add(item.url); return n; });
+    setSavedItems(prev => prev.some(i => i.url === item.url) ? prev : [{
+      url: item.url, title: item.title, source: item.source,
+      image: item.image || null,
+      summary: item.description || item.summary || null,
+      saved_at: new Date().toISOString(),
+    }, ...prev]);
+  }
+  function handleViewerUnsave(url) {
+    unsaveItem(user.id, url).catch(() => {});
+    setSavedUrls(prev => { const n = new Set(prev); n.delete(url); return n; });
+    setSavedItems(prev => prev.filter(i => i.url !== url));
+  }
+
   async function handleSaveForLater({ url, type }) {
     // Fetch article metadata then save as read-later
     let item = { url, type: "article", title: url, source: new URL(url).hostname };
@@ -734,6 +751,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     if (!isMobile) return;
     window.dispatchEvent(new CustomEvent("fb-inbox-state", { detail: { readFilter, unreadCount } }));
   }, [readFilter, unreadCount, isMobile]);
+
+  // Refresh saved items from Supabase whenever the saved filter is activated
+  useEffect(() => {
+    if (readFilter !== "saved" || !user) return;
+    getSaved(user.id).then(items => {
+      setSavedUrls(new Set(items.map(i => i.url)));
+      setSavedItems(items);
+    }).catch(() => {});
+  }, [readFilter, user]);
 
   // ── Auto-mark-read on scroll ─────────────────────────────
   // Mark an item as read once its bottom edge has scrolled above the
@@ -1192,11 +1218,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             />
           )}
 
-          {!loadingItems && baseItems.length === 0 && feeds.length > 0 && (
+          {!loadingItems && baseItems.length === 0 && (readFilter === "saved" || feeds.length > 0) && (
             <EmptyState
-              icon={readFilter === "unread" ? "✅" : "⏳"}
-              title={readFilter === "unread" ? "All caught up!" : "Fetching articles…"}
-              subtitle={readFilter === "unread" ? "No unread articles. Switch to All to see everything." : "Loading from your feeds."}
+              icon={readFilter === "unread" ? "✅" : readFilter === "saved" ? "🔖" : "⏳"}
+              title={readFilter === "unread" ? "All caught up!" : readFilter === "saved" ? "Nothing saved yet" : "Fetching articles…"}
+              subtitle={readFilter === "unread" ? "No unread articles. Switch to All to see everything." : readFilter === "saved" ? "Tap the bookmark icon while reading to save articles." : "Loading from your feeds."}
             />
           )}
 
@@ -1386,8 +1412,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               inline={true}
               item={openItem}
               isSaved={savedUrls.has(openItem?.url)}
-              onSave={() => setSavedUrls(prev => { const n = new Set(prev); n.add(openItem.url); return n; })}
-              onUnsave={() => setSavedUrls(prev => { const n = new Set(prev); n.delete(openItem.url); return n; })}
+              onSave={() => handleViewerSave(openItem)}
+              onUnsave={() => handleViewerUnsave(openItem.url)}
               onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
               onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
               onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
