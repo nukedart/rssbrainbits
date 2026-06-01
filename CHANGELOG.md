@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.230] — 2026-06-01
+
+- [Perf] Lazy-load AddModal and OPMLImport inside InboxPage — cuts the primary landing chunk from 21 kB to 16 kB gz; both components now load only on first user interaction
+
 ## [1.46.229] — 2026-06-01
 
 - [Perf] Add row limits to getSaved (200), getAllHighlights (500), and getHighlightReviews (200) to cap Supabase egress cost and prevent slowdowns as user data grows; highlight reviews now order by next_review ascending so due cards surface first

@@ -8,14 +8,14 @@ import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChann
 import { getCachedFeed, invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem from "../components/FeedItem";
 const ContentViewer = lazy(() => import("../components/ContentViewer"));
-import AddModal from "../components/AddModal";
+const AddModal       = lazy(() => import("../components/AddModal"));
+const OPMLImport     = lazy(() => import("../components/OPMLImport"));
 import { Button, EmptyState, Spinner } from "../components/UI";
 import PlanGate from "../components/PlanGate";
 import { checkLimit } from "../lib/plan";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import SearchBar from "../components/SearchBar";
 import MobileSearchOverlay from "../components/MobileSearchOverlay";
-import OPMLImport from "../components/OPMLImport";
 import { track } from "../lib/analytics";
 
 function dateBucket(dateStr) {
@@ -1446,7 +1446,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         </Suspense>
       )}
 
-      {showAdd && <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} onSaveForLater={handleSaveForLater} />}
+      {showAdd && (
+        <Suspense fallback={null}>
+          <AddModal onAdd={handleAdd} onClose={() => setShowAdd(false)} onSaveForLater={handleSaveForLater} />
+        </Suspense>
+      )}
 
       {/* Mobile search — full-screen overlay */}
       {isMobile && searchOpen && (
@@ -1478,7 +1482,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />
         </Suspense>
       )}
-      {showOPML && <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />}
+      {showOPML && (
+        <Suspense fallback={null}>
+          <OPMLImport onImport={handleOPMLImport} onClose={() => setShowOPML(false)} />
+        </Suspense>
+      )}
       {opmlProgress && (
         <div style={{ position:"fixed", bottom: isMobile?80:24, left:"50%", transform:"translateX(-50%)", zIndex:2000, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, padding:"12px 20px", boxShadow:"0 4px 24px rgba(0,0,0,.15)", display:"flex", alignItems:"center", gap:12, minWidth:220 }}>
           <div style={{ width:10, height:10, border:`2px solid ${T.accent}`, borderTopColor:"transparent", borderRadius:"50%", animation:"spin .7s linear infinite", flexShrink:0 }} />
