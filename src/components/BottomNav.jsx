@@ -60,6 +60,9 @@ export default function BottomNav({
   const { T, isDark } = useTheme();
   const [visible, setVisible] = useState(true);
 
+  // Always show nav when switching pages
+  useEffect(() => { setVisible(true); }, [active]);
+
   useEffect(() => {
     function onNavDir(e) { setVisible(e.detail !== "down"); }
     window.addEventListener("fb-nav-dir", onNavDir);

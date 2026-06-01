@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.228] — 2026-06-01
+
+- [Fix] Bottom nav always reappears on page navigation — previously a scroll-hidden nav would stay hidden when switching to Inbox, making it look like a different nav
+
 ## [1.46.227] — 2026-06-01
 
 - [UX] Review session summary: "Got it / Again" split badges appear on the done screen — closes the SRS feedback loop so every session ends with a score
