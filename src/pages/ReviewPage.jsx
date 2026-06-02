@@ -87,7 +87,7 @@ function updateAndGetStreak(userId) {
   return newStreak;
 }
 
-export default function ReviewPage() {
+export default function ReviewPage({ onDueCount }) {
   const { T } = useTheme();
   const { user } = useAuth();
   const { isMobile } = useBreakpoint();
@@ -161,6 +161,7 @@ export default function ReviewPage() {
   }, [queueIdx, loading, user, sessionCount, sessionQuota, highlights, reviews, finalStreak]);
 
   const allDue = useMemo(() => highlights.filter(h => isDue(reviews[h.id])), [highlights, reviews]);
+  useEffect(() => { onDueCount?.(allDue.length); }, [allDue.length, onDueCount]);
   // Cap queue to today's remaining quota
   const queue   = useMemo(() => {
     if (sessionQuota === null) return [];

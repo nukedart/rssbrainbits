@@ -56,6 +56,7 @@ export default function BottomNav({
   onNavigate,
   onOpenFeeds,
   unreadCount = 0,
+  dueCount = 0,
 }) {
   const { T, isDark } = useTheme();
   const [visible, setVisible] = useState(true);
@@ -141,6 +142,13 @@ export default function BottomNav({
             <span style={{ position: "relative", display: "flex" }}>
               <Icon size={20} sw={isActive ? 1.7 : 1.3} filled={isActive} />
               {id === "inbox" && unreadCount > 0 && !isActive && (
+                <span style={{
+                  position: "absolute", top: -2, right: -4,
+                  width: 6, height: 6, borderRadius: "50%",
+                  background: T.accent,
+                }} />
+              )}
+              {id === "review" && dueCount > 0 && !isActive && (
                 <span style={{
                   position: "absolute", top: -2, right: -4,
                   width: 6, height: 6, borderRadius: "50%",

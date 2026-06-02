@@ -57,6 +57,7 @@ function AppShell() {
     return "inbox";
   });
   const [unreadCount, setUnreadCount] = useState(0);
+  const [dueCount, setDueCount]       = useState(0);
   const [smartFeeds, setSmartFeeds]   = useState([]);
   const [editingSF, setEditingSF]     = useState(null);
   const [folders, setFolders]         = useState([]);
@@ -237,7 +238,7 @@ function AppShell() {
       case "history":      return <HistoryPage />;
       case "stats":        return <StatsPage />;
       case "notes":        return <CardsPage />; // redirect legacy notes links to Cards
-      case "review":       return <ReviewPage />;
+      case "review":       return <ReviewPage onDueCount={setDueCount} />;
       case "cards":        return <CardsPage />;
       case "analytics":    return <AnalyticsPage />;
       case "settings":     return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFeedAdded={handleFeedAdded} onNavigate={navigateTo} />;
@@ -313,7 +314,7 @@ function AppShell() {
             </Suspense>
           </ErrorBoundary>
         </div>
-        {isMobile && <BottomNav active={page} onNavigate={navigateTo} unreadCount={unreadCount} onOpenFeeds={() => setMobileDrawerOpen(true)} />}
+        {isMobile && <BottomNav active={page} onNavigate={navigateTo} unreadCount={unreadCount} dueCount={dueCount} onOpenFeeds={() => setMobileDrawerOpen(true)} />}
         {!isMobile && (
           <button onClick={handleGlobalAdd} title="Add source" aria-label="Add source" style={{
             position:"fixed", right:20, bottom:20, width:44, height:44, borderRadius:"50%",

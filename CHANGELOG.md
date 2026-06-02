@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.233] — 2026-06-01
+
+- [Nav] Review icon in bottom nav now shows a due-cards dot badge when highlights are waiting for review — same habit-forming signal as the Inbox unread dot
+
 ## [1.46.232] — 2026-06-01
 
 - [Fix] Reading streak now correct for heavy readers — switched from limit(500) to a 366-day date filter in getReadingStats so users reading 3+ articles/day no longer see their streak cut off at ~167 days
