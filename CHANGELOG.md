@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.245] — 2026-06-08
+
+- [Perf] Removed first duplicate @keyframes pulse from index.css — the scale-based definition was dead code overridden by the opacity-only definition below it
+
 ## [1.46.244] — 2026-06-08
 
 - [Fix] Saved page: removed double-DELETE when unsaving via ContentViewer — onUnsave now updates local state only since ContentViewer already calls unsaveItem on the DB
