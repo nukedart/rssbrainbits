@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.247] — 2026-06-08
+
+- [Fix] Podcast mini-player no longer overlaps BottomNav on mobile — bottom raised to 80px (above nav pill) and width expands to full viewport width minus margin
+
 ## [1.46.246] — 2026-06-08
 
 - [Perf] Removed duplicate shimmer/skeleton CSS block from index.css (22 lines) — first block was overridden by identical second block; --sk-base/--sk-shine variables also removed as dead code

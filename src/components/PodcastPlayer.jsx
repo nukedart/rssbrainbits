@@ -606,8 +606,8 @@ export default function PodcastPlayer({ item, onClose }) {
 
       {/* ── Mini bar — always visible, non-blocking ── */}
       <div style={{
-        position: "fixed", bottom: 16, right: 16,
-        zIndex: 1000, width: 360,
+        position: "fixed", bottom: isMobile ? 80 : 16, right: 16,
+        zIndex: 1000, width: isMobile ? "calc(100vw - 32px)" : 360,
         borderRadius: 14,
         background: T.card,
         border: `1px solid ${T.border}`,
