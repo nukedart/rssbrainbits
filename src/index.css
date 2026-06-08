@@ -74,29 +74,6 @@ mark { background: none; }
 * { -webkit-text-size-adjust: 100%; }
 img { max-width: 100%; }
 
-/* ── Skeleton shimmer ── */
-@keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
-}
-
-.skeleton {
-  background: linear-gradient(90deg, var(--sk-base) 25%, var(--sk-shine) 50%, var(--sk-base) 75%);
-  background-size: 800px 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
-  border-radius: 6px;
-}
-
-/* Light mode skeleton colors */
-:root {
-  --sk-base:  #e0ddd6;
-  --sk-shine: #eceae4;
-}
-[data-theme="dark"] {
-  --sk-base:  #1a1c1e;
-  --sk-shine: #1e2022;
-}
-
 /* ── Smooth feed item entrance ── */
 @keyframes itemIn {
   from { opacity: 0; transform: translateY(6px); }

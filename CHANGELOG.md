@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.246] — 2026-06-08
+
+- [Perf] Removed duplicate shimmer/skeleton CSS block from index.css (22 lines) — first block was overridden by identical second block; --sk-base/--sk-shine variables also removed as dead code
+
 ## [1.46.245] — 2026-06-08
 
 - [Perf] Removed first duplicate @keyframes pulse from index.css — the scale-based definition was dead code overridden by the opacity-only definition below it
