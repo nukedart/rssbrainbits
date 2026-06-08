@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.243] — 2026-06-08
+
+- [Polish] Feed Pulse rows in Today page now highlight on hover (matching QueueRow behavior) — makes click targets visually obvious
+
 ## [1.46.242] — 2026-06-08
 
 - [Perf] Saved page card and list images now use loading="lazy" decoding="async" — off-screen images defer loading until scrolled into view, reducing initial page paint cost

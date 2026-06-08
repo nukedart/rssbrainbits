@@ -190,11 +190,13 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                 <div
                   key={i}
                   onClick={() => onNavigate(`feed:${f.feedId}`)}
+                  onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                   style={{
                     display: "flex", alignItems: "center", gap: 12,
                     padding: "11px 16px",
                     borderBottom: i < feedPulse.length - 1 ? `1px solid ${T.border}` : "none",
-                    cursor: "pointer",
+                    cursor: "pointer", transition: "background .1s",
                   }}
                 >
                   <span style={{
