@@ -1,5 +1,4 @@
 // ── Content fetchers ──────────────────────────────────────────
-import { Readability } from "@mozilla/readability";
 import { getCachedFeed, setCachedFeed } from "./feedCache.js";
 import { getAiProvider } from "./apiKeys.js";
 import { supabase } from "./supabase.js";
@@ -423,6 +422,7 @@ export async function fetchArticleContent(articleUrl) {
   }
 
   // ── Try Readability first ─────────────────────────────────────
+  const { Readability } = await import("@mozilla/readability");
   let readabilityResult = null;
   try {
     // Readability mutates the document, so clone it

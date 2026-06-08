@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.234] — 2026-06-08
+
+- [Perf] Lazy-load @mozilla/readability inside fetchArticleContent — removes ~34 kB (11 kB gz) from the InboxPage initial load; Readability now only fetched when a user opens an article
+
 ## [1.46.233] — 2026-06-01
 
 - [Nav] Review icon in bottom nav now shows a due-cards dot badge when highlights are waiting for review — same habit-forming signal as the Inbox unread dot
