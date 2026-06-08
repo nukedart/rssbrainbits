@@ -7,6 +7,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-01 | v1.46.230 | Perf | Lazy-load AddModal + OPMLImport in InboxPage; InboxPage chunk 21→16 kB gz | `InboxPage.jsx:10-19,1449,1481` | — |
 | 2026-06-01 | v1.46.231 | Fix | Worker proxy response now validated with looksLikeBlockPage; bot-challenge pages no longer silently pass through | `fetchers.js:59` | — |
 | 2026-06-01 | v1.46.232 | Fix/Perf | getReadingStats date filter (366d) replaces limit(500); lazy-load MobileSearchOverlay; delete dead getAllHighlightsWithNotes | `supabase.js:491,540`, `InboxPage.jsx:18,1456` | — |
+| 2026-06-08 | v1.46.241 | Polish | Saved page cards show 2-line description snippet below title when available | `ReadLaterPage.jsx:347` | — |
 | 2026-06-08 | v1.46.240 | Nav | Feed Pulse bars in Today now navigate to the specific feed (was `"inbox"`); feedId kept in chart data | `TodayPage.jsx:106,192` | — |
 | 2026-06-08 | v1.46.239 | Feature | Rebuilt Saved page — source filter pills, time-bucketed groups, 3-col card grid with large images (desktop), compact list (mobile) | `ReadLaterPage.jsx`, `App.jsx:26`, `SecondaryPages.jsx` | — |
 | 2026-06-01 | v1.46.233 | Nav | Due-cards dot badge on Review BottomNav icon via onDueCount callback | `ReviewPage.jsx:90,164`, `App.jsx:60,240,317`, `BottomNav.jsx:58,150` | — |

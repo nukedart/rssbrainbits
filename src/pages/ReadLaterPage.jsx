@@ -347,10 +347,18 @@ function Card({ item, T, onOpen, onRemove }) {
         <div style={{
           fontSize: 13, fontWeight: 600, color: T.text, lineHeight: 1.4,
           display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-          overflow: "hidden", marginBottom: 6, letterSpacing: "-.01em",
+          overflow: "hidden", marginBottom: item.description ? 4 : 6, letterSpacing: "-.01em",
         }}>
           {item.title || item.url}
         </div>
+        {item.description && (
+          <div style={{
+            fontSize: 11.5, color: T.textSecondary, lineHeight: 1.45, marginBottom: 6,
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+          }}>
+            {item.description}
+          </div>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           {fav && (
             <img src={fav} alt="" width={12} height={12}

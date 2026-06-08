@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.241] — 2026-06-08
+
+- [Polish] Saved page cards now show 2-line description snippet below the title when available, making the reading queue more scannable without opening each article
+
 ## [1.46.240] — 2026-06-08
 
 - [Nav] Feed Pulse bars in Today page now navigate directly to the tapped feed (was always going to Inbox); feedId preserved through the chart data pipeline
