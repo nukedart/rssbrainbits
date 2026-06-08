@@ -233,7 +233,7 @@ function AppShell() {
     switch (page) {
       case "catch-up":     return <InboxPage filterMode="catch-up" onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} onNavigate={navigateTo} />;
       case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} forceOpenSearch={forceOpenSearch} onForcedSearchClose={() => setForceOpenSearch(false)} onNavigate={navigateTo} />;
-      case "today":        return <TodayPage feeds={feeds} onPlayPodcast={setPodcastItem} onNavigate={navigateTo} />;
+      case "today":        return <TodayPage feeds={feeds} onNavigate={navigateTo} feedUnreadCounts={feedUnreadCounts} unreadCount={unreadCount} />;
       case "readlater":    return <ReadLaterPage />;
       case "history":      return <HistoryPage />;
       case "stats":        return <StatsPage />;

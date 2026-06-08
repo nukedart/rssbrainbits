@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.237] — 2026-06-08
+
+- [Feature] Today page redesigned as a power-user command center — replaces the Flipboard magazine grid with three sections: Your Queue (review cards due, saved backlog, inbox unread with direct CTAs), Feed Pulse (bar chart of which feeds have most unread), and Reading Log (articles read today). Bundle shrinks from 20 kB to 9 kB gz.
+
 ## [1.46.236] — 2026-06-08
 
 - [Polish] FeedItem read-state fade cut from 250–300ms to 150ms — marking items read feels 2× more responsive across list, card, and mobile views
