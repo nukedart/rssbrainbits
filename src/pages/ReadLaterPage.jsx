@@ -303,6 +303,7 @@ function Card({ item, T, onOpen, onRemove }) {
         {item.image ? (
           <img
             src={item.image} alt=""
+            loading="lazy" decoding="async"
             style={{
               position: "absolute", inset: 0, width: "100%", height: "100%",
               objectFit: "cover", transition: "transform .3s",
@@ -408,7 +409,8 @@ function ListRow({ item, T, onOpen, onRemove }) {
       {/* Thumb */}
       <div style={{ width: 68, height: 52, flexShrink: 0, borderRadius: 8, overflow: "hidden", background: T.surface2 }}>
         {item.image
-          ? <img src={item.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          ? <img src={item.image} alt="" loading="lazy" decoding="async"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
               onError={e => { e.target.style.display = "none"; }} />
           : <div style={{
               width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",

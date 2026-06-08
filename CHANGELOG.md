@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.242] — 2026-06-08
+
+- [Perf] Saved page card and list images now use loading="lazy" decoding="async" — off-screen images defer loading until scrolled into view, reducing initial page paint cost
+
 ## [1.46.241] — 2026-06-08
 
 - [Polish] Saved page cards now show 2-line description snippet below the title when available, making the reading queue more scannable without opening each article
