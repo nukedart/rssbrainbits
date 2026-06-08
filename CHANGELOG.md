@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.240] — 2026-06-08
+
+- [Nav] Feed Pulse bars in Today page now navigate directly to the tapped feed (was always going to Inbox); feedId preserved through the chart data pipeline
+
 ## [1.46.239] — 2026-06-08
 
 - [Feature] Rebuilt Saved page — standalone ReadLaterPage with source filter pills, time-bucketed groups (Today/This Week/Older), 3-column card grid with large images on desktop, compact list rows on mobile, hover-reveal delete; old inline component removed from SecondaryPages

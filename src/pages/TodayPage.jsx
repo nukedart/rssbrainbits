@@ -103,7 +103,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
     .slice(0, 7)
     .map(([feedId, count]) => {
       const f = feeds.find(f => f.id === feedId || String(f.id) === String(feedId));
-      return { name: f?.name || "Unknown feed", color: f?.color, count };
+      return { feedId, name: f?.name || "Unknown feed", color: f?.color, count };
     });
   const maxPulse = feedPulse[0]?.count || 1;
 
@@ -189,7 +189,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
               {feedPulse.map((f, i) => (
                 <div
                   key={i}
-                  onClick={() => onNavigate("inbox")}
+                  onClick={() => onNavigate(`feed:${f.feedId}`)}
                   style={{
                     display: "flex", alignItems: "center", gap: 12,
                     padding: "11px 16px",
