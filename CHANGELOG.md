@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.236] — 2026-06-08
+
+- [Polish] FeedItem read-state fade cut from 250–300ms to 150ms — marking items read feels 2× more responsive across list, card, and mobile views
+
 ## [1.46.235] — 2026-06-08
 
 - [Polish] Page transition simplified — replaced scale(0.96→1)+opacity animation with a pure opacity fade, duration cut from 180ms to 100ms; navigation feels instantaneous, removes a GPU composite layer

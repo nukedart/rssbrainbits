@@ -195,6 +195,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-05-22 | v1.46.185 | Fix | Restore desktop list thumbnails (lg default), newArticleCount decrements on scroll-read, remove DigestModal | `FeedItem.jsx:344`, `InboxPage.jsx:43,447`, `DigestModal.jsx` deleted | — |
 | 2026-06-08 | v1.46.234 | Perf | Lazy-load @mozilla/readability — removes 34 kB (11 kB gz) from InboxPage initial load | `fetchers.js:2,425` | — |
 | 2026-06-08 | v1.46.235 | Polish | Page transition: scale+opacity → pure opacity fade, 180ms→100ms — snappier nav, removes GPU composite layer | `index.css:55-58`, `App.jsx:310` | — |
+| 2026-06-08 | v1.46.236 | Polish | FeedItem read-state opacity fade 250–300ms→150ms — mark-read feels 2× faster in all views | `FeedItem.jsx:229,307,361,409` | — |
 
 ---
 

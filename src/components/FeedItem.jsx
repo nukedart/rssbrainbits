@@ -226,7 +226,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
               opacity: isRead ? 0.48 : 1,
-              transition: "opacity .25s",
+              transition: "opacity .15s",
             }}
           >
             {imgPos === "left" && thumb}
@@ -304,7 +304,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             cursor: "pointer",
             background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
             opacity: isRead ? 0.48 : 1,
-            transition: "background .15s, opacity .3s",
+            transition: "background .15s, opacity .15s",
           }}
         >
           {/* Thumbnail (md/lg) or type icon (sm) */}
@@ -358,7 +358,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               width: 6, height: 6, borderRadius: "50%",
               background: feedColor || T.accent,
               opacity: isRead ? 0 : 1,
-              transition: "opacity .3s",
+              transition: "opacity .15s",
               pointerEvents: "none",
             }} />
           )}
@@ -406,7 +406,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             borderRadius: 14, overflow: "hidden", cursor: "pointer",
             border: `1px solid ${isSelected ? T.accent + "55" : "transparent"}`,
             opacity: isRead ? 0.48 : 1,
-            transition: "background .15s, opacity .3s",
+            transition: "background .15s, opacity .15s",
             display: "flex", flexDirection: "column",
             height: "100%",
           }}
