@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.248] — 2026-06-08
+
+- [Fix] Podcast expanded panel on mobile now sits at bottom 144px (above the 80px mini-bar) and spans full viewport width — previously it overlapped the mini-bar at the same 80px baseline
+
 ## [1.46.247] — 2026-06-08
 
 - [Fix] Podcast mini-player no longer overlaps BottomNav on mobile — bottom raised to 80px (above nav pill) and width expands to full viewport width minus margin

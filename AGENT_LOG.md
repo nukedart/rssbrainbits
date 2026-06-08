@@ -7,6 +7,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-01 | v1.46.230 | Perf | Lazy-load AddModal + OPMLImport in InboxPage; InboxPage chunk 21→16 kB gz | `InboxPage.jsx:10-19,1449,1481` | — |
 | 2026-06-01 | v1.46.231 | Fix | Worker proxy response now validated with looksLikeBlockPage; bot-challenge pages no longer silently pass through | `fetchers.js:59` | — |
 | 2026-06-01 | v1.46.232 | Fix/Perf | getReadingStats date filter (366d) replaces limit(500); lazy-load MobileSearchOverlay; delete dead getAllHighlightsWithNotes | `supabase.js:491,540`, `InboxPage.jsx:18,1456` | — |
+| 2026-06-08 | v1.46.248 | Fix | Podcast expanded panel on mobile: bottom 144px (above mini-bar), full viewport width | `PodcastPlayer.jsx:554` | — |
 | 2026-06-08 | v1.46.247 | Fix | Podcast mini-bar bottom raised to 80px on mobile so it clears BottomNav pill; width fills viewport on mobile | `PodcastPlayer.jsx:609` | — |
 | 2026-06-08 | v1.46.246 | Perf | Removed duplicate shimmer/@keyframes shimmer + --sk-base/--sk-shine from index.css — 22 lines of dead CSS | `index.css:77` | — |
 | 2026-06-08 | v1.46.245 | Perf | Removed dead @keyframes pulse (scale variant) from index.css — overridden by opacity-only definition below it | `index.css:37` | — |

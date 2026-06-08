@@ -551,8 +551,8 @@ export default function PodcastPlayer({ item, onClose }) {
       {/* ── Expanded panel — floats above mini bar ── */}
       {expanded && (
         <div style={{
-          position: "fixed", bottom: 80, right: 16,
-          zIndex: 1001, width: 360,
+          position: "fixed", bottom: isMobile ? 144 : 80, right: 16,
+          zIndex: 1001, width: isMobile ? "calc(100vw - 32px)" : 360,
           borderRadius: 20, overflow: "hidden",
           background: T.card,
           border: `1px solid ${T.border}`,
