@@ -23,7 +23,7 @@ const CardsPage      = lazy(() => import("./pages/CardsPage"));
 // Named exports from SecondaryPages all share one chunk
 const lazySecondary = () => import("./pages/SecondaryPages");
 const HistoryPage    = lazy(() => lazySecondary().then(m => ({ default: m.HistoryPage })));
-const ReadLaterPage  = lazy(() => lazySecondary().then(m => ({ default: m.ReadLaterPage })));
+const ReadLaterPage  = lazy(() => import("./pages/ReadLaterPage"));
 const SettingsPage   = lazy(() => lazySecondary().then(m => ({ default: m.SettingsPage })));
 const StatsPage      = lazy(() => lazySecondary().then(m => ({ default: m.StatsPage })));
 const ManageFeedsPage = lazy(() => lazySecondary().then(m => ({ default: m.ManageFeedsPage })));

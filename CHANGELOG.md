@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.239] — 2026-06-08
+
+- [Feature] Rebuilt Saved page — standalone ReadLaterPage with source filter pills, time-bucketed groups (Today/This Week/Older), 3-column card grid with large images on desktop, compact list rows on mobile, hover-reveal delete; old inline component removed from SecondaryPages
+
 ## [1.46.238] — 2026-06-08
 
 - [Feature] Persistent podcast mini-player — desktop player replaced from blocking full-screen modal to a floating mini-bar (bottom-right, 360px) that stays visible while navigating; click title or chevron to expand full controls above the bar; × to dismiss; mobile mini-bar already persisted, RAF progress strip now runs on desktop too
