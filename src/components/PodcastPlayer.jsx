@@ -1,6 +1,6 @@
 // ── PodcastPlayer — Pocket Casts-style ───────────────────────────────
 // Mobile: mini-bar above BottomNav, tap to expand full-screen
-// Desktop: centered modal with volume + improved layout
+// Desktop: persistent mini-bar (bottom-right), expand for full controls
 import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useBreakpoint } from "../hooks/useBreakpoint";
@@ -291,9 +291,8 @@ export default function PodcastPlayer({ item, onClose }) {
     };
   }, [item?.audioUrl]);
 
-  // RAF loop for mini-bar progress strip (mobile only) — throttled to 500ms
+  // RAF loop for mini-bar progress strip — throttled to 500ms
   useEffect(() => {
-    if (!isMobile) return;
     let raf;
     let lastTs = 0;
     function tick(ts) {
@@ -544,96 +543,131 @@ export default function PodcastPlayer({ item, onClose }) {
     );
   }
 
-  // ── DESKTOP — modal ───────────────────────────────────────────────
+  // ── DESKTOP — persistent mini-bar + expandable panel ────────────────
   return (
-    <div
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{
-        position: "fixed", inset: 0, zIndex: 1000,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        background: "rgba(0,0,0,.5)",
-        backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-        animation: "fadeIn .2s ease",
-      }}
-    >
+    <>
       <audio ref={audioRef} src={item.audioUrl} preload="auto" />
 
-      <div style={{
-        width: 500, borderRadius: 24, overflow: "hidden",
-        background: T.card,
-        boxShadow: "0 40px 120px rgba(0,0,0,.55), 0 0 0 .5px rgba(255,255,255,.06)",
-        animation: "slideUp .28s cubic-bezier(.22,.8,.36,1)",
-      }}>
-        {/* Artwork header */}
-        <div style={{ position: "relative", height: 230, background: T.surface2, overflow: "hidden" }}>
-          {item.image
-            ? <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${T.accent}22, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <ArtworkPlaceholder size={100} radius={12} T={T} />
+      {/* ── Expanded panel — floats above mini bar ── */}
+      {expanded && (
+        <div style={{
+          position: "fixed", bottom: 80, right: 16,
+          zIndex: 1001, width: 360,
+          borderRadius: 20, overflow: "hidden",
+          background: T.card,
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 24px 80px rgba(0,0,0,.45), 0 0 0 .5px rgba(255,255,255,.06)",
+          animation: "slideUp .2s cubic-bezier(.22,.8,.36,1)",
+        }}>
+          {/* Artwork */}
+          <div style={{ position: "relative", height: 190, background: T.surface2, overflow: "hidden" }}>
+            {item.image
+              ? <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
+              : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${T.accent}22, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <ArtworkPlaceholder size={90} radius={12} T={T} />
+                </div>
+            }
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 70, background: `linear-gradient(to bottom, transparent, ${T.card})` }} />
+          </div>
+          {/* Controls */}
+          <div style={{ padding: "12px 22px 20px" }}>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1.3, marginBottom: 2, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                {item.title}
               </div>
+              <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</div>
+            </div>
+            <div style={{ marginBottom: 14 }}><SeekBar audioRef={audioRef} T={T} light={false} /></div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 14 }}>
+              <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light={false} />
+              <PlayBtn size={56} playing={playing} loading={loading} onClick={togglePlay} T={T} light={false} />
+              <SkipBtn secs={SKIP_FWD}  onClick={() => skip(SKIP_FWD)}  T={T} light={false} />
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button onClick={cycleRate} style={{
+                background: rate !== 1 ? T.accentSurface : T.surface2,
+                border: "none", borderRadius: 7, padding: "5px 10px",
+                cursor: "pointer", fontSize: 12, fontWeight: 700,
+                color: rate !== 1 ? T.accent : T.textSecondary,
+                fontFamily: "inherit", minWidth: 40, textAlign: "center",
+              }}>{rate}×</button>
+              <VolumeSlider volume={volume} onChange={changeVolume} T={T} light={false} />
+              <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer (30 min)"} style={{
+                background: sleepTimer ? T.accentSurface : T.surface2,
+                border: "none", borderRadius: 7, padding: "5px 9px",
+                cursor: "pointer", fontSize: sleepTimer ? 12 : 15, fontWeight: 700,
+                color: sleepTimer ? T.accent : T.textTertiary,
+                fontFamily: "inherit", minWidth: 40, textAlign: "center",
+              }}>{sleepTimer ? `${sleepTimer}m` : "💤"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Mini bar — always visible, non-blocking ── */}
+      <div style={{
+        position: "fixed", bottom: 16, right: 16,
+        zIndex: 1000, width: 360,
+        borderRadius: 14,
+        background: T.card,
+        border: `1px solid ${T.border}`,
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+        boxShadow: "0 8px 32px rgba(0,0,0,.22)",
+        overflow: "hidden",
+      }}>
+        {/* Progress strip */}
+        <div style={{ height: 2, background: T.surface2 }}>
+          <div ref={miniBarFillRef} style={{ height: "100%", width: "0%", background: T.accent }} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", padding: "9px 10px 9px 12px", gap: 10 }}>
+          {/* Artwork */}
+          {item.image
+            ? <img src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />
+            : <ArtworkPlaceholder size={40} radius={7} T={T} />
           }
-          {/* Gradient fade to card bg */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 90, background: `linear-gradient(to bottom, transparent, ${T.card})` }} />
+          {/* Title + source — click opens expanded */}
+          <div onClick={() => setExpanded(v => !v)} style={{ flex: 1, minWidth: 0, cursor: "pointer" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {item.title}
+            </div>
+            <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{item.source}</div>
+          </div>
+          {/* Play/pause */}
+          <button onClick={togglePlay} aria-label={playing ? "Pause" : "Play"} style={{
+            width: 36, height: 36, borderRadius: "50%", border: "none",
+            background: T.accent, color: T.accentText,
+            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            {loading
+              ? <span style={{ width: 12, height: 12, border: `2px solid ${T.accentText}`, borderTopColor: "transparent", borderRadius: "50%", display: "block", animation: "spin .7s linear infinite" }} />
+              : playing
+                ? <svg width="11" height="13" viewBox="0 0 12 14" fill={T.accentText}><rect x="0" y="0" width="4" height="14"/><rect x="8" y="0" width="4" height="14"/></svg>
+                : <svg width="11" height="13" viewBox="0 0 12 14" fill={T.accentText}><path d="M2 1l10 6-10 6V1z"/></svg>
+            }
+          </button>
+          {/* Expand / collapse */}
+          <button onClick={() => setExpanded(v => !v)} aria-label={expanded ? "Collapse player" : "Expand player"} style={{
+            width: 28, height: 28, background: "none", border: "none",
+            cursor: "pointer", color: T.textTertiary,
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6,
+          }}>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              {expanded ? <path d="M4 10l4-4 4 4"/> : <path d="M4 6l4 4 4-4"/>}
+            </svg>
+          </button>
           {/* Close */}
           <button onClick={onClose} aria-label="Close player" style={{
-            position: "absolute", top: 12, right: 12,
-            width: 32, height: 32, borderRadius: "50%", border: "none",
-            background: "rgba(0,0,0,.35)", backdropFilter: "blur(8px)",
-            cursor: "pointer", color: "#fff",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "background .12s",
-          }}
-            onMouseEnter={e => e.currentTarget.style.background="rgba(0,0,0,.6)"}
-            onMouseLeave={e => e.currentTarget.style.background="rgba(0,0,0,.35)"}
-          >
+            width: 28, height: 28, background: "none", border: "none",
+            cursor: "pointer", color: T.textTertiary,
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6,
+          }}>
             <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M4 4l8 8M12 4l-8 8"/>
             </svg>
           </button>
         </div>
-
-        {/* Controls */}
-        <div style={{ padding: "16px 28px 26px" }}>
-          {/* Title + source */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 17, fontWeight: 700, color: T.text, lineHeight: 1.35, marginBottom: 3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-              {item.title}
-            </div>
-            <div style={{ fontSize: 12, color: T.textTertiary, fontWeight: 500 }}>{item.source}</div>
-          </div>
-
-          {/* Seekbar */}
-          <div style={{ marginBottom: 20 }}>
-            <SeekBar audioRef={audioRef} T={T} light={false} />
-          </div>
-
-          {/* Main controls */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 16 }}>
-            <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light={false} />
-            <PlayBtn size={62} playing={playing} loading={loading} onClick={togglePlay} T={T} light={false} />
-            <SkipBtn secs={SKIP_FWD}  onClick={() => skip(SKIP_FWD)}  T={T} light={false} />
-          </div>
-
-          {/* Secondary controls */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={cycleRate} style={{
-              background: rate !== 1 ? T.accentSurface : T.surface2,
-              border: "none", borderRadius: 8, padding: "6px 11px",
-              cursor: "pointer", fontSize: 12, fontWeight: 700,
-              color: rate !== 1 ? T.accent : T.textSecondary,
-              fontFamily: "inherit", minWidth: 44, textAlign: "center", transition: "background .12s",
-            }}>{rate}×</button>
-            <VolumeSlider volume={volume} onChange={changeVolume} T={T} light={false} />
-            <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer (30 min)"} style={{
-              background: sleepTimer ? T.accentSurface : T.surface2,
-              border: "none", borderRadius: 8, padding: "6px 10px",
-              cursor: "pointer", fontSize: sleepTimer ? 12 : 15, fontWeight: 700,
-              color: sleepTimer ? T.accent : T.textTertiary,
-              fontFamily: "inherit", minWidth: 44, textAlign: "center", transition: "background .12s",
-            }}>{sleepTimer ? `${sleepTimer}m` : "💤"}</button>
-          </div>
-        </div>
       </div>
-    </div>
+    </>
   );
 }

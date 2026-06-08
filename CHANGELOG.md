@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.238] — 2026-06-08
+
+- [Feature] Persistent podcast mini-player — desktop player replaced from blocking full-screen modal to a floating mini-bar (bottom-right, 360px) that stays visible while navigating; click title or chevron to expand full controls above the bar; × to dismiss; mobile mini-bar already persisted, RAF progress strip now runs on desktop too
+
 ## [1.46.237] — 2026-06-08
 
 - [Feature] Today page redesigned as a power-user command center — replaces the Flipboard magazine grid with three sections: Your Queue (review cards due, saved backlog, inbox unread with direct CTAs), Feed Pulse (bar chart of which feeds have most unread), and Reading Log (articles read today). Bundle shrinks from 20 kB to 9 kB gz.
