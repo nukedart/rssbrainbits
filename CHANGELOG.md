@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.244] — 2026-06-08
+
+- [Fix] Saved page: removed double-DELETE when unsaving via ContentViewer — onUnsave now updates local state only since ContentViewer already calls unsaveItem on the DB
+
 ## [1.46.243] — 2026-06-08
 
 - [Polish] Feed Pulse rows in Today page now highlight on hover (matching QueueRow behavior) — makes click targets visually obvious

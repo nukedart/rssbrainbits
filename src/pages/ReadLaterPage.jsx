@@ -245,7 +245,7 @@ export default function ReadLaterPage() {
           <ContentViewer
             item={openItem}
             isSaved={true}
-            onUnsave={() => { handleRemove(openItem.url); setOpenItem(null); }}
+            onUnsave={() => { setItems(prev => prev.filter(i => i.url !== openItem.url)); setOpenItem(null); }}
             onClose={() => setOpenItem(null)}
           />
         </Suspense>
