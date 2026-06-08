@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { getReadingStats, getHighlightReviews, getSaved, getHistory } from "../lib/supabase";
+
+const ContentViewer = lazy(() => import("../components/ContentViewer"));
 
 function relTime(dateStr) {
   if (!dateStr) return "";
@@ -62,6 +64,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
   const [savedItems, setSavedItems] = useState([]);
   const [todayLog, setTodayLog]     = useState([]);
   const [loading, setLoading]       = useState(true);
+  const [openItem, setOpenItem]     = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -116,6 +119,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
   const maxW = isMobile ? "100%" : 560;
 
   return (
+    <>
     <div style={{ flex: 1, overflowY: "auto", padding: pad }}>
       <div style={{ maxWidth: maxW, margin: "0 auto" }}>
 
@@ -247,10 +251,14 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                 todayLog.map((h, i) => (
                   <div
                     key={h.url || i}
+                    onClick={() => setOpenItem(h)}
+                    onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                     style={{
                       display: "flex", alignItems: "center", gap: 10,
                       padding: "10px 16px",
                       borderBottom: i < todayLog.length - 1 ? `1px solid ${T.border}` : "none",
+                      cursor: "pointer", transition: "background .1s",
                     }}
                   >
                     <span style={{ color: T.success, flexShrink: 0 }}><Ic.Check /></span>
@@ -283,6 +291,15 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
 
       </div>
     </div>
+    {openItem && (
+      <Suspense fallback={null}>
+        <ContentViewer
+          item={openItem}
+          onClose={() => setOpenItem(null)}
+        />
+      </Suspense>
+    )}
+    </>
   );
 }
 

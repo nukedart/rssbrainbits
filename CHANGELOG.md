@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.249] — 2026-06-08
+
+- [Nav] Reading Log rows in Today page are now clickable — tap/click any item to re-open it in the article reader, completing the "every row is navigable" pattern across the Today dashboard
+
 ## [1.46.248] — 2026-06-08
 
 - [Fix] Podcast expanded panel on mobile now sits at bottom 144px (above the 80px mini-bar) and spans full viewport width — previously it overlapped the mini-bar at the same 80px baseline
