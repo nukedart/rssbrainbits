@@ -12,6 +12,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-09 | v1.46.269 | Polish | Page transitions: fadeInScale adds scale(0.97→1) — native-feel "settle" motion on every page switch | `index.css:51-54`, `App.jsx:310` | — |
 | 2026-06-09 | v1.46.270 | Fix | FeedItem.jsx missing useRef import — crashed any page rendering feed items | `FeedItem.jsx:0` | — |
 | 2026-06-09 | v1.46.271 | Polish | Swipe hint colors: 20%-opacity wash + action-matched text; amber hint was invisible in light mode | `FeedItem.jsx:135-139` | — |
+| 2026-06-09 | v1.46.272 | Nav | BottomNav re-appears on article close in Today, Saved (ReadLater), History — missing fb-nav-dir dispatch | `TodayPage.jsx:308`, `ReadLaterPage.jsx:259`, `SecondaryPages.jsx:64` | — |
 | 2026-06-01 | v1.46.229 | Perf | Cap unbounded DB queries: getSaved(200), getAllHighlights(500), getHighlightReviews(200 ordered by next_review) | `supabase.js:125,532,549` | — |
 | 2026-06-01 | v1.46.230 | Perf | Lazy-load AddModal + OPMLImport in InboxPage; InboxPage chunk 21→16 kB gz | `InboxPage.jsx:10-19,1449,1481` | — |
 | 2026-06-01 | v1.46.231 | Fix | Worker proxy response now validated with looksLikeBlockPage; bot-challenge pages no longer silently pass through | `fetchers.js:59` | — |

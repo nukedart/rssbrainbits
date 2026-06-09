@@ -57,6 +57,10 @@ body {
   from { transform: translateX(24px); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
 }
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
 
 /* mark reset */
 mark { background: none; }

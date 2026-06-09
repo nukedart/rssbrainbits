@@ -358,16 +358,6 @@ export default function MobileFeedDrawer({
         </div>
       </div>
 
-      <style>{`
-        @keyframes slideInUp {
-          from { transform: translateY(100%); }
-          to   { transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-      `}</style>
     </>
   );
 }

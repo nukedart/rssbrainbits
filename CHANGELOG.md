@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.273] — 2026-06-09
+
+- [Fix] slideInUp keyframe moved to index.css — was defined only inside MobileFeedDrawer, so Display Settings sheet on InboxPage had no animation before the feed drawer was ever opened
+
 ## [1.46.272] — 2026-06-09
 
 - [Nav] BottomNav now re-appears after closing an article in Today, Saved, and History pages — was permanently hidden until scroll
