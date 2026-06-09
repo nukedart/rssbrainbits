@@ -559,7 +559,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
                   background: active ? T.accentSurface : "transparent",
                   border: `1px solid ${active ? T.accent : "transparent"}`,
                   borderRadius: 10, padding: "10px 12px", cursor: "pointer",
-                  transition: "all .15s", minWidth: 68,
+                  transition: "background .15s, border-color .15s", minWidth: 68,
                 }}>
                   <div style={{
                     width: 36, height: 36, borderRadius: "50%", background: bg,
@@ -1203,7 +1203,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
             <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{feeds.length} source{feeds.length !== 1 ? "s" : ""} · {folders.length} collection{folders.length !== 1 ? "s" : ""}</div>
           </div>
           <button onClick={onAddSource}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "background .15s, color .15s" }}
             onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = T.accentText; }}
             onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
           >
@@ -1215,7 +1215,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
         <div style={{ display: "flex", gap: 0 }}>
           {[["feeds", `Feeds (${feeds.length})`], ["folders", `Collections (${folders.length})`]].map(([id, label]) => (
             <button key={id} onClick={() => setActiveTab(id)}
-              style={{ padding: "7px 16px", fontSize: 13, fontWeight: activeTab === id ? 600 : 400, color: activeTab === id ? T.accent : T.textTertiary, background: "none", border: "none", borderBottom: `2px solid ${activeTab === id ? T.accent : "transparent"}`, cursor: "pointer", fontFamily: "inherit", transition: "all .15s", marginBottom: -1 }}>
+              style={{ padding: "7px 16px", fontSize: 13, fontWeight: activeTab === id ? 600 : 400, color: activeTab === id ? T.accent : T.textTertiary, background: "none", border: "none", borderBottom: `2px solid ${activeTab === id ? T.accent : "transparent"}`, cursor: "pointer", fontFamily: "inherit", transition: "color .15s, border-color .15s", marginBottom: -1 }}>
               {label}
             </button>
           ))}
@@ -1263,14 +1263,14 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
               <div style={{ display: "flex", background: T.surface, borderRadius: 100, padding: 2 }}>
                 {[["all","All"],["youtube","YouTube"],["podcast","Podcasts"],["article","Articles"]].map(([v, label]) => (
                   <button key={v} onClick={() => setFilterType(v)}
-                    style={{ padding: "4px 12px", borderRadius: 100, border: "none", background: filterType === v ? T.bg : "transparent", color: filterType === v ? T.text : T.textTertiary, fontSize: 12, fontWeight: filterType === v ? 600 : 400, cursor: "pointer", fontFamily: "inherit", transition: "all .12s", boxShadow: filterType === v ? "0 1px 3px rgba(0,0,0,.12)" : "none" }}>
+                    style={{ padding: "4px 12px", borderRadius: 100, border: "none", background: filterType === v ? T.bg : "transparent", color: filterType === v ? T.text : T.textTertiary, fontSize: 12, fontWeight: filterType === v ? 600 : 400, cursor: "pointer", fontFamily: "inherit", transition: "background .12s, color .12s, box-shadow .12s", boxShadow: filterType === v ? "0 1px 3px rgba(0,0,0,.12)" : "none" }}>
                     {label}
                   </button>
                 ))}
               </div>
               <div style={{ flex: 1 }} />
               <button onClick={handleSyncAll} disabled={syncingAll}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 8, border: `1px solid ${T.border}`, background: syncingAll ? T.accentSurface : T.surface, color: syncingAll ? T.accent : T.textSecondary, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 8, border: `1px solid ${T.border}`, background: syncingAll ? T.accentSurface : T.surface, color: syncingAll ? T.accent : T.textSecondary, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "background .15s, color .15s, border-color .15s" }}
                 onMouseEnter={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; } }}
                 onMouseLeave={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textSecondary; } }}
               >
@@ -1311,7 +1311,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
                 <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Group your feeds into collections. Click a name to rename, click the dot to change color.</div>
               </div>
               <button onClick={onAddFolder}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s", flexShrink: 0 }}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "background .15s, color .15s", flexShrink: 0 }}
                 onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
               >
@@ -1499,7 +1499,7 @@ function FeedHealthCard({ T, user, feeds = [] }) {
                 onClick={() => handleRefreshFeed(feed)}
                 disabled={refreshing[feed.id]}
                 title="Force refresh"
-                style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 5, width: 22, height: 22, cursor: "pointer", color: T.textTertiary, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
+                style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 5, width: 22, height: 22, cursor: "pointer", color: T.textTertiary, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border-color .12s, color .12s" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textTertiary; }}
               >
