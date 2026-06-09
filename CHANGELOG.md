@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.258] — 2026-06-09
+
+- [Polish] BottomNav now shows 9px text labels below each icon — improves discoverability for first-time users; replaces the active-dot indicator (color + weight now signals active state)
+
 ## [1.46.257] — 2026-06-09
 
 - [UX] Scroll position now saved to sessionStorage per feed view — navigating away and back restores exactly where you were in the list

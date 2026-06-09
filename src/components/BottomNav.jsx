@@ -93,8 +93,9 @@ export default function BottomNav({
   };
 
   const btnStyle = (isActive, isDisabled) => ({
-    display: "flex", alignItems: "center", justifyContent: "center",
-    padding: "10px 12px",
+    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+    gap: 2,
+    padding: "7px 10px",
     border: "none",
     background: "transparent",
     borderRadius: 8,
@@ -124,6 +125,7 @@ export default function BottomNav({
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
               <Icon size={20} sw={isActive ? 1.7 : 1.3} />
+              <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 500, letterSpacing: ".01em", lineHeight: 1 }}>Feeds</span>
             </button>
           );
         }
@@ -142,12 +144,6 @@ export default function BottomNav({
           >
             <span style={{ position: "relative", display: "flex" }}>
               <Icon size={20} sw={isActive ? 1.7 : 1.3} filled={isActive} />
-              {isActive && (
-                <span style={{
-                  position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)",
-                  width: 4, height: 4, borderRadius: "50%", background: T.accent,
-                }} />
-              )}
               {id === "inbox" && unreadCount > 0 && !isActive && (
                 <span style={{
                   position: "absolute", top: -2, right: -4,
@@ -163,6 +159,7 @@ export default function BottomNav({
                 }} />
               )}
             </span>
+            <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 500, letterSpacing: ".01em", lineHeight: 1 }}>{label}</span>
           </button>
         );
       })}
