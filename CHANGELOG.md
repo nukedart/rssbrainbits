@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.270] — 2026-06-09
+
+- [Fix] FeedItem.jsx missing useRef import — caused crash on any page that renders feed items
+
 ## [1.46.269] — 2026-06-09
 
 - [Polish] Page transitions now use a subtle scale (0.97→1) in addition to fade — gives a native-feel "settle into place" motion on every page switch

@@ -1,4 +1,4 @@
-import { useState, memo } from "react";
+import { useState, useRef, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { parseYouTubeUrl } from "../lib/fetchers";
