@@ -51,6 +51,27 @@ const NAV_ITEMS = [
   { id: "review",    Icon: ReviewIcon, label: "Review" },
 ];
 
+function CountBadge({ count, T }) {
+  const label = count > 99 ? "99+" : String(count);
+  return (
+    <span style={{
+      position: "absolute", top: -5, right: label.length > 2 ? -10 : -7,
+      minWidth: 15, height: 15,
+      borderRadius: 99,
+      background: T.accent,
+      color: "#fff",
+      fontSize: 9,
+      fontWeight: 700,
+      lineHeight: "15px",
+      textAlign: "center",
+      padding: "0 3px",
+      pointerEvents: "none",
+    }}>
+      {label}
+    </span>
+  );
+}
+
 export default function BottomNav({
   active,
   onNavigate,
@@ -145,18 +166,10 @@ export default function BottomNav({
             <span style={{ position: "relative", display: "flex" }}>
               <Icon size={20} sw={isActive ? 1.7 : 1.3} filled={isActive} />
               {id === "inbox" && unreadCount > 0 && !isActive && (
-                <span style={{
-                  position: "absolute", top: -2, right: -4,
-                  width: 6, height: 6, borderRadius: "50%",
-                  background: T.accent,
-                }} />
+                <CountBadge count={unreadCount} T={T} />
               )}
               {id === "review" && dueCount > 0 && !isActive && (
-                <span style={{
-                  position: "absolute", top: -2, right: -4,
-                  width: 6, height: 6, borderRadius: "50%",
-                  background: T.accent,
-                }} />
+                <CountBadge count={dueCount} T={T} />
               )}
             </span>
             <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 500, letterSpacing: ".01em", lineHeight: 1 }}>{label}</span>

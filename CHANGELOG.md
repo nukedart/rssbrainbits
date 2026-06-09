@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.265] — 2026-06-09
+
+- [UX] BottomNav Inbox/Review badges show actual count (99+ cap) instead of a plain dot — users see unread count at a glance without opening the page
+
 ## [1.46.264] — 2026-06-09
 
 - [Perf] Added preconnect hints for RSS proxy services (corsproxy.io, allorigins.win, codetabs.com, rss2json.com) — TCP+TLS connections established during JS parse so first feed fetch is 100–300ms faster
