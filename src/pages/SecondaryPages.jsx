@@ -315,7 +315,7 @@ function PlanCard({ T, user, feedCount, planName }) {
           background: loading ? T.surface2 : T.accent,
           color: loading ? T.textTertiary : T.accentText,
           fontSize:14, fontWeight:700, cursor: loading ? "wait" : "pointer",
-          fontFamily:"inherit", transition:"all .2s",
+          fontFamily:"inherit", transition:"background .2s, color .2s",
           display:"flex", alignItems:"center", justifyContent:"center", gap:8,
         }}>
           {loading ? "Redirecting to checkout…" : "⚡ Upgrade to Pro — $9/month"}
@@ -355,7 +355,7 @@ function PlanCard({ T, user, feedCount, planName }) {
         }} disabled={loading} style={{
           width:"100%", padding:"11px 0", borderRadius:10, border:`1px solid ${T.border}`,
           background:"transparent", color:T.textSecondary, fontSize:13, fontWeight:600,
-          cursor: loading ? "wait" : "pointer", fontFamily:"inherit", transition:"all .2s",
+          cursor: loading ? "wait" : "pointer", fontFamily:"inherit", transition:"border-color .2s, color .2s",
         }}
           onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accent; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.textSecondary; }}
@@ -1588,7 +1588,7 @@ function DataPrivacyCard({ T, user }) {
             onBlur={e => e.target.style.borderColor=T.border}
           />
           <button onClick={handleDeleteAccount} disabled={deleteConfirm.toLowerCase() !== "delete my account" || deleting}
-            style={{ background: deleteConfirm.toLowerCase()==="delete my account" ? T.danger : T.surface2, border:"none", borderRadius:9, padding:"8px 16px", cursor:"pointer", fontSize:13, fontWeight:600, color: deleteConfirm.toLowerCase()==="delete my account" ? T.dangerText : T.textTertiary, fontFamily:"inherit", transition:"all .2s", flexShrink:0 }}>
+            style={{ background: deleteConfirm.toLowerCase()==="delete my account" ? T.danger : T.surface2, border:"none", borderRadius:9, padding:"8px 16px", cursor:"pointer", fontSize:13, fontWeight:600, color: deleteConfirm.toLowerCase()==="delete my account" ? T.dangerText : T.textTertiary, fontFamily:"inherit", transition:"background .2s, color .2s", flexShrink:0 }}>
             {deleting ? "Deleting…" : "Delete"}
           </button>
         </div>

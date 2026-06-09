@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.282 | Perf | Fixed 14 missed `transition:"all"` (no-space) — 0 remaining app-wide in any format | `Sidebar.jsx`, `CardsPage.jsx`, `LoginPage.jsx`, `InboxPage.jsx`, `SecondaryPages.jsx` | — |
 | 2026-06-09 | v1.46.281 | Perf | Final 11 `transition: all` → targeted; zero remaining app-wide | `Onboarding.jsx`, `FolderModal.jsx`, `SmartFeedModal.jsx`, `HighlightsDrawer.jsx`, `OPMLImport.jsx`, `ArticleNotesPanel.jsx`, `NotesPage.jsx` | — |
 | 2026-06-09 | v1.46.280 | Perf | Moved inline @keyframes to index.css; reused global spin in LoginPage | `ReviewPage.jsx:332`, `MobileSearchOverlay.jsx:126`, `LoginPage.jsx:81`, `index.css` | — |
 | 2026-06-09 | v1.46.279 | Perf | FeedItem card icon + AnalyticsPage: last 3 `transition: all` in primary-screen components | `FeedItem.jsx:395`, `AnalyticsPage.jsx:252,489` | — |

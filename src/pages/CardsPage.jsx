@@ -313,7 +313,7 @@ export default function CardsPage() {
               <button
                 onClick={handleExport}
                 title="Export highlights as Markdown"
-                style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", color:T.textTertiary, border:`1px solid ${T.border}`, borderRadius:10, padding:"7px 12px", cursor:"pointer", fontSize:13, fontFamily:"inherit", transition:"all .12s" }}
+                style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", color:T.textTertiary, border:`1px solid ${T.border}`, borderRadius:10, padding:"7px 12px", cursor:"pointer", fontSize:13, fontFamily:"inherit", transition:"color .12s, border-color .12s" }}
                 onMouseEnter={e => { e.currentTarget.style.color=T.text; e.currentTarget.style.borderColor=T.borderStrong; }}
                 onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.borderColor=T.border; }}
               >

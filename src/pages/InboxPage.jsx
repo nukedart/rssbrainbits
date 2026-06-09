@@ -1116,7 +1116,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
             >
               <span style={{ position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <span style={{ width:readFilter==="unread"?10:8, height:readFilter==="unread"?10:8, borderRadius:"50%", background:readFilter==="unread"?T.bg:T.accent, border:readFilter==="unread"?`2px solid ${T.accent}`:"none", display:"block", transition:"all .18s" }} />
+                <span style={{ width:readFilter==="unread"?10:8, height:readFilter==="unread"?10:8, borderRadius:"50%", background:readFilter==="unread"?T.bg:T.accent, border:readFilter==="unread"?`2px solid ${T.accent}`:"none", display:"block", transition:"width .18s, height .18s, background .18s, border-color .18s" }} />
                 {unreadCount > 0 && readFilter !== "unread" && (
                   <span style={{ position:"absolute", top:-5, right:-7, minWidth:13, height:13, borderRadius:7, background:T.accent, color:T.accentText, fontSize:8, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 3px", boxSizing:"border-box" }}>
                     {unreadCount > 99 ? "99+" : unreadCount}
@@ -1337,7 +1337,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                     fontWeight: displayPrefs.imgPosition===val ? 700 : 500,
                     fontSize:14, cursor:"pointer", fontFamily:"inherit",
                     WebkitTapHighlightColor:"transparent",
-                    transition:"all .1s",
+                    transition:"background .1s, color .1s",
                   }}>{label}</button>
                 ))}
               </div>

@@ -15,7 +15,7 @@ function OAuthBtn({ onClick, icon, label, T }) {
       padding:"12px 16px", borderRadius:12, border:`1.5px solid ${T.border}`,
       background:T.surface, color:T.text, fontSize:14, fontWeight:500,
       cursor:loading?"wait":"pointer", fontFamily:"inherit",
-      transition:"all .15s", opacity:loading?0.6:1,
+      transition:"background .15s, border-color .15s, opacity .15s",  opacity:loading?0.6:1,
     }}
       onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.background=T.accentSurface; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background=T.surface; }}
@@ -196,7 +196,7 @@ export default function LoginPage() {
 
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 <button onClick={() => setMode("email")}
-                  style={{ padding:"11px 16px", borderRadius:12, border:`1.5px solid ${T.border}`, background:"transparent", color:T.textSecondary, fontSize:13, cursor:"pointer", fontFamily:"inherit", transition:"all .15s", textAlign:"left", display:"flex", alignItems:"center", gap:10 }}
+                  style={{ padding:"11px 16px", borderRadius:12, border:`1.5px solid ${T.border}`, background:"transparent", color:T.textSecondary, fontSize:13, cursor:"pointer", fontFamily:"inherit", transition:"border-color .15s, color .15s", textAlign:"left", display:"flex", alignItems:"center", gap:10 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.text; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.textSecondary; }}
                 >
@@ -204,7 +204,7 @@ export default function LoginPage() {
                   Sign in with email & password
                 </button>
                 <button onClick={() => setMode("magic")}
-                  style={{ padding:"11px 16px", borderRadius:12, border:`1.5px solid ${T.border}`, background:"transparent", color:T.textSecondary, fontSize:13, cursor:"pointer", fontFamily:"inherit", transition:"all .15s", textAlign:"left", display:"flex", alignItems:"center", gap:10 }}
+                  style={{ padding:"11px 16px", borderRadius:12, border:`1.5px solid ${T.border}`, background:"transparent", color:T.textSecondary, fontSize:13, cursor:"pointer", fontFamily:"inherit", transition:"border-color .15s, color .15s", textAlign:"left", display:"flex", alignItems:"center", gap:10 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.text; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.textSecondary; }}
                 >

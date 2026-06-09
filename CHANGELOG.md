@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.282] — 2026-06-09
+
+- [Perf] Fixed missed `transition:"all"` (no-space variant) — 14 more instances in Sidebar, CardsPage, LoginPage, InboxPage, SecondaryPages; 0 `transition: all` remaining in any format across the entire codebase
+
 ## [1.46.281] — 2026-06-09
 
 - [Perf] Completed full codebase elimination of `transition: all` — final 11 instances in Onboarding, FolderModal, SmartFeedModal, HighlightsDrawer, OPMLImport, ArticleNotesPanel, NotesPage; zero `transition: all` remaining app-wide

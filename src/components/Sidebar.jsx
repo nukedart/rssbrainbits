@@ -450,14 +450,14 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
         )}
         {!isTablet && !collapsed && (
           <button onClick={onToggle} title="Collapse sidebar" aria-label="Collapse sidebar"
-            style={{ width:20, height:20, borderRadius:5, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.textTertiary, fontSize:13, fontFamily:"inherit", transition:"all .12s" }}
+            style={{ width:20, height:20, borderRadius:5, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.textTertiary, fontSize:13, fontFamily:"inherit", transition:"color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
             onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
           >‹</button>
         )}
         {!isTablet && collapsed && (
           <button onClick={onToggle} title="Expand sidebar" aria-label="Expand sidebar"
-            style={{ position:"absolute", right:4, top:16, width:20, height:20, borderRadius:5, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.textTertiary, fontSize:13, fontFamily:"inherit", transition:"all .12s" }}
+            style={{ position:"absolute", right:4, top:16, width:20, height:20, borderRadius:5, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.textTertiary, fontSize:13, fontFamily:"inherit", transition:"color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
             onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
           >›</button>
@@ -606,7 +606,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
               const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
               return (
                 <button key={label} onClick={() => setTheme(id)} title={label}
-                  style={{ width:24, height:22, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"all .15s" }}
+                  style={{ width:24, height:22, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"background .15s, color .15s, border-color .15s" }}
                 ><Icon /></button>
               );
             })}
@@ -639,12 +639,12 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
                 const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
                 return (
                   <button key={label} onClick={() => setTheme(id)} title={label}
-                    style={{ width:24, height:24, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, flexShrink:0, transition:"all .15s" }}
+                    style={{ width:24, height:24, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, flexShrink:0, transition:"background .15s, color .15s, border-color .15s" }}
                   ><Icon /></button>
                 );
               })}
               <button onClick={() => setShortcutsOpen(v => !v)} title="Keyboard shortcuts"
-                style={{ width:24, height:24, borderRadius:6, border:`1px solid ${shortcutsOpen?T.accent:"transparent"}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontFamily:"inherit", flexShrink:0, transition:"all .12s" }}
+                style={{ width:24, height:24, borderRadius:6, border:`1px solid ${shortcutsOpen?T.accent:"transparent"}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontFamily:"inherit", flexShrink:0, transition:"background .12s, color .12s, border-color .12s" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accent; e.currentTarget.style.background=T.accentSurface; }}
                 onMouseLeave={e => { if (!shortcutsOpen) { e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.background="transparent"; }}}
               >⌘</button>
