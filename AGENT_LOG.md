@@ -13,6 +13,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-09 | v1.46.251 | Perf | decoding="async" on ListThumb + MobileThumb — off-thread image decoding reduces scroll jank | `FeedItem.jsx:143,184` | — |
 | 2026-06-09 | v1.46.252 | Perf | willChange: transform on BottomNav pill — GPU compositing for scroll-hide/show animation | `BottomNav.jsx:82` | — |
 | 2026-06-09 | v1.46.253 | UX | Haptic feedback on feed item action buttons via navigator.vibrate(8) | `FeedItem.jsx:6,82` | — |
+| 2026-06-09 | v1.46.254 | Polish | Active tab dot indicator on BottomNav — 4px accent dot below active icon | `BottomNav.jsx:143` | — |
 | 2026-06-08 | v1.46.247 | Fix | Podcast mini-bar bottom raised to 80px on mobile so it clears BottomNav pill; width fills viewport on mobile | `PodcastPlayer.jsx:609` | — |
 | 2026-06-08 | v1.46.246 | Perf | Removed duplicate shimmer/@keyframes shimmer + --sk-base/--sk-shine from index.css — 22 lines of dead CSS | `index.css:77` | — |
 | 2026-06-08 | v1.46.245 | Perf | Removed dead @keyframes pulse (scale variant) from index.css — overridden by opacity-only definition below it | `index.css:37` | — |

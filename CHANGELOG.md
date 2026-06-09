@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.254] — 2026-06-09
+
+- [Polish] Active tab dot indicator below the active BottomNav icon — clearer active state beyond color alone, especially in light mode
+
 ## [1.46.253] — 2026-06-09
 
 - [UX] Haptic feedback on feed item action buttons (save, star, mark read) via navigator.vibrate — silently ignored on desktop/unsupported devices
