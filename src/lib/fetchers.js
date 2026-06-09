@@ -16,6 +16,11 @@ const PROXY_THIRD    = "https://api.codetabs.com/v1/proxy?quest=";
 const RSS2JSON_API   = "https://api.rss2json.com/v1/api.json?rss_url=";
 const TIMEOUT_MS     = 10000; // 10s — some sites are slow
 
+// Session-scoped article content cache — avoids re-fetching the same article
+// when the user closes/reopens it or swipes prev/next. Capped at 50 to stay
+// well under typical memory budgets (~2–5 MB for 50 Readability-processed articles).
+const _articleCache = new Map();
+
 // Detect when a proxy returned a bot-challenge page instead of RSS/HTML content
 function looksLikeBlockPage(text) {
   if (!text?.trim()) return true; // empty response is always a failure
@@ -387,6 +392,7 @@ function stripHtml(html) {
 // Fetches the actual article page and extracts readable body text.
 // This is what powers the reader view — NOT the RSS description.
 export async function fetchArticleContent(articleUrl) {
+  if (_articleCache.has(articleUrl)) return _articleCache.get(articleUrl);
   const rawHtml = await proxiedFetch(articleUrl);
 
   // Detect Cloudflare/bot challenges — throw so caller can fall back to RSS content
@@ -448,7 +454,10 @@ export async function fetchArticleContent(articleUrl) {
     });
     const bodyHtml = tmp.body.innerHTML;
 
-    return { title, description, image, url: articleUrl, bodyText, bodyHtml };
+    const result = { title, description, image, url: articleUrl, bodyText, bodyHtml };
+    if (_articleCache.size >= 50) _articleCache.delete(_articleCache.keys().next().value);
+    _articleCache.set(articleUrl, result);
+    return result;
   }
 
   // ── Fallback: manual DOM extraction ──────────────────────────
@@ -551,7 +560,10 @@ export async function fetchArticleContent(articleUrl) {
     bodyHtml = clone.innerHTML;
   }
 
-  return { title, description, image, url: articleUrl, bodyText, bodyHtml };
+  const result = { title, description, image, url: articleUrl, bodyText, bodyHtml };
+  if (_articleCache.size >= 50) _articleCache.delete(_articleCache.keys().next().value);
+  _articleCache.set(articleUrl, result);
+  return result;
 }
 
 // ── YouTube ───────────────────────────────────────────────────

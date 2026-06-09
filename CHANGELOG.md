@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.263] — 2026-06-09
+
+- [Perf] Session-level article content cache — re-opening an article or swiping back to it is instant (no proxy re-fetch); capped at 50 entries
+
 ## [1.46.262] — 2026-06-09
 
 - [Perf] Articles now show RSS content instantly on open while full reader view loads in background — eliminates the loading skeleton for most articles
