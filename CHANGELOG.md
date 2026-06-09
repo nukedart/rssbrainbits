@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.257] — 2026-06-09
+
+- [UX] Scroll position now saved to sessionStorage per feed view — navigating away and back restores exactly where you were in the list
+
 ## [1.46.256] — 2026-06-09
 
 - [UX] Respect prefers-reduced-motion — all CSS animations and transitions collapse to near-instant for users with Reduce Motion enabled in iOS Accessibility settings

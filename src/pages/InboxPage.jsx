@@ -130,6 +130,19 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const markReadFnRef = useRef(null);
   const autoMarkReadRef = useRef(autoMarkRead);
   const lastScrollRef = useRef(0); // timestamp of last real scroll — gates auto-mark-read
+  const scrollSaveTimer = useRef(null);
+  const scrollRestored = useRef(false);
+  const scrollKey = `fb-scroll-${filterMode}-${feedDef?.id || folderDef?.id || smartFeedDef?.id || ''}`;
+
+  // Restore scroll position after items load (once per mount)
+  useEffect(() => {
+    if (scrollRestored.current || !listRef.current || allItems.length === 0) return;
+    const saved = sessionStorage.getItem(scrollKey);
+    if (saved) {
+      scrollRestored.current = true;
+      requestAnimationFrame(() => { if (listRef.current) listRef.current.scrollTop = parseInt(saved, 10); });
+    }
+  }, [allItems.length > 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // BottomNav + button: open AddModal when App.jsx signals forceShowAdd
   useEffect(() => {
@@ -1151,6 +1164,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           onScroll={e => {
             lastScrollRef.current = Date.now();
             const el = e.currentTarget;
+            if (scrollSaveTimer.current) clearTimeout(scrollSaveTimer.current);
+            scrollSaveTimer.current = setTimeout(() => sessionStorage.setItem(scrollKey, el.scrollTop), 150);
             if (isMobile) {
               const top = el.scrollTop;
               const delta = top - (el._lastTop ?? top);
