@@ -128,6 +128,11 @@ img { max-width: 100%; }
   0%   { background-position: -400px 0; }
   100% { background-position: 400px 0; }
 }
+@keyframes rv-exit-left  { to { transform: translateX(-56px) scale(0.94); opacity: 0; } }
+@keyframes rv-exit-right { to { transform: translateX( 56px) scale(0.94); opacity: 0; } }
+@keyframes rv-enter      { from { transform: translateY(22px) scale(0.96); opacity: 0; } }
+@keyframes rv-reveal     { from { transform: translateY(10px); opacity: 0; } }
+@keyframes mso-slide-up  { from { transform: translateY(18px); opacity: 0; } }
 
 /* Skeleton loading pulse */
 .skeleton {

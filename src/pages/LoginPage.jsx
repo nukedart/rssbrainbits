@@ -21,7 +21,7 @@ function OAuthBtn({ onClick, icon, label, T }) {
       onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background=T.surface; }}
     >
       {loading
-        ? <span style={{ width:18, height:18, border:`2px solid ${T.border}`, borderTopColor:T.accent, borderRadius:"50%", display:"inline-block", animation:"bb-spin .7s linear infinite" }} />
+        ? <span style={{ width:18, height:18, border:`2px solid ${T.border}`, borderTopColor:T.accent, borderRadius:"50%", display:"inline-block", animation:"spin .7s linear infinite" }} />
         : icon}
       {loading ? "Connecting…" : label}
     </button>
@@ -78,7 +78,6 @@ export default function LoginPage() {
 
   return (
     <div style={{ minHeight:"100dvh", background: bg, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
-      <style>{`@keyframes bb-spin{to{transform:rotate(360deg)}}`}</style>
       <div style={{ maxWidth:400, width:"100%" }}>
 
         {/* Logo + tagline */}

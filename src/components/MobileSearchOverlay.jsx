@@ -122,9 +122,6 @@ export default function MobileSearchOverlay({ onClose, onSelectResult, onLiveSea
       background: T.bg,
       animation: "mso-slide-up .22s cubic-bezier(.32,.72,0,1)",
     }}>
-      <style>{`
-        @keyframes mso-slide-up { from { transform: translateY(18px); opacity: 0; } }
-      `}</style>
 
       {/* ── Search bar row ── */}
       <div style={{

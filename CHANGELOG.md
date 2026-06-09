@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.280] — 2026-06-09
+
+- [Perf] Moved 6 inline `@keyframes` from ReviewPage, LoginPage, and MobileSearchOverlay into `index.css` — eliminates `<style>` DOM injection on every render; reused global `spin` keyframe for login spinner
+
 ## [1.46.279] — 2026-06-09
 
 - [Perf] Completed targeted-transition sweep across all primary-screen components: FeedItem card icon, AnalyticsPage provider selector and tab buttons — all `transition: all` now replaced with specific properties

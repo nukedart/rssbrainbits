@@ -329,12 +329,6 @@ export default function ReviewPage({ onDueCount }) {
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", background: T.bg, minHeight: 0, userSelect: "none" }}>
-      <style>{`
-        @keyframes rv-exit-left  { to { transform: translateX(-56px) scale(0.94); opacity: 0; } }
-        @keyframes rv-exit-right { to { transform: translateX( 56px) scale(0.94); opacity: 0; } }
-        @keyframes rv-enter      { from { transform: translateY(22px) scale(0.96); opacity: 0; } }
-        @keyframes rv-reveal     { from { transform: translateY(10px); opacity: 0; } }
-      `}</style>
 
       {/* Progress bar — 6px with labels */}
       <div style={{ padding: "16px 20px 4px", flexShrink: 0 }}>
