@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.275] — 2026-06-09
+
+- [Perf] ContentViewer toolbar: replaced 11× `transition: all` with targeted property lists — browser no longer watches every CSS property on each hover in the reader
+
 ## [1.46.274] — 2026-06-09
 
 - [Nav] Escape key now restores keyboard cursor to the article that was just closed — was snapping to a different position

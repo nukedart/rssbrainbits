@@ -394,7 +394,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         {/* Prev — desktop only; mobile uses swipe-right-body */}
         {!isMobile && onPrev && (
           <button onClick={onPrev} title="Previous article (k)"
-            style={{ background: "transparent", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "all .12s" }}
+            style={{ background: "transparent", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "background .12s, color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
           >‹</button>
@@ -418,7 +418,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         {/* Next — desktop only; mobile uses swipe-left */}
         {!isMobile && onNext && (
           <button onClick={onNext} title="Next article (j)"
-            style={{ background: "transparent", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "all .12s" }}
+            style={{ background: "transparent", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "background .12s, color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
           >›</button>
@@ -433,7 +433,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               background: "transparent", border: "none", borderRadius: 8,
               width: 28, height: 28, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: T.textTertiary, flexShrink: 0, transition: "all .12s",
+              color: T.textTertiary, flexShrink: 0, transition: "background .12s, color .12s",
             }}
             onMouseEnter={e => { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
@@ -449,7 +449,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           {!yt.isYouTube && content && (
             <div style={{ position: "relative" }}>
               <button onClick={() => setShowReaderControls(v => !v)} title="Reading preferences"
-                style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "all .12s" }}
+                style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s" }}
                 onMouseEnter={e => { if (!showReaderControls) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
                 onMouseLeave={e => { if (!showReaderControls) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
               >Aa</button>
@@ -499,7 +499,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           {/* Save — tap to save, tap again to unsave */}
           <button onClick={handleSave} title={saved ? "Remove from Saved" : "Save article"}
             aria-label={saved ? "Remove from Saved" : "Save article"}
-            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
+            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background = saved ? T.accentSurface : T.surface2; e.currentTarget.style.color = saved ? T.danger : T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background = saved ? T.accentSurface : "transparent"; e.currentTarget.style.color = saved ? T.accent : T.textTertiary; }}
           >
@@ -510,7 +510,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
           {/* Share */}
           <button onClick={handleShare} title={shareFeedback || "Share"} aria-label="Share article"
-            style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: shareFeedback ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
+            style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: shareFeedback ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
             onMouseEnter={e => { if (!shareFeedback) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
             onMouseLeave={e => { if (!shareFeedback) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
           >
@@ -524,7 +524,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             <button
               onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
               title="Open original article"
-              style={{ background: "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .12s" }}
+              style={{ background: "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
               onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
               onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
             >
@@ -742,7 +742,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               background: T.card, border: `1px solid ${T.border}`,
               boxShadow: "0 2px 12px rgba(0,0,0,.15)",
               cursor: "pointer", fontSize: 18, color: T.textSecondary,
-              transition: "all .15s", zIndex: 20,
+              transition: "background .15s, color .15s", zIndex: 20,
               animation: "fadeInScale .2s ease",
             }}
             onMouseEnter={e => { e.currentTarget.style.background=T.accentSurface; e.currentTarget.style.color=T.accent; }}
@@ -953,7 +953,7 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
                   background: summaryStyle === s.id ? T.accentSurface : "transparent",
                   color: summaryStyle === s.id ? T.accent : T.textTertiary,
                   fontSize: 11, fontWeight: summaryStyle === s.id ? 600 : 400,
-                  cursor: "pointer", fontFamily: "inherit", transition: "all .12s",
+                  cursor: "pointer", fontFamily: "inherit", transition: "background .12s, color .12s, border-color .12s",
                 }}>
                 {s.label}
               </button>
@@ -1051,7 +1051,7 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
   return (
     <div ref={ref} style={{ position:"relative", flexShrink:0 }}>
       <button onClick={() => setOpen(v => !v)}
-        style={{ background: open ? T.surface2 : "transparent", border:"none", borderRadius:8, padding:"6px 8px", cursor:"pointer", fontSize:16, color: open ? T.textSecondary : T.textTertiary, fontFamily:"inherit", lineHeight:1, display:"flex", alignItems:"center", justifyContent:"center", width:34, height:32, transition:"all .12s" }}
+        style={{ background: open ? T.surface2 : "transparent", border:"none", borderRadius:8, padding:"6px 8px", cursor:"pointer", fontSize:16, color: open ? T.textSecondary : T.textTertiary, fontFamily:"inherit", lineHeight:1, display:"flex", alignItems:"center", justifyContent:"center", width:34, height:32, transition:"background .12s, color .12s" }}
         onMouseEnter={e => { if (!open) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
         onMouseLeave={e => { if (!open) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
       >···</button>
