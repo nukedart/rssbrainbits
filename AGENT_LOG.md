@@ -8,6 +8,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-09 | v1.46.265 | UX | BottomNav dot badge → count badge (99+ cap) on Inbox and Review — unread count visible without opening page | `BottomNav.jsx:54-73,161-166` | — |
 | 2026-06-09 | v1.46.266 | Fix | Progress bar on list items updates immediately on article close — was using stale module-level cache | `FeedItem.jsx:48-50`, `InboxPage.jsx:1437,1489` | — |
 | 2026-06-09 | v1.46.267 | Nav | BottomNav auto-hides on scroll in Today + Saved pages — was missing navDirScroll handler | `TodayPage.jsx:10-20,135`, `ReadLaterPage.jsx:11-21,191` | — |
+| 2026-06-09 | v1.46.268 | Perf | Moved fb-article-body CSS to index.css — ContentViewer chunk -2.7 kB, no per-open style injection | `ContentViewer.jsx:711-739`, `index.css:194-215` | — |
 | 2026-06-01 | v1.46.229 | Perf | Cap unbounded DB queries: getSaved(200), getAllHighlights(500), getHighlightReviews(200 ordered by next_review) | `supabase.js:125,532,549` | — |
 | 2026-06-01 | v1.46.230 | Perf | Lazy-load AddModal + OPMLImport in InboxPage; InboxPage chunk 21→16 kB gz | `InboxPage.jsx:10-19,1449,1481` | — |
 | 2026-06-01 | v1.46.231 | Fix | Worker proxy response now validated with looksLikeBlockPage; bot-challenge pages no longer silently pass through | `fetchers.js:59` | — |

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.268] — 2026-06-09
+
+- [Perf] Moved fb-article-body CSS from inline JSX style tag to index.css — ContentViewer chunk -2.7 kB, no DOM re-injection on every article open
+
 ## [1.46.267] — 2026-06-09
 
 - [Nav] BottomNav now auto-hides on scroll-down in Today and Saved pages — was only working in Inbox and Cards

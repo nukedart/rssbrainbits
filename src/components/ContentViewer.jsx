@@ -709,33 +709,10 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               {/* Article body */}
               <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em" }}>
                 {content.bodyHtml && !readerPrefs.bionic ? (
-                  <>
-                    <style>{`
-                      .fb-article-body h1,.fb-article-body h2,.fb-article-body h3,.fb-article-body h4{margin:2em 0 .6em;font-weight:700;line-height:1.22;letter-spacing:-.022em}
-                      .fb-article-body h1{font-size:1.5em}.fb-article-body h2{font-size:1.25em}.fb-article-body h3{font-size:1.08em}.fb-article-body h4{font-size:1em}
-                      .fb-article-body p{margin:0 0 1.35em}.fb-article-body p:first-of-type{font-size:1.06em;line-height:1.8}.fb-article-body p:last-child{margin-bottom:0}
-                      .fb-article-body ul,.fb-article-body ol{margin:0 0 1.35em;padding-left:1.6em}
-                      .fb-article-body li{margin-bottom:.55em;line-height:1.7}
-                      .fb-article-body img{max-width:100%;height:auto;border-radius:12px;margin:2em 0;display:block;box-shadow:0 4px 20px rgba(0,0,0,.09)}
-                      .fb-article-body a{color:var(--accent,#4f8ef7);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;transition:opacity .12s}
-                      .fb-article-body a:hover{opacity:.75}
-                      .fb-article-body blockquote{border-left:3px solid var(--accent,#4f8ef7);margin:1.75em 0;padding:.85em 1.2em .85em 1.4em;background:rgba(128,128,128,.06);border-radius:0 10px 10px 0;font-style:italic;font-size:1.04em;line-height:1.75}
-                      .fb-article-body code{background:rgba(128,128,128,.12);border-radius:5px;padding:.15em .42em;font-family:ui-monospace,'SF Mono',monospace;font-size:.85em}
-                      .fb-article-body pre{background:rgba(128,128,128,.09);border:1px solid rgba(128,128,128,.14);border-radius:12px;padding:1.1em 1.3em;overflow-x:auto;margin:0 0 1.35em}
-                      .fb-article-body pre code{background:none;padding:0;font-size:.9em}
-                      .fb-article-body figure{margin:2em 0}.fb-article-body figcaption{font-size:.82em;opacity:.5;margin-top:.55em;text-align:center;font-style:italic}
-                      .fb-article-body table{border-collapse:collapse;width:100%;margin:0 0 1.35em;font-size:.88em}
-                      .fb-article-body th,.fb-article-body td{border:1px solid rgba(128,128,128,.2);padding:.5em .85em;text-align:left}
-                      .fb-article-body th{background:rgba(128,128,128,.07);font-weight:600}
-                      .fb-article-body mark{border-radius:3px;padding:1px 0;cursor:pointer}
-                      .fb-article-body hr{border:none;height:1px;background:rgba(128,128,128,.18);margin:2.5em auto;width:60%}
-                      .fb-article-body ::selection{background:var(--accent,#4f8ef7)44}
-                    `}</style>
-                    <div
-                      className="fb-article-body"
-                      dangerouslySetInnerHTML={{ __html: injectHtmlHighlights(content.bodyHtml, highlights, HIGHLIGHT_COLORS) }}
-                    />
-                  </>
+                  <div
+                    className="fb-article-body"
+                    dangerouslySetInnerHTML={{ __html: injectHtmlHighlights(content.bodyHtml, highlights, HIGHLIGHT_COLORS) }}
+                  />
                 ) : (
                   <HighlightedText
                     text={content.bodyText}
