@@ -237,18 +237,23 @@ function MobileThumb({ item, T, size = 72 }) {
     ? `https://img.youtube.com/vi/${yt.videoId}/mqdefault.jpg`
     : item.image || null;
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const showImg = src && !failed;
+  const shimmer = showImg && !loaded;
   const progress = getStoredProgress(item.url);
   return (
-    <div style={{
-      width: size, height: size, borderRadius: Math.round(size * 0.14), flexShrink: 0,
-      overflow: "hidden", position: "relative",
-      background: showImg ? T.surface2 : ph.bg,
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
+    <div
+      className={shimmer ? "skeleton" : undefined}
+      style={{
+        width: size, height: size, borderRadius: Math.round(size * 0.14), flexShrink: 0,
+        overflow: "hidden", position: "relative",
+        background: shimmer ? undefined : (showImg ? T.surface2 : ph.bg),
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
       {showImg ? (
         <img src={src} alt="" loading="lazy" decoding="async"
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
         />
       ) : fav ? (

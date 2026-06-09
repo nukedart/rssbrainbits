@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.261] — 2026-06-09
+
+- [Polish] MobileThumb shows skeleton shimmer while image loads instead of blank solid color — visible in slow network / lazy-load viewport entry
+
 ## [1.46.260] — 2026-06-09
 
 - [UX] Swipe gestures on feed list rows — swipe right to mark read/unread, swipe left to save for later; implemented via direct DOM manipulation (no re-renders during drag)
