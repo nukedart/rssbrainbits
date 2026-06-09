@@ -80,6 +80,7 @@ export default function BottomNav({
     WebkitBackdropFilter: "blur(24px) saturate(180%)",
     transform: `translateX(-50%) translateY(${visible ? "0" : "120px"})`,
     transition: "transform .3s cubic-bezier(.4,0,.2,1)",
+    willChange: "transform",
     display: "flex",
     alignItems: "center",
     borderRadius: 999,

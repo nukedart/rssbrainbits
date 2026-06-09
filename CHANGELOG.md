@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.252] — 2026-06-09
+
+- [Perf] Add willChange: transform to BottomNav pill — promotes the element to a GPU layer so scroll-direction hide/show animations are composited instead of repainted
+
 ## [1.46.251] — 2026-06-09
 
 - [Perf] Add decoding="async" to ListThumb and MobileThumb image elements — browser decodes images off the main thread, reducing scroll jank on image-heavy feeds

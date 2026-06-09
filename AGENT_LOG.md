@@ -11,6 +11,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-08 | v1.46.249 | Nav | Reading Log rows in Today page now open articles in ContentViewer on click | `TodayPage.jsx:1,65,249` | — |
 | 2026-06-09 | v1.46.250 | UX | Mobile default image size 72→96px; slider max 96→120px for larger phones | `InboxPage.jsx:67,1338` | — |
 | 2026-06-09 | v1.46.251 | Perf | decoding="async" on ListThumb + MobileThumb — off-thread image decoding reduces scroll jank | `FeedItem.jsx:143,184` | — |
+| 2026-06-09 | v1.46.252 | Perf | willChange: transform on BottomNav pill — GPU compositing for scroll-hide/show animation | `BottomNav.jsx:82` | — |
 | 2026-06-08 | v1.46.247 | Fix | Podcast mini-bar bottom raised to 80px on mobile so it clears BottomNav pill; width fills viewport on mobile | `PodcastPlayer.jsx:609` | — |
 | 2026-06-08 | v1.46.246 | Perf | Removed duplicate shimmer/@keyframes shimmer + --sk-base/--sk-shine from index.css — 22 lines of dead CSS | `index.css:77` | — |
 | 2026-06-08 | v1.46.245 | Perf | Removed dead @keyframes pulse (scale variant) from index.css — overridden by opacity-only definition below it | `index.css:37` | — |
