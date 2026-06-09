@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.279] — 2026-06-09
+
+- [Perf] Completed targeted-transition sweep across all primary-screen components: FeedItem card icon, AnalyticsPage provider selector and tab buttons — all `transition: all` now replaced with specific properties
+
 ## [1.46.278] — 2026-06-09
 
 - [Perf] SecondaryPages: replaced 7× `transition: all` with targeted property lists across Settings, Manage Feeds, and History

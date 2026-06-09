@@ -392,7 +392,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           {/* Thumbnail (md/lg) or type icon (sm) */}
           {cardSize !== "sm"
             ? <ListThumb item={item} cardSize={cardSize} T={T} />
-            : <div style={{ width:26, height:26, flexShrink:0, borderRadius:7, background:hovered?T.accentSurface:T.surface, display:"flex", alignItems:"center", justifyContent:"center", color:hovered?T.accent:T.textTertiary, transition:"all .15s" }}><ContentTypeIcon item={item} /></div>
+            : <div style={{ width:26, height:26, flexShrink:0, borderRadius:7, background:hovered?T.accentSurface:T.surface, display:"flex", alignItems:"center", justifyContent:"center", color:hovered?T.accent:T.textTertiary, transition:"background .15s, color .15s" }}><ContentTypeIcon item={item} /></div>
           }
 
           {/* Text block */}

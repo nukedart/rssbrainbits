@@ -249,7 +249,7 @@ function AISettingsTab({ T }) {
                 background: active ? T.accentSurface : T.surface2,
                 border: `2px solid ${active ? T.accent : T.border}`,
                 borderRadius: 12, padding: "14px 16px", cursor: "pointer",
-                fontFamily: "inherit", textAlign: "left", transition: "all .15s",
+                fontFamily: "inherit", textAlign: "left", transition: "background .15s, border-color .15s",
               }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: active ? T.accent : T.text }}>{m.name}</div>
@@ -486,7 +486,7 @@ export default function AnalyticsPage() {
               border: tab === t.id ? `1px solid ${T.border}` : "1px solid transparent",
               borderRadius: 7, padding: "6px 16px", fontSize: 12, fontWeight: 600,
               color: tab === t.id ? T.text : T.textSecondary, cursor: "pointer",
-              fontFamily: "inherit", transition: "all .15s",
+              fontFamily: "inherit", transition: "background .15s, color .15s, border-color .15s",
             }}>
               {t.label}
             </button>

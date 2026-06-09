@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.279 | Perf | FeedItem card icon + AnalyticsPage: last 3 `transition: all` in primary-screen components | `FeedItem.jsx:395`, `AnalyticsPage.jsx:252,489` | — |
 | 2026-06-09 | v1.46.278 | Perf | SecondaryPages: 7× `transition: all` → targeted property lists | `SecondaryPages.jsx:562,1206,1218,1266,1273,1314,1502` | — |
 | 2026-06-09 | v1.46.277 | Perf | CardsPage: 4× `transition: all` → targeted property lists | `CardsPage.jsx:446,468,542,700` | — |
 | 2026-06-09 | v1.46.276 | Perf | InboxPage toolbar: 8× `transition: all` → targeted property lists | `InboxPage.jsx:932,978,991,1016,1033,1053,1083,1097` | — |
