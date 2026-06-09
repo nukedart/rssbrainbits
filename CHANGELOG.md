@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.251] — 2026-06-09
+
+- [Perf] Add decoding="async" to ListThumb and MobileThumb image elements — browser decodes images off the main thread, reducing scroll jank on image-heavy feeds
+
 ## [1.46.250] — 2026-06-09
 
 - [UX] Mobile feed image default bumped from 72px to 96px; slider ceiling raised from 96→120px for larger phones

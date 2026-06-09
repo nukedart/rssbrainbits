@@ -140,7 +140,7 @@ function ListThumb({ item, cardSize, T }) {
       position: "relative",
     }}>
       {showImg ? (
-        <img src={item.image} alt="" loading="lazy"
+        <img src={item.image} alt="" loading="lazy" decoding="async"
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           onError={() => setImgFailed(true)}
         />
@@ -181,7 +181,7 @@ function MobileThumb({ item, T, size = 72 }) {
       display: "flex", alignItems: "center", justifyContent: "center",
     }}>
       {showImg ? (
-        <img src={src} alt="" loading="lazy"
+        <img src={src} alt="" loading="lazy" decoding="async"
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           onError={() => setFailed(true)}
         />
