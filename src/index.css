@@ -190,3 +190,13 @@ button { transition: opacity .12s, background .12s, color .12s, border-color .12
 @media (max-width: 520px) {
   /* Modals take full width on very small screens */
 }
+
+/* ── Accessibility: respect Reduce Motion (iOS Settings → Accessibility → Motion) ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

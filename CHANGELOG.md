@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.256] — 2026-06-09
+
+- [UX] Respect prefers-reduced-motion — all CSS animations and transitions collapse to near-instant for users with Reduce Motion enabled in iOS Accessibility settings
+
 ## [1.46.255] — 2026-06-09
 
 - [UX] Mobile toolbar icon buttons (search, unread toggle, display) bumped from 36×36 to 44×44px — meets iOS HIG minimum touch target, reduces mis-taps
