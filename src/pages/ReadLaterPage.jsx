@@ -7,6 +7,16 @@ import { Spinner } from "../components/UI";
 
 const ContentViewer = lazy(() => import("../components/ContentViewer"));
 
+function navDirScroll(e) {
+  const el = e.currentTarget, top = el.scrollTop, delta = top - (el._lastTop ?? top);
+  el._lastTop = top;
+  if (top < 80) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
+  if (Math.abs(delta) < 1) return;
+  el._acc = (el._acc ?? 0) + delta;
+  if (el._acc > 60) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "down" })); }
+  else if (el._acc < -60) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }
+}
+
 function relTime(iso) {
   if (!iso) return "";
   const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
@@ -166,7 +176,7 @@ export default function ReadLaterPage() {
       )}
 
       {/* ── Body ────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: "auto" }}>
+      <div onScroll={navDirScroll} style={{ flex: 1, overflowY: "auto" }}>
         {loading && (
           <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}>
             <Spinner size={28} />

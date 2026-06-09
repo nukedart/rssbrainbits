@@ -6,6 +6,16 @@ import { getReadingStats, getHighlightReviews, getSaved, getHistory } from "../l
 
 const ContentViewer = lazy(() => import("../components/ContentViewer"));
 
+function navDirScroll(e) {
+  const el = e.currentTarget, top = el.scrollTop, delta = top - (el._lastTop ?? top);
+  el._lastTop = top;
+  if (top < 80) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); return; }
+  if (Math.abs(delta) < 1) return;
+  el._acc = (el._acc ?? 0) + delta;
+  if (el._acc > 60) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "down" })); }
+  else if (el._acc < -60) { el._acc = 0; window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }
+}
+
 function relTime(dateStr) {
   if (!dateStr) return "";
   const m = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
@@ -120,7 +130,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
 
   return (
     <>
-    <div style={{ flex: 1, overflowY: "auto", padding: pad }}>
+    <div onScroll={navDirScroll} style={{ flex: 1, overflowY: "auto", padding: pad }}>
       <div style={{ maxWidth: maxW, margin: "0 auto" }}>
 
         {/* ── Header ────────────────────────────────────────── */}

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.267] — 2026-06-09
+
+- [Nav] BottomNav now auto-hides on scroll-down in Today and Saved pages — was only working in Inbox and Cards
+
 ## [1.46.266] — 2026-06-09
 
 - [Fix] Reading progress bar on list items now updates immediately when you close an article — was showing stale cached value until page re-mounted
