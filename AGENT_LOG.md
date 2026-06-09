@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.276 | Perf | InboxPage toolbar: 8× `transition: all` → targeted property lists | `InboxPage.jsx:932,978,991,1016,1033,1053,1083,1097` | — |
 | 2026-06-09 | v1.46.263 | Perf | Session-level article content cache — re-opens instant, no proxy re-fetch; LRU cap 50 entries | `fetchers.js:20,395,458,562` | — |
 | 2026-06-09 | v1.46.264 | Perf | preconnect hints for all 4 RSS proxy services in index.html — first feed fetch ~100–300ms faster | `index.html:30-35` | — |
 | 2026-06-09 | v1.46.265 | UX | BottomNav dot badge → count badge (99+ cap) on Inbox and Review — unread count visible without opening page | `BottomNav.jsx:54-73,161-166` | — |
@@ -15,6 +16,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-09 | v1.46.272 | Nav | BottomNav re-appears on article close in Today, Saved (ReadLater), History — missing fb-nav-dir dispatch | `TodayPage.jsx:308`, `ReadLaterPage.jsx:259`, `SecondaryPages.jsx:64` | — |
 | 2026-06-09 | v1.46.273 | Fix | slideInUp moved to index.css — was only defined inside MobileFeedDrawer inline style, missing for InboxPage display sheet | `index.css:60-63`, `MobileFeedDrawer.jsx:361-370` | — |
 | 2026-06-09 | v1.46.274 | Nav | Escape restores cursor to closed article; Sidebar shortcut labels corrected (L=Read later, S=Save) | `InboxPage.jsx:445`, `Sidebar.jsx:33` | — |
+| 2026-06-09 | v1.46.275 | Perf | ContentViewer: 11× transition:all → targeted bg/color/border-color — stops browser watching all CSS props on reader hover | `ContentViewer.jsx:397,421,436,452,502,513,527,745,956,1054` | — |
 | 2026-06-01 | v1.46.229 | Perf | Cap unbounded DB queries: getSaved(200), getAllHighlights(500), getHighlightReviews(200 ordered by next_review) | `supabase.js:125,532,549` | — |
 | 2026-06-01 | v1.46.230 | Perf | Lazy-load AddModal + OPMLImport in InboxPage; InboxPage chunk 21→16 kB gz | `InboxPage.jsx:10-19,1449,1481` | — |
 | 2026-06-01 | v1.46.231 | Fix | Worker proxy response now validated with looksLikeBlockPage; bot-challenge pages no longer silently pass through | `fetchers.js:59` | — |

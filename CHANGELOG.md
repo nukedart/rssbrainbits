@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.276] — 2026-06-09
+
+- [Perf] InboxPage toolbar: replaced 8× `transition: all` with targeted property lists — reduces style recalculation on every hover in the highest-traffic page
+
 ## [1.46.275] — 2026-06-09
 
 - [Perf] ContentViewer toolbar: replaced 11× `transition: all` with targeted property lists — browser no longer watches every CSS property on each hover in the reader

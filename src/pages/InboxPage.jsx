@@ -929,7 +929,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 background: activeSource !== "all" ? T.accentSurface : T.surface,
                 color: activeSource !== "all" ? T.accent : T.textSecondary,
                 cursor: "pointer", fontSize: 12, fontWeight: 500, fontFamily: "inherit",
-                transition: "all .12s", whiteSpace: "nowrap",
+                transition: "background .12s, color .12s, border-color .12s", whiteSpace: "nowrap",
               }}>
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg>
                 {activeSource === "all" ? "All sources" : feeds.find(f => f.id === activeSource)?.name || "Source"}
@@ -975,7 +975,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   color: readFilter === val ? T.text : T.textTertiary,
                   fontWeight: readFilter === val ? 600 : 400,
                   fontSize: 11, cursor: "pointer", fontFamily: "inherit",
-                  transition: "all .15s",
+                  transition: "background .15s, color .15s",
                 }}>{label}</button>
               ))}
             </div>
@@ -988,7 +988,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 background: "transparent", border: "none", borderRadius: 9,
                 width: isMobile ? 40 : 30, height: isMobile ? 40 : 30, cursor: "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: T.textTertiary, transition: "all .15s",
+                color: T.textTertiary, transition: "background .15s, color .15s",
               }}
               onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
@@ -1013,7 +1013,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 background: searchOpen ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
                 width: 30, height: 30, cursor: "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: searchOpen ? T.accent : T.textTertiary, transition: "all .15s",
+                color: searchOpen ? T.accent : T.textTertiary, transition: "background .15s, color .15s",
               }}
               onMouseEnter={e => { if (!searchOpen) { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; } }}
               onMouseLeave={e => { if (!searchOpen) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
@@ -1030,7 +1030,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             background: "transparent", border: "none", borderRadius: 8,
             width: 30, height: 30, cursor: "pointer", flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
-            color: T.textTertiary, transition: "all .15s",
+            color: T.textTertiary, transition: "background .15s, color .15s",
           }}
             onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
@@ -1050,7 +1050,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 background: viewMenuOpen ? T.surface2 : "transparent",
                 color: viewMenuOpen ? T.text : T.textTertiary,
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "all .15s",
+                transition: "background .15s, color .15s",
               }}
               onMouseEnter={e => { if (!viewMenuOpen) { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; } }}
               onMouseLeave={e => { if (!viewMenuOpen) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
@@ -1080,7 +1080,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                         background: viewMode === mode ? T.accentSurface : T.surface,
                         color: viewMode === mode ? T.accent : T.textSecondary,
                         cursor: "pointer", fontSize: 12, fontWeight: viewMode === mode ? 600 : 400,
-                        fontFamily: "inherit", transition: "all .12s",
+                        fontFamily: "inherit", transition: "background .12s, color .12s",
                       }}>{icon}{label}</button>
                     ))}
                   </div>
@@ -1094,7 +1094,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                         background: cardSize === size ? T.accentSurface : T.surface,
                         color: cardSize === size ? T.accent : T.textSecondary,
                         cursor: "pointer", fontSize: 12, fontWeight: cardSize === size ? 700 : 400,
-                        fontFamily: "inherit", transition: "all .12s",
+                        fontFamily: "inherit", transition: "background .12s, color .12s",
                       }}>{label}</button>
                     ))}
                   </div>
