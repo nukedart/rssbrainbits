@@ -443,7 +443,7 @@ export default function CardsPage() {
                       style={{
                         width: 28, height: 28, borderRadius: 8,
                         border: `2.5px solid ${newCard.color === c.id ? c.border : "transparent"}`,
-                        background: c.bg, cursor: "pointer", transition: "all .12s",
+                        background: c.bg, cursor: "pointer", transition: "border-color .12s, box-shadow .12s",
                         boxShadow: newCard.color === c.id ? `0 0 0 2px ${T.bg}, 0 0 0 4px ${c.border}` : "none",
                       }}
                     />
@@ -465,7 +465,7 @@ export default function CardsPage() {
                     color: newCard.passage.trim() ? T.accentText : T.textTertiary,
                     border: "none", borderRadius: 9, padding: "9px 22px",
                     cursor: newCard.passage.trim() ? "pointer" : "default",
-                    fontSize: 13, fontWeight: 600, fontFamily: "inherit", transition: "all .15s",
+                    fontSize: 13, fontWeight: 600, fontFamily: "inherit", transition: "background .15s, color .15s",
                   }}
                 >Save card</button>
               </div>
@@ -539,7 +539,7 @@ export default function CardsPage() {
               style={{
                 background: sortAZ ? T.accentSurface : T.surface, border: `1px solid ${sortAZ ? T.accent : T.border}`,
                 borderRadius: 10, padding: "9px 14px", cursor: "pointer", color: sortAZ ? T.accent : T.textSecondary,
-                fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0, transition: "all .12s",
+                fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s, border-color .12s",
                 whiteSpace: "nowrap",
               }}
             >{sortAZ ? "A→Z" : "By count"}</button>
@@ -697,7 +697,7 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
               background: "rgba(0,0,0,.08)", border: "none", borderRadius: 7,
               width: 28, height: 28, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: T.textSecondary, transition: "all .12s",
+              color: T.textSecondary, transition: "background .12s, color .12s",
             }}
             onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,0,0,.08)"; e.currentTarget.style.color = T.textSecondary; }}

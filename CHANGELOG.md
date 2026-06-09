@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.277] — 2026-06-09
+
+- [Perf] CardsPage: replaced 4× `transition: all` with targeted property lists on color picker, save, sort, and delete buttons
+
 ## [1.46.276] — 2026-06-09
 
 - [Perf] InboxPage toolbar: replaced 8× `transition: all` with targeted property lists — reduces style recalculation on every hover in the highest-traffic page

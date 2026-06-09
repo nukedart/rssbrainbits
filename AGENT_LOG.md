@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.277 | Perf | CardsPage: 4× `transition: all` → targeted property lists | `CardsPage.jsx:446,468,542,700` | — |
 | 2026-06-09 | v1.46.276 | Perf | InboxPage toolbar: 8× `transition: all` → targeted property lists | `InboxPage.jsx:932,978,991,1016,1033,1053,1083,1097` | — |
 | 2026-06-09 | v1.46.263 | Perf | Session-level article content cache — re-opens instant, no proxy re-fetch; LRU cap 50 entries | `fetchers.js:20,395,458,562` | — |
 | 2026-06-09 | v1.46.264 | Perf | preconnect hints for all 4 RSS proxy services in index.html — first feed fetch ~100–300ms faster | `index.html:30-35` | — |
