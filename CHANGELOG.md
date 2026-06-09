@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.283] — 2026-06-09
+
+- [Perf] Removed dead CSS from index.css: `@keyframes slideDown`, `pulse`, `itemIn`, `itemEnter`, `fadeInUp`, plus unused `.feed-item-enter`, `.tb-btn`, and `.feed-list` stagger classes — none were referenced in any JSX
+
 ## [1.46.282] — 2026-06-09
 
 - [Perf] Fixed missed `transition:"all"` (no-space variant) — 14 more instances in Sidebar, CardsPage, LoginPage, InboxPage, SecondaryPages; 0 `transition: all` remaining in any format across the entire codebase
