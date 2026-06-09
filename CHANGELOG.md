@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.259] — 2026-06-09
+
+- [Polish] Read-progress bar added to MobileThumb — partial-read indicator now shows on mobile list rows, matching desktop list and card views
+
 ## [1.46.258] — 2026-06-09
 
 - [Polish] BottomNav now shows 9px text labels below each icon — improves discoverability for first-time users; replaces the active-dot indicator (color + weight now signals active state)

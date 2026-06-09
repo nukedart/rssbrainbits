@@ -176,10 +176,11 @@ function MobileThumb({ item, T, size = 72 }) {
     : item.image || null;
   const [failed, setFailed] = useState(false);
   const showImg = src && !failed;
+  const progress = getStoredProgress(item.url);
   return (
     <div style={{
       width: size, height: size, borderRadius: Math.round(size * 0.14), flexShrink: 0,
-      overflow: "hidden",
+      overflow: "hidden", position: "relative",
       background: showImg ? T.surface2 : ph.bg,
       display: "flex", alignItems: "center", justifyContent: "center",
     }}>
@@ -192,6 +193,11 @@ function MobileThumb({ item, T, size = 72 }) {
         <img src={fav} alt="" width={28} height={28} style={{ borderRadius: 5, opacity: .85 }} onError={e => { e.target.style.display = "none"; }} />
       ) : (
         <span style={{ fontSize: 24, fontWeight: 800, color: ph.color, opacity: .9 }}>{ph.initial}</span>
+      )}
+      {progress > 5 && progress < 95 && (
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${progress}%`, background: T.accent, transition: "width .3s" }} />
+        </div>
       )}
     </div>
   );
