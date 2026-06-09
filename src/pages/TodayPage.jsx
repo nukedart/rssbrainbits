@@ -305,7 +305,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
       <Suspense fallback={null}>
         <ContentViewer
           item={openItem}
-          onClose={() => setOpenItem(null)}
+          onClose={() => { setOpenItem(null); window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }}
         />
       </Suspense>
     )}

@@ -256,7 +256,7 @@ export default function ReadLaterPage() {
             item={openItem}
             isSaved={true}
             onUnsave={() => { setItems(prev => prev.filter(i => i.url !== openItem.url)); setOpenItem(null); }}
-            onClose={() => setOpenItem(null)}
+            onClose={() => { setOpenItem(null); window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }}
           />
         </Suspense>
       )}

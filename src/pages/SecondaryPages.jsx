@@ -61,7 +61,7 @@ export function HistoryPage() {
       {history.map((item) => (
         <FeedItem key={item.url} item={{ ...item, date: item.read_at }} onClick={() => setOpenItem(item)} />
       ))}
-      {openItem && <ContentViewer item={openItem} onClose={() => setOpenItem(null)} />}
+      {openItem && <ContentViewer item={openItem} onClose={() => { setOpenItem(null); window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }} />}
     </PageShell>
   );
 }
