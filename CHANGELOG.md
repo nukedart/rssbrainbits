@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.264] — 2026-06-09
+
+- [Perf] Added preconnect hints for RSS proxy services (corsproxy.io, allorigins.win, codetabs.com, rss2json.com) — TCP+TLS connections established during JS parse so first feed fetch is 100–300ms faster
+
 ## [1.46.263] — 2026-06-09
 
 - [Perf] Session-level article content cache — re-opening an article or swiping back to it is instant (no proxy re-fetch); capped at 50 entries
