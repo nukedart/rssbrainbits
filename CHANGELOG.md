@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.271] — 2026-06-09
+
+- [Polish] Swipe hint colors: both Read and Save hints now use a soft 20%-opacity wash with action-matched text color — amber hint was invisible in light mode
+
 ## [1.46.270] — 2026-06-09
 
 - [Fix] FeedItem.jsx missing useRef import — caused crash on any page that renders feed items

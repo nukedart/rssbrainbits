@@ -132,10 +132,13 @@ function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile }) {
       const hint = hintRef.current;
       hint.style.opacity = prog;
       hint.style.display = Math.abs(clamped) > 8 ? "flex" : "none";
-      hint.style.background = clamped > 0 ? T.success : T.amber?.bg || "#F59E0B22";
+      hint.style.background = clamped > 0 ? `${T.success}33` : `${T.amber?.text || "#F59E0B"}33`;
       hint.style.justifyContent = clamped > 0 ? "flex-start" : "flex-end";
       const lbl = hint.querySelector("span");
-      if (lbl) lbl.textContent = clamped > 0 ? (isRead ? "Unread" : "Read") : "Save";
+      if (lbl) {
+        lbl.textContent = clamped > 0 ? (isRead ? "Unread" : "Read") : "Save";
+        lbl.style.color = clamped > 0 ? T.success : (T.amber?.text || "#F59E0B");
+      }
     }
   }
 
