@@ -96,10 +96,72 @@ function ActionBtn({ icon, title, onClick, T, color }) {
   );
 }
 
-// ── Swipe wrapper — passthrough; swipe gestures handled at screen level ───────
-function SwipeRow({ children }) {
-  const noSwipe = { swiped: false, close: () => {} };
-  return typeof children === "function" ? children(noSwipe) : children;
+// ── Swipe wrapper — right = mark read/unread, left = save for later ──────────
+function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile }) {
+  const rowRef  = useRef(null);
+  const hintRef = useRef(null);
+  const touch   = useRef(null);
+  const THRESHOLD = 72;
+
+  if (!isMobile) {
+    return typeof children === "function" ? children({ swiped: false, close: () => {} }) : children;
+  }
+
+  function onTouchStart(e) {
+    touch.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, locked: false, dx: 0 };
+  }
+
+  function onTouchMove(e) {
+    const tc = touch.current;
+    if (!tc) return;
+    const dx = e.touches[0].clientX - tc.startX;
+    const dy = e.touches[0].clientY - tc.startY;
+    if (!tc.locked) {
+      if (Math.abs(dy) > Math.abs(dx) + 6) { touch.current = null; return; }
+      if (Math.abs(dx) > 6) tc.locked = true;
+    }
+    if (!tc.locked) return;
+    const clamped = Math.max(-THRESHOLD * 1.4, Math.min(THRESHOLD * 1.4, dx));
+    tc.dx = clamped;
+    if (rowRef.current) rowRef.current.style.transform = `translateX(${clamped * 0.6}px)`;
+    const prog = Math.min(Math.abs(clamped) / THRESHOLD, 1);
+    if (hintRef.current) {
+      const hint = hintRef.current;
+      hint.style.opacity = prog;
+      hint.style.display = Math.abs(clamped) > 8 ? "flex" : "none";
+      hint.style.background = clamped > 0 ? T.success : T.amber?.bg || "#F59E0B22";
+      hint.style.justifyContent = clamped > 0 ? "flex-start" : "flex-end";
+      const lbl = hint.querySelector("span");
+      if (lbl) lbl.textContent = clamped > 0 ? (isRead ? "Unread" : "Read") : "Save";
+    }
+  }
+
+  function onTouchEnd() {
+    const tc = touch.current;
+    touch.current = null;
+    if (!tc || !tc.locked) return;
+    if (tc.dx > THRESHOLD) onMarkRead?.();
+    else if (tc.dx < -THRESHOLD) onReadLater?.();
+    if (rowRef.current) { rowRef.current.style.transform = "translateX(0)"; rowRef.current.style.transition = "transform .18s ease"; setTimeout(() => { if (rowRef.current) rowRef.current.style.transition = ""; }, 200); }
+    if (hintRef.current) hintRef.current.style.display = "none";
+  }
+
+  return (
+    <div style={{ position: "relative", overflow: "hidden" }}>
+      <div ref={hintRef} style={{
+        position: "absolute", inset: 0, display: "none", alignItems: "center",
+        padding: "0 18px", pointerEvents: "none",
+      }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: T.text }} />
+      </div>
+      <div ref={rowRef}
+        onTouchStart={onTouchStart} onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd} onTouchCancel={onTouchEnd}
+      >
+        {typeof children === "function" ? children({ swiped: false, close: () => {} }) : children}
+      </div>
+    </div>
+  );
 }
 
 // ── Content type icon ─────────────────────────────────────────

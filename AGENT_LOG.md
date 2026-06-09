@@ -19,6 +19,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-09 | v1.46.257 | UX | Scroll position saved per feed view via sessionStorage — restores on back-navigation | `InboxPage.jsx:132,140,1158` | — |
 | 2026-06-09 | v1.46.258 | Polish | BottomNav labels — 9px text below each icon, bold when active | `BottomNav.jsx:95,126,144` | — |
 | 2026-06-09 | v1.46.259 | Polish | Read-progress bar added to MobileThumb — partial-read indicator matches desktop | `FeedItem.jsx:170` | — |
+| 2026-06-09 | v1.46.260 | UX | Swipe-to-act on list rows: right = mark read, left = save for later | `FeedItem.jsx:99` | — |
 | 2026-06-08 | v1.46.247 | Fix | Podcast mini-bar bottom raised to 80px on mobile so it clears BottomNav pill; width fills viewport on mobile | `PodcastPlayer.jsx:609` | — |
 | 2026-06-08 | v1.46.246 | Perf | Removed duplicate shimmer/@keyframes shimmer + --sk-base/--sk-shine from index.css — 22 lines of dead CSS | `index.css:77` | — |
 | 2026-06-08 | v1.46.245 | Perf | Removed dead @keyframes pulse (scale variant) from index.css — overridden by opacity-only definition below it | `index.css:37` | — |

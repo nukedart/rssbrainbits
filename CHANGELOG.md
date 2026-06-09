@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.260] — 2026-06-09
+
+- [UX] Swipe gestures on feed list rows — swipe right to mark read/unread, swipe left to save for later; implemented via direct DOM manipulation (no re-renders during drag)
+
 ## [1.46.259] — 2026-06-09
 
 - [Polish] Read-progress bar added to MobileThumb — partial-read indicator now shows on mobile list rows, matching desktop list and card views
