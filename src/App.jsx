@@ -307,7 +307,7 @@ function AppShell() {
           transform: edgeDx > 0 ? `translateX(${edgeDx * 0.25}px)` : "none",
           transition: edgeTouchRef.current ? "none" : "transform .22s ease",
         }}>
-        <div key={page} style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", animation: "fadeInScale .1s ease" }}>
+        <div key={page} style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", animation: "fadeInScale .15s ease" }}>
           <ErrorBoundary>
             <Suspense fallback={<PageSpinner T={T} />}>
               {renderPage()}

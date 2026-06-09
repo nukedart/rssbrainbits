@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.269] — 2026-06-09
+
+- [Polish] Page transitions now use a subtle scale (0.97→1) in addition to fade — gives a native-feel "settle into place" motion on every page switch
+
 ## [1.46.268] — 2026-06-09
 
 - [Perf] Moved fb-article-body CSS from inline JSX style tag to index.css — ContentViewer chunk -2.7 kB, no DOM re-injection on every article open
