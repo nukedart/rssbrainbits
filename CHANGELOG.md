@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.250] — 2026-06-09
+
+- [UX] Mobile feed image default bumped from 72px to 96px; slider ceiling raised from 96→120px for larger phones
+
 ## [1.46.249] — 2026-06-08
 
 - [Nav] Reading Log rows in Today page are now clickable — tap/click any item to re-open it in the article reader, completing the "every row is navigable" pattern across the Today dashboard

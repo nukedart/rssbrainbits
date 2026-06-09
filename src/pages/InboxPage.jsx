@@ -64,7 +64,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       imgPosition:  localStorage.getItem("fb-img-pos") || "left",
       previewLines: parseInt(localStorage.getItem("fb-preview-lines") ?? "2", 10),
       fontSize,
-      imgSize: rawImg ? parseInt(rawImg, 10) : 72,
+      imgSize: rawImg ? parseInt(rawImg, 10) : (isMobile ? 96 : 72),
     };
   });
   const [showDisplaySheet, setShowDisplaySheet] = useState(false);
@@ -1335,7 +1335,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   <span style={{ fontSize:13, fontWeight:600, color:T.textSecondary }}>{displayPrefs.imgSize}px</span>
                 </div>
                 <input
-                  type="range" min={44} max={96} step={4}
+                  type="range" min={44} max={120} step={4}
                   value={displayPrefs.imgSize}
                   onChange={e => updateDisplayPref("imgSize", parseInt(e.target.value, 10))}
                   style={{ width:"100%", height:28, cursor:"pointer", accentColor: T.accent }}
