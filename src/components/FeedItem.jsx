@@ -45,6 +45,9 @@ function getStoredProgress(url) {
     return val;
   } catch { _progressCache.set(url, 0); return 0; }
 }
+export function invalidateProgressCache(url) {
+  if (url) _progressCache.delete(url);
+}
 
 const _placeholderCache = new Map();
 function sourcePlaceholder(source) {

@@ -6,7 +6,7 @@ import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem, unsaveItem, getS
          addReadLater, removeReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed } from "../lib/supabase";
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChannelRSS } from "../lib/fetchers";
 import { getCachedFeed, invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
-import FeedItem from "../components/FeedItem";
+import FeedItem, { invalidateProgressCache } from "../components/FeedItem";
 const ContentViewer = lazy(() => import("../components/ContentViewer"));
 const AddModal       = lazy(() => import("../components/AddModal"));
 const OPMLImport     = lazy(() => import("../components/OPMLImport"));
@@ -1434,7 +1434,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               isSaved={savedUrls.has(openItem?.url)}
               onSave={() => handleViewerSave(openItem)}
               onUnsave={() => handleViewerUnsave(openItem.url)}
-              onClose={() => { setOpenItem(null); setOpenIdx(-1); }}
+              onClose={() => { invalidateProgressCache(openItem?.url); setOpenItem(null); setOpenIdx(-1); }}
               onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
               onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
               currentIdx={openIdx}
@@ -1486,7 +1486,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             isSaved={savedUrls.has(openItem?.url)}
             onSave={() => setSavedUrls(prev => { const n = new Set(prev); n.add(openItem.url); return n; })}
             onUnsave={() => setSavedUrls(prev => { const n = new Set(prev); n.delete(openItem.url); return n; })}
-            onClose={() => { setOpenItem(null); setOpenIdx(-1); window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }}
+            onClose={() => { invalidateProgressCache(openItem?.url); setOpenItem(null); setOpenIdx(-1); window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); }}
             onNext={openIdx < baseItems.length - 1 ? () => openByIdx(openIdx + 1) : undefined}
             onPrev={openIdx > 0 ? () => openByIdx(openIdx - 1) : undefined}
             currentIdx={openIdx}

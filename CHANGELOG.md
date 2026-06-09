@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.266] — 2026-06-09
+
+- [Fix] Reading progress bar on list items now updates immediately when you close an article — was showing stale cached value until page re-mounted
+
 ## [1.46.265] — 2026-06-09
 
 - [UX] BottomNav Inbox/Review badges show actual count (99+ cap) instead of a plain dot — users see unread count at a glance without opening the page

@@ -6,6 +6,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-09 | v1.46.263 | Perf | Session-level article content cache — re-opens instant, no proxy re-fetch; LRU cap 50 entries | `fetchers.js:20,395,458,562` | — |
 | 2026-06-09 | v1.46.264 | Perf | preconnect hints for all 4 RSS proxy services in index.html — first feed fetch ~100–300ms faster | `index.html:30-35` | — |
 | 2026-06-09 | v1.46.265 | UX | BottomNav dot badge → count badge (99+ cap) on Inbox and Review — unread count visible without opening page | `BottomNav.jsx:54-73,161-166` | — |
+| 2026-06-09 | v1.46.266 | Fix | Progress bar on list items updates immediately on article close — was using stale module-level cache | `FeedItem.jsx:48-50`, `InboxPage.jsx:1437,1489` | — |
 | 2026-06-01 | v1.46.229 | Perf | Cap unbounded DB queries: getSaved(200), getAllHighlights(500), getHighlightReviews(200 ordered by next_review) | `supabase.js:125,532,549` | — |
 | 2026-06-01 | v1.46.230 | Perf | Lazy-load AddModal + OPMLImport in InboxPage; InboxPage chunk 21→16 kB gz | `InboxPage.jsx:10-19,1449,1481` | — |
 | 2026-06-01 | v1.46.231 | Fix | Worker proxy response now validated with looksLikeBlockPage; bot-challenge pages no longer silently pass through | `fetchers.js:59` | — |
