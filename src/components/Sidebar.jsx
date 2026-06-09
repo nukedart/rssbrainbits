@@ -30,7 +30,7 @@ const Icons = {
 
 const SHORTCUTS = [
   ["J / K","Navigate"],["O","Open"],["R","Read/unread"],
-  ["/","Search"],["L","Save article"],["S","Star"],["A","Add feed"],["Esc","Close"],
+  ["/","Search"],["L","Read later"],["S","Save"],["A","Add feed"],["Esc","Close"],
 ];
 
 // ── Feed favicon helper ───────────────────────────────────────

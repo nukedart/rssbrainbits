@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.274] — 2026-06-09
+
+- [Nav] Escape key now restores keyboard cursor to the article that was just closed — was snapping to a different position
+- [Nav] Sidebar shortcut labels corrected: L = "Read later" (was "Save article"), S = "Save" (was "Star")
+
 ## [1.46.273] — 2026-06-09
 
 - [Fix] slideInUp keyframe moved to index.css — was defined only inside MobileFeedDrawer, so Display Settings sheet on InboxPage had no animation before the feed drawer was ever opened

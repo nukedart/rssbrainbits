@@ -443,6 +443,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           if (openItem) handleSaveItem(openItem);
           break;
         case "Escape":
+          if (openIdx >= 0) setCursorIdx(openIdx);
           setOpenItem(null); setOpenIdx(-1); setExpandedView(false);
           break;
         case "a":
