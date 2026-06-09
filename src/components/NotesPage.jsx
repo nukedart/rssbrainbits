@@ -267,7 +267,7 @@ function TagCard({ title, url, tags, onSearch, onReread, T }) {
         <div style={{ fontFamily: "inherit", fontSize: 16, fontWeight: 500, color: T.text, lineHeight: 1.3, flex: 1, minWidth: 0, letterSpacing: "-.01em" }}>{title}</div>
         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
           <button onClick={() => onReread({ url, title, source: "" })}
-            style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 11, color: T.textSecondary, cursor: "pointer", fontFamily: "inherit", transition: "all .12s" }}
+            style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 11, color: T.textSecondary, cursor: "pointer", fontFamily: "inherit", transition: "border-color .12s, color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textSecondary; }}
           >Re-read</button>
@@ -665,7 +665,7 @@ export default function NotesPage() {
                   </select>
                   <div style={{ display: "flex", gap: 1, background: T.surface2, borderRadius: 8, padding: 2 }}>
                     {[{ v: "grid", icon: "⊞" }, { v: "list", icon: "☰" }].map(({ v, icon }) => (
-                      <button key={v} onClick={() => setViewMode(v)} style={{ width: 28, height: 24, borderRadius: 5, border: "none", cursor: "pointer", background: viewMode === v ? T.card : "transparent", color: viewMode === v ? T.text : T.textTertiary, fontSize: 13, fontFamily: "inherit", transition: "all .12s" }}>{icon}</button>
+                      <button key={v} onClick={() => setViewMode(v)} style={{ width: 28, height: 24, borderRadius: 5, border: "none", cursor: "pointer", background: viewMode === v ? T.card : "transparent", color: viewMode === v ? T.text : T.textTertiary, fontSize: 13, fontFamily: "inherit", transition: "background .12s, color .12s" }}>{icon}</button>
                     ))}
                   </div>
                 </>

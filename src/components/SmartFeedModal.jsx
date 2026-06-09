@@ -188,7 +188,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
             {COLORS.map(c => (
               <button key={c.id} onClick={() => setColor(c.id)} style={{
                 width: 28, height: 28, borderRadius: "50%", border: `2.5px solid ${color === c.id ? c.dot : "transparent"}`,
-                background: c.bg, cursor: "pointer", transition: "all .12s",
+                background: c.bg, cursor: "pointer", transition: "border-color .12s, box-shadow .12s",
                 boxShadow: color === c.id ? `0 0 0 2px ${T.card}, 0 0 0 4px ${c.dot}` : "none",
                 position: "relative",
               }}>

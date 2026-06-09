@@ -78,7 +78,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
               background: cat===c ? T.accentSurface : "transparent",
               color: cat===c ? T.accentText : T.textSecondary,
               fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-              transition: "all .12s",
+              transition: "background .12s, color .12s",
             }}>{c}</button>
           ))}
         </div>
@@ -92,7 +92,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
                 display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
                 borderRadius: 12, border: `1.5px solid ${isSelected ? T.accent : T.border}`,
                 background: isSelected ? T.accentSurface : T.surface,
-                cursor: "pointer", transition: "all .12s",
+                cursor: "pointer", transition: "background .12s, border-color .12s",
               }}>
                 <span style={{ fontSize: 20, flexShrink: 0 }}>{feed.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -104,7 +104,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
                   border: `2px solid ${isSelected ? T.accent : T.border}`,
                   background: isSelected ? T.accent : "transparent",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0, transition: "all .12s",
+                  flexShrink: 0, transition: "background .12s, border-color .12s",
                 }}>
                   {isSelected && <span style={{ color: T.accentText, fontSize: 12, lineHeight: 1 }}>✓</span>}
                 </div>
@@ -125,7 +125,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
             background: selected.size > 0 ? T.accent : T.surface2,
             color: selected.size > 0 ? T.accentText : T.textTertiary,
             fontSize: 14, fontWeight: 700, cursor: selected.size > 0 ? "pointer" : "default",
-            fontFamily: "inherit", transition: "all .2s",
+            fontFamily: "inherit", transition: "background .2s, color .2s",
           }}>
             {loading ? "Adding feeds…" : selected.size > 0 ? `Subscribe to ${selected.size} feed${selected.size > 1 ? "s" : ""}` : "Select feeds above"}
           </button>

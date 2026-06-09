@@ -160,7 +160,7 @@ function PanelContent({ articleTitle, notes, creating, setCreating, newTitle, se
               width: "100%", background: "none",
               border: `1.5px dashed ${T.border}`, borderRadius: 10,
               padding: "10px 14px", fontSize: 12, color: T.textTertiary,
-              cursor: "pointer", fontFamily: "inherit", transition: "all .12s", textAlign: "left",
+              cursor: "pointer", fontFamily: "inherit", transition: "border-color .12s, color .12s", textAlign: "left",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textTertiary; }}

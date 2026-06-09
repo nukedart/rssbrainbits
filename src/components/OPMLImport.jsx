@@ -291,7 +291,7 @@ export default function OPMLImport({ onImport, onClose }) {
                             border: `2px solid ${isSel ? T.accent : T.border}`,
                             background: isSel ? T.accent : "transparent",
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            transition: "all .1s",
+                            transition: "background .1s, border-color .1s",
                           }}>
                             {isSel && <span style={{ color: "#fff", fontSize: 10, lineHeight: 1, fontWeight: 700 }}>✓</span>}
                           </div>
