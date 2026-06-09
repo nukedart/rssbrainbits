@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.255] — 2026-06-09
+
+- [UX] Mobile toolbar icon buttons (search, unread toggle, display) bumped from 36×36 to 44×44px — meets iOS HIG minimum touch target, reduces mis-taps
+
 ## [1.46.254] — 2026-06-09
 
 - [Polish] Active tab dot indicator below the active BottomNav icon — clearer active state beyond color alone, especially in light mode
