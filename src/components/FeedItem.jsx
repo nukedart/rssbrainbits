@@ -3,6 +3,8 @@ import { useTheme } from "../hooks/useTheme";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { parseYouTubeUrl } from "../lib/fetchers";
 
+const haptic = (ms = 8) => { try { navigator.vibrate?.(ms); } catch {} };
+
 function formatDate(dateStr) {
   if (!dateStr) return "";
   try {
@@ -74,6 +76,7 @@ const Ic = {
 function ActionBtn({ icon, title, onClick, T, color }) {
   function handleClick(e) {
     e.stopPropagation();
+    haptic();
     onClick?.(e);
   }
   return (
