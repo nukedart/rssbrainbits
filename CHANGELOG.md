@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.262] — 2026-06-09
+
+- [Perf] Articles now show RSS content instantly on open while full reader view loads in background — eliminates the loading skeleton for most articles
+- [Perf] Readability moved to static import — eliminates 90KB download waterfall on first article click each session
+- [Perf] Removed redundant auto-retry fetch on thin content (was making a second identical network request)
+
 ## [1.46.261] — 2026-06-09
 
 - [Polish] MobileThumb shows skeleton shimmer while image loads instead of blank solid color — visible in slow network / lazy-load viewport entry

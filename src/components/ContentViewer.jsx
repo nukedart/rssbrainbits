@@ -101,13 +101,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
       return;
     }
 
-    setLoading(true); setError(null);
+    setError(null);
 
     // Helper: build a content object from the RSS feed data (fullText / description)
-    // Used as fallback when article fetching fails or returns thin content.
     function rssFallback(partial) {
       const rssHtml = item.fullText || "";
-      // Strip tags for plain-text (used by AI summary / highlights)
       const rssText = rssHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
       return {
         title:       item.title,
@@ -116,31 +114,28 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         url:         item.url,
         bodyHtml:    rssHtml || null,
         bodyText:    rssText || item.description || "",
-        _fromRSS:    true, // flag so reader can show "RSS preview" notice
+        _fromRSS:    true,
       };
     }
 
+    // Show RSS content immediately so the user can start reading while full article loads
+    const hasRss = (item.fullText?.length || 0) > 50 || (item.description?.length || 0) > 50;
+    if (hasRss) {
+      setContent(rssFallback(null));
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
     fetchArticleContent(item.url)
-      .then(async (result) => {
-        let best = result;
-        // Auto-upgrade: if content is truncated (< 300 chars), silently retry once
-        if ((result.bodyText?.length || 0) < 300) {
-          try {
-            const full = await fetchArticleContent(item.url);
-            if ((full.bodyText?.length || 0) > (result.bodyText?.length || 0)) best = full;
-          } catch { /* silent */ }
+      .then(result => {
+        // Only upgrade if the fetched article is meaningfully richer than what's showing
+        if ((result.bodyText?.length || 0) > 200) {
+          setContent(result);
         }
-        // RSS fallback: fetched content is still thin — use feed description/content
-        if ((best.bodyText?.length || 0) < 200 && (item.fullText?.length > 50 || item.description?.length > 50)) {
-          best = rssFallback(best);
-        }
-        setContent(best);
       })
       .catch(() => {
-        // Fetch failed entirely (blocked, CORS, network) — show RSS content instead of error
-        if (item.fullText?.length > 50 || item.description?.length > 50) {
-          setContent(rssFallback(null));
-        } else {
+        if (!hasRss) {
           setError("Article could not be loaded. Try opening it in your browser.");
         }
       })
