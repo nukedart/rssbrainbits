@@ -1083,6 +1083,7 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
   const menuItem = (label, action, accent = false) => (
     <button
       key={label}
+      role="menuitem"
       onClick={() => { action(); setOpen(false); }}
       style={{ display:"flex", alignItems:"center", width:"100%", padding:"8px 16px", background:"none", border:"none", cursor:"pointer", fontSize:13, color: accent ? T.accent : T.text, fontFamily:"inherit", textAlign:"left", gap:8, transition:"background .1s" }}
       onMouseEnter={e => e.currentTarget.style.background=T.surface2}
@@ -1093,12 +1094,15 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
   return (
     <div ref={ref} style={{ position:"relative", flexShrink:0 }}>
       <button onClick={() => setOpen(v => !v)}
+        aria-label="More options"
+        aria-expanded={open}
+        aria-haspopup="menu"
         style={{ background: open ? T.surface2 : "transparent", border:"none", borderRadius:8, padding:"6px 8px", cursor:"pointer", fontSize:16, color: open ? T.textSecondary : T.textTertiary, fontFamily:"inherit", lineHeight:1, display:"flex", alignItems:"center", justifyContent:"center", width:34, height:32, transition:"background .12s, color .12s" }}
         onMouseEnter={e => { if (!open) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
         onMouseLeave={e => { if (!open) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
       >···</button>
       {open && (
-        <div style={{ position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:200, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, boxShadow:"0 4px 24px rgba(0,0,0,.14)", minWidth:180, padding:"4px 0", animation:"fadeInScale .12s ease" }}>
+        <div role="menu" aria-label="Article options" style={{ position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:200, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, boxShadow:"0 4px 24px rgba(0,0,0,.14)", minWidth:180, padding:"4px 0", animation:"fadeInScale .12s ease" }}>
           {item?.url && menuItem("Open in browser ↗", () => window.open(item.url, "_blank"))}
           <div style={{ height:1, background:T.border, margin:"4px 0" }} />
           {menuItem(showTags ? "Hide tags" : `Tags${tags.length > 0 ? ` (${tags.length})` : ""}`, () => setShowTags(v => !v))}

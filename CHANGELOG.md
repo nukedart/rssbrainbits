@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.389] — 2026-06-10
+
+- [UX] ContentViewer overflow menu: add aria-label, aria-expanded, aria-haspopup on trigger; role=menu/menuitem on items
+
 ## [1.46.388] — 2026-06-10
 
 - [UX] InboxPage source filter: add aria-expanded, aria-haspopup, role="listbox", and aria-selected on options
