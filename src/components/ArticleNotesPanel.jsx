@@ -187,8 +187,9 @@ function NoteRow({ note, onDelete, T }) {
       )}
       <button onClick={() => onDelete(note.id)}
         style={{ position: "absolute", top: 8, right: 8, background: "none", border: "none", cursor: "pointer", fontSize: 12, color: T.textTertiary, padding: "2px 4px", opacity: 0.25, transition: "opacity .12s, color .12s" }}
-        onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "#F87171"; }}
+        onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = T.danger; }}
         onMouseLeave={e => { e.currentTarget.style.opacity = "0.25"; e.currentTarget.style.color = T.textTertiary; }}
+        aria-label="Delete note"
       >✕</button>
     </div>
   );

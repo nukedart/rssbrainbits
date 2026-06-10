@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.311] — 2026-06-09
+
+- [Polish] ArticleNotesPanel: replace hardcoded #F87171 delete hover with T.danger; add aria-label to delete button — consistent across all themes
+
 ## [1.46.310] — 2026-06-09
 
 - [Polish] NotesPage: replace hardcoded #F87171 delete hover color with T.danger token; add aria-label to delete button in NoteEditor — consistent across all themes
