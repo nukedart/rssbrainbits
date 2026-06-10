@@ -65,6 +65,9 @@ export default function TagsInput({ tags, onAdd, onRemove, allTags = [], onTagCl
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
           placeholder={tags.length === 0 ? "Add tags… (press Enter)" : ""}
+          aria-label="Add tag"
+          aria-autocomplete="list"
+          aria-expanded={showSuggestions && suggestions.length > 0}
           style={{
             border: "none", background: "none", outline: "none",
             fontSize: 13, color: T.text, fontFamily: "inherit", minWidth: 80, flex: 1,

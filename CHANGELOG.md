@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.397] — 2026-06-10
+
+- [UX] TagsInput: add aria-label, aria-autocomplete, aria-expanded — screen reader users can navigate tag suggestions
+
 ## [1.46.396] — 2026-06-10
 
 - [UX] Spinner: add role="status" aria-label="Loading" — screen readers now announce loading states app-wide
