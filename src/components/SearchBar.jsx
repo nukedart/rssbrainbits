@@ -78,7 +78,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
   const showPanel = focused && (loading || results.length > 0 || query.trim().length > 0);
 
   return (
-    <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+    <div role="search" style={{ position: "relative", flex: 1, minWidth: 0 }}>
       {/* Input pill */}
       <div style={{
         display: "flex", alignItems: "center", gap: 8,
@@ -125,7 +125,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
 
       {/* Results panel */}
       {showPanel && (
-        <div ref={panelRef} style={{
+        <div ref={panelRef} role="listbox" aria-label="Search results" style={{
           position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
           background: T.card,
           border: `1px solid ${T.border}`,
@@ -153,14 +153,16 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
           {results.map(item => {
             const favicon = item.url ? `https://www.google.com/s2/favicons?domain=${new URL(item.url).hostname}&sz=32` : null;
             return (
-              <div
+              <button
                 key={item.url}
                 onClick={() => { track("search_performed", { query_length: query.length, results: results.length }); onSelectResult(item); setQuery(""); setResults([]); onLiveSearch?.(""); }}
                 style={{
-                  display: "flex", alignItems: "flex-start", gap: 10,
+                  display: "flex", alignItems: "flex-start", gap: 10, width: "100%",
                   padding: "12px 16px", cursor: "pointer",
+                  border: "none", background: "transparent",
                   borderBottom: `1px solid ${T.border}`,
                   transition: "background .08s",
+                  fontFamily: "inherit", textAlign: "left",
                   WebkitTapHighlightColor: "transparent",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
@@ -184,7 +186,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
                     <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.read_at || item.saved_at)}</span>
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

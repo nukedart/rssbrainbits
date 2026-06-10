@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.342] — 2026-06-10
+
+- [UX] SearchBar: result rows converted from div+onClick to button; container gets role=search, panel gets role=listbox — full keyboard-accessible search
+
 ## [1.46.341] — 2026-06-10
 
 - [UX] PodcastPlayer: mini-player title/source expand area converted from div+onClick to button with aria-expanded — keyboard accessible
