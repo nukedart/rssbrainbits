@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.353 | UX | OPMLImport modal: role=dialog + aria-modal + aria-label — screen reader modal semantics | `OPMLImport.jsx:127` | — |
 | 2026-06-10 | v1.46.352 | UX | CardsPage "New card" modal: role=dialog + aria-modal — screen reader modal semantics | `CardsPage.jsx:379` | — |
 | 2026-06-10 | v1.46.351 | UX | InboxPage: display sheet role=dialog+aria-modal; toast+OPML progress role=status+aria-live | `InboxPage.jsx:1322,1423,1513` | — |
 | 2026-06-10 | v1.46.350 | UX | NotePanel + ArticleNotesPanel: role=dialog + aria-modal on bottom-sheets — screen reader modal semantics | `NotePanel.jsx:40`, `ArticleNotesPanel.jsx:47` | — |

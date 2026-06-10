@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.353] — 2026-06-10
+
+- [UX] OPMLImport modal: add role=dialog + aria-modal + aria-label — screen readers treat the OPML import panel as a modal dialog
+
 ## [1.46.352] — 2026-06-10
 
 - [UX] CardsPage "New card" modal: add role=dialog + aria-modal + aria-label — screen readers treat the card creation panel as a modal dialog
