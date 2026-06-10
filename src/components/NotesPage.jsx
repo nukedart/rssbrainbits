@@ -685,8 +685,8 @@ export default function NotesPage() {
                     <option value="title">Title A–Z</option>
                   </select>
                   <div style={{ display: "flex", gap: 1, background: T.surface2, borderRadius: 8, padding: 2 }}>
-                    {[{ v: "grid", icon: "⊞" }, { v: "list", icon: "☰" }].map(({ v, icon }) => (
-                      <button key={v} onClick={() => setViewMode(v)} style={{ width: 28, height: 24, borderRadius: 5, border: "none", cursor: "pointer", background: viewMode === v ? T.card : "transparent", color: viewMode === v ? T.text : T.textTertiary, fontSize: 13, fontFamily: "inherit", transition: "background .12s, color .12s" }}>{icon}</button>
+                    {[{ v: "grid", icon: "⊞", label: "Grid view" }, { v: "list", icon: "☰", label: "List view" }].map(({ v, icon, label }) => (
+                      <button key={v} onClick={() => setViewMode(v)} aria-label={label} aria-pressed={viewMode === v} style={{ width: 28, height: 24, borderRadius: 5, border: "none", cursor: "pointer", background: viewMode === v ? T.card : "transparent", color: viewMode === v ? T.text : T.textTertiary, fontSize: 13, fontFamily: "inherit", transition: "background .12s, color .12s" }}>{icon}</button>
                     ))}
                   </div>
                 </>

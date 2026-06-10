@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.417] — 2026-06-10
+
+- [UX] NotesPage grid/list view toggle buttons now have aria-label and aria-pressed for screen reader state announcements
+
 ## [1.46.416] — 2026-06-10
 
 - [UX] Icon-only close/remove buttons (HighlightsDrawer tag ×, NotePanel tag ×, ArticleNotesPanel ✕) now have aria-labels
