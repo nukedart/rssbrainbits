@@ -297,7 +297,9 @@ export default function MobileFeedDrawer({
           ].map(({ id, label }) => {
             const isActive = active === id;
             return (
-              <button key={id} onClick={() => navigate(id)} style={{
+              <button key={id} onClick={() => navigate(id)}
+                aria-current={isActive ? "page" : undefined}
+                style={{
                 flex:1, padding:"9px 0", borderRadius:10,
                 background: isActive ? T.accentSurface : T.surface,
                 border:`1px solid ${isActive ? T.accent+"44" : T.border}`,

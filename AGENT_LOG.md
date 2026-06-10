@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.386 | UX | MobileFeedDrawer: aria-current on quick-nav buttons (History/Stats/Settings) — completes mobile nav accessibility | `MobileFeedDrawer.jsx:300` | — |
 | 2026-06-10 | v1.46.385 | UX | InboxPage: aria-pressed on Unread/All filter segmented control — screen readers announce selected state | `InboxPage.jsx:972` | — |
 | 2026-06-10 | v1.46.384 | Perf | index.html: preconnect to Google Fonts origins — speeds up editorial theme font loading | `index.html` | — |
 | 2026-06-10 | v1.46.383 | UX | MobileFeedDrawer: aria-label+aria-current on FeedRow+FolderSection; aria-expanded on folder toggle | `MobileFeedDrawer.jsx:20,72,92` | — |

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.386] — 2026-06-10
+
+- [UX] MobileFeedDrawer quick-nav (History/Stats/Settings): add aria-current so screen readers announce active page state
+
 ## [1.46.385] — 2026-06-10
 
 - [UX] InboxPage Unread/All filter: add aria-pressed so screen readers announce current selection state
