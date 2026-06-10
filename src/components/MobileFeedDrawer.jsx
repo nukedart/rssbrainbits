@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 
 const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -12,7 +12,7 @@ function feedDisplayName(feed) {
   return feed.name || (() => { try { return new URL(feed.url).hostname; } catch { return feed.url; } })();
 }
 
-function FeedRow({ feed, unread, active, onNavigate, T }) {
+const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, T }) {
   const favicon = feedFavicon(feed.url);
   const isActive = active === `feed:${feed.id}`;
   const name = feedDisplayName(feed);
@@ -53,7 +53,10 @@ function FeedRow({ feed, unread, active, onNavigate, T }) {
       )}
     </button>
   );
-}
+}, (prev, next) =>
+  (prev.active === `feed:${prev.feed.id}`) === (next.active === `feed:${next.feed.id}`) &&
+  prev.unread === next.unread && prev.feed === next.feed && prev.T === next.T
+);
 
 function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, expanded, onToggle, T }) {
   const dot = FCOLS[folder.color] || "#8A9099";
