@@ -923,7 +923,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Source filter dropdown — only in inbox mode with multiple feeds, desktop only */}
           {!searchOpen && !isMobile && filterMode === "all" && feeds.length > 1 && (
             <div ref={sourceDropRef} style={{ position: "relative", flexShrink: 0 }}>
-              <button onClick={() => setSourceDropOpen(v => !v)} style={{
+              <button onClick={() => setSourceDropOpen(v => !v)}
+                aria-haspopup="listbox"
+                aria-expanded={sourceDropOpen}
+                aria-label={`Filter by source: ${activeSource === "all" ? "All sources" : feeds.find(f => f.id === activeSource)?.name || "Source"}`}
+                style={{
                 display: "flex", alignItems: "center", gap: 5,
                 padding: "4px 10px 4px 10px", borderRadius: 20,
                 border: `1px solid ${activeSource !== "all" ? T.accent : "transparent"}`,
@@ -937,7 +941,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 3.5l3 3 3-3"/></svg>
               </button>
               {sourceDropOpen && (
-                <div style={{
+                <div role="listbox" aria-label="Filter by source" style={{
                   position: "absolute", top: "calc(100% + 6px)", left: 0,
                   background: T.card, border: `1px solid ${T.border}`,
                   borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,.18)",
@@ -945,7 +949,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   padding: "4px 0", animation: "fadeIn .12s ease",
                 }}>
                   {[{ id: "all", name: "All sources" }, ...feeds].map(f => (
-                    <button key={f.id} onClick={() => { setActiveSource(f.id); setSourceDropOpen(false); }} style={{
+                    <button key={f.id} role="option" aria-selected={activeSource === f.id} onClick={() => { setActiveSource(f.id); setSourceDropOpen(false); }} style={{
                       display: "flex", alignItems: "center", gap: 8, width: "100%",
                       padding: "7px 14px", background: activeSource === f.id ? T.accentSurface : "none",
                       border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left",

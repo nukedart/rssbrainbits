@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.388 | UX | InboxPage source filter dropdown: aria-expanded + aria-haspopup on trigger; role=listbox + aria-selected on options | `InboxPage.jsx:924` | — |
 | 2026-06-10 | v1.46.387 | UX | InboxPage mobile toolbar: aria-label on Search/Unread/Display icon buttons; aria-pressed on Unread toggle | `InboxPage.jsx:1111` | — |
 | 2026-06-10 | v1.46.386 | UX | MobileFeedDrawer: aria-current on quick-nav buttons (History/Stats/Settings) — completes mobile nav accessibility | `MobileFeedDrawer.jsx:300` | — |
 | 2026-06-10 | v1.46.385 | UX | InboxPage: aria-pressed on Unread/All filter segmented control — screen readers announce selected state | `InboxPage.jsx:972` | — |

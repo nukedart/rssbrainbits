@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.388] — 2026-06-10
+
+- [UX] InboxPage source filter: add aria-expanded, aria-haspopup, role="listbox", and aria-selected on options
+
 ## [1.46.387] — 2026-06-10
 
 - [UX] InboxPage mobile toolbar: add aria-label to Search/Unread-filter/Display buttons; add aria-pressed to Unread toggle
