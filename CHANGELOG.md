@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.302] — 2026-06-09
+
+- [Polish] NotesPage article-link row: `rgba(0,0,0,.06)` → `T.surface` — invisible background on dark themes fixed
+
 ## [1.46.301] — 2026-06-09
 
 - [Polish] Theme selector circle border in Settings uses `T.border` — was `rgba(0,0,0,0.12)` which disappears on dark themes

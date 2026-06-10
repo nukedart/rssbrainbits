@@ -119,7 +119,7 @@ function NoteCard({ note, onOpen, onReread, T, featured, isMobile }) {
       {/* Article link */}
       {note.article_url && onReread && (
         <div onClick={e => { e.stopPropagation(); onReread({ url: note.article_url, title: note.article_title, source: "" }); }}
-          style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, padding: "5px 8px", background: "rgba(0,0,0,.06)", borderRadius: 7, cursor: "pointer" }}
+          style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, padding: "5px 8px", background: T.surface, borderRadius: 7, cursor: "pointer" }}
           title="Re-read source article"
         >
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, flexShrink: 0 }}>From</span>
