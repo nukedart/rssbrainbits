@@ -88,11 +88,14 @@ export default function Onboarding({ onAdd, onDismiss }) {
           {visible.map(feed => {
             const isSelected = selected.has(feed.url);
             return (
-              <div key={feed.url} onClick={() => toggle(feed.url)} style={{
+              <button key={feed.url} onClick={() => toggle(feed.url)} aria-pressed={isSelected} style={{
                 display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
-                borderRadius: 12, border: `1.5px solid ${isSelected ? T.accent : T.border}`,
+                width: "100%", border: `1.5px solid ${isSelected ? T.accent : T.border}`,
+                borderRadius: 12,
                 background: isSelected ? T.accentSurface : T.surface,
                 cursor: "pointer", transition: "background .12s, border-color .12s",
+                fontFamily: "inherit", textAlign: "left",
+                WebkitTapHighlightColor: "transparent",
               }}>
                 <span style={{ fontSize: 20, flexShrink: 0 }}>{feed.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -108,7 +111,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
                 }}>
                   {isSelected && <span style={{ color: T.accentText, fontSize: 12, lineHeight: 1 }}>✓</span>}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

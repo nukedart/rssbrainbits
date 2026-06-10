@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.338] — 2026-06-10
+
+- [UX] Onboarding: feed selection cards converted from div+onClick to button with aria-pressed — keyboard accessible, first-run flow works without a mouse
+
 ## [1.46.337] — 2026-06-10
 
 - [UX] SecondaryPages Toggle: add role=switch + aria-checked + tabIndex + keyboard support (Space/Enter) — screen readers now announce switches correctly
