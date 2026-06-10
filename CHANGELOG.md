@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.297] — 2026-06-09
+
+- [Perf] Memoized filtered list and time-bucket groups in ReadLaterPage — skips item re-filtering on every re-render; only reruns when items or active source changes
+
 ## [1.46.296] — 2026-06-09
 
 - [Perf] Memoized feedPulse sort+map, dateLabel, and oldestSaved in TodayPage — skips feed list iteration on every re-render; only reruns when feeds or counts change

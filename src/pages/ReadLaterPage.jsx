@@ -89,21 +89,25 @@ export default function ReadLaterPage() {
     return Object.entries(map).sort((a, b) => b[1] - a[1]).map(([src, count]) => ({ src, count }));
   }, [items]);
 
-  const filtered = activeSource === "All"
-    ? items
-    : items.filter(i => srcOf(i) === activeSource);
+  const filtered = useMemo(
+    () => activeSource === "All" ? items : items.filter(i => srcOf(i) === activeSource),
+    [items, activeSource]
+  );
 
-  // Time buckets
-  const now = Date.now();
-  const bucket = (i) => {
-    const age = now - new Date(i.saved_at || 0).getTime();
-    if (age < 86400000)  return "today";
-    if (age < 604800000) return "week";
-    return "older";
-  };
-  const todayItems = filtered.filter(i => bucket(i) === "today");
-  const weekItems  = filtered.filter(i => bucket(i) === "week");
-  const olderItems = filtered.filter(i => bucket(i) === "older");
+  const { todayItems, weekItems, olderItems } = useMemo(() => {
+    const now = Date.now();
+    const bucket = (i) => {
+      const age = now - new Date(i.saved_at || 0).getTime();
+      if (age < 86400000)  return "today";
+      if (age < 604800000) return "week";
+      return "older";
+    };
+    return {
+      todayItems: filtered.filter(i => bucket(i) === "today"),
+      weekItems:  filtered.filter(i => bucket(i) === "week"),
+      olderItems: filtered.filter(i => bucket(i) === "older"),
+    };
+  }, [filtered]);
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
