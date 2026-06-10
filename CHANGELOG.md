@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.315] — 2026-06-09
+
+- [Polish] CardsPage: aria-label on export, sort toggle (aria-pressed), and delete card buttons
+
 ## [1.46.314] — 2026-06-09
 
 - [Perf] MobileFeedDrawer: memoize uncategorized feeds and totalUnread — avoids recomputation during drag-to-dismiss gestures

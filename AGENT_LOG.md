@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.315 | Polish | CardsPage: aria-label on export, sort toggle (aria-pressed), delete card buttons | `CardsPage.jsx:315,538,697` | — |
 | 2026-06-09 | v1.46.314 | Perf | MobileFeedDrawer: memoize uncategorized feeds and totalUnread (prevent recompute during drag gestures) | `MobileFeedDrawer.jsx:157-158` | — |
 | 2026-06-09 | v1.46.313 | Polish | Sidebar: aria-label+aria-pressed on theme toggles; aria-label on smart feed edit button | `Sidebar.jsx:359,614` | — |
 | 2026-06-09 | v1.46.312 | Perf | ManageFeedsPage: memoize feed stats and filtered lists (stops repeated localStorage reads per render) | `SecondaryPages.jsx:1181-1194` | — |

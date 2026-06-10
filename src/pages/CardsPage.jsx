@@ -313,6 +313,7 @@ export default function CardsPage() {
               <button
                 onClick={handleExport}
                 title="Export highlights as Markdown"
+                aria-label="Export highlights as Markdown"
                 style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", color:T.textTertiary, border:`1px solid ${T.border}`, borderRadius:10, padding:"7px 12px", cursor:"pointer", fontSize:13, fontFamily:"inherit", transition:"color .12s, border-color .12s" }}
                 onMouseEnter={e => { e.currentTarget.style.color=T.text; e.currentTarget.style.borderColor=T.borderStrong; }}
                 onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.borderColor=T.border; }}
@@ -536,6 +537,8 @@ export default function CardsPage() {
             <button
               onClick={() => setSortAZ(v => !v)}
               title={sortAZ ? "Sort by count" : "Sort A→Z"}
+              aria-label={sortAZ ? "Sort by count" : "Sort A→Z"}
+              aria-pressed={sortAZ}
               style={{
                 background: sortAZ ? T.accentSurface : T.surface, border: `1px solid ${sortAZ ? T.accent : T.border}`,
                 borderRadius: 10, padding: "9px 14px", cursor: "pointer", color: sortAZ ? T.accent : T.textSecondary,
@@ -692,6 +695,7 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
           <button
             onClick={onDelete}
             title="Delete card"
+            aria-label="Delete card"
             style={{
               position: "absolute", top: 10, right: 10,
               background: T.surface2, border: "none", borderRadius: 7,
