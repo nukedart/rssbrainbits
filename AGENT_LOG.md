@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.303 | Fix | Toast timer cleared on rapid successive calls — no early dismiss when save+bookmark fire together | `InboxPage.jsx:671` | — |
 | 2026-06-09 | v1.46.302 | Polish | NotesPage article-link row: rgba(0,0,0,.06) → T.surface — invisible background on dark themes | `NotesPage.jsx:122` | — |
 | 2026-06-09 | v1.46.301 | Polish | Settings theme selector border: rgba(0,0,0,0.12) → T.border — invisible on dark themes before | `SecondaryPages.jsx:566` | — |
 | 2026-06-09 | v1.46.300 | Polish | CardsPage delete button: hardcoded #fee2e2/#ef4444 → T.danger tokens — correct across all 6 themes | `CardsPage.jsx:697` | — |

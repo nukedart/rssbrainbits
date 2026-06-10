@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.303] — 2026-06-09
+
+- [Fix] Toast timer now clears on rapid successive calls — prevents early dismissal when two actions fire within 2 seconds
+
 ## [1.46.302] — 2026-06-09
 
 - [Polish] NotesPage article-link row: `rgba(0,0,0,.06)` → `T.surface` — invisible background on dark themes fixed

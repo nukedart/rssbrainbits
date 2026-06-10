@@ -115,6 +115,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const errorPopoverRef = useRef(null);
   const [sourceDropOpen, setSourceDropOpen] = useState(false);
   const sourceDropRef = useRef(null);
+  const toastTimerRef = useRef(null);
 
   function toggleFolderOpen(id) {
     setOpenFolders(prev => {
@@ -669,8 +670,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   }
 
   function showToast(msg) {
+    clearTimeout(toastTimerRef.current);
     setToast(msg);
-    setTimeout(() => setToast(null), 2000);
+    toastTimerRef.current = setTimeout(() => setToast(null), 2000);
   }
 
   function toggleViewMode(mode) { setViewMode(mode); localStorage.setItem(isMobile ? "fb-viewmode-mobile" : "fb-viewmode", mode); }
