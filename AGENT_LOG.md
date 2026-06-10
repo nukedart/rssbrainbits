@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.412 | UX | NotesPage sort select + ReadLaterPage URL input: final aria-label gaps closed | `NotesPage.jsx:680`, `ReadLaterPage.jsx:150` | — |
 | 2026-06-10 | v1.46.411 | UX | CardsPage search/passage/annotation + ContentViewer ask + ReviewPage annotation: aria-label sweep complete | `CardsPage.jsx:245,349,389,411`, `ContentViewer.jsx:1011`, `ReviewPage.jsx:421` | — |
 | 2026-06-10 | v1.46.410 | UX | HighlightsDrawer + ArticleNotesPanel: aria-label on theme tag input + note title/body | `HighlightsDrawer.jsx:101`, `ArticleNotesPanel.jsx:127,134` | — |
 | 2026-06-10 | v1.46.409 | UX | NotesPage: aria-label on note-edit textarea, note title + body fields | `NotesPage.jsx:221,445,459` | — |

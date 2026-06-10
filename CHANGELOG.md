@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.412] — 2026-06-10
+
+- [UX] NotesPage sort select + ReadLaterPage URL input: final aria-label gaps closed
+
 ## [1.46.411] — 2026-06-10
 
 - [UX] CardsPage + ContentViewer + ReviewPage: aria-label on search, passage, annotation, and ask-article inputs — completes accessibility sweep of all form fields

@@ -155,6 +155,7 @@ export default function ReadLaterPage() {
                 if (e.key === "Escape") { setShowAdd(false); setAddUrl(""); setAddError(""); }
               }}
               placeholder="Paste an article URL…"
+              aria-label="Article URL"
               style={{
                 flex: 1, background: T.bg, border: `1.5px solid ${T.accent}`,
                 borderRadius: 10, padding: "9px 14px", fontSize: 13,

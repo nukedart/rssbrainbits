@@ -678,6 +678,7 @@ export default function NotesPage() {
               {!isMobile && tab === "notes" && (
                 <>
                   <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                    aria-label="Sort notes by"
                     style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "5px 8px", fontSize: 11, color: T.textSecondary, fontFamily: "inherit", cursor: "pointer", outline: "none" }}>
                     <option value="modified">Date Modified</option>
                     <option value="created">Date Created</option>
