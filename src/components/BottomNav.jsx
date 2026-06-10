@@ -59,7 +59,7 @@ function CountBadge({ count, T }) {
       minWidth: 15, height: 15,
       borderRadius: 99,
       background: T.accent,
-      color: "#fff",
+      color: T.accentText,
       fontSize: 9,
       fontWeight: 700,
       lineHeight: "15px",

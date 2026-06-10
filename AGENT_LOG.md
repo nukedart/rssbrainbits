@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.346 | Polish | BottomNav CountBadge: color="#fff" → T.accentText — readable in all themes | `BottomNav.jsx:62` | — |
 | 2026-06-10 | v1.46.345 | UX | PodcastPlayer VolumeSlider: role=slider + aria-valuemin/max/now + keyboard arrow keys | `PodcastPlayer.jsx:207` | — |
 | 2026-06-10 | v1.46.344 | UX | InboxPage folder picker: div+onClick → button+role=menuitem, container role=menu — keyboard accessible | `InboxPage.jsx:1769` | — |
 | 2026-06-10 | v1.46.343 | UX | Sidebar FeedContextMenu: role=menu + role=menuitem + aria-label — screen readers identify feed action menu | `Sidebar.jsx:129` | — |

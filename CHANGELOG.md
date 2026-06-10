@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.346] — 2026-06-10
+
+- [Polish] BottomNav CountBadge: color="#fff" → T.accentText — badge text readable in Distilled theme (light blue accent)
+
 ## [1.46.345] — 2026-06-10
 
 - [UX] PodcastPlayer VolumeSlider: role=slider + aria-valuemin/max/now + arrow key support — keyboard-accessible volume control with screen reader semantics
