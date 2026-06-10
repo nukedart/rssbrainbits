@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.377] — 2026-06-10
+
+- [Nav] Sidebar: add History to desktop library nav — History was accessible on mobile (drawer quick-nav) but had no entry point on desktop, breaking navigation parity
+
 ## [1.46.376] — 2026-06-10
 
 - [Perf] index.html: add preconnect for Supabase origin — eliminates TCP/TLS handshake latency on the auth check that fires on every page load
