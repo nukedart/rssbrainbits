@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.333] — 2026-06-10
+
+- [Polish] SecondaryPages "New Collection" hover: replace hardcoded #fff with T.accentText for correct contrast in teal/blue/amber themes
+
 ## [1.46.332] — 2026-06-10
 
 - [Nav] MobileFeedDrawer quick-nav pills: replace redundant Today/Saved (already in bottom pill) with History and Stats, exposing pages with no other mobile entry point

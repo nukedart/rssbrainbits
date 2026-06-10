@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.333 | Polish | SecondaryPages: "New Collection" hover uses T.accentText not #fff — fixes contrast on teal/blue/amber themes | `SecondaryPages.jsx:1318` | — |
 | 2026-06-10 | v1.46.332 | Nav | MobileFeedDrawer: replace redundant Today/Saved pills with History/Stats — surfaces pages with no bottom-nav entry | `MobileFeedDrawer.jsx:284` | — |
 | 2026-06-10 | v1.46.331 | Perf | MobileFeedDrawer: drag handle gets touch-action:pan-x for smooth compositor-threaded dismiss gesture | `MobileFeedDrawer.jsx:199` | — |
 | 2026-06-10 | v1.46.330 | Perf | FeedItem SwipeRow: touch-action:pan-y removes iOS swipe jank by handing scroll to browser compositor | `FeedItem.jsx:163` | — |
