@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.320] — 2026-06-09
+
+- [Polish] FeedItem: star button color uses T.amber.text theme token instead of hardcoded #F59E0B — consistent amber tint across all three themes
+
 ## [1.46.319] — 2026-06-09
 
 - [Perf] useBreakpoint: track breakpoint category string instead of raw pixel width — eliminates unnecessary re-renders in 10+ components on every resize event
