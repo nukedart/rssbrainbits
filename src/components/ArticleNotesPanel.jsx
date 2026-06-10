@@ -129,12 +129,14 @@ function PanelContent({ articleTitle, notes, creating, setCreating, newTitle, se
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
               placeholder="Title (optional)"
+              aria-label="Note title (optional)"
               style={{ width: "100%", boxSizing: "border-box", background: "none", border: "none", outline: "none", fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "inherit", marginBottom: 8, padding: 0 }}
             />
             <textarea
               value={newBody}
               onChange={e => setNewBody(e.target.value)}
               placeholder="Write your note…"
+              aria-label="Note body"
               onKeyDown={e => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onCreate();
                 if (e.key === "Escape") { setCreating(false); }

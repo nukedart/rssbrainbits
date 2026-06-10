@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.410] — 2026-06-10
+
+- [UX] HighlightsDrawer + ArticleNotesPanel: aria-label on theme tag input and note title/body fields
+
 ## [1.46.409] — 2026-06-10
 
 - [UX] NotesPage: aria-label on note-edit textarea, note title, and note body — screen readers announce purpose for all three writing fields

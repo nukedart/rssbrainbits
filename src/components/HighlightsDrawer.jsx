@@ -105,6 +105,7 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
                             onKeyDown={e => { if (e.key === "Enter") commitTag(h); if (e.key === "Escape") { setTagInput(""); setEditingTagId(null); } }}
                             onBlur={() => { commitTag(h); }}
                             placeholder="theme…"
+                            aria-label="Add theme tag"
                             style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20, border: `1px dashed ${T.accent}`, background: T.accentSurface, color: T.text, outline: "none", width: 72, fontFamily: "inherit" }}
                           />
                         ) : (
