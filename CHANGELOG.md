@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.341] — 2026-06-10
+
+- [UX] PodcastPlayer: mini-player title/source expand area converted from div+onClick to button with aria-expanded — keyboard accessible
+
 ## [1.46.340] — 2026-06-10
 
 - [UX] NotesPage: NoteCard and NoteListRow converted from div+onClick to proper button/role=button — notes are keyboard-navigable; article re-read link is now a semantic button

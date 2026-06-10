@@ -627,12 +627,12 @@ export default function PodcastPlayer({ item, onClose }) {
             : <ArtworkPlaceholder size={40} radius={7} T={T} />
           }
           {/* Title + source — click opens expanded */}
-          <div onClick={() => setExpanded(v => !v)} style={{ flex: 1, minWidth: 0, cursor: "pointer" }}>
+          <button onClick={() => setExpanded(v => !v)} aria-label={expanded ? "Collapse player" : "Expand player"} aria-expanded={expanded} style={{ flex: 1, minWidth: 0, cursor: "pointer", background: "none", border: "none", padding: 0, textAlign: "left", fontFamily: "inherit", WebkitTapHighlightColor: "transparent" }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {item.title}
             </div>
             <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{item.source}</div>
-          </div>
+          </button>
           {/* Play/pause */}
           <button onClick={togglePlay} aria-label={playing ? "Pause" : "Play"} style={{
             width: 36, height: 36, borderRadius: "50%", border: "none",
