@@ -1109,12 +1109,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Mobile icon cluster — Search · Unread · Display */}
           {isMobile && (<>
             <button onClick={() => setSearchOpen(true)}
+              aria-label="Search"
               style={{ display:"flex", alignItems:"center", justifyContent:"center", width:44, height:44, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
               onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
             >
               <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/></svg>
             </button>
             <button onClick={() => setReadFilter(v => v === "unread" ? "all" : "unread")}
+              aria-label={readFilter === "unread" ? "Show all articles" : "Show unread only"}
+              aria-pressed={readFilter === "unread"}
               style={{ display:"flex", alignItems:"center", justifyContent:"center", width:44, height:44, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color: readFilter==="unread"?T.accent:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
               onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
             >
@@ -1128,6 +1131,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               </span>
             </button>
             <button onClick={() => setShowDisplaySheet(true)}
+              aria-label="Display settings"
               style={{ display:"flex", alignItems:"center", justifyContent:"center", width:44, height:44, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
               onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
             >

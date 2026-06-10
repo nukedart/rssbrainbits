@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.387] — 2026-06-10
+
+- [UX] InboxPage mobile toolbar: add aria-label to Search/Unread-filter/Display buttons; add aria-pressed to Unread toggle
+
 ## [1.46.386] — 2026-06-10
 
 - [UX] MobileFeedDrawer quick-nav (History/Stats/Settings): add aria-current so screen readers announce active page state
