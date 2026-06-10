@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.284] — 2026-06-09
+
+- [Perf] Removed unused `lucide-react` dependency — was listed in package.json but never imported; removes 2.1MB from node_modules and one package from security audit surface
+
 ## [1.46.283] — 2026-06-09
 
 - [Perf] Removed dead CSS from index.css: `@keyframes slideDown`, `pulse`, `itemIn`, `itemEnter`, `fadeInUp`, plus unused `.feed-item-enter`, `.tb-btn`, and `.feed-list` stagger classes — none were referenced in any JSX
