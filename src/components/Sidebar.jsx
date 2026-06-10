@@ -630,6 +630,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
         {/* Settings / avatar row */}
         <div style={{ display:"flex", alignItems:"center", gap:3, marginTop:2 }}>
           <button onClick={() => onNavigate("settings")}
+            aria-label="Settings"
+            aria-current={active==="settings" ? "page" : undefined}
             title={collapsed ? "Settings" : undefined}
             style={{ display:"flex", alignItems:"center", gap: collapsed?0:8, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"7px 10px", borderRadius:8, border:"none", background:active==="settings"?T.surface:"transparent", cursor:"pointer", flex:1, fontFamily:"inherit", transition:"background .15s", minWidth:0 }}
             onMouseEnter={e => { if (active!=="settings") e.currentTarget.style.background=T.surface; }}
@@ -652,12 +654,12 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
               {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
                 const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
                 return (
-                  <button key={label} onClick={() => setTheme(id)} title={label}
+                  <button key={label} onClick={() => setTheme(id)} aria-label={label} aria-pressed={isActive} title={label}
                     style={{ width:24, height:24, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, flexShrink:0, transition:"background .15s, color .15s, border-color .15s" }}
                   ><Icon /></button>
                 );
               })}
-              <button onClick={() => setShortcutsOpen(v => !v)} title="Keyboard shortcuts"
+              <button onClick={() => setShortcutsOpen(v => !v)} aria-label="Keyboard shortcuts" aria-expanded={shortcutsOpen} title="Keyboard shortcuts"
                 style={{ width:24, height:24, borderRadius:6, border:`1px solid ${shortcutsOpen?T.accent:"transparent"}`, background:shortcutsOpen?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:shortcutsOpen?T.accent:T.textTertiary, fontSize:11, fontFamily:"inherit", flexShrink:0, transition:"background .12s, color .12s, border-color .12s" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accent; e.currentTarget.style.background=T.accentSurface; }}
                 onMouseLeave={e => { if (!shortcutsOpen) { e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.background="transparent"; }}}

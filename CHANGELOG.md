@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.355] — 2026-06-10
+
+- [UX] Sidebar footer: Settings gets aria-label+aria-current; theme toggles get aria-pressed; shortcuts button gets aria-expanded — complete ARIA coverage of the sidebar footer
+
 ## [1.46.354] — 2026-06-10
 
 - [UX] MobileFeedDrawer: bottom sheet gets role=dialog + aria-modal + aria-label — mobile feed navigation correctly treated as a dialog
