@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.379] — 2026-06-10
+
+- [Nav] MobileFeedDrawer: add built-in Catch Up item to Smart Feeds section — was in desktop sidebar but missing from mobile feed drawer
+
 ## [1.46.378] — 2026-06-10
 
 - [Nav] Sidebar: expose Stats to all users (was admin-only on desktop; mobile drawer showed it to everyone) — closes desktop/mobile navigation parity gap

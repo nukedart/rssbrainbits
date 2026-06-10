@@ -333,9 +333,25 @@ export default function MobileFeedDrawer({
             <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={navigate} T={T} />
           ))}
 
-          {smartFeeds.length > 0 && (
-            <>
+          <>
               <SectionLabel label="Smart Feeds" action={onAddSmartFeed} actionTitle="New smart feed" T={T} />
+              {/* Built-in: Catch up (old unread articles) */}
+              <button
+                onClick={() => navigate("catch-up")}
+                style={{
+                  display:"flex", alignItems:"center", gap:12,
+                  padding:"12px 20px",
+                  width:"100%", border:"none",
+                  background: active === "catch-up" ? T.accentSurface : "transparent",
+                  cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+                  WebkitTapHighlightColor:"transparent",
+                }}
+              >
+                <span style={{ width:9, height:9, borderRadius:"50%", background: active === "catch-up" ? T.accent : T.textTertiary, flexShrink:0, opacity: active === "catch-up" ? 1 : 0.6 }} />
+                <span style={{ flex:1, fontSize:15, color: active === "catch-up" ? T.accent : T.textSecondary, fontWeight: active === "catch-up" ? 700 : 500, letterSpacing:"-.01em" }}>
+                  Catch up
+                </span>
+              </button>
               {smartFeeds.map(sf => {
                 const color = SMART_COLORS[sf.color] || T.accent;
                 const isActive = active === `smart:${sf.id}`;
@@ -359,8 +375,7 @@ export default function MobileFeedDrawer({
                   </button>
                 );
               })}
-            </>
-          )}
+          </>
 
         </div>
       </div>
