@@ -246,6 +246,7 @@ export default function CardsPage() {
                 value={cardSearch}
                 onChange={e => setCardSearch(e.target.value)}
                 placeholder="Search passages and notes…"
+                aria-label="Search passages and notes"
                 style={{
                   width: "100%", boxSizing: "border-box",
                   background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10,
@@ -350,6 +351,7 @@ export default function CardsPage() {
             value={globalSearch}
             onChange={e => setGlobalSearch(e.target.value)}
             placeholder="Search all highlights and notes…"
+            aria-label="Search all highlights and notes"
             style={{
               width: "100%", boxSizing: "border-box",
               background: T.surface, border: `1px solid ${globalSearch ? T.accent : T.border}`, borderRadius: 10,
@@ -391,6 +393,7 @@ export default function CardsPage() {
                   value={newCard.passage}
                   onChange={e => setNewCard(p => ({ ...p, passage: e.target.value }))}
                   placeholder="The passage or quote you want to remember…"
+                  aria-label="Passage"
                   style={{
                     width: "100%", boxSizing: "border-box", minHeight: 96, resize: "vertical",
                     background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10,
@@ -412,6 +415,7 @@ export default function CardsPage() {
                   value={newCard.note}
                   onChange={e => setNewCard(p => ({ ...p, note: e.target.value }))}
                   placeholder="Your synthesis in your own words…"
+                  aria-label="Annotation"
                   style={{
                     width: "100%", boxSizing: "border-box", minHeight: 72, resize: "vertical",
                     background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10,

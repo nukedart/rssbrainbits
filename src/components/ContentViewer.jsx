@@ -1013,6 +1013,7 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
                 onChange={e => setQuestion(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && !asking && handleAsk()}
                 placeholder="Ask about this article…"
+                aria-label="Ask about this article"
                 style={{
                   flex: 1, fontSize: 13, padding: "7px 12px", borderRadius: 8,
                   border: `1px solid ${T.border}`, background: T.bg, color: T.text,

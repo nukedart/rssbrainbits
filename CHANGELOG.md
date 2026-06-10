@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.411] — 2026-06-10
+
+- [UX] CardsPage + ContentViewer + ReviewPage: aria-label on search, passage, annotation, and ask-article inputs — completes accessibility sweep of all form fields
+
 ## [1.46.410] — 2026-06-10
 
 - [UX] HighlightsDrawer + ArticleNotesPanel: aria-label on theme tag input and note title/body fields

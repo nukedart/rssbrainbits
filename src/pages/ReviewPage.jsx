@@ -423,6 +423,7 @@ export default function ReviewPage({ onDueCount }) {
                         value={noteText}
                         onChange={e => setNoteText(e.target.value)}
                         placeholder="Write your annotation…"
+                        aria-label="Write your annotation"
                         rows={3}
                         style={{
                           width: "100%", boxSizing: "border-box", resize: "none",

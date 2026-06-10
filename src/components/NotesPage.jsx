@@ -703,6 +703,7 @@ export default function NotesPage() {
           {/* Mobile: search */}
           {isMobile && (
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
+              aria-label="Search notes"
               style={{ width: "100%", boxSizing: "border-box", background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 9, padding: "9px 12px", fontSize: 14, color: T.text, fontFamily: "inherit", outline: "none", marginBottom: 10 }}
               onFocus={e => e.target.style.borderColor = T.accent}
               onBlur={e => e.target.style.borderColor = T.border}
@@ -728,6 +729,7 @@ export default function NotesPage() {
             </div>
             {!isMobile && (
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
+                aria-label="Search notes"
                 style={{ width: 180, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 9, padding: "6px 11px", fontSize: 12, color: T.text, fontFamily: "inherit", outline: "none", marginBottom: 1 }}
                 onFocus={e => e.target.style.borderColor = T.accent}
                 onBlur={e => e.target.style.borderColor = T.border}
