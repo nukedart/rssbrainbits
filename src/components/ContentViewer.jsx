@@ -1428,7 +1428,7 @@ function PodcastEpisodeView({ item, summary, summarizing, onSummarize, T }) {
   function SkipButton({ seconds, label }) {
     const isBack = seconds < 0;
     return (
-      <button onClick={() => skip(seconds)} style={{
+      <button onClick={() => skip(seconds)} aria-label={`Skip ${isBack ? "back" : "forward"} ${Math.abs(seconds)} seconds`} style={{
         background: "none", border: "none", cursor: "pointer",
         display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
         color: T.textSecondary, padding: "4px 8px",
@@ -1505,6 +1505,7 @@ function PodcastEpisodeView({ item, summary, summarizing, onSummarize, T }) {
         <SkipButton seconds={-15} label="15" />
         <button
           onClick={togglePlay}
+          aria-label={playing ? "Pause" : "Play"}
           style={{
             width: 64, height: 64, borderRadius: "50%",
             background: T.accent, border: "none", cursor: "pointer",
@@ -1525,14 +1526,14 @@ function PodcastEpisodeView({ item, summary, summarizing, onSummarize, T }) {
 
       {/* Secondary controls */}
       <div style={{ display: "flex", gap: 20, marginBottom: 28 }}>
-        <button onClick={cycleRate} style={{
+        <button onClick={cycleRate} aria-label={`Playback rate: ${rate}x, click to change`} style={{
           background: T.surface2, border: "none", borderRadius: 8,
           padding: "5px 12px", cursor: "pointer", fontSize: 12, fontWeight: 700,
           color: rate !== 1 ? T.accent : T.textSecondary,
         }}>
           {rate}×
         </button>
-        <button onClick={toggleSleep} style={{
+        <button onClick={toggleSleep} aria-label={sleepTimer !== null ? `Cancel sleep timer (${sleepTimer} minutes remaining)` : "Set sleep timer"} style={{
           background: sleepTimer !== null ? `${T.accent}22` : T.surface2,
           border: "none", borderRadius: 8,
           padding: "5px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600,
