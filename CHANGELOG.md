@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.395] — 2026-06-10
+
+- [Polish] index.css: add global font-family:inherit for button/input/textarea/select — CSS baseline reset; guards against browser default font on any future form elements
+
 ## [1.46.394] — 2026-06-10
 
 - [Polish] useTheme: set --accent CSS variable so article body links/blockquotes/highlights use the active theme accent color instead of hardcoded blue
