@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.381] — 2026-06-10
+
+- [UX] Sidebar: add aria-label and aria-current to FeedRow and FolderSection navigation buttons — screen readers can now announce feed names and current page state
+
 ## [1.46.380] — 2026-06-10
 
 - [UX] BottomNav/Sidebar: add aria-current="page" to Feeds button and smart feed rows; add aria-label to Sidebar catch-up and smart feed buttons

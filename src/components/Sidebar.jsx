@@ -189,6 +189,8 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onCtxM
       onContextMenu={e => { e.preventDefault(); onCtxMenu?.(feed, e.clientX, e.clientY); }}
       onClick={() => onNavigate(`feed:${feed.id}`)}
       title={name}
+      aria-label={name}
+      aria-current={isActive ? "page" : undefined}
       style={{
         display:"flex", alignItems:"center", gap:6,
         padding: `4px 10px 4px ${10 + indent}px`,
@@ -245,6 +247,8 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
       <button
         onClick={() => onNavigate(`folder:${folder.id}`)}
         title={folder.name}
+        aria-label={folder.name}
+        aria-current={isActive ? "page" : undefined}
         onDragOver={e => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={async e => { e.preventDefault(); const feedId = e.dataTransfer.getData("feedId"); if (feedId) await onMoveFeedToFolder?.(feedId, folder.id); setDragOver(false); }}
@@ -280,6 +284,8 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
         {/* Folder name — click to navigate */}
         <button
           onClick={() => onNavigate(`folder:${folder.id}`)}
+          aria-label={folder.name}
+          aria-current={isActive ? "page" : undefined}
           style={{ display:"flex", alignItems:"center", gap:7, flex:1, padding:"5px 6px 5px 10px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", textAlign:"left", minWidth:0 }}
         >
           <span style={{ width:8, height:8, borderRadius:2, background:dot, flexShrink:0, marginTop:.5 }} />
