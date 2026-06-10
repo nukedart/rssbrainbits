@@ -1319,7 +1319,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       {showDisplaySheet && (
         <>
           <div onClick={() => setShowDisplaySheet(false)} style={{ position:"fixed", inset:0, zIndex:1200, background:"rgba(0,0,0,.45)" }} />
-          <div style={{
+          <div role="dialog" aria-modal="true" aria-label="Display settings" style={{
             position:"fixed", bottom:0, left:0, right:0, zIndex:1201,
             background: T.card, borderRadius:"20px 20px 0 0",
             padding:`20px 20px calc(20px + env(safe-area-inset-bottom, 16px))`,
@@ -1420,7 +1420,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
       {/* Toast */}
       {toast && (
-        <div style={{
+        <div role="status" aria-live="polite" style={{
           position: "fixed", bottom: isMobile ? "calc(80px + env(safe-area-inset-bottom, 0px))" : 24, left: "50%", transform: "translateX(-50%)",
           background: T.text, color: T.bg, borderRadius: 20,
           padding: "8px 18px", fontSize: 13, fontWeight: 600,
@@ -1510,7 +1510,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         </Suspense>
       )}
       {opmlProgress && (
-        <div style={{ position:"fixed", bottom: isMobile?80:24, left:"50%", transform:"translateX(-50%)", zIndex:2000, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, padding:"12px 20px", boxShadow:"0 4px 24px rgba(0,0,0,.15)", display:"flex", alignItems:"center", gap:12, minWidth:220 }}>
+        <div role="status" aria-live="polite" aria-label="Import progress" style={{ position:"fixed", bottom: isMobile?80:24, left:"50%", transform:"translateX(-50%)", zIndex:2000, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, padding:"12px 20px", boxShadow:"0 4px 24px rgba(0,0,0,.15)", display:"flex", alignItems:"center", gap:12, minWidth:220 }}>
           <div style={{ width:10, height:10, border:`2px solid ${T.accent}`, borderTopColor:"transparent", borderRadius:"50%", animation:"spin .7s linear infinite", flexShrink:0 }} />
           <div>
             <div style={{ fontSize:13, fontWeight:600, color:T.text }}>Importing feeds…</div>

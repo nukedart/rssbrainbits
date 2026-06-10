@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.351] — 2026-06-10
+
+- [UX] InboxPage: display sheet gets role=dialog+aria-modal; toast + OPML progress get role=status+aria-live — screen readers announce toasts and modal state
+
 ## [1.46.350] — 2026-06-10
 
 - [UX] NotePanel + ArticleNotesPanel: add role=dialog + aria-modal + aria-label to bottom-sheet panels — screen readers treat annotation panels as modal dialogs
