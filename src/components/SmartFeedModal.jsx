@@ -74,8 +74,9 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
 
         {/* Name */}
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", display: "block", marginBottom: 7 }}>Name</label>
+          <label htmlFor="sf-name" style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", display: "block", marginBottom: 7 }}>Name</label>
           <input
+            id="sf-name"
             value={name} onChange={e => { setName(e.target.value); setError(""); }}
             placeholder="e.g. AI Research, Climate, My Startup…"
             style={{ width: "100%", boxSizing: "border-box", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 9, padding: "9px 13px", fontSize: 14, color: T.text, fontFamily: "inherit", outline: "none" }}
@@ -88,7 +89,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
 
         {/* Keywords */}
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", display: "block", marginBottom: 7 }}>Keywords</label>
+          <label htmlFor="sf-keywords" style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", display: "block", marginBottom: 7 }}>Keywords</label>
           {/* Existing chips */}
           {keywords.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
@@ -103,6 +104,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
           {/* Input */}
           <div style={{ display: "flex", gap: 8 }}>
             <input
+              id="sf-keywords"
               value={kwInput}
               onChange={e => setKwInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addKeyword(); } }}

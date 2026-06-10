@@ -52,8 +52,9 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
 
         {/* Name */}
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: T.textTertiary, display: "block", marginBottom: 6 }}>Collection name</label>
+          <label htmlFor="folder-name" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: T.textTertiary, display: "block", marginBottom: 6 }}>Collection name</label>
           <input
+            id="folder-name"
             value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onClose(); }}

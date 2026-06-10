@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.401] — 2026-06-10
+
+- [UX] SmartFeedModal + FolderModal: wire up visual labels to inputs via htmlFor/id — screen readers now read "Name" and "Keywords" labels when fields are focused
+
 ## [1.46.400] — 2026-06-10
 
 - [UX] AddModal: add aria-label to URL input, podcast search, and feed nickname — screen readers announce field purpose instead of relying on placeholder

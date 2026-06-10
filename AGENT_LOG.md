@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.401 | UX | SmartFeedModal + FolderModal: htmlFor/id connecting labels to Name + Keywords inputs | `SmartFeedModal.jsx:77,91`, `FolderModal.jsx:55` | — |
 | 2026-06-10 | v1.46.400 | UX | AddModal: aria-label on URL input, podcast search, feed nickname | `AddModal.jsx:262,348,387` | — |
 | 2026-06-10 | v1.46.399 | UX | NotePanel: htmlFor/id connecting "Your note" + "Theme" labels to fields | `NotePanel.jsx:53,67` | — |
 | 2026-06-10 | v1.46.398 | UX | SearchBar: aria-label + aria-haspopup + aria-expanded + aria-controls linking input to results listbox | `SearchBar.jsx:94` | — |
