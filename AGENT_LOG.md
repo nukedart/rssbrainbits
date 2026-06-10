@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.349 | UX | SelectionToolbar: role=toolbar + aria-label on highlight color buttons — screen reader accessible | `SelectionToolbar.jsx:102` | — |
 | 2026-06-10 | v1.46.348 | Polish | OPMLImport checkbox: checkmark color="#fff" → T.accentText — readable in all themes | `OPMLImport.jsx:296` | — |
 | 2026-06-10 | v1.46.347 | UX | NotesPage NoteCard: note-display div → role=button+keyboard — keyboard users can edit notes | `NotesPage.jsx:231` | — |
 | 2026-06-10 | v1.46.346 | Polish | BottomNav CountBadge: color="#fff" → T.accentText — readable in all themes | `BottomNav.jsx:62` | — |

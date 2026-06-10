@@ -99,7 +99,7 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
   const left = Math.max(8, Math.min(toolbar.x - TOOLBAR_W / 2, window.innerWidth - TOOLBAR_W - 8));
 
   return (
-    <div ref={toolbarRef} style={{
+    <div ref={toolbarRef} role="toolbar" aria-label="Highlight color" style={{
       position: "fixed", left, top: toolbar.y - 56,
       width: TOOLBAR_W, background: T.card, border: `1px solid ${T.border}`,
       borderRadius: 12, boxShadow: "0 4px 20px rgba(0,0,0,.15)",
@@ -108,7 +108,7 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
     }}>
       <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 600, marginRight: 2 }}>Highlight</span>
       {HIGHLIGHT_COLORS.map((c) => (
-        <button key={c.id} title={c.label} onClick={() => handlePickColor(c.id)} style={{
+        <button key={c.id} aria-label={`Highlight ${c.label}`} onClick={() => handlePickColor(c.id)} style={{
           width: 22, height: 22, borderRadius: "50%",
           background: c.bg, border: `2px solid ${c.border}`,
           cursor: "pointer", transition: "transform .1s", flexShrink: 0,

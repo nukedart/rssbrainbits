@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.349] — 2026-06-10
+
+- [UX] SelectionToolbar: role=toolbar + aria-label on color swatches — highlight action accessible to screen readers
+
 ## [1.46.348] — 2026-06-10
 
 - [Polish] OPMLImport checkbox checkmark: color="#fff" → T.accentText — readable in Distilled theme (light blue accent)
