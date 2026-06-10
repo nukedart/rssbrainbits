@@ -694,13 +694,13 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
             title="Delete card"
             style={{
               position: "absolute", top: 10, right: 10,
-              background: "rgba(0,0,0,.08)", border: "none", borderRadius: 7,
+              background: T.surface2, border: "none", borderRadius: 7,
               width: 28, height: 28, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               color: T.textSecondary, transition: "background .12s, color .12s",
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,0,0,.08)"; e.currentTarget.style.color = T.textSecondary; }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.danger + "22"; e.currentTarget.style.color = T.danger; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.textSecondary; }}
           >
             <TrashIcon />
           </button>

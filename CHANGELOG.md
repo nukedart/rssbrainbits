@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.300] — 2026-06-09
+
+- [Polish] CardsPage delete button hover now uses `T.danger`/`T.surface2` — was hardcoded `#fee2e2`/`#ef4444` which broke on dark and sepia themes
+
 ## [1.46.299] — 2026-06-09
 
 - [Perf] Lazy-load `@mozilla/readability` inside `fetchArticleContent` — cuts fetchers chunk from 55 KB to 22 KB; Readability (~34 KB) only loads when a user opens an article
