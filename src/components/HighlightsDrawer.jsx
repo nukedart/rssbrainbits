@@ -71,7 +71,9 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
           ) : highlights.map((h) => {
             const color = HIGHLIGHT_COLORS.find((c) => c.id === h.color) || HIGHLIGHT_COLORS[0];
             return (
-              <div key={h.id} onClick={() => onSelectHighlight(h)}
+              <div key={h.id} role="button" tabIndex={0}
+                onClick={() => onSelectHighlight(h)}
+                onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelectHighlight(h); } }}
                 style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, cursor: "pointer", transition: "background .1s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}

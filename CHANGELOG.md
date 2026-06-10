@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.336] — 2026-06-10
+
+- [UX] HighlightsDrawer: highlight rows get role="button" tabIndex + onKeyDown for keyboard-accessible navigation to highlights
+
 ## [1.46.335] — 2026-06-10
 
 - [UX] TodayPage: Feed Pulse and Reading Log rows were non-semantic div+onClick elements — converted to buttons for keyboard accessibility and correct semantics
