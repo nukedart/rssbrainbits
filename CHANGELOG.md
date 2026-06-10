@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.293] — 2026-06-09
+
+- [Perf] Memoized AI summary bullet parsing in `SummaryBlock` — skips text splitting and regex chain on every ContentViewer re-render; only recomputes when summary changes
+
 ## [1.46.292] — 2026-06-09
 
 - [Perf] Memoized reading-time calculation and favicon URL in ContentViewer — eliminates full article text split and URL parse on every scroll/highlight re-render

@@ -898,20 +898,22 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
     finally { setAsking(false); }
   }
 
+  const bullets = useMemo(() => (summary || "")
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l.length > 0)
+    .map(l => l
+      .replace(/^[•\-\*]\s*/, "")
+      .replace(/^\d+\.\s*/, "")
+      .replace(/^\*\*[^*]+\*\*:\s*/, "")
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      .trim()
+    )
+    .filter(l => l.length > 10),
+  [summary]);
+
   // ── Post-summary: result card with format switcher at bottom ──
   if (summary || summarizing) {
-    const bullets = (summary || "")
-      .split("\n")
-      .map(l => l.trim())
-      .filter(l => l.length > 0)
-      .map(l => l
-        .replace(/^[•\-\*]\s*/, "")
-        .replace(/^\d+\.\s*/, "")
-        .replace(/^\*\*[^*]+\*\*:\s*/, "")
-        .replace(/\*\*([^*]+)\*\*/g, "$1")
-        .trim()
-      )
-      .filter(l => l.length > 10);
 
     return (
       <div style={{
