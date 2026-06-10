@@ -145,6 +145,7 @@ export default function MobileSearchOverlay({ onClose, onSelectResult, onLiveSea
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search articles, saved, history…"
+            aria-label="Search articles, saved, history"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="none"

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.403] — 2026-06-10
+
+- [UX] MobileSearchOverlay: add aria-label to search input — explicit label supplements the role=search landmark
+
 ## [1.46.402] — 2026-06-10
 
 - [UX] Onboarding: add role=dialog + aria-modal + aria-label — screen readers announce the welcome dialog when it opens for new users
