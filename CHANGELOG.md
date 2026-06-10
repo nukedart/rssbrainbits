@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.394] — 2026-06-10
+
+- [Polish] useTheme: set --accent CSS variable so article body links/blockquotes/highlights use the active theme accent color instead of hardcoded blue
+
 ## [1.46.393] — 2026-06-10
 
 - [Perf] PodcastPlayer SeekBar: fill bar RAF loop converted from style.width to style.transform scaleX() — GPU-composited seek updates

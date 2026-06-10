@@ -48,10 +48,11 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     localStorage.setItem("fb-theme", theme);
     document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+    document.documentElement.style.setProperty("--accent", T.accent);
     if (T.readerFont) {
       document.documentElement.style.setProperty("--reader-font-family", T.readerFont);
     }
-  }, [theme, isDark, T.readerFont]);
+  }, [theme, isDark, T.accent, T.readerFont]);
 
   return (
     <ThemeContext.Provider value={{ isDark, setIsDark, T, theme, setTheme }}>

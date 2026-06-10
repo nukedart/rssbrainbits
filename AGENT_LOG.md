@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.394 | Polish | useTheme: set --accent CSS variable — article body links/blockquotes/selection now use active theme color instead of blue | `useTheme.jsx:50` | — |
 | 2026-06-10 | v1.46.393 | Perf | PodcastPlayer SeekBar: fill RAF loop converted from style.width to scaleX() — GPU-composited seek bar updates | `PodcastPlayer.jsx:43,73,82,132` | — |
 | 2026-06-10 | v1.46.392 | Perf | PodcastPlayer: RAF loop changed from style.width to style.transform scaleX() — no layout recalculation every 500ms | `PodcastPlayer.jsx:333,529,650` | — |
 | 2026-06-10 | v1.46.391 | Perf | OPMLImport + ContentViewer TTS: progress bars converted to transform:scaleX() — GPU-composited, no layout reflow | `OPMLImport.jsx:173, ContentViewer.jsx:1493` | — |
