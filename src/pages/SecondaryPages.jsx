@@ -784,7 +784,14 @@ function FreqBadge({ T, type = "article" }) {
 
 function Toggle({ checked, onChange, T }) {
   return (
-    <div onClick={() => onChange(!checked)} style={{ width: 34, height: 19, borderRadius: 10, background: checked ? T.accent : T.surface2, cursor: "pointer", position: "relative", transition: "background .2s", flexShrink: 0 }}>
+    <div
+      role="switch"
+      aria-checked={checked}
+      tabIndex={0}
+      onClick={() => onChange(!checked)}
+      onKeyDown={e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); onChange(!checked); } }}
+      style={{ width: 34, height: 19, borderRadius: 10, background: checked ? T.accent : T.surface2, cursor: "pointer", position: "relative", transition: "background .2s", flexShrink: 0 }}
+    >
       <div style={{ position: "absolute", top: 2, left: checked ? 17 : 2, width: 15, height: 15, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.3)" }} />
     </div>
   );

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.337] — 2026-06-10
+
+- [UX] SecondaryPages Toggle: add role=switch + aria-checked + tabIndex + keyboard support (Space/Enter) — screen readers now announce switches correctly
+
 ## [1.46.336] — 2026-06-10
 
 - [UX] HighlightsDrawer: highlight rows get role="button" tabIndex + onKeyDown for keyboard-accessible navigation to highlights
