@@ -89,10 +89,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     if (!item?.url) return null;
     try { return `https://www.google.com/s2/favicons?domain=${new URL(item.url).hostname}&sz=32`; } catch { return null; }
   }, [item?.url]);
-  const processedBodyHtml = useMemo(
-    () => content?.bodyHtml ? injectHtmlHighlights(content.bodyHtml, highlights, HIGHLIGHT_COLORS) : null,
-    [content?.bodyHtml, highlights]
-  );
+  const processedBodyHtml = useMemo(() => {
+    if (!content?.bodyHtml) return null;
+    const withHighlights = injectHtmlHighlights(content.bodyHtml, highlights, HIGHLIGHT_COLORS);
+    return withHighlights.replace(/<img(?![^>]*loading=)/gi, '<img loading="lazy" decoding="async"');
+  }, [content?.bodyHtml, highlights]);
 
   // ── Restore cached summary when item changes ──────────────
   useEffect(() => {

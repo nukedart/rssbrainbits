@@ -217,7 +217,7 @@ function ListThumb({ item, cardSize, T }) {
           onError={() => setImgFailed(true)}
         />
       ) : fav ? (
-        <img src={fav} alt="" width={cardSize === "lg" ? 36 : 28} height={cardSize === "lg" ? 36 : 28}
+        <img src={fav} alt="" width={cardSize === "lg" ? 36 : 28} height={cardSize === "lg" ? 36 : 28} loading="lazy" decoding="async"
           style={{ borderRadius: 5, opacity: 0.9 }}
           onError={e => { e.target.style.display = "none"; }}
         />
@@ -513,7 +513,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             background: thumb ? T.surface2 : sourcePlaceholder(item.source).bg,
           }}>
             {thumb && (
-              <img src={thumb} alt="" loading="lazy"
+              <img src={thumb} alt="" loading="lazy" decoding="async"
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 onError={e => { e.target.style.display = "none"; }}
               />

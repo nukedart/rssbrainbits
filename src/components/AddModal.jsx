@@ -295,7 +295,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                       style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px", borderRadius: 12, background: T.surface }}
                     >
                       {p.artworkUrl ? (
-                        <img src={p.artworkUrl} alt="" width={44} height={44}
+                        <img src={p.artworkUrl} alt="" width={44} height={44} loading="lazy" decoding="async"
                           style={{ borderRadius: 8, flexShrink: 0, objectFit: "cover" }}
                           onError={e => { e.target.style.display = "none"; }}
                         />

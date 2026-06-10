@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.375] — 2026-06-10
+
+- [Perf] ContentViewer: inject loading="lazy" decoding="async" into all article body images via HTML post-processing — defers every in-article image fetch until it scrolls into view
+- [Perf] FeedItem/AddModal: remaining favicon and podcast artwork images get decoding="async"
+
 ## [1.46.374] — 2026-06-10
 
 - [Perf] FeedItem progress bars: use transform:scaleX() instead of width animation — GPU-composited transition eliminates layout reflow on read-progress updates in feed lists
