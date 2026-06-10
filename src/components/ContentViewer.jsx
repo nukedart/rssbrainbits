@@ -535,7 +535,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           </button>
 
           {/* Share */}
-          <button onClick={handleShare} title={shareFeedback || "Share"} aria-label="Share article"
+          <button onClick={handleShare} title={shareFeedback || "Share"} aria-label={shareFeedback || "Share article"}
             style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: shareFeedback ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
             onMouseEnter={e => { if (!shareFeedback) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
             onMouseLeave={e => { if (!shareFeedback) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}

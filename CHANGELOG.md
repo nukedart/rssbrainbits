@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.356] — 2026-06-10
+
+- [UX] HighlightsDrawer export buttons: add aria-label; ContentViewer Share button aria-label reflects feedback state — screen readers announce copy/share outcomes
+
 ## [1.46.355] — 2026-06-10
 
 - [UX] Sidebar footer: Settings gets aria-label+aria-current; theme toggles get aria-pressed; shortcuts button gets aria-expanded — complete ARIA coverage of the sidebar footer

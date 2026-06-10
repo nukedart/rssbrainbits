@@ -50,10 +50,10 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
           </div>
           {highlights.length > 0 && (
             <div style={{ display: "flex", gap: 6, marginRight: 4 }}>
-              <button onClick={() => handleExport(false)} title="Copy as Markdown" style={{ background: feedback ? T.accentSurface : T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 11, fontWeight: 600, color: feedback ? T.accentText : T.textSecondary, fontFamily: "inherit", transition: "background .15s, color .15s" }}>
+              <button onClick={() => handleExport(false)} aria-label={feedback || "Copy highlights as Markdown"} title="Copy as Markdown" style={{ background: feedback ? T.accentSurface : T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 11, fontWeight: 600, color: feedback ? T.accentText : T.textSecondary, fontFamily: "inherit", transition: "background .15s, color .15s" }}>
                 {feedback || "Copy MD"}
               </button>
-              <button onClick={() => handleExport(true)} title="Download .md file" style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 11, fontWeight: 600, color: T.textSecondary, fontFamily: "inherit" }}>
+              <button onClick={() => handleExport(true)} aria-label="Download highlights as Markdown file" title="Download .md file" style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 11, fontWeight: 600, color: T.textSecondary, fontFamily: "inherit" }}>
                 ↓ .md
               </button>
             </div>
