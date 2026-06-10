@@ -308,6 +308,7 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
           <button
             onClick={e => { e.stopPropagation(); onEditFolder(folder); }}
             title="Edit folder"
+            aria-label={`Edit ${folder.name}`}
             style={{ padding:"4px 4px", border:"none", background:"transparent", cursor:"pointer", color:T.textTertiary, display:"flex", alignItems:"center", flexShrink:0, transition:"color .1s" }}
             onMouseEnter={e => e.currentTarget.style.color=T.accent}
             onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}
