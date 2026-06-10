@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.357] — 2026-06-10
+
+- [UX] AnalyticsPage: tab bar gets role=tablist+tab+aria-selected; AI provider cards get aria-pressed — proper tab/toggle semantics
+
 ## [1.46.356] — 2026-06-10
 
 - [UX] HighlightsDrawer export buttons: add aria-label; ContentViewer Share button aria-label reflects feedback state — screen readers announce copy/share outcomes

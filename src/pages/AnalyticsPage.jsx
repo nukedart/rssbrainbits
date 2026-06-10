@@ -245,7 +245,7 @@ function AISettingsTab({ T }) {
             const active = provider === m.id;
             const isSet  = keySet[m.id];
             return (
-              <button key={m.id} onClick={() => setProviderState(m.id)} style={{
+              <button key={m.id} aria-pressed={active} onClick={() => setProviderState(m.id)} style={{
                 background: active ? T.accentSurface : T.surface2,
                 border: `2px solid ${active ? T.accent : T.border}`,
                 borderRadius: 12, padding: "14px 16px", cursor: "pointer",
@@ -475,13 +475,13 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 4, marginBottom: 20, background: T.surface2,
+        <div role="tablist" aria-label="Admin sections" style={{ display: "flex", gap: 4, marginBottom: 20, background: T.surface2,
           borderRadius: 10, padding: 4, alignSelf: "flex-start", width: "fit-content" }}>
           {[
             { id: "analytics", label: "Analytics" },
             { id: "ai-settings", label: "AI Settings" },
           ].map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{
+            <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} style={{
               background: tab === t.id ? T.card : "transparent",
               border: tab === t.id ? `1px solid ${T.border}` : "1px solid transparent",
               borderRadius: 7, padding: "6px 16px", fontSize: 12, fontWeight: 600,
