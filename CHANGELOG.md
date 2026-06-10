@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.408] — 2026-06-10
+
+- [UX] SecondaryPages: aria-label on Articles/feed select, daily digest time input, and delete-account confirmation input
+
 ## [1.46.407] — 2026-06-10
 
 - [Perf] CardsPage: delete button hover uses opacity transition instead of padding-right — eliminates layout reflow on hover

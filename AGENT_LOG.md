@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.408 | UX | SecondaryPages: aria-label on feed-limit select, digest time input, delete-confirm input | `SecondaryPages.jsx:596,459,1601` | — |
 | 2026-06-10 | v1.46.407 | Perf | CardsPage delete button hover: opacity transition instead of padding-right — no layout reflow | `CardsPage.jsx:687` | — |
 | 2026-06-10 | v1.46.406 | Perf | ReviewPage progress bar + InboxPage OPML bar + unread dot → transform:scaleX/scale | `ReviewPage.jsx:343`, `InboxPage.jsx:1129,1529` | — |
 | 2026-06-10 | v1.46.405 | Perf | ContentViewer reading progress bar → transform:scaleX, eliminates layout reflow on scroll | `ContentViewer.jsx:386` | — |

@@ -458,6 +458,7 @@ function NotificationsCard({ T }) {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <input
               type="time"
+              aria-label="Daily digest reminder time"
               value={digestTime}
               onChange={e => { setDigestTime(e.target.value); localStorage.setItem("fb-digest-time", e.target.value); }}
               style={{
@@ -596,6 +597,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
             <select
               defaultValue={localStorage.getItem("fb-feed-limit") || "20"}
               onChange={e => localStorage.setItem("fb-feed-limit", e.target.value)}
+              aria-label="Articles per feed"
               style={{
                 fontSize: 13, padding: "5px 10px", borderRadius: 8,
                 border: `1px solid ${T.border}`, background: T.surface,
@@ -1597,7 +1599,7 @@ function DataPrivacyCard({ T, user }) {
         <div style={{ fontSize:11, fontWeight:700, color:T.danger, textTransform:"uppercase", letterSpacing:".06em", marginBottom:8 }}>Delete account</div>
         <p style={{ fontSize:12, color:T.textSecondary, margin:"0 0 10px", lineHeight:1.5 }}>This permanently deletes all your data and cannot be undone. Type <strong style={{color:T.text}}>delete my account</strong> to confirm.</p>
         <div style={{ display:"flex", gap:8 }}>
-          <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder="delete my account"
+          <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder="delete my account" aria-label="Type 'delete my account' to confirm"
             style={{ flex:1, background:T.surface, border:`1.5px solid ${T.border}`, borderRadius:9, padding:"8px 12px", fontSize:13, color:T.text, fontFamily:"inherit", outline:"none" }}
             onFocus={e => e.target.style.borderColor=T.danger}
             onBlur={e => e.target.style.borderColor=T.border}
