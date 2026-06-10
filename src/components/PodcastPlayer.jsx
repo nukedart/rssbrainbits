@@ -330,7 +330,7 @@ export default function PodcastPlayer({ item, onClose }) {
         const audio = audioRef.current;
         if (audio && miniBarFillRef.current) {
           const pct = audio.duration ? audio.currentTime / audio.duration : 0;
-          miniBarFillRef.current.style.width = `${pct * 100}%`;
+          miniBarFillRef.current.style.transform = `scaleX(${pct})`;
         }
       }
       raf = requestAnimationFrame(tick);
@@ -526,7 +526,7 @@ export default function PodcastPlayer({ item, onClose }) {
         }}>
           {/* Progress strip — updated via RAF ref, no React state */}
           <div style={{ height: 3, background: T.surface2 }}>
-            <div ref={miniBarFillRef} style={{ height: "100%", width: "0%", background: T.accent }} />
+            <div ref={miniBarFillRef} style={{ height: "100%", width: "100%", background: T.accent, transform: "scaleX(0)", transformOrigin: "left" }} />
           </div>
           {/* Row */}
           <div

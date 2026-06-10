@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.392] — 2026-06-10
+
+- [Perf] PodcastPlayer mini progress bar: switch RAF loop from style.width to style.transform scaleX() — eliminates layout recalculation every 500ms during playback
+
 ## [1.46.391] — 2026-06-10
 
 - [Perf] OPMLImport + ContentViewer TTS: convert progress bar animations from width% to transform:scaleX() — GPU-composited, no layout reflow
