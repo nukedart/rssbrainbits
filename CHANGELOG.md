@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.285] — 2026-06-09
+
+- [Perf] Memoized `filteredItems` and `feedColorMap` in InboxPage with `useMemo` — skips repeated filter/sort passes on re-renders caused by UI state changes (modal opens, focus shifts) that don't affect the item list
+
 ## [1.46.284] — 2026-06-09
 
 - [Perf] Removed unused `lucide-react` dependency — was listed in package.json but never imported; removes 2.1MB from node_modules and one package from security audit surface

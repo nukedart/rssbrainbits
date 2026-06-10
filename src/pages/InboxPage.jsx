@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
@@ -287,7 +287,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   }, [feeds]);
 
   // ── Filtered + sorted item list ───────────────────────────────
-  const baseItems = (() => {
+  const baseItems = useMemo(() => {
     // Saved filter: use Supabase data directly — no waiting for RSS feeds
     if (readFilter === "saved") {
       const rssMap = new Map(allItems.map(i => [i.url, i]));
@@ -315,7 +315,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
     }
     if (filterMode === "smart") {
-      if (!smartFeedDef) return []; // still loading — return empty
+      if (!smartFeedDef) return [];
       items = items.filter((i) => matchesSmartFeed(i, smartFeedDef));
     }
     if (filterMode === "feed") {
@@ -337,7 +337,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
     if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  sessionFilterUrlsRef.current.has(i.url));
-    // Client-side live search across in-memory items
     if (liveSearch.trim().length > 1) {
       const q = liveSearch.toLowerCase();
       items = items.filter(i =>
@@ -348,11 +347,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       );
     }
     return items.sort((a, b) => (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0));
-  })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allItems, savedItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, liveSearch, readFilter]);
 
   // ── Feed → folder color map (for per-feed colored dots in list rows) ────────
   const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
-  const feedColorMap = (() => {
+  const feedColorMap = useMemo(() => {
     const map = {};
     feeds.forEach(feed => {
       if (feed.folder_id) {
@@ -361,7 +361,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       }
     });
     return map;
-  })();
+  }, [feeds, folders]);
 
   // Reset displayed count and refresh the read-URL snapshot when the view changes.
   // Deliberately excludes readUrls from deps — we only want to re-snapshot on
