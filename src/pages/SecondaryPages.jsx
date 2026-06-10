@@ -1009,7 +1009,7 @@ function FeedGroup({ title, icon, feeds, T, onUpdate, onDelete, folders, onMoveT
   if (feeds.length === 0) return null;
   return (
     <div style={{ marginBottom: 0 }}>
-      <button onClick={() => setCollapsed(v => !v)}
+      <button onClick={() => setCollapsed(v => !v)} aria-expanded={!collapsed}
         style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", borderBottom: `1px solid ${T.border}` }}>
         <span style={{ fontSize: 13 }}>{icon}</span>
         <span style={{ fontSize: 12, fontWeight: 600, color: T.text, letterSpacing: "-.01em" }}>{title}</span>
@@ -1072,12 +1072,12 @@ function FolderRow({ folder, feedCount, T, onUpdate, onDelete, onMoveUp, onMoveD
     >
       {/* Reorder arrows */}
       <div style={{ display: "flex", flexDirection: "column", gap: 1, flexShrink: 0 }}>
-        <button onClick={onMoveUp} disabled={isFirst} title="Move up"
+        <button onClick={onMoveUp} disabled={isFirst} title="Move up" aria-label="Move up"
           style={{ background: "none", border: "none", cursor: isFirst ? "default" : "pointer", color: isFirst ? T.border : T.textTertiary, padding: "1px 3px", fontSize: 10, lineHeight: 1, transition: "color .1s" }}
           onMouseEnter={e => { if (!isFirst) e.currentTarget.style.color = T.accent; }}
           onMouseLeave={e => e.currentTarget.style.color = isFirst ? T.border : T.textTertiary}
         >▲</button>
-        <button onClick={onMoveDown} disabled={isLast} title="Move down"
+        <button onClick={onMoveDown} disabled={isLast} title="Move down" aria-label="Move down"
           style={{ background: "none", border: "none", cursor: isLast ? "default" : "pointer", color: isLast ? T.border : T.textTertiary, padding: "1px 3px", fontSize: 10, lineHeight: 1, transition: "color .1s" }}
           onMouseEnter={e => { if (!isLast) e.currentTarget.style.color = T.accent; }}
           onMouseLeave={e => e.currentTarget.style.color = isLast ? T.border : T.textTertiary}
@@ -1086,7 +1086,7 @@ function FolderRow({ folder, feedCount, T, onUpdate, onDelete, onMoveUp, onMoveD
 
       {/* Color dot — click to pick */}
       <div style={{ position: "relative" }}>
-        <button onClick={() => setShowColors(v => !v)} title="Change color"
+        <button onClick={() => setShowColors(v => !v)} title="Change color" aria-label="Change color" aria-expanded={showColors}
           style={{ width: 20, height: 20, borderRadius: "50%", background: dot, border: `2px solid ${showColors ? T.text : "transparent"}`, cursor: "pointer", flexShrink: 0, transition: "border .12s" }}
         />
         {showColors && (
@@ -1111,7 +1111,7 @@ function FolderRow({ folder, feedCount, T, onUpdate, onDelete, onMoveUp, onMoveD
       </span>
 
       {/* Delete */}
-      <button onClick={handleDelete} disabled={deleting} title="Delete collection"
+      <button onClick={handleDelete} disabled={deleting} title="Delete collection" aria-label="Delete collection"
         style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, padding: "4px 6px", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "color .12s, background .12s" }}
         onMouseEnter={e => { e.currentTarget.style.color = T.danger; e.currentTarget.style.background = `${T.danger}15`; }}
         onMouseLeave={e => { e.currentTarget.style.color = T.textTertiary; e.currentTarget.style.background = "none"; }}

@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.329 | Polish | SecondaryPages: folder move/color/delete/collapse buttons get aria-label + aria-expanded | `SecondaryPages.jsx:1012,1075,1080,1089,1114` | — |
 | 2026-06-10 | v1.46.328 | Polish | ContentViewer: font-size range input gets aria-label + aria-valuetext | `ContentViewer.jsx:491` | — |
 | 2026-06-10 | v1.46.327 | Polish | ContentViewer: reader prefs width/font buttons get aria-label + aria-pressed | `ContentViewer.jsx:500,508` | — |
 | 2026-06-10 | v1.46.325 | Perf | Sidebar: feedsByFolder Map replaces per-folder feeds.filter() — O(feeds) not O(folders×feeds) | `Sidebar.jsx:422` | — |

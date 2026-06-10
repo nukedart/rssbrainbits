@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.329] — 2026-06-10
+
+- [Polish] SecondaryPages: folder row move-up/down, color picker, delete, and collapse buttons get aria-label/aria-expanded — Manage Feeds page fully keyboard accessible
+
 ## [1.46.328] — 2026-06-10
 
 - [Polish] ContentViewer: font size range input now has aria-label="Font size" and aria-valuetext announcing the value in px
