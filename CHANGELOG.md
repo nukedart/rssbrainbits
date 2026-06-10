@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.407] — 2026-06-10
+
+- [Perf] CardsPage: delete button hover uses opacity transition instead of padding-right — eliminates layout reflow on hover
+
 ## [1.46.406] — 2026-06-10
 
 - [Perf] ReviewPage + InboxPage: replace width-based progress bar transitions with transform:scaleX — GPU-composited; replace unread dot width/height with transform:scale

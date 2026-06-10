@@ -684,15 +684,13 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
           fontFamily: "var(--reader-font-family)",
           fontStyle: "italic", fontWeight: 400,
           WebkitFontSmoothing: "antialiased",
-          paddingRight: hovered ? 36 : 0,
-          transition: "padding-right .12s",
+          paddingRight: 36,
         }}>
           "{h.passage}"
         </div>
 
         {/* Delete — top-right of passage, hover reveal */}
-        {hovered && (
-          <button
+        <button
             onClick={onDelete}
             title="Delete card"
             aria-label="Delete card"
@@ -701,7 +699,8 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
               background: T.surface2, border: "none", borderRadius: 7,
               width: 28, height: 28, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: T.textSecondary, transition: "background .12s, color .12s",
+              color: T.textSecondary, transition: "background .12s, color .12s, opacity .12s",
+              opacity: hovered ? 1 : 0, pointerEvents: hovered ? "auto" : "none",
             }}
             onMouseEnter={e => { e.currentTarget.style.background = T.danger + "22"; e.currentTarget.style.color = T.danger; }}
             onMouseLeave={e => { e.currentTarget.style.background = T.surface2; e.currentTarget.style.color = T.textSecondary; }}
