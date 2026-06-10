@@ -181,7 +181,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
       }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{
+      <div role="dialog" aria-modal="true" aria-labelledby="add-modal-title" style={{
         background: T.card,
         borderRadius: 24,
         width: "100%", maxWidth: "min(440px, 94vw)",
@@ -211,7 +211,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
             </svg>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Add a source</div>
+            <div id="add-modal-title" style={{ fontSize: 15, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Add a source</div>
             <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>RSS · YouTube · Podcast · Article</div>
           </div>
           <button

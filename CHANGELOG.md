@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.323] — 2026-06-09
+
+- [Polish] AddModal: role="dialog" + aria-modal + aria-labelledby; MobileSearchOverlay: role="search" on search bar row
+
 ## [1.46.322] — 2026-06-09
 
 - [Polish] FolderModal + SmartFeedModal: add role="dialog", aria-modal="true", aria-labelledby, and aria-label="Close" — screen readers now announce these as dialogs

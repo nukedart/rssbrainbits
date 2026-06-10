@@ -124,7 +124,7 @@ export default function MobileSearchOverlay({ onClose, onSelectResult, onLiveSea
     }}>
 
       {/* ── Search bar row ── */}
-      <div style={{
+      <div role="search" aria-label="Search articles" style={{
         display: "flex", alignItems: "center", gap: 10,
         padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px",
         borderBottom: `1px solid ${T.border}`,
