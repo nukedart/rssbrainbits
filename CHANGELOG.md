@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.384] — 2026-06-10
+
+- [Perf] index.html: add preconnect for fonts.googleapis.com and fonts.gstatic.com — removes TCP/TLS latency when loading Cormorant Garamond for editorial themes (Cream, Ink, Sepia)
+
 ## [1.46.383] — 2026-06-10
 
 - [UX] MobileFeedDrawer: add aria-label and aria-current to FeedRow and FolderSection buttons; add aria-expanded to folder toggle
