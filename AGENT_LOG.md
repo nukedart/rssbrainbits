@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.398 | UX | SearchBar: aria-label + aria-haspopup + aria-expanded + aria-controls linking input to results listbox | `SearchBar.jsx:94` | — |
 | 2026-06-10 | v1.46.397 | UX | TagsInput: aria-label + aria-autocomplete + aria-expanded on input — screen reader users can use tag autocomplete | `TagsInput.jsx:60` | — |
 | 2026-06-10 | v1.46.396 | UX | Spinner: role=status + aria-label=Loading — screen readers announce loading states app-wide | `UI.jsx:71` | — |
 | 2026-06-10 | v1.46.395 | Polish | index.css: global font-family:inherit for form elements — CSS baseline reset for buttons/inputs/selects | `index.css:104` | — |

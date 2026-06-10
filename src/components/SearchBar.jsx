@@ -98,6 +98,10 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => setFocused(false), 200)}
           placeholder="Search…"
+          aria-label="Search"
+          aria-haspopup="listbox"
+          aria-expanded={showPanel}
+          aria-controls="search-results-panel"
           style={{
             flex: 1, background: "none", border: "none", outline: "none",
             fontSize: 16, color: T.text, fontFamily: "inherit",
@@ -125,7 +129,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
 
       {/* Results panel */}
       {showPanel && (
-        <div ref={panelRef} role="listbox" aria-label="Search results" style={{
+        <div id="search-results-panel" ref={panelRef} role="listbox" aria-label="Search results" style={{
           position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
           background: T.card,
           border: `1px solid ${T.border}`,
