@@ -19,6 +19,8 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, T }) {
   return (
     <button
       onClick={() => onNavigate(`feed:${feed.id}`)}
+      aria-label={name}
+      aria-current={isActive ? "page" : undefined}
       style={{
         display:"flex", alignItems:"center", gap:12,
         padding:"10px 20px",
@@ -68,6 +70,8 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
       <div style={{ display:"flex", alignItems:"center", background: isActive ? T.accentSurface : "transparent", transition:"background .1s" }}>
         <button
           onClick={() => onNavigate(`folder:${folder.id}`)}
+          aria-label={folder.name}
+          aria-current={isActive ? "page" : undefined}
           style={{ display:"flex", alignItems:"center", gap:10, flex:1, padding:"11px 10px 11px 20px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", textAlign:"left", WebkitTapHighlightColor:"transparent" }}
         >
           <span style={{ width:10, height:10, borderRadius:3, background:dot, flexShrink:0 }} />
@@ -86,6 +90,8 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
         </button>
         <button
           onClick={() => onToggle(folder.id)}
+          aria-label={expanded ? `Collapse ${folder.name}` : `Expand ${folder.name}`}
+          aria-expanded={expanded}
           style={{ padding:"11px 16px", border:"none", background:"transparent", cursor:"pointer", color:T.textTertiary, display:"flex", alignItems:"center", WebkitTapHighlightColor:"transparent" }}
         >
           <svg width="11" height="11" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"

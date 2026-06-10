@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.383] — 2026-06-10
+
+- [UX] MobileFeedDrawer: add aria-label and aria-current to FeedRow and FolderSection buttons; add aria-expanded to folder toggle
+
 ## [1.46.382] — 2026-06-10
 
 - [UX] Sidebar: add aria-label to Edit Folder button (was title-only, invisible to screen readers)
