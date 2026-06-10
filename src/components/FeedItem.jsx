@@ -228,7 +228,7 @@ function ListThumb({ item, cardSize, T }) {
       )}
       {progress > 5 && progress < 95 && (
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${progress}%`, background: T.accent, transition: "width .3s" }} />
+          <div style={{ height: "100%", width: "100%", background: T.accent, transform: `scaleX(${progress / 100})`, transformOrigin: "left", transition: "transform .3s" }} />
         </div>
       )}
     </div>
@@ -270,7 +270,7 @@ function MobileThumb({ item, T, size = 72 }) {
       )}
       {progress > 5 && progress < 95 && (
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${progress}%`, background: T.accent, transition: "width .3s" }} />
+          <div style={{ height: "100%", width: "100%", background: T.accent, transform: `scaleX(${progress / 100})`, transformOrigin: "left", transition: "transform .3s" }} />
         </div>
       )}
     </div>
@@ -534,7 +534,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             )}
             {progress > 5 && progress < 95 && (
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${progress}%`, background: T.accent }} />
+                <div style={{ height: "100%", width: "100%", background: T.accent, transform: `scaleX(${progress / 100})`, transformOrigin: "left" }} />
               </div>
             )}
           </div>
