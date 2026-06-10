@@ -20,6 +20,17 @@ import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/expo
 import { track } from "../lib/analytics";
 import { isProUser, PLANS } from "../lib/plan";
 
+function formatArticleDate(dateStr) {
+  if (!dateStr) return null;
+  try {
+    const d = new Date(dateStr), diff = Date.now() - d;
+    if (diff < 3600000)   return `${Math.round(diff / 60000)}m ago`;
+    if (diff < 86400000)  return `${Math.round(diff / 3600000)}h ago`;
+    if (diff < 604800000) return `${Math.round(diff / 86400000)}d ago`;
+    return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  } catch { return null; }
+}
+
 export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false, currentIdx = -1, totalCount = 0, onExpand, isSaved = false, onSave, onUnsave }) {
   const { T } = useTheme();
   const { user } = useAuth();
@@ -695,7 +706,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
               {/* Date · author · reading time */}
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 28, fontSize: 13, color: T.textTertiary, lineHeight: 1.5 }}>
-                {item.date && <span>{new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>}
+                {item.date && <span>{formatArticleDate(item.date)}</span>}
                 {item.author && <><span style={{ opacity: .4 }}>·</span><span>{item.author}</span></>}
                 {readingTimeMins && <><span style={{ opacity: .4 }}>·</span><span>{readingTimeMins} min read</span></>}
               </div>

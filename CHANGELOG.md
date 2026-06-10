@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.305] — 2026-06-09
+
+- [Polish] ContentViewer article date: shows "2h ago" / "3d ago" for recent articles instead of full date — consistent with FeedItem list display
+
 ## [1.46.304] — 2026-06-09
 
 - [UX] ContentViewer close button gets `aria-label="Close article"` — improves screen reader and keyboard navigation accessibility
