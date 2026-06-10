@@ -204,7 +204,20 @@ function VolumeSlider({ volume, onChange, T, light }) {
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
         <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
       </svg>
-      <div onClick={handleClick} style={{ flex: 1, position: "relative", height: 4, borderRadius: 2, background: track, cursor: "pointer" }}>
+      <div
+        role="slider"
+        aria-label="Volume"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(pct)}
+        tabIndex={0}
+        onClick={handleClick}
+        onKeyDown={e => {
+          if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); onChange(Math.min(1, volume + 0.05)); }
+          else if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); onChange(Math.max(0, volume - 0.05)); }
+        }}
+        style={{ flex: 1, position: "relative", height: 4, borderRadius: 2, background: track, cursor: "pointer" }}
+      >
         <div style={{ position: "absolute", inset: "0 auto 0 0", width: `${pct}%`, background: fill, borderRadius: 2 }} />
         <div style={{
           position: "absolute", top: "50%", left: `${pct}%`,

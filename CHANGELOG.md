@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.345] — 2026-06-10
+
+- [UX] PodcastPlayer VolumeSlider: role=slider + aria-valuemin/max/now + arrow key support — keyboard-accessible volume control with screen reader semantics
+
 ## [1.46.344] — 2026-06-10
 
 - [UX] InboxPage folder picker: menu items div+onClick → button with role=menuitem; container gets role=menu — keyboard-accessible "move to folder" dropdown
