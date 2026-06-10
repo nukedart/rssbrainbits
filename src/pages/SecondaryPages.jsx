@@ -47,7 +47,6 @@ export function HistoryPage() {
 
   async function handleClear() {
     if (!confirm("Clear all reading history?")) return;
-    const { clearHistory } = await import("../lib/supabase");
     await clearHistory(user.id);
     setHistory([]);
   }

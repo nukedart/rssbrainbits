@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.364] — 2026-06-10
+
+- [Perf] App.jsx + SecondaryPages.jsx: remove redundant dynamic imports of supabase.js (already statically imported) — eliminates Vite mixed-import warning and reduces bundler overhead
+
 ## [1.46.363] — 2026-06-10
 
 - [UX] ReviewPage passage card: add role=button, tabIndex, onKeyDown — keyboard users can reveal note with Enter/Space

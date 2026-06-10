@@ -7,7 +7,7 @@ import BottomNav from "./components/BottomNav";
 import { useBreakpoint } from "./hooks/useBreakpoint.js";
 import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
          getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder,
-         getFeeds, deleteFeed, markAllRead } from "./lib/supabase";
+         getFeeds, addFeed, deleteFeed, markAllRead } from "./lib/supabase";
 import { getCachedFeed } from "./lib/feedCache.js";
 import { checkLimit } from "./lib/plan";
 import { identify, track } from "./lib/analytics";
@@ -165,7 +165,6 @@ function AppShell() {
   }
 
   async function handleOnboardingAdd({ url, type, name }) {
-    const { addFeed } = await import("./lib/supabase");
     const { fetchRSSFeed } = await import("./lib/fetchers");
     const feedData = await fetchRSSFeed(url).catch(() => ({ title: name }));
     const record = await addFeed(user.id, { url, type, name: name || feedData.title });
