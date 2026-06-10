@@ -299,7 +299,11 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
       <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
         {({ swiped, close } = {}) => (
           <div
+            role="button"
+            tabIndex={0}
+            aria-label={item.title || item.url}
             onClick={swiped ? close : onClick}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (swiped) close(); else onClick?.(); } }}
             onTouchStart={e => { if (!swiped) e.currentTarget.style.background = T.surface; }}
             onTouchEnd={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.bg; }}
             onTouchCancel={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.bg; }}
@@ -375,7 +379,11 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
     <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={false}>
       {({ swiped, close } = {}) => (
         <div
+          role="button"
+          tabIndex={0}
+          aria-label={item.title || item.url}
           onClick={swiped ? close : onClick}
+          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (swiped) close(); else onClick?.(); } }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           style={{
@@ -480,7 +488,11 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
     <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
       {({ swiped, close } = {}) => (
         <div
+          role="button"
+          tabIndex={0}
+          aria-label={item.title || item.url}
           onClick={swiped ? close : onClick}
+          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (swiped) close(); else onClick?.(); } }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           style={{

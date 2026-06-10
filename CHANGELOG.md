@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.361] — 2026-06-10
+
+- [UX] FeedItem ListItem+CardItem: add role=button, tabIndex, onKeyDown, aria-label — every inbox article is now keyboard-navigable
+
 ## [1.46.360] — 2026-06-10
 
 - [UX] SecondaryPages EditableName: add tabIndex, role=button, onKeyDown (Enter/F2) — keyboard users can rename feeds without a mouse
