@@ -332,7 +332,14 @@ export default function ReviewPage({ onDueCount }) {
 
       {/* Progress bar — 6px with labels */}
       <div style={{ padding: "16px 20px 4px", flexShrink: 0 }}>
-        <div style={{ height: 6, background: T.surface2, borderRadius: 99, overflow: "hidden" }}>
+        <div
+          role="progressbar"
+          aria-valuenow={queueIdx}
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-label={`Review progress: ${queueIdx} of ${total} done`}
+          style={{ height: 6, background: T.surface2, borderRadius: 99, overflow: "hidden" }}
+        >
           <div style={{
             height: "100%", borderRadius: 99,
             width: `${progress * 100}%`,
