@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.313] — 2026-06-09
+
+- [Polish] Sidebar: aria-label + aria-pressed on theme toggle buttons; aria-label on smart feed edit button
+
 ## [1.46.312] — 2026-06-09
 
 - [Perf] ManageFeedsPage: memoize feed stats and filtered lists — avoids repeated localStorage reads (getCachedFeed/cacheAge) on every render

@@ -357,6 +357,7 @@ function SmartRow({ sf, active, onNavigate, onEdit, collapsed, T }) {
       </button>
       {!collapsed && (
         <button onClick={e => { e.stopPropagation(); onEdit(sf); }}
+          aria-label={`Edit ${sf.name}`}
           style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"5px 8px 5px 2px", opacity:0, transition:"opacity .1s", flexShrink:0 }}
           onMouseEnter={e => { e.currentTarget.style.opacity="1"; e.currentTarget.style.color=T.accent; }}
           onMouseLeave={e => { e.currentTarget.style.opacity="0"; e.currentTarget.style.color=T.textTertiary; }}
@@ -611,7 +612,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
             {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
               const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
               return (
-                <button key={label} onClick={() => setTheme(id)} title={label}
+                <button key={label} onClick={() => setTheme(id)} title={label} aria-label={label} aria-pressed={isActive}
                   style={{ width:24, height:22, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"background .15s, color .15s, border-color .15s" }}
                 ><Icon /></button>
               );
