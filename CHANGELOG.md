@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.326] — 2026-06-10
+
+- [Polish] ContentViewer: reader prefs width buttons (N/M/W) and font buttons now have aria-label + aria-pressed — screen readers announce selection state
+
 ## [1.46.325] — 2026-06-10
 
 - [Perf] Sidebar: pre-group feeds by folder_id into a Map (useMemo) instead of re-running feeds.filter() per folder on every render

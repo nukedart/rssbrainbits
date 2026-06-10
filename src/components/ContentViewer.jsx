@@ -497,7 +497,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                     <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Width</span>
                     <div style={{ display: "flex", gap: 3 }}>
                       {["narrow","medium","wide"].map(w => (
-                        <button key={w} onClick={() => updatePref("lineWidth", w)} style={{ padding: "3px 7px", borderRadius: 6, border: `1px solid ${readerPrefs.lineWidth===w?T.accent:T.border}`, background: readerPrefs.lineWidth===w?T.accentSurface:"transparent", color: readerPrefs.lineWidth===w?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit", textTransform: "capitalize" }}>{w[0].toUpperCase()}</button>
+                        <button key={w} onClick={() => updatePref("lineWidth", w)} aria-label={`${w} line width`} aria-pressed={readerPrefs.lineWidth===w} style={{ padding: "3px 7px", borderRadius: 6, border: `1px solid ${readerPrefs.lineWidth===w?T.accent:T.border}`, background: readerPrefs.lineWidth===w?T.accentSurface:"transparent", color: readerPrefs.lineWidth===w?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit", textTransform: "capitalize" }}>{w[0].toUpperCase()}</button>
                       ))}
                     </div>
                   </div>
@@ -505,7 +505,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                     <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Font</span>
                     <div style={{ display: "flex", gap: 3 }}>
                       {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
-                        <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} style={{ padding: "3px 9px", borderRadius: 6, border: `1px solid ${readerPrefs.fontFamily===f.id?T.accent:T.border}`, background: readerPrefs.fontFamily===f.id?T.accentSurface:"transparent", color: readerPrefs.fontFamily===f.id?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit" }}>{f.label}</button>
+                        <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} aria-label={`${f.label} font`} aria-pressed={readerPrefs.fontFamily===f.id} style={{ padding: "3px 9px", borderRadius: 6, border: `1px solid ${readerPrefs.fontFamily===f.id?T.accent:T.border}`, background: readerPrefs.fontFamily===f.id?T.accentSurface:"transparent", color: readerPrefs.fontFamily===f.id?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit" }}>{f.label}</button>
                       ))}
                     </div>
                   </div>
