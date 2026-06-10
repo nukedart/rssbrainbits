@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.294] — 2026-06-09
+
+- [Perf] Memoized `injectHtmlHighlights` result — skips full-article regex replacement on every scroll/state re-render; only reruns when article HTML or highlight list changes
+
 ## [1.46.293] — 2026-06-09
 
 - [Perf] Memoized AI summary bullet parsing in `SummaryBlock` — skips text splitting and regex chain on every ContentViewer re-render; only recomputes when summary changes

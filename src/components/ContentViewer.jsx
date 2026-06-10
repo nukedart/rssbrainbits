@@ -78,6 +78,10 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     if (!item?.url) return null;
     try { return `https://www.google.com/s2/favicons?domain=${new URL(item.url).hostname}&sz=32`; } catch { return null; }
   }, [item?.url]);
+  const processedBodyHtml = useMemo(
+    () => content?.bodyHtml ? injectHtmlHighlights(content.bodyHtml, highlights, HIGHLIGHT_COLORS) : null,
+    [content?.bodyHtml, highlights]
+  );
 
   // ── Restore cached summary when item changes ──────────────
   useEffect(() => {
@@ -716,10 +720,10 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
               {/* Article body */}
               <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em" }}>
-                {content.bodyHtml && !readerPrefs.bionic ? (
+                {processedBodyHtml && !readerPrefs.bionic ? (
                   <div
                     className="fb-article-body"
-                    dangerouslySetInnerHTML={{ __html: injectHtmlHighlights(content.bodyHtml, highlights, HIGHLIGHT_COLORS) }}
+                    dangerouslySetInnerHTML={{ __html: processedBodyHtml }}
                   />
                 ) : (
                   <HighlightedText
