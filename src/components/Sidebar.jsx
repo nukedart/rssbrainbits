@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
@@ -418,18 +418,17 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
   const collapsed = isTablet || !isOpen;
   const W = collapsed ? 52 : 208;
 
-  // Separate feeds into categorized and uncategorized
-  const uncategorized = feeds.filter(f => !f.folder_id);
+  const uncategorized = useMemo(() => feeds.filter(f => !f.folder_id), [feeds]);
 
-  const PRIMARY_NAV = [
+  const PRIMARY_NAV = useMemo(() => [
     { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox",   badge: unreadCount },
     { id:"today",     Icon:Icons.Today,     label:"Today",   badge: 0 },
-  ];
-  const LIBRARY_NAV = [
+  ], [unreadCount]);
+  const LIBRARY_NAV = useMemo(() => [
     { id:"readlater", Icon:Icons.ReadLater, label:"Saved",   badge: 0 },
     { id:"review",    Icon:Icons.Review,    label:"Review",  badge: dueCount },
     { id:"cards",     Icon:Icons.Cards,     label:"Cards",   badge: 0 },
-  ];
+  ], [dueCount]);
 
   return (
     <aside style={{

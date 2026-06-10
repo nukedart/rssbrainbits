@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.291] — 2026-06-09
+
+- [Perf] Memoized `uncategorized`, `PRIMARY_NAV`, `LIBRARY_NAV` arrays in Sidebar — prevents recreation on every re-render (shortcuts popup, context menu, folder expand)
+
 ## [1.46.290] — 2026-06-09
 
 - [Perf] `dateBucket` now accepts a pre-computed `todayTs` — eliminates 2× `new Date()` per list item (120+ allocations saved per render with a full page of articles)
