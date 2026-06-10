@@ -65,8 +65,7 @@ function SeekBar({ audioRef, T, light }) {
     e.preventDefault();
     dragging.current = true;
     if (thumbRef.current) {
-      thumbRef.current.style.width      = "16px";
-      thumbRef.current.style.height     = "16px";
+      thumbRef.current.style.transform  = "translate(-50%, -50%) scale(1.333)";
       thumbRef.current.style.transition = "none";
     }
     const pct = getPct(e);
@@ -86,9 +85,8 @@ function SeekBar({ audioRef, T, light }) {
       if (!dragging.current) return;
       dragging.current = false;
       if (thumbRef.current) {
-        thumbRef.current.style.width      = "12px";
-        thumbRef.current.style.height     = "12px";
-        thumbRef.current.style.transition = "width .1s, height .1s";
+        thumbRef.current.style.transform  = "translate(-50%, -50%) scale(1)";
+        thumbRef.current.style.transition = "transform .1s";
       }
       const audio = audioRef.current;
       if (audio) audio.currentTime = getPct(e) * (audio.duration || 0);
@@ -132,11 +130,11 @@ function SeekBar({ audioRef, T, light }) {
           <div ref={fillRef} style={{ position: "absolute", inset: "0 0 0 0", background: fill, borderRadius: 2, transform: "scaleX(0)", transformOrigin: "left" }} />
           <div ref={thumbRef} style={{
             position: "absolute", top: "50%", left: "0%",
-            transform: "translate(-50%, -50%)",
+            transform: "translate(-50%, -50%) scale(1)",
             width: 12, height: 12,
             borderRadius: "50%", background: fill,
             boxShadow: "0 1px 4px rgba(0,0,0,.4)",
-            transition: "width .1s, height .1s",
+            transition: "transform .1s",
             pointerEvents: "none",
           }} />
         </div>

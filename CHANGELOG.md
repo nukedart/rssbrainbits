@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.404] — 2026-06-10
+
+- [Perf] PodcastPlayer SeekBar thumb: replace width/height transition with transform:scale — GPU-composited, eliminates layout reflow on drag start/end
+
 ## [1.46.403] — 2026-06-10
 
 - [UX] MobileSearchOverlay: add aria-label to search input — explicit label supplements the role=search landmark
