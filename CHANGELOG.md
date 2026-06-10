@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.312] — 2026-06-09
+
+- [Perf] ManageFeedsPage: memoize feed stats and filtered lists — avoids repeated localStorage reads (getCachedFeed/cacheAge) on every render
+
 ## [1.46.311] — 2026-06-09
 
 - [Polish] ArticleNotesPanel: replace hardcoded #F87171 delete hover with T.danger; add aria-label to delete button — consistent across all themes

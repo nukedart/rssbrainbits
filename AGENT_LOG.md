@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.312 | Perf | ManageFeedsPage: memoize feed stats and filtered lists (stops repeated localStorage reads per render) | `SecondaryPages.jsx:1181-1194` | — |
 | 2026-06-09 | v1.46.311 | Polish | ArticleNotesPanel: T.danger token for delete hover; aria-label on delete button | `ArticleNotesPanel.jsx:190` | — |
 | 2026-06-09 | v1.46.310 | Polish | NotesPage: T.danger token for delete hover; bionic toggle role=switch/aria-checked; NoteEditor aria-label | `NotesPage.jsx:251,393` `ContentViewer.jsx:514` | — |
 | 2026-06-09 | v1.46.309 | Polish | InboxPage: aria-label on mark-all-read, search, view-options buttons | `InboxPage.jsx:985,1010,1046` | — |

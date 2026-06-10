@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
@@ -1177,21 +1177,24 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
     } finally { setSyncingAll(false); }
   }
 
-  // Stats
-  const totalItems = feeds.reduce((sum, f) => {
-    const cached = getCachedFeed(f.url);
-    return sum + (cached?.data?.items?.length || 0);
-  }, 0);
-  const freshCount = feeds.filter(f => { const a = cacheAge(f.url); return a !== null && a < 30; }).length;
-  const syncHealth = feeds.length > 0 ? Math.round((freshCount / feeds.length) * 100) : 0;
-  const healthLabel = syncHealth >= 90 ? "OPTIMAL" : syncHealth >= 60 ? "GOOD" : syncHealth >= 30 ? "FAIR" : "POOR";
-  const healthColor = syncHealth >= 90 ? T.success : syncHealth >= 60 ? T.accent : syncHealth >= 30 ? T.warning : T.danger;
-  const staleFeedsCount = feeds.filter(f => { const a = cacheAge(f.url); return a !== null && a > 120; }).length;
+  // Stats (memoized — getCachedFeed/cacheAge hit localStorage on every call)
+  const { totalItems, syncHealth, healthLabel, healthColor, staleFeedsCount } = useMemo(() => {
+    const total = feeds.reduce((sum, f) => sum + (getCachedFeed(f.url)?.data?.items?.length || 0), 0);
+    const fresh = feeds.filter(f => { const a = cacheAge(f.url); return a !== null && a < 30; }).length;
+    const health = feeds.length > 0 ? Math.round((fresh / feeds.length) * 100) : 0;
+    return {
+      totalItems:      total,
+      syncHealth:      health,
+      healthLabel:     health >= 90 ? "OPTIMAL" : health >= 60 ? "GOOD" : health >= 30 ? "FAIR" : "POOR",
+      healthColor:     health >= 90 ? T.success : health >= 60 ? T.accent : health >= 30 ? T.warning : T.danger,
+      staleFeedsCount: feeds.filter(f => { const a = cacheAge(f.url); return a !== null && a > 120; }).length,
+    };
+  }, [feeds, T]);
 
-  const filtered = filterType === "all" ? feeds : feeds.filter(f => feedType(f) === filterType);
-  const ytFeeds  = filtered.filter(f => feedType(f) === "youtube");
-  const podFeeds = filtered.filter(f => feedType(f) === "podcast");
-  const artFeeds = filtered.filter(f => feedType(f) === "article");
+  const { filtered, ytFeeds, podFeeds, artFeeds } = useMemo(() => {
+    const f = filterType === "all" ? feeds : feeds.filter(ff => feedType(ff) === filterType);
+    return { filtered: f, ytFeeds: f.filter(ff => feedType(ff) === "youtube"), podFeeds: f.filter(ff => feedType(ff) === "podcast"), artFeeds: f.filter(ff => feedType(ff) === "article") };
+  }, [feeds, filterType]);
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
