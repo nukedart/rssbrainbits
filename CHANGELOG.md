@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.405] — 2026-06-10
+
+- [Perf] ContentViewer reading progress bar: replace right% transition with transform:scaleX — eliminates layout reflow on every scroll event
+
 ## [1.46.404] — 2026-06-10
 
 - [Perf] PodcastPlayer SeekBar thumb: replace width/height transition with transform:scale — GPU-composited, eliminates layout reflow on drag start/end

@@ -383,12 +383,13 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     >
 
       {/* ── Reading progress bar — always visible track ── */}
-      <div style={{ height: 3, background: T.surface2, flexShrink: 0, position: "relative" }}>
+      <div style={{ height: 3, background: T.surface2, flexShrink: 0, position: "relative", overflow: "hidden" }}>
         <div style={{
-          position: "absolute", inset: 0, right: `${100 - readProgress}%`,
+          position: "absolute", inset: 0,
           background: `linear-gradient(90deg, ${T.accent}, ${T.teal || T.accent})`,
-          transition: "right .25s ease",
-          borderRadius: "0 2px 2px 0",
+          transform: `scaleX(${readProgress / 100})`,
+          transformOrigin: "left",
+          transition: "transform .25s ease",
           opacity: readProgress > 0 ? 1 : 0,
         }} />
       </div>
