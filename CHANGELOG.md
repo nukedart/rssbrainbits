@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.390] — 2026-06-10
+
+- [UX] AddModal "Browse popular feeds" + SmartFeedModal "Pick feeds": add aria-expanded for screen reader disclosure state
+
 ## [1.46.389] — 2026-06-10
 
 - [UX] ContentViewer overflow menu: add aria-label, aria-expanded, aria-haspopup on trigger; role=menu/menuitem on items

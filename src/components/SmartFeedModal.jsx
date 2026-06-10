@@ -151,7 +151,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
             <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
               <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", flex: 1 }}>Search scope</label>
               <button onClick={() => { setFeedIds(null); setShowFeedPicker(false); }} style={{ fontSize: 11, fontWeight: 600, color: !feedIds ? T.accentText : T.textTertiary, background: !feedIds ? T.accentSurface : "transparent", border: `1px solid ${!feedIds ? T.accent : T.border}`, borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontFamily: "inherit", marginRight: 5 }}>All feeds</button>
-              <button onClick={() => setShowFeedPicker(v => !v)} style={{ fontSize: 11, fontWeight: 600, color: feedIds ? T.accentText : T.textSecondary, background: feedIds ? T.accentSurface : T.surface2, border: `1px solid ${feedIds ? T.accent : T.border}`, borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontFamily: "inherit" }}>
+              <button onClick={() => setShowFeedPicker(v => !v)} aria-expanded={showFeedPicker} style={{ fontSize: 11, fontWeight: 600, color: feedIds ? T.accentText : T.textSecondary, background: feedIds ? T.accentSurface : T.surface2, border: `1px solid ${feedIds ? T.accent : T.border}`, borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontFamily: "inherit" }}>
                 {feedIds ? `${feedIds.length} feed${feedIds.length !== 1 ? "s" : ""}` : "Pick feeds"}
               </button>
             </div>

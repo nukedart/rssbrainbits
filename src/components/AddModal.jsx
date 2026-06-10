@@ -431,7 +431,9 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
 
           {/* Browse popular feeds */}
           <div style={{ marginTop: 20, borderTop: `1px solid ${T.border}`, paddingTop: 16 }}>
-            <button onClick={() => setShowDiscover(v => !v)} style={{
+            <button onClick={() => setShowDiscover(v => !v)}
+              aria-expanded={showDiscover}
+              style={{
               display: "flex", alignItems: "center", gap: 6, width: "100%",
               background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
               fontSize: 12, fontWeight: 600, color: T.textSecondary, padding: 0,
