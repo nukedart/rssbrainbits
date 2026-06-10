@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.316] — 2026-06-09
+
+- [Polish] ReadLaterPage, InboxPage: add missing aria-labels to "Save article URL" and "mark scrolled-past read" buttons; aria-expanded on save toggle
+
 ## [1.46.315] — 2026-06-09
 
 - [Polish] CardsPage: aria-label on export, sort toggle (aria-pressed), and delete card buttons

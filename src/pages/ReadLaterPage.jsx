@@ -128,6 +128,8 @@ export default function ReadLaterPage() {
         <button
           onClick={() => setShowAdd(v => !v)}
           title="Save article URL"
+          aria-label="Save article URL"
+          aria-expanded={showAdd}
           style={{
             width: 32, height: 32, borderRadius: 9, border: "none",
             background: showAdd ? T.accent : T.surface2,

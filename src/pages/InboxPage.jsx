@@ -864,6 +864,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 <button
                   onClick={markAboveRead}
                   title="Tap to mark scrolled-past items as read"
+                  aria-label="Mark scrolled-past items as read"
                   style={{ fontSize: isMobile ? 13 : 11, fontWeight: 600, background: T.accent, color: T.accentText, padding: isMobile ? "3px 10px" : "1px 7px", borderRadius: 20, flexShrink: 0, letterSpacing: "-.01em", border: "none", cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent" }}
                 >
                   {unreadCount}
