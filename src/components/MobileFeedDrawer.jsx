@@ -201,6 +201,7 @@ export default function MobileFeedDrawer({
             display:"flex", justifyContent:"center",
             cursor:"grab", flexShrink:0,
             WebkitTapHighlightColor:"transparent",
+            touchAction: "pan-x",
           }}
         >
           <div style={{ width:40, height:4, borderRadius:2, background:T.textTertiary, opacity:.35 }} />

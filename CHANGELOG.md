@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.331] — 2026-06-10
+
+- [Perf] MobileFeedDrawer: drag handle gets touch-action:pan-x so browser compositor handles horizontal natively while JS handles the vertical dismiss gesture
+
 ## [1.46.330] — 2026-06-10
 
 - [Perf] FeedItem SwipeRow: add touch-action:pan-y — browser can optimize vertical scroll handling without JS overhead, removing swipe jank on iOS
