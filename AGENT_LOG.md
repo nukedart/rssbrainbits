@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.296 | Perf | Memoized feedPulse, dateLabel, oldestSaved in TodayPage — feed list sort+map skips on re-renders | `TodayPage.jsx:110` | — |
 | 2026-06-09 | v1.46.295 | Perf | Memoized HighlightedText token/segment computation — bionic split and highlight interval matching skip on re-renders | `ContentViewer.jsx:140` | — |
 | 2026-06-09 | v1.46.294 | Perf | Memoized injectHtmlHighlights — no full-article regex on every scroll; only reruns when HTML/highlights change | `ContentViewer.jsx:85` | — |
 | 2026-06-09 | v1.46.293 | Perf | Memoized AI summary bullet parsing in SummaryBlock — skips regex chain on re-renders; only recomputes on summary change | `ContentViewer.jsx:901` | — |

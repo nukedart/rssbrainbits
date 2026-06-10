@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.296] — 2026-06-09
+
+- [Perf] Memoized feedPulse sort+map, dateLabel, and oldestSaved in TodayPage — skips feed list iteration on every re-render; only reruns when feeds or counts change
+
 ## [1.46.295] — 2026-06-09
 
 - [Perf] Memoized `HighlightedText` token/segment computation — bionic text split and highlight interval matching now run only when text or highlights change, not on every scroll re-render

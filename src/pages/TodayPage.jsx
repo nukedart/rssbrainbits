@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
@@ -107,23 +107,27 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
     }).finally(() => setLoading(false));
   }, [user]);
 
-  const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const dateLabel = useMemo(
+    () => new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+    []
+  );
 
-  // Feed pulse: top feeds sorted by unread
-  const feedPulse = Object.entries(feedUnreadCounts)
-    .filter(([, n]) => n > 0)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 7)
-    .map(([feedId, count]) => {
-      const f = feeds.find(f => f.id === feedId || String(f.id) === String(feedId));
-      return { feedId, name: f?.name || "Unknown feed", color: f?.color, count };
-    });
+  const feedPulse = useMemo(() =>
+    Object.entries(feedUnreadCounts)
+      .filter(([, n]) => n > 0)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 7)
+      .map(([feedId, count]) => {
+        const f = feeds.find(f => f.id === feedId || String(f.id) === String(feedId));
+        return { feedId, name: f?.name || "Unknown feed", color: f?.color, count };
+      }),
+  [feedUnreadCounts, feeds]);
+
   const maxPulse = feedPulse[0]?.count || 1;
 
-  // Oldest saved item
-  const oldestSaved = savedItems.length > 0
-    ? daysSince(savedItems[savedItems.length - 1]?.saved_at)
-    : 0;
+  const oldestSaved = useMemo(() =>
+    savedItems.length > 0 ? daysSince(savedItems[savedItems.length - 1]?.saved_at) : 0,
+  [savedItems]);
 
   const pad = isMobile ? "0 16px 96px" : "0 24px 48px";
   const maxW = isMobile ? "100%" : 560;
