@@ -111,6 +111,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
         {query && (
           <button
             onClick={() => { setQuery(""); setResults([]); onLiveSearch?.(""); inputRef.current?.focus(); }}
+            aria-label="Clear search"
             style={{
               width: 22, height: 22, borderRadius: "50%",
               background: T.textTertiary + "38",

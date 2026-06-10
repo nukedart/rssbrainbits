@@ -362,7 +362,7 @@ export default function CardsPage() {
             onBlur={e => { if (!globalSearch) e.target.style.borderColor = T.border; }}
           />
           {globalSearch && (
-            <button onClick={() => setGlobalSearch("")} style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:T.textTertiary, fontSize:16, lineHeight:1, padding:2 }}>×</button>
+            <button onClick={() => setGlobalSearch("")} aria-label="Clear search" style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:T.textTertiary, fontSize:16, lineHeight:1, padding:2 }}>×</button>
           )}
         </div>
 

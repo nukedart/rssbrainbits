@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.421] — 2026-06-10
+
+- [UX] Clear search × buttons in SearchBar and CardsPage now have aria-label="Clear search"
+
 ## [1.46.420] — 2026-06-10
 
 - [UX] InboxPage card-size buttons (S/M/L) now have descriptive aria-labels and aria-pressed; Settings theme buttons now have aria-pressed
