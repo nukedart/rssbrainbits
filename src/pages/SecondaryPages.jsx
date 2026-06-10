@@ -1231,7 +1231,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
         {/* Tabs */}
         <div style={{ display: "flex", gap: 0 }}>
           {[["feeds", `Feeds (${feeds.length})`], ["folders", `Collections (${folders.length})`]].map(([id, label]) => (
-            <button key={id} onClick={() => setActiveTab(id)}
+            <button key={id} onClick={() => setActiveTab(id)} aria-pressed={activeTab === id}
               style={{ padding: "7px 16px", fontSize: 13, fontWeight: activeTab === id ? 600 : 400, color: activeTab === id ? T.accent : T.textTertiary, background: "none", border: "none", borderBottom: `2px solid ${activeTab === id ? T.accent : "transparent"}`, cursor: "pointer", fontFamily: "inherit", transition: "color .15s, border-color .15s", marginBottom: -1 }}>
               {label}
             </button>
@@ -1279,7 +1279,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 24px 12px" }}>
               <div style={{ display: "flex", background: T.surface, borderRadius: 100, padding: 2 }}>
                 {[["all","All"],["youtube","YouTube"],["podcast","Podcasts"],["article","Articles"]].map(([v, label]) => (
-                  <button key={v} onClick={() => setFilterType(v)}
+                  <button key={v} onClick={() => setFilterType(v)} aria-pressed={filterType === v}
                     style={{ padding: "4px 12px", borderRadius: 100, border: "none", background: filterType === v ? T.bg : "transparent", color: filterType === v ? T.text : T.textTertiary, fontSize: 12, fontWeight: filterType === v ? 600 : 400, cursor: "pointer", fontFamily: "inherit", transition: "background .12s, color .12s, box-shadow .12s", boxShadow: filterType === v ? "0 1px 3px rgba(0,0,0,.12)" : "none" }}>
                     {label}
                   </button>

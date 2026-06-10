@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.423 | UX | ManageFeeds tab + filter type buttons: aria-pressed for screen reader state announcements | `SecondaryPages.jsx:1234,1282` | — |
 | 2026-06-10 | v1.46.422 | UX | InboxPage display sheet: aria-pressed on image-position (L/R/None) and view-mode (List/Cards) buttons | `InboxPage.jsx:1345,1084` | — |
 | 2026-06-10 | v1.46.421 | UX | Clear search buttons: aria-label="Clear search" in SearchBar and CardsPage | `SearchBar.jsx:112`, `CardsPage.jsx:365` | — |
 | 2026-06-10 | v1.46.420 | UX | InboxPage card-size buttons: aria-label + aria-pressed; Settings theme buttons: aria-pressed | `InboxPage.jsx:1099`, `SecondaryPages.jsx:557` | — |
