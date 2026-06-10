@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.413] — 2026-06-10
+
+- [Nav] Dynamic document.title updates on navigation — screen readers announce the page name when switching between Inbox, Cards, Review, etc.
+
 ## [1.46.412] — 2026-06-10
 
 - [UX] NotesPage sort select + ReadLaterPage URL input: final aria-label gaps closed

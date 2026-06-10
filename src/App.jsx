@@ -77,6 +77,12 @@ function AppShell() {
   useEffect(() => { identify(user); }, [user]);
 
   useEffect(() => {
+    const PAGE_TITLES = { inbox: "Inbox", today: "Today", cards: "Cards", review: "Review", readlater: "Saved", history: "History", stats: "Stats", settings: "Settings", analytics: "Analytics" };
+    const base = page.startsWith("feed:") ? "Feed" : page.startsWith("folder:") ? "Folder" : page.startsWith("smart:") ? "Smart Feed" : PAGE_TITLES[page];
+    document.title = base ? `${base} — Feedbox` : "Feedbox";
+  }, [page]);
+
+  useEffect(() => {
     function onOpenFeeds() { setMobileDrawerOpen(true); }
     window.addEventListener("fb-open-feeds", onOpenFeeds);
     return () => window.removeEventListener("fb-open-feeds", onOpenFeeds);
