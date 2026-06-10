@@ -382,7 +382,11 @@ export default function ReviewPage({ onDueCount }) {
 
             {/* Passage */}
             <div
+              role={revealed ? undefined : "button"}
+              tabIndex={revealed ? undefined : 0}
+              aria-label={revealed ? undefined : "Click or press Enter to reveal your note"}
               onClick={() => !revealed && setRevealed(true)}
+              onKeyDown={e => { if (!revealed && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setRevealed(true); } }}
               style={{
                 padding: (current.article_title || current.article_url) ? "12px 24px 24px" : "28px 24px 24px",
                 fontSize: 20, lineHeight: 1.72,

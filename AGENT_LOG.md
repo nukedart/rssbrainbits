@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.363 | UX | ReviewPage passage card: role=button+tabIndex+onKeyDown — keyboard users can reveal note with Enter/Space | `ReviewPage.jsx:384` | — |
 | 2026-06-10 | v1.46.362 | UX | ContentViewer highlight marks: role=button+tabIndex+onKeyDown+aria-label — keyboard users can interact with highlights | `ContentViewer.jsx:885` | — |
 | 2026-06-10 | v1.46.361 | UX | FeedItem ListItem+CardItem: role=button+tabIndex+onKeyDown+aria-label — every inbox article keyboard-navigable | `FeedItem.jsx:302,378,491` | — |
 | 2026-06-10 | v1.46.360 | UX | SecondaryPages EditableName: tabIndex+role=button+onKeyDown(Enter/F2) — keyboard rename for feeds | `SecondaryPages.jsx:822` | — |

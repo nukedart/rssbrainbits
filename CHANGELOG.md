@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.363] — 2026-06-10
+
+- [UX] ReviewPage passage card: add role=button, tabIndex, onKeyDown — keyboard users can reveal note with Enter/Space
+
 ## [1.46.362] — 2026-06-10
 
 - [UX] ContentViewer highlight marks: add role=button, tabIndex, onKeyDown, aria-label — keyboard users can navigate to highlights and add notes by pressing Enter
