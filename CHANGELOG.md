@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.396] — 2026-06-10
+
+- [UX] Spinner: add role="status" aria-label="Loading" — screen readers now announce loading states app-wide
+
 ## [1.46.395] — 2026-06-10
 
 - [Polish] index.css: add global font-family:inherit for button/input/textarea/select — CSS baseline reset; guards against browser default font on any future form elements

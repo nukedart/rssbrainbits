@@ -71,7 +71,7 @@ export function Input({ value, onChange, placeholder, onKeyDown, style = {}, aut
 export function Spinner({ size = 20 }) {
   const { T } = useTheme();
   return (
-    <div style={{
+    <div role="status" aria-label="Loading" style={{
       width: size, height: size, border: `2px solid ${T.border}`,
       borderTop: `2px solid ${T.accent}`, borderRadius: "50%",
       animation: "spin 0.8s linear infinite",

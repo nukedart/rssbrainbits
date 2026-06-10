@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.396 | UX | Spinner: role=status + aria-label=Loading — screen readers announce loading states app-wide | `UI.jsx:71` | — |
 | 2026-06-10 | v1.46.395 | Polish | index.css: global font-family:inherit for form elements — CSS baseline reset for buttons/inputs/selects | `index.css:104` | — |
 | 2026-06-10 | v1.46.394 | Polish | useTheme: set --accent CSS variable — article body links/blockquotes/selection now use active theme color instead of blue | `useTheme.jsx:50` | — |
 | 2026-06-10 | v1.46.393 | Perf | PodcastPlayer SeekBar: fill RAF loop converted from style.width to scaleX() — GPU-composited seek bar updates | `PodcastPlayer.jsx:43,73,82,132` | — |
