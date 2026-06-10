@@ -470,7 +470,7 @@ function BriefingRow({ item, isSelected, relTime, onClick, T }) {
       }}
     >
       {item.image && (
-        <img src={item.image} alt="" style={{ width: 48, height: 36, objectFit: "cover", borderRadius: 6, flexShrink: 0, marginTop: 2 }} onError={e => { e.target.style.display = "none"; }} />
+        <img src={item.image} alt="" loading="lazy" decoding="async" style={{ width: 48, height: 36, objectFit: "cover", borderRadius: 6, flexShrink: 0, marginTop: 2 }} onError={e => { e.target.style.display = "none"; }} />
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: isSelected ? 600 : 500, color: isSelected ? T.accent : T.text, lineHeight: 1.35, marginBottom: 3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontFamily: "var(--reader-font-family)" }}>

@@ -74,7 +74,7 @@ export default function PWAInstallBanner() {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: isIOS ? 12 : 14 }}>
         <div style={{ width: 52, height: 52, borderRadius: 14, overflow: "hidden", flexShrink: 0, background: T.accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <img src="/feedbox-logo.png" alt="" style={{ width: 36, height: 36, filter: "brightness(10) saturate(0)" }} onError={e => { e.target.style.display="none"; }} />
+          <img src="/feedbox-logo.png" alt="" decoding="async" style={{ width: 36, height: 36, filter: "brightness(10) saturate(0)" }} onError={e => { e.target.style.display="none"; }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: T.text, letterSpacing: "-.01em" }}>Feedbox</div>

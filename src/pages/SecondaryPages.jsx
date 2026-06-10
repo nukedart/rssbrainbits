@@ -509,7 +509,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         <Card title="Account" T={T}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
             {user?.user_metadata?.avatar_url
-              ? <img src={user.user_metadata.avatar_url} alt="" style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0 }} />
+              ? <img src={user.user_metadata.avatar_url} alt="" decoding="async" style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0 }} />
               : <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>👤</div>
             }
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -1499,7 +1499,7 @@ function FeedHealthCard({ T, user, feeds = [] }) {
               onMouseEnter={e => e.currentTarget.style.background = T.surface2}
               onMouseLeave={e => e.currentTarget.style.background = T.surface}
             >
-              <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=32`} alt="" width={14} height={14} style={{ borderRadius: 2, flexShrink: 0 }} onError={e => e.target.style.display="none"} />
+              <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=32`} alt="" width={14} height={14} loading="lazy" decoding="async" style={{ borderRadius: 2, flexShrink: 0 }} onError={e => e.target.style.display="none"} />
               <span style={{ flex: 1, fontSize: 13, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {feed.name || host}
               </span>

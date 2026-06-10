@@ -36,7 +36,7 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, T }) {
         display:"flex", alignItems:"center", justifyContent:"center",
       }}>
         {favicon
-          ? <img src={favicon} alt="" width={36} height={36} style={{ borderRadius:8, display:"block" }} onError={e => { e.target.style.display="none"; }} />
+          ? <img src={favicon} alt="" width={36} height={36} loading="lazy" decoding="async" style={{ borderRadius:8, display:"block" }} onError={e => { e.target.style.display="none"; }} />
           : <span style={{ fontSize:15, fontWeight:700, color:T.textTertiary }}>{name[0]?.toUpperCase()}</span>
         }
       </span>

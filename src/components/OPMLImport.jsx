@@ -298,7 +298,7 @@ export default function OPMLImport({ onImport, onClose }) {
 
                           {/* Favicon */}
                           <div style={{ width: 16, height: 16, borderRadius: 3, overflow: "hidden", background: T.surface2, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <img src={favicon} alt="" width={12} height={12} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
+                            <img src={favicon} alt="" width={12} height={12} loading="lazy" decoding="async" style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
                           </div>
 
                           {/* Name + URL */}

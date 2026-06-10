@@ -203,7 +203,7 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onCtxM
       {/* Favicon or dot */}
       <span style={{ width:14, height:14, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
         {favicon
-          ? <img src={favicon} alt="" width={12} height={12} style={{ borderRadius:2, opacity:.8 }} onError={e => { e.target.style.display="none"; }} />
+          ? <img src={favicon} alt="" width={12} height={12} loading="lazy" decoding="async" style={{ borderRadius:2, opacity:.8 }} onError={e => { e.target.style.display="none"; }} />
           : <span style={{ width:5, height:5, borderRadius:"50%", background:T.textTertiary, display:"block" }} />
         }
       </span>
@@ -638,7 +638,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
             onMouseLeave={e => { if (active!=="settings") e.currentTarget.style.background="transparent"; }}
           >
             {user?.user_metadata?.avatar_url
-              ? <img src={user.user_metadata.avatar_url} alt="" style={{ width:22, height:22, borderRadius:"50%", flexShrink:0 }} />
+              ? <img src={user.user_metadata.avatar_url} alt="" decoding="async" style={{ width:22, height:22, borderRadius:"50%", flexShrink:0 }} />
               : <span style={{ color:active==="settings"?T.accent:T.textTertiary, display:"flex", flexShrink:0 }}><Icons.Settings /></span>
             }
             {!collapsed && (

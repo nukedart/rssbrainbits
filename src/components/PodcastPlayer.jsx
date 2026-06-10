@@ -534,7 +534,7 @@ export default function PodcastPlayer({ item, onClose }) {
             style={{ display: "flex", alignItems: "center", padding: "10px 12px", gap: 12, cursor: "pointer" }}
           >
             {item.image
-              ? <img src={item.image} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+              ? <img src={item.image} alt="" loading="lazy" decoding="async" style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
               : <ArtworkPlaceholder size={44} radius={8} T={T} />
             }
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -591,7 +591,7 @@ export default function PodcastPlayer({ item, onClose }) {
           {/* Artwork */}
           <div style={{ position: "relative", height: 190, background: T.surface2, overflow: "hidden" }}>
             {item.image
-              ? <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
+              ? <img src={item.image} alt={item.title} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
               : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${T.accent}22, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <ArtworkPlaceholder size={90} radius={12} T={T} />
                 </div>
@@ -652,7 +652,7 @@ export default function PodcastPlayer({ item, onClose }) {
         <div style={{ display: "flex", alignItems: "center", padding: "9px 10px 9px 12px", gap: 10 }}>
           {/* Artwork */}
           {item.image
-            ? <img src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />
+            ? <img src={item.image} alt="" loading="lazy" decoding="async" style={{ width: 40, height: 40, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />
             : <ArtworkPlaceholder size={40} radius={7} T={T} />
           }
           {/* Title + source — click opens expanded */}

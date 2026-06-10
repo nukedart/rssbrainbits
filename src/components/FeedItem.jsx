@@ -264,7 +264,7 @@ function MobileThumb({ item, T, size = 72 }) {
           onError={() => setFailed(true)}
         />
       ) : fav ? (
-        <img src={fav} alt="" width={28} height={28} style={{ borderRadius: 5, opacity: .85 }} onError={e => { e.target.style.display = "none"; }} />
+        <img src={fav} alt="" width={28} height={28} loading="lazy" decoding="async" style={{ borderRadius: 5, opacity: .85 }} onError={e => { e.target.style.display = "none"; }} />
       ) : (
         <span style={{ fontSize: 24, fontWeight: 800, color: ph.color, opacity: .9 }}>{ph.initial}</span>
       )}
@@ -545,7 +545,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
               {feedColor
                 ? <span style={{ width: 6, height: 6, borderRadius: "50%", background: feedColor, flexShrink: 0 }} />
-                : favicon && <img src={favicon} alt="" width={12} height={12} style={{ borderRadius: 2, opacity: 0.7 }} onError={e => { e.target.style.display = "none"; }} />
+                : favicon && <img src={favicon} alt="" width={12} height={12} loading="lazy" decoding="async" style={{ borderRadius: 2, opacity: 0.7 }} onError={e => { e.target.style.display = "none"; }} />
               }
               <span style={{ fontSize: 11, fontWeight: 500, color: T.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {item.source}

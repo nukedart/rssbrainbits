@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.373] — 2026-06-10
+
+- [Perf] Add loading="lazy" decoding="async" to all favicon/thumbnail images in list contexts; decoding="async" only on immediately-visible avatars — defers off-screen image fetches and unblocks main thread from sync image decode
+
 ## [1.46.372] — 2026-06-10
 
 - [UX] Sidebar/MobileFeedDrawer/InboxPage/SecondaryPages: add aria-label to icon-only buttons that had only title attributes — complete screen reader label coverage

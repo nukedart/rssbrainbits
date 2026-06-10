@@ -457,7 +457,7 @@ function ListRow({ item, T, onOpen, onRemove }) {
           {item.title || item.url}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          {fav && <img src={fav} alt="" width={12} height={12} style={{ borderRadius: 2, opacity: 0.7, flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />}
+          {fav && <img src={fav} alt="" width={12} height={12} loading="lazy" decoding="async" style={{ borderRadius: 2, opacity: 0.7, flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />}
           <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{srcOf(item)}</span>
           <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>· {relTime(item.saved_at)}</span>
         </div>

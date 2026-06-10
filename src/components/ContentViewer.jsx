@@ -683,7 +683,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
               {/* Source + favicon */}
               <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
-                {faviconUrl && <img src={faviconUrl} alt="" width={15} height={15} style={{ borderRadius: 3, flexShrink: 0, opacity: .85 }} onError={e => { e.target.style.display="none"; }} />}
+                {faviconUrl && <img src={faviconUrl} alt="" width={15} height={15} loading="lazy" decoding="async" style={{ borderRadius: 3, flexShrink: 0, opacity: .85 }} onError={e => { e.target.style.display="none"; }} />}
                 <span style={{ fontSize: 12, fontWeight: 600, color: T.textTertiary, letterSpacing: ".02em", textTransform: "uppercase", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {item.source}
                 </span>

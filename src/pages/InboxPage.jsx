@@ -1730,7 +1730,7 @@ function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, o
         )}
         <div style={{ width: 14, height: 14, borderRadius: 3, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: active ? 1 : 0.7 }}>
           {favicon
-            ? <img src={favicon} alt="" width={12} height={12} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
+            ? <img src={favicon} alt="" width={12} height={12} loading="lazy" decoding="async" style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
             : <span style={{ fontSize: 8 }}>{icon || "•"}</span>}
         </div>
 

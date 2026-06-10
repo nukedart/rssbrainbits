@@ -173,7 +173,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
               >
                 <div style={{ width: 20, height: 20, borderRadius: 5, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
                   {favicon
-                    ? <img src={favicon} alt="" width={16} height={16} style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
+                    ? <img src={favicon} alt="" width={16} height={16} loading="lazy" decoding="async" style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
                     : <span style={{ fontSize: 10 }}>📰</span>
                   }
                 </div>
