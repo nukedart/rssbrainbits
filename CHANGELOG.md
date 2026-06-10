@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.406] — 2026-06-10
+
+- [Perf] ReviewPage + InboxPage: replace width-based progress bar transitions with transform:scaleX — GPU-composited; replace unread dot width/height with transform:scale
+
 ## [1.46.405] — 2026-06-10
 
 - [Perf] ContentViewer reading progress bar: replace right% transition with transform:scaleX — eliminates layout reflow on every scroll event

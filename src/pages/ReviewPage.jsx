@@ -342,9 +342,11 @@ export default function ReviewPage({ onDueCount }) {
         >
           <div style={{
             height: "100%", borderRadius: 99,
-            width: `${progress * 100}%`,
+            width: "100%",
             background: T.accent,
-            transition: "width .5s cubic-bezier(.4,0,.2,1)",
+            transform: `scaleX(${progress})`,
+            transformOrigin: "left",
+            transition: "transform .5s cubic-bezier(.4,0,.2,1)",
           }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 7 }}>

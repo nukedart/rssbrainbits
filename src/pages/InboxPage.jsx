@@ -1126,7 +1126,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
             >
               <span style={{ position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <span style={{ width:readFilter==="unread"?10:8, height:readFilter==="unread"?10:8, borderRadius:"50%", background:readFilter==="unread"?T.bg:T.accent, border:readFilter==="unread"?`2px solid ${T.accent}`:"none", display:"block", transition:"width .18s, height .18s, background .18s, border-color .18s" }} />
+                <span style={{ width:8, height:8, borderRadius:"50%", background:readFilter==="unread"?T.bg:T.accent, border:readFilter==="unread"?`2px solid ${T.accent}`:"none", display:"block", transform:readFilter==="unread"?"scale(1.25)":"scale(1)", transition:"transform .18s, background .18s" }} />
                 {unreadCount > 0 && readFilter !== "unread" && (
                   <span style={{ position:"absolute", top:-5, right:-7, minWidth:13, height:13, borderRadius:7, background:T.accent, color:T.accentText, fontSize:8, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 3px", boxSizing:"border-box" }}>
                     {unreadCount > 99 ? "99+" : unreadCount}
@@ -1525,8 +1525,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             <div style={{ fontSize:11, color:T.textTertiary, marginTop:2 }}>{opmlProgress.done} of {opmlProgress.total} done</div>
           </div>
           <div style={{ marginLeft:"auto" }}>
-            <div style={{ width:80, height:4, background:T.surface2, borderRadius:2 }}>
-              <div style={{ width:`${(opmlProgress.done/opmlProgress.total)*100}%`, height:"100%", background:T.accent, borderRadius:2, transition:"width .3s" }} />
+            <div style={{ width:80, height:4, background:T.surface2, borderRadius:2, overflow:"hidden" }}>
+              <div style={{ width:"100%", height:"100%", background:T.accent, borderRadius:2, transform:`scaleX(${opmlProgress.done/opmlProgress.total})`, transformOrigin:"left", transition:"transform .3s" }} />
             </div>
           </div>
         </div>
