@@ -219,6 +219,7 @@ function HighlightCard({ highlight, onDelete, onEdit, onReread, T, isMobile }) {
       {editing ? (
         <div style={{ marginBottom: 10 }}>
           <textarea autoFocus value={noteVal} onChange={e => setNoteVal(e.target.value)}
+            aria-label="Edit note"
             onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveNote(); if (e.key === "Escape") setEditing(false); }}
             style={{ width: "100%", boxSizing: "border-box", background: T.surface2, border: `1.5px solid ${T.accent}`, borderRadius: 7, padding: "7px 10px", fontSize: 12, color: T.text, fontFamily: "inherit", outline: "none", resize: "none", minHeight: 50 }}
           />
@@ -444,6 +445,7 @@ function NoteEditor({ note, onClose, onSave, onDelete, T, isMobile }) {
           {/* Title */}
           <textarea ref={titleRef} value={title} onChange={e => { setTitle(e.target.value); scheduleSave(e.target.value, body); }}
             placeholder="Untitled Note"
+            aria-label="Note title"
             rows={1}
             style={{
               width: "100%", boxSizing: "border-box",
@@ -458,6 +460,7 @@ function NoteEditor({ note, onClose, onSave, onDelete, T, isMobile }) {
           {/* Body */}
           <textarea ref={bodyRef} value={body} onChange={e => { setBody(e.target.value); scheduleSave(title, e.target.value); }}
             placeholder="Start writing…"
+            aria-label="Note body"
             style={{
               width: "100%", boxSizing: "border-box",
               background: "none", border: "none", outline: "none", resize: "none", overflow: "hidden",
