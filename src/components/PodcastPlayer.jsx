@@ -110,6 +110,21 @@ function SeekBar({ audioRef, T, light }) {
   return (
     <div>
       <div ref={trackRef} onMouseDown={onStart} onTouchStart={onStart}
+        role="slider"
+        tabIndex={0}
+        aria-label="Seek"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={0}
+        onKeyDown={e => {
+          const audio = audioRef.current;
+          if (!audio) return;
+          const step = 5;
+          if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + step); }
+          else if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); audio.currentTime = Math.max(0, audio.currentTime - step); }
+          else if (e.key === "Home") { e.preventDefault(); audio.currentTime = 0; }
+          else if (e.key === "End") { e.preventDefault(); audio.currentTime = audio.duration || 0; }
+        }}
         style={{ padding: "8px 0", cursor: "pointer", touchAction: "none" }}
       >
         <div style={{ position: "relative", height: 4, borderRadius: 2, background: track }}>

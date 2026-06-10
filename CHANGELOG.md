@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.366] — 2026-06-10
+
+- [UX] PodcastPlayer SeekBar: add role=slider, tabIndex, onKeyDown (Arrow±5s, Home, End) — keyboard users can seek in podcasts
+
 ## [1.46.365] — 2026-06-10
 
 - [UX] CardsPage annotation editor: add role=button, tabIndex, onKeyDown (Enter/F2) — keyboard users can add/edit card annotations without a mouse
