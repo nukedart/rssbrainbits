@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.378] — 2026-06-10
+
+- [Nav] Sidebar: expose Stats to all users (was admin-only on desktop; mobile drawer showed it to everyone) — closes desktop/mobile navigation parity gap
+
 ## [1.46.377] — 2026-06-10
 
 - [Nav] Sidebar: add History to desktop library nav — History was accessible on mobile (drawer quick-nav) but had no entry point on desktop, breaking navigation parity
