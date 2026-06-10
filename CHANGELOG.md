@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.287] — 2026-06-09
+
+- [Perf] Memoized `parseYouTubeUrl` result in ContentViewer — avoids repeated URL parsing on scroll, highlight, and TTS re-renders
+
 ## [1.46.286] — 2026-06-09
 
 - [Nav] Sidebar now shows review due-count badge — matches the BottomNav badge that mobile users already see; desktop users can now see pending reviews at a glance

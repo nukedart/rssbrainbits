@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
@@ -69,7 +69,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
   const articleRef = useRef(null);
   const lastSavedProgressRef = useRef(0);
-  const yt = item?.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
+  const yt = useMemo(() => item?.url ? parseYouTubeUrl(item.url) : { isYouTube: false }, [item?.url]);
 
   // ── Restore cached summary when item changes ──────────────
   useEffect(() => {
