@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.368] — 2026-06-10
+
+- [UX] NotesPage tag spans: add role=button, tabIndex, onKeyDown, aria-label — keyboard users can filter notes by tag
+
 ## [1.46.367] — 2026-06-10
 
 - [UX] MobileSearchOverlay result rows: add role=button, tabIndex, onKeyDown, aria-label — keyboard users can select search results

@@ -291,7 +291,12 @@ function TagCard({ title, url, tags, onSearch, onReread, T }) {
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
         {tags.map(tag => (
-          <span key={tag} onClick={() => onSearch(tag)}
+          <span key={tag}
+            role="button"
+            tabIndex={0}
+            aria-label={`Search by tag: ${tag}`}
+            onClick={() => onSearch(tag)}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSearch(tag); } }}
             style={{ padding: "3px 10px", borderRadius: 20, background: T.accentSurface, color: T.accent, border: `1px solid ${T.accent}28`, fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "background .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = T.accentText; }}
             onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
