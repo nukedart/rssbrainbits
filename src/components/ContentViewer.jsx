@@ -1290,8 +1290,8 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighl
                   <span style={{ fontSize: 11, color: T.textSecondary, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     Highlight: "{pendingHighlight.text.slice(0, 40)}{pendingHighlight.text.length > 40 ? "…" : ""}"
                   </span>
-                  {HIGHLIGHT_COLORS.map(({ id, bg }) => (
-                    <button key={id} onClick={() => commitHighlight(id)}
+                  {HIGHLIGHT_COLORS.map(({ id, label, bg }) => (
+                    <button key={id} onClick={() => commitHighlight(id)} aria-label={`Highlight ${label}`}
                       style={{ width: 18, height: 18, borderRadius: "50%", border: "2px solid transparent", cursor: "pointer",
                         background: bg,
                         transition: "border-color .1s",
@@ -1300,7 +1300,7 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighl
                       onMouseLeave={e => e.currentTarget.style.borderColor = "transparent"}
                     />
                   ))}
-                  <button onClick={() => setPendingHighlight(null)}
+                  <button onClick={() => setPendingHighlight(null)} aria-label="Cancel highlight"
                     style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, fontSize: 14, lineHeight: 1 }}>×</button>
                 </div>
               )}

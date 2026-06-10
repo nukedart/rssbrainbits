@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.415] — 2026-06-10
+
+- [UX] Transcript highlight picker buttons (color swatches + cancel) now have aria-labels for screen reader accessibility
+
 ## [1.46.414] — 2026-06-10
 
 - [UX] Podcast player buttons (play/pause, skip back/forward, playback rate, sleep timer) now have aria-labels for screen reader accessibility
