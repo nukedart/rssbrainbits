@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.298] — 2026-06-09
+
+- [Nav] Reordered mobile bottom nav to match desktop sidebar: Inbox → Today → Saved → Review → Cards — eliminates the Today/Review position inconsistency between mobile and desktop
+
 ## [1.46.297] — 2026-06-09
 
 - [Perf] Memoized filtered list and time-bucket groups in ReadLaterPage — skips item re-filtering on every re-render; only reruns when items or active source changes

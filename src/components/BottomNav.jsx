@@ -45,10 +45,10 @@ function hexToRgba(hex, alpha) {
 const NAV_ITEMS = [
   { id: "feeds",     Icon: ListIcon,   label: "Feeds",  special: "feeds" },
   { id: "inbox",     Icon: InboxIcon,  label: "Inbox"  },
-  { id: "readlater", Icon: SavedIcon,  label: "Saved"  },
   { id: "today",     Icon: TodayIcon,  label: "Today"  },
-  { id: "cards",     Icon: CardIcon,   label: "Cards"  },
+  { id: "readlater", Icon: SavedIcon,  label: "Saved"  },
   { id: "review",    Icon: ReviewIcon, label: "Review" },
+  { id: "cards",     Icon: CardIcon,   label: "Cards"  },
 ];
 
 function CountBadge({ count, T }) {
