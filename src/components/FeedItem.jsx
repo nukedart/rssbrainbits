@@ -163,6 +163,7 @@ function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile }) {
       <div ref={rowRef}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd} onTouchCancel={onTouchEnd}
+        style={{ touchAction: "pan-y" }}
       >
         {typeof children === "function" ? children({ swiped: false, close: () => {} }) : children}
       </div>
