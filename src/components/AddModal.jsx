@@ -263,6 +263,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                 value={podcastQuery}
                 onChange={e => handlePodcastSearch(e.target.value)}
                 placeholder="Search Apple Podcasts…"
+                aria-label="Search Apple Podcasts"
                 autoFocus
                 style={{
                   width: "100%", boxSizing: "border-box",
@@ -349,6 +350,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
               value={url}
               onChange={e => handleUrlChange(e.target.value)}
               placeholder="Paste a URL, @handle, or feed link…"
+              aria-label="Feed URL or handle"
               autoFocus
               onKeyDown={e => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }}
               style={{
@@ -388,6 +390,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                 value={feedName}
                 onChange={e => setFeedName(e.target.value)}
                 placeholder="Nickname (optional)"
+                aria-label="Feed nickname (optional)"
                 style={{
                   width: "100%", boxSizing: "border-box",
                   background: T.surface, border: `1.5px solid ${T.border}`,

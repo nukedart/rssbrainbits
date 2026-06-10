@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.400] — 2026-06-10
+
+- [UX] AddModal: add aria-label to URL input, podcast search, and feed nickname — screen readers announce field purpose instead of relying on placeholder
+
 ## [1.46.399] — 2026-06-10
 
 - [UX] NotePanel: connect "Your note" and "Theme" labels to their fields via htmlFor/id — screen readers now announce the field purpose when focused
