@@ -50,8 +50,8 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
         </div>
 
         {/* Annotation — the back of the card */}
-        <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, display: "block", marginBottom: 8 }}>Your note</label>
-        <textarea value={note} onChange={(e) => setNote(e.target.value)}
+        <label htmlFor="note-panel-text" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, display: "block", marginBottom: 8 }}>Your note</label>
+        <textarea id="note-panel-text" value={note} onChange={(e) => setNote(e.target.value)}
           placeholder="Add a thought, connection, or question…" autoFocus rows={3}
           style={{
             width: "100%", boxSizing: "border-box", background: T.surface,
@@ -64,7 +64,7 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
         />
 
         {/* Theme tag — the index card label */}
-        <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, display: "block", margin: "14px 0 8px" }}>Theme</label>
+        <label htmlFor="note-panel-tag" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, display: "block", margin: "14px 0 8px" }}>Theme</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
           {tags.map(tag => (
             <span key={tag} style={{
@@ -77,6 +77,7 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
             </span>
           ))}
           <input
+            id="note-panel-tag"
             value={tagInput}
             onChange={e => setTagInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); commitTag(); } }}

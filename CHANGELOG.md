@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.399] — 2026-06-10
+
+- [UX] NotePanel: connect "Your note" and "Theme" labels to their fields via htmlFor/id — screen readers now announce the field purpose when focused
+
 ## [1.46.398] — 2026-06-10
 
 - [UX] SearchBar: add aria-label, aria-haspopup, aria-expanded, aria-controls linking input to results listbox — screen readers now announce when search results appear
