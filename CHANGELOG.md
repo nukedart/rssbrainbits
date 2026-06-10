@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.292] — 2026-06-09
+
+- [Perf] Memoized reading-time calculation and favicon URL in ContentViewer — eliminates full article text split and URL parse on every scroll/highlight re-render
+
 ## [1.46.291] — 2026-06-09
 
 - [Perf] Memoized `uncategorized`, `PRIMARY_NAV`, `LIBRARY_NAV` arrays in Sidebar — prevents recreation on every re-render (shortcuts popup, context menu, folder expand)

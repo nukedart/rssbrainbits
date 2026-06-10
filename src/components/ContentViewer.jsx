@@ -70,6 +70,14 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const articleRef = useRef(null);
   const lastSavedProgressRef = useRef(0);
   const yt = useMemo(() => item?.url ? parseYouTubeUrl(item.url) : { isYouTube: false }, [item?.url]);
+  const readingTimeMins = useMemo(() => {
+    if (!content?.bodyText) return null;
+    return Math.max(1, Math.round(content.bodyText.split(/\s+/).length / 238));
+  }, [content?.bodyText]);
+  const faviconUrl = useMemo(() => {
+    if (!item?.url) return null;
+    try { return `https://www.google.com/s2/favicons?domain=${new URL(item.url).hostname}&sz=32`; } catch { return null; }
+  }, [item?.url]);
 
   // ── Restore cached summary when item changes ──────────────
   useEffect(() => {
@@ -656,7 +664,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
               {/* Source + favicon */}
               <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
-                {item.url && (() => { try { return <img src={`https://www.google.com/s2/favicons?domain=${new URL(item.url).hostname}&sz=32`} alt="" width={15} height={15} style={{ borderRadius: 3, flexShrink: 0, opacity: .85 }} onError={e => { e.target.style.display="none"; }} />; } catch { return null; } })()}
+                {faviconUrl && <img src={faviconUrl} alt="" width={15} height={15} style={{ borderRadius: 3, flexShrink: 0, opacity: .85 }} onError={e => { e.target.style.display="none"; }} />}
                 <span style={{ fontSize: 12, fontWeight: 600, color: T.textTertiary, letterSpacing: ".02em", textTransform: "uppercase", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {item.source}
                 </span>
@@ -685,7 +693,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 28, fontSize: 13, color: T.textTertiary, lineHeight: 1.5 }}>
                 {item.date && <span>{new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>}
                 {item.author && <><span style={{ opacity: .4 }}>·</span><span>{item.author}</span></>}
-                {content.bodyText && (() => { const mins = Math.max(1, Math.round(content.bodyText.split(/\s+/).length / 238)); return <><span style={{ opacity: .4 }}>·</span><span>{mins} min read</span></>; })()}
+                {readingTimeMins && <><span style={{ opacity: .4 }}>·</span><span>{readingTimeMins} min read</span></>}
               </div>
 
               {/* AI Summarize */}

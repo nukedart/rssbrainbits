@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.292 | Perf | Memoized reading-time calc + favicon URL in ContentViewer — no article text split on scroll/highlight re-renders | `ContentViewer.jsx:73` | — |
 | 2026-06-09 | v1.46.291 | Perf | Memoized uncategorized/PRIMARY_NAV/LIBRARY_NAV in Sidebar — no recreation on shortcuts/ctx-menu interactions | `Sidebar.jsx:422` | — |
 | 2026-06-09 | v1.46.290 | Perf | dateBucket accepts pre-computed todayTs — eliminates 2 Date constructions per list item | `InboxPage.jsx:21,1269` | — |
 | 2026-06-09 | v1.46.289 | Perf | Memoized unreadCount in InboxPage — skips O(n) filter on cursor/modal re-renders | `InboxPage.jsx:720` | — |
