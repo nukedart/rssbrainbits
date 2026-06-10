@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.367] — 2026-06-10
+
+- [UX] MobileSearchOverlay result rows: add role=button, tabIndex, onKeyDown, aria-label — keyboard users can select search results
+
 ## [1.46.366] — 2026-06-10
 
 - [UX] PodcastPlayer SeekBar: add role=slider, tabIndex, onKeyDown (Arrow±5s, Home, End) — keyboard users can seek in podcasts

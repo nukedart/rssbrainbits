@@ -222,7 +222,11 @@ export default function MobileSearchOverlay({ onClose, onSelectResult, onLiveSea
           return (
             <div
               key={item.url || i}
+              role="button"
+              tabIndex={0}
+              aria-label={item.title || item.url}
               onClick={() => handleSelect(item)}
+              onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelect(item); } }}
               style={{
                 display: "flex", alignItems: "flex-start", gap: 12,
                 padding: "14px 16px",
