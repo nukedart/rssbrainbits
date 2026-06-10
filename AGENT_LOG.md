@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.322 | Polish | FolderModal + SmartFeedModal: role="dialog" + aria-modal + aria-labelledby + Close aria-labels | `FolderModal.jsx:43` `SmartFeedModal.jsx:52` | — |
 | 2026-06-09 | v1.46.321 | Polish | ReviewPage: role="progressbar" + aria-valuenow for screen reader progress announcements | `ReviewPage.jsx:335` | — |
 | 2026-06-09 | v1.46.320 | Polish | FeedItem: star color via T.amber.text token instead of hardcoded #F59E0B | `FeedItem.jsx:456,590` | — |
 | 2026-06-09 | v1.46.319 | Perf | useBreakpoint: track category string not raw width — eliminates resize re-renders in 10+ components | `useBreakpoint.js:1` | — |

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.322] — 2026-06-09
+
+- [Polish] FolderModal + SmartFeedModal: add role="dialog", aria-modal="true", aria-labelledby, and aria-label="Close" — screen readers now announce these as dialogs
+
 ## [1.46.321] — 2026-06-09
 
 - [Polish] ReviewPage: progress bar now has role="progressbar" + aria-valuenow/min/max — screen readers announce review progress correctly

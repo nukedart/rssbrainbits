@@ -49,7 +49,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
       position: "fixed", inset: 0, background: T.overlay, zIndex: 1100,
       display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
     }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{
+      <div role="dialog" aria-modal="true" aria-labelledby="smart-feed-modal-title" style={{
         background: T.card, borderRadius: 18, padding: "26px 26px 22px",
         width: "100%", maxWidth: "min(460px, 95vw)",
         border: `1px solid ${T.border}`,
@@ -62,14 +62,14 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
             🏷
           </div>
           <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>
+            <h2 id="smart-feed-modal-title" style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>
               {isEdit ? "Edit Smart Feed" : "New Smart Feed"}
             </h2>
             <p style={{ fontSize: 12, color: T.textSecondary, margin: "2px 0 0" }}>
               Articles matching any keyword appear here automatically
             </p>
           </div>
-          <button onClick={onClose} style={{ background: T.surface2, border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
 
         {/* Name */}
