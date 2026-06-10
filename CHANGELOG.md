@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.385] — 2026-06-10
+
+- [UX] InboxPage Unread/All filter: add aria-pressed so screen readers announce current selection state
+
 ## [1.46.384] — 2026-06-10
 
 - [Perf] index.html: add preconnect for fonts.googleapis.com and fonts.gstatic.com — removes TCP/TLS latency when loading Cormorant Garamond for editorial themes (Cream, Ink, Sepia)

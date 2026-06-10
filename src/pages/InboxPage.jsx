@@ -970,7 +970,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {filterMode !== "unread" && !searchOpen && !isMobile && (
             <div style={{ display: "flex", background: T.surface, borderRadius: 100, padding: 2, gap: 0, flexShrink: 0 }}>
               {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }].map(({ label, val }) => (
-                <button key={label} onClick={() => setReadFilter(val)} style={{
+                <button key={label} onClick={() => setReadFilter(val)} aria-pressed={readFilter === val} style={{
                   padding: "3px 11px", borderRadius: 100, border: "none",
                   background: readFilter === val ? T.bg : "transparent",
                   color: readFilter === val ? T.text : T.textTertiary,
