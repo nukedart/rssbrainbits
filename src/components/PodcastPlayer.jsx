@@ -40,7 +40,7 @@ function SeekBar({ audioRef, T, light }) {
           const ct  = audio.currentTime || 0;
           const dur = audio.duration    || 0;
           const pct = dur ? ct / dur : 0;
-          if (fillRef.current)  fillRef.current.style.width    = `${pct * 100}%`;
+          if (fillRef.current)  fillRef.current.style.transform = `scaleX(${pct})`;
           if (thumbRef.current) thumbRef.current.style.left    = `${pct * 100}%`;
           if (ctRef.current)    ctRef.current.textContent      = fmt(ct);
           if (durRef.current)   durRef.current.textContent     = fmt(dur);
@@ -70,7 +70,7 @@ function SeekBar({ audioRef, T, light }) {
       thumbRef.current.style.transition = "none";
     }
     const pct = getPct(e);
-    if (fillRef.current)  fillRef.current.style.width = `${pct * 100}%`;
+    if (fillRef.current)  fillRef.current.style.transform = `scaleX(${pct})`;
     if (thumbRef.current) thumbRef.current.style.left  = `${pct * 100}%`;
   }
 
@@ -79,7 +79,7 @@ function SeekBar({ audioRef, T, light }) {
       if (!dragging.current) return;
       e.preventDefault();
       const pct = getPct(e);
-      if (fillRef.current)  fillRef.current.style.width = `${pct * 100}%`;
+      if (fillRef.current)  fillRef.current.style.transform = `scaleX(${pct})`;
       if (thumbRef.current) thumbRef.current.style.left  = `${pct * 100}%`;
     }
     function onEnd(e) {
@@ -128,8 +128,8 @@ function SeekBar({ audioRef, T, light }) {
         }}
         style={{ padding: "8px 0", cursor: "pointer", touchAction: "none" }}
       >
-        <div style={{ position: "relative", height: 4, borderRadius: 2, background: track }}>
-          <div ref={fillRef} style={{ position: "absolute", inset: "0 auto 0 0", width: "0%", background: fill, borderRadius: 2 }} />
+        <div style={{ position: "relative", height: 4, borderRadius: 2, background: track, overflow: "hidden" }}>
+          <div ref={fillRef} style={{ position: "absolute", inset: "0 0 0 0", background: fill, borderRadius: 2, transform: "scaleX(0)", transformOrigin: "left" }} />
           <div ref={thumbRef} style={{
             position: "absolute", top: "50%", left: "0%",
             transform: "translate(-50%, -50%)",

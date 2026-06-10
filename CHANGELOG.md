@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.393] — 2026-06-10
+
+- [Perf] PodcastPlayer SeekBar: fill bar RAF loop converted from style.width to style.transform scaleX() — GPU-composited seek updates
+
 ## [1.46.392] — 2026-06-10
 
 - [Perf] PodcastPlayer mini progress bar: switch RAF loop from style.width to style.transform scaleX() — eliminates layout recalculation every 500ms during playback
