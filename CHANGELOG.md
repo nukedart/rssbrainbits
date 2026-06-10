@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.354] — 2026-06-10
+
+- [UX] MobileFeedDrawer: bottom sheet gets role=dialog + aria-modal + aria-label — mobile feed navigation correctly treated as a dialog
+
 ## [1.46.353] — 2026-06-10
 
 - [UX] OPMLImport modal: add role=dialog + aria-modal + aria-label — screen readers treat the OPML import panel as a modal dialog
