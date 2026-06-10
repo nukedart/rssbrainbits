@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.304] — 2026-06-09
+
+- [UX] ContentViewer close button gets `aria-label="Close article"` — improves screen reader and keyboard navigation accessibility
+
 ## [1.46.303] — 2026-06-09
 
 - [Fix] Toast timer now clears on rapid successive calls — prevents early dismissal when two actions fire within 2 seconds

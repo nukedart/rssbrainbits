@@ -394,7 +394,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
         padding: isMobile ? "8px 12px" : "10px 16px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 10,
       }}>
-        <button onClick={onClose} style={{
+        <button onClick={onClose} aria-label="Close article" style={{
           background: T.surface2, border: "none", borderRadius: 8,
           width: isMobile ? 38 : 32, height: isMobile ? 38 : 32,
           cursor: "pointer", display: "flex",
