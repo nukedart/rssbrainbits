@@ -171,9 +171,10 @@ export default function OPMLImport({ onImport, onClose }) {
             </div>
             <div style={{ height: 6, background: T.surface2, borderRadius: 3, overflow: "hidden" }}>
               <div style={{
-                height: "100%", background: T.accent, borderRadius: 3,
-                width: `${(progress.done / progress.total) * 100}%`,
-                transition: "width .3s ease",
+                height: "100%", width: "100%", background: T.accent, borderRadius: 3,
+                transform: `scaleX(${progress.done / progress.total})`,
+                transformOrigin: "left",
+                transition: "transform .3s ease",
               }} />
             </div>
             <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 8 }}>

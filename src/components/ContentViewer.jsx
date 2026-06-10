@@ -1490,7 +1490,7 @@ function PodcastEpisodeView({ item, summary, summarizing, onSummarize, T }) {
           onClick={seek}
           style={{ height: 4, background: T.border, borderRadius: 2, cursor: "pointer", position: "relative" }}
         >
-          <div style={{ height: "100%", width: `${progress * 100}%`, background: T.accent, borderRadius: 2, transition: "width .2s linear" }} />
+          <div style={{ height: "100%", width: "100%", background: T.accent, borderRadius: 2, transform: `scaleX(${progress})`, transformOrigin: "left", transition: "transform .2s linear" }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
           <span style={{ fontSize: 11, color: T.textTertiary, fontVariantNumeric: "tabular-nums" }}>{fmt(currentTime)}</span>

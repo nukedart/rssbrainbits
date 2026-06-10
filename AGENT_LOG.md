@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.391 | Perf | OPMLImport + ContentViewer TTS: progress bars converted to transform:scaleX() — GPU-composited, no layout reflow | `OPMLImport.jsx:173, ContentViewer.jsx:1493` | — |
 | 2026-06-10 | v1.46.390 | UX | AddModal + SmartFeedModal: aria-expanded on "Browse popular feeds" and "Pick feeds" disclosure buttons | `AddModal.jsx:434, SmartFeedModal.jsx:154` | — |
 | 2026-06-10 | v1.46.389 | UX | ContentViewer overflow menu: aria-label+aria-expanded+aria-haspopup on trigger; role=menu/menuitem on items | `ContentViewer.jsx:1083,1095` | — |
 | 2026-06-10 | v1.46.388 | UX | InboxPage source filter dropdown: aria-expanded + aria-haspopup on trigger; role=listbox + aria-selected on options | `InboxPage.jsx:924` | — |

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.391] — 2026-06-10
+
+- [Perf] OPMLImport + ContentViewer TTS: convert progress bar animations from width% to transform:scaleX() — GPU-composited, no layout reflow
+
 ## [1.46.390] — 2026-06-10
 
 - [UX] AddModal "Browse popular feeds" + SmartFeedModal "Pick feeds": add aria-expanded for screen reader disclosure state
