@@ -819,7 +819,13 @@ function InlineNameEditor({ name, T, onSave, placeholder }) {
     );
   }
   return (
-    <span title="Click to rename" onClick={e => { e.stopPropagation(); setEditing(true); }}
+    <span
+      title="Click to rename"
+      tabIndex={0}
+      role="button"
+      aria-label={`Rename: ${name || placeholder || "Unnamed"}`}
+      onClick={e => { e.stopPropagation(); setEditing(true); }}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === "F2") { e.stopPropagation(); setEditing(true); } }}
       style={{ fontSize: 13, fontWeight: 500, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", cursor: "text", lineHeight: 1.3 }}>
       {name || placeholder || "Unnamed"}
     </span>

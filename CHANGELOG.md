@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.360] — 2026-06-10
+
+- [UX] SecondaryPages EditableName: add tabIndex, role=button, onKeyDown (Enter/F2) — keyboard users can rename feeds without a mouse
+
 ## [1.46.359] — 2026-06-10
 
 - [UX] HomePage BriefingRow, ArticleRow, featured article cards: add tabIndex, onKeyDown, aria-label — keyboard users can now navigate home screen articles with Enter/Space
