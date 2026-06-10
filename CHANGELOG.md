@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.340] — 2026-06-10
+
+- [UX] NotesPage: NoteCard and NoteListRow converted from div+onClick to proper button/role=button — notes are keyboard-navigable; article re-read link is now a semantic button
+
 ## [1.46.339] — 2026-06-10
 
 - [UX] TagsInput: suggestion dropdown items converted from div+onClick to button with role=option — suggestions are keyboard-selectable

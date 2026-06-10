@@ -70,7 +70,10 @@ function NoteCard({ note, onOpen, onReread, T, featured, isMobile }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onOpen(note)}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(note); } }}
       style={{
         background: T.card, borderRadius: 14,
         padding: `${featured ? 26 : 18}px ${px}px 0`,
@@ -118,16 +121,16 @@ function NoteCard({ note, onOpen, onReread, T, featured, isMobile }) {
 
       {/* Article link */}
       {note.article_url && onReread && (
-        <div onClick={e => { e.stopPropagation(); onReread({ url: note.article_url, title: note.article_title, source: "" }); }}
-          style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, padding: "5px 8px", background: T.surface, borderRadius: 7, cursor: "pointer" }}
-          title="Re-read source article"
+        <button onClick={e => { e.stopPropagation(); onReread({ url: note.article_url, title: note.article_title, source: "" }); }}
+          aria-label="Re-read source article"
+          style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, padding: "5px 8px", background: T.surface, borderRadius: 7, cursor: "pointer", width: "100%", border: "none", fontFamily: "inherit", textAlign: "left", WebkitTapHighlightColor: "transparent" }}
         >
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, flexShrink: 0 }}>From</span>
           <span style={{ fontSize: 11, color: T.textSecondary, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {note.article_title || note.article_url}
           </span>
           <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>↗</span>
-        </div>
+        </button>
       )}
 
       {/* Colour strip */}
@@ -141,11 +144,13 @@ function NoteListRow({ note, onOpen, T }) {
   const col = NOTE_COLORS[note.color] || NOTE_COLORS.teal;
   const preview = (note.body || "").replace(/\n+/g, " ").slice(0, 90);
   return (
-    <div onClick={() => onOpen(note)} style={{
-      display: "flex", alignItems: "center", gap: 14,
+    <button onClick={() => onOpen(note)} style={{
+      display: "flex", alignItems: "center", gap: 14, width: "100%",
       background: T.card, borderRadius: 10, padding: "11px 16px",
+      border: "none", borderLeft: `3px solid ${col.strip}`,
       cursor: "pointer", transition: "background .12s",
-      borderLeft: `3px solid ${col.strip}`,
+      fontFamily: "inherit", textAlign: "left",
+      WebkitTapHighlightColor: "transparent",
     }}
       onMouseEnter={e => e.currentTarget.style.background = T.surface}
       onMouseLeave={e => e.currentTarget.style.background = T.card}
@@ -161,7 +166,7 @@ function NoteListRow({ note, onOpen, T }) {
         )}
       </div>
       <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>{fmtDate(note.updated_at)}</span>
-    </div>
+    </button>
   );
 }
 
