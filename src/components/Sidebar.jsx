@@ -126,7 +126,7 @@ function FeedContextMenu({ feed, x, y, onClose, onUnsubscribe, onMarkAllRead, T 
   const itemStyle = { display:"block", width:"100%", textAlign:"left", padding:"9px 14px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", fontSize:13, transition:"background .1s" };
 
   return createPortal(
-    <div ref={menuRef} style={{
+    <div ref={menuRef} role="menu" aria-label={`Actions for ${name}`} style={{
       position: "fixed", left, top, zIndex: 9000,
       background: T.card, border: `1px solid ${T.borderStrong}`,
       borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,.18)",
@@ -135,6 +135,7 @@ function FeedContextMenu({ feed, x, y, onClose, onUnsubscribe, onMarkAllRead, T 
       {!confirm ? (
         <>
           <button
+            role="menuitem"
             onClick={() => { onMarkAllRead?.(feed); onClose(); }}
             style={{ ...itemStyle, color: T.text }}
             onMouseEnter={e => e.currentTarget.style.background = T.surface}
@@ -144,6 +145,7 @@ function FeedContextMenu({ feed, x, y, onClose, onUnsubscribe, onMarkAllRead, T 
           </button>
           <div style={{ height:1, background:T.border, margin:"2px 0" }} />
           <button
+            role="menuitem"
             onClick={() => setConfirm(true)}
             style={{ ...itemStyle, color: T.danger }}
             onMouseEnter={e => e.currentTarget.style.background = T.surface}

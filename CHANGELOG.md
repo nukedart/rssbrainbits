@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.343] — 2026-06-10
+
+- [UX] Sidebar FeedContextMenu: add role=menu, role=menuitem, aria-label — screen readers correctly identify the feed action menu and its items
+
 ## [1.46.342] — 2026-06-10
 
 - [UX] SearchBar: result rows converted from div+onClick to button; container gets role=search, panel gets role=listbox — full keyboard-accessible search
