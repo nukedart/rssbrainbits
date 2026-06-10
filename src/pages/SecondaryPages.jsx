@@ -554,7 +554,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
             ].map(({ id, label, bg, accent }) => {
               const active = theme === id;
               return (
-                <button key={id} onClick={() => setTheme(id)} style={{
+                <button key={id} onClick={() => setTheme(id)} aria-label={`${label} theme`} aria-pressed={active} style={{
                   display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
                   background: active ? T.accentSurface : "transparent",
                   border: `1px solid ${active ? T.accent : "transparent"}`,

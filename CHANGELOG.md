@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.420] — 2026-06-10
+
+- [UX] InboxPage card-size buttons (S/M/L) now have descriptive aria-labels and aria-pressed; Settings theme buttons now have aria-pressed
+
 ## [1.46.419] — 2026-06-10
 
 - [UX] Feed list action buttons (move to folder ⤴, error !, remove ×) in InboxPage now have aria-labels

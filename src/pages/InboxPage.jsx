@@ -1095,8 +1095,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 <div style={{ padding: "6px 12px 10px" }}>
                   <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Size</div>
                   <div style={{ display: "flex", gap: 4 }}>
-                    {[{ size: "sm", label: "S" }, { size: "md", label: "M" }, { size: "lg", label: "L" }].map(({ size, label }) => (
-                      <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} style={{
+                    {[{ size: "sm", label: "S", name: "Small" }, { size: "md", label: "M", name: "Medium" }, { size: "lg", label: "L", name: "Large" }].map(({ size, label, name }) => (
+                      <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} aria-label={`${name} card size`} aria-pressed={cardSize === size} style={{
                         flex: 1, padding: "5px 0", borderRadius: 8, border: "none",
                         background: cardSize === size ? T.accentSurface : T.surface,
                         color: cardSize === size ? T.accent : T.textSecondary,
