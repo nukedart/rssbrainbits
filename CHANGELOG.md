@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.324] — 2026-06-10
+
+- [Polish] HighlightsDrawer: role="dialog" + aria-modal + aria-labelledby + Close aria-label — screen readers announce this side panel as a dialog
+
 ## [1.46.323] — 2026-06-09
 
 - [Polish] AddModal: role="dialog" + aria-modal + aria-labelledby; MobileSearchOverlay: role="search" on search bar row

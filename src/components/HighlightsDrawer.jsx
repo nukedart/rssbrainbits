@@ -38,14 +38,14 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 650, background: T.overlay, display: "flex", justifyContent: "flex-end" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{
+      <div role="dialog" aria-modal="true" aria-labelledby="highlights-drawer-title" style={{
         width: "min(380px, 100vw)", background: T.card, height: "100%",
         overflowY: "auto", boxShadow: "-4px 0 30px rgba(0,0,0,.12)",
         display: "flex", flexDirection: "column", animation: "slideInRight .2s ease",
       }}>
         <div style={{ padding: "20px 18px 14px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, background: T.card, zIndex: 10 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Highlights</div>
+            <div id="highlights-drawer-title" style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Highlights</div>
             <div style={{ fontSize: 11, color: T.textTertiary }}>{highlights.length} {highlights.length === 1 ? "highlight" : "highlights"}</div>
           </div>
           {highlights.length > 0 && (
@@ -58,7 +58,7 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
               </button>
             </div>
           )}
-          <button onClick={onClose} style={{ background: T.surface2, border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: T.textSecondary, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: T.textSecondary, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
 
         <div style={{ flex: 1, padding: "12px 0" }}>
