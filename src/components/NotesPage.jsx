@@ -248,7 +248,7 @@ function HighlightCard({ highlight, onDelete, onEdit, onReread, T, isMobile }) {
         )}
         <button onClick={handleDelete} disabled={deleting}
           style={{ background: "none", border: "none", fontSize: 13, color: T.textTertiary, cursor: "pointer", fontFamily: "inherit", padding: "2px 6px", opacity: isMobile ? 0.4 : 0.2, transition: "opacity .12s, color .12s" }}
-          onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "#F87171"; }}
+          onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = T.danger; }}
           onMouseLeave={e => { e.currentTarget.style.opacity = isMobile ? "0.4" : "0.2"; e.currentTarget.style.color = T.textTertiary; }}
         >{deleting ? "…" : "✕"}</button>
       </div>
@@ -390,9 +390,10 @@ function NoteEditor({ note, onClose, onSave, onDelete, T, isMobile }) {
           <button
             onClick={() => { if (window.confirm("Delete this note?")) { onDelete(note.id); onClose(); } }}
             style={{ marginLeft: 6, background: "none", border: "none", padding: "5px 8px", fontSize: 14, color: T.textTertiary, cursor: "pointer", borderRadius: 6, transition: "color .12s" }}
-            onMouseEnter={e => e.currentTarget.style.color = "#F87171"}
+            onMouseEnter={e => e.currentTarget.style.color = T.danger}
             onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
             title="Delete note"
+            aria-label="Delete note"
           >✕</button>
         </div>
       )}
