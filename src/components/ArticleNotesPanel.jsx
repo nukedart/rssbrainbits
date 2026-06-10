@@ -44,7 +44,7 @@ export default function ArticleNotesPanel({ articleUrl, articleTitle, notes, onN
         style={{ position: "fixed", inset: 0, zIndex: 700, background: T.overlay, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
         onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       >
-        <div style={{
+        <div role="dialog" aria-modal="true" aria-label="Article notes" style={{
           background: T.card, borderRadius: "20px 20px 0 0",
           padding: "20px 20px 40px", width: "100%", maxWidth: 560,
           maxHeight: "70vh", display: "flex", flexDirection: "column",

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.350] — 2026-06-10
+
+- [UX] NotePanel + ArticleNotesPanel: add role=dialog + aria-modal + aria-label to bottom-sheet panels — screen readers treat annotation panels as modal dialogs
+
 ## [1.46.349] — 2026-06-10
 
 - [UX] SelectionToolbar: role=toolbar + aria-label on color swatches — highlight action accessible to screen readers

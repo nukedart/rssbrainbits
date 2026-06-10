@@ -37,7 +37,7 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 700, background: T.overlay, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{
+      <div role="dialog" aria-modal="true" aria-label="Highlight note" style={{
         background: T.card, borderRadius: "20px 20px 0 0",
         padding: "20px 20px 40px", width: "100%", maxWidth: 560,
         boxShadow: "0 -4px 30px rgba(0,0,0,.15)", animation: "slideUp .2s ease",
