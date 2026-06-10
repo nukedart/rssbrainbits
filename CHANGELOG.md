@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.418] — 2026-06-10
+
+- [UX] TagsInput remove-tag × button and NotesPage dismiss-AI-Distill ✕ button now have aria-labels
+
 ## [1.46.417] — 2026-06-10
 
 - [UX] NotesPage grid/list view toggle buttons now have aria-label and aria-pressed for screen reader state announcements

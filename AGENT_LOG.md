@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.418 | UX | TagsInput × remove button + NotesPage ✕ dismiss AI Distill: aria-labels added | `TagsInput.jsx:53`, `NotesPage.jsx:479` | — |
 | 2026-06-10 | v1.46.417 | UX | NotesPage view mode toggle: aria-label + aria-pressed on grid/list buttons | `NotesPage.jsx:689` | — |
 | 2026-06-10 | v1.46.416 | UX | Icon-only ×/✕ buttons: aria-labels on HighlightsDrawer tag remove, NotePanel tag remove, ArticleNotesPanel close | `HighlightsDrawer.jsx:97`, `NotePanel.jsx:76`, `ArticleNotesPanel.jsx:109` | — |
 | 2026-06-10 | v1.46.415 | UX | Transcript highlight color swatches + cancel button: aria-labels added | `ContentViewer.jsx:1294,1303` | — |

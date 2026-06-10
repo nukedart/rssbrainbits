@@ -50,7 +50,7 @@ export default function TagsInput({ tags, onAdd, onRemove, allTags = [], onTagCl
               onClick={onTagClick ? (e) => { e.stopPropagation(); onTagClick(tag); } : undefined}
               style={{ cursor: onTagClick ? "pointer" : "default" }}
             >#{tag}</span>
-            <button onClick={(e) => { e.stopPropagation(); onRemove(tag); }} style={{
+            <button onClick={(e) => { e.stopPropagation(); onRemove(tag); }} aria-label={`Remove tag #${tag}`} style={{
               background: "none", border: "none", cursor: "pointer",
               color: T.accent, fontSize: 13, padding: 0, lineHeight: 1, opacity: 0.5,
               fontFamily: "inherit",

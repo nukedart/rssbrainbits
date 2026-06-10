@@ -476,7 +476,7 @@ function NoteEditor({ note, onClose, onSave, onDelete, T, isMobile }) {
             <div style={{ marginTop: 32, padding: "16px 18px", background: T.surface, borderRadius: 12, borderLeft: `3px solid ${T.accent}` }}>
               <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
                 <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".1em", color: T.accent }}>✦ AI Distill</span>
-                <button onClick={() => setDistillResult(null)} style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, fontSize: 13, padding: 0, marginLeft: "auto" }}>✕</button>
+                <button onClick={() => setDistillResult(null)} aria-label="Dismiss AI Distill result" style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, fontSize: 13, padding: 0, marginLeft: "auto" }}>✕</button>
               </div>
               <p style={{ fontSize: 14, color: T.textSecondary, lineHeight: 1.7, margin: 0, whiteSpace: "pre-wrap" }}>{distillResult}</p>
             </div>
