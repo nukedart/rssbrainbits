@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.339] — 2026-06-10
+
+- [UX] TagsInput: suggestion dropdown items converted from div+onClick to button with role=option — suggestions are keyboard-selectable
+
 ## [1.46.338] — 2026-06-10
 
 - [UX] Onboarding: feed selection cards converted from div+onClick to button with aria-pressed — keyboard accessible, first-run flow works without a mouse

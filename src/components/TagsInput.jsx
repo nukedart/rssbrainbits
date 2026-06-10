@@ -73,18 +73,20 @@ export default function TagsInput({ tags, onAdd, onRemove, allTags = [], onTagCl
       </div>
 
       {showSuggestions && suggestions.length > 0 && (
-        <div style={{
+        <div role="listbox" style={{
           position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
           background: T.card, border: `1px solid ${T.border}`,
           borderRadius: 10, boxShadow: "0 4px 16px rgba(0,0,0,.1)", zIndex: 100, overflow: "hidden",
         }}>
           {suggestions.map((s) => (
-            <div key={s} onClick={() => submit(s)} style={{
-              padding: "9px 14px", fontSize: 13, color: T.text, cursor: "pointer",
+            <button key={s} role="option" aria-selected="false" onClick={() => submit(s)} style={{
+              display: "block", width: "100%", padding: "9px 14px", fontSize: 13, color: T.text,
+              background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit",
+              textAlign: "left", WebkitTapHighlightColor: "transparent",
             }}
               onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-            >#{s}</div>
+            >#{s}</button>
           ))}
         </div>
       )}

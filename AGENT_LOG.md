@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.339 | UX | TagsInput: suggestion items → button with role=option in listbox — suggestions keyboard-selectable | `TagsInput.jsx:81` | — |
 | 2026-06-10 | v1.46.338 | UX | Onboarding: feed selection cards → button + aria-pressed — keyboard accessible first-run flow | `Onboarding.jsx:91` | — |
 | 2026-06-10 | v1.46.337 | UX | SecondaryPages Toggle: role=switch + aria-checked + keyboard support — screen readers announce switches correctly | `SecondaryPages.jsx:785` | — |
 | 2026-06-10 | v1.46.336 | UX | HighlightsDrawer: highlight rows get role=button + tabIndex + onKeyDown — keyboard accessible | `HighlightsDrawer.jsx:74` | — |
