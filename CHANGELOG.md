@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.371] — 2026-06-10
+
+- [UX] PodcastPlayer sleep timer buttons: add aria-label to both mini and expanded player variants
+
 ## [1.46.370] — 2026-06-10
 
 - [UX] PodcastPlayer SeekBar: update aria-valuenow in RAF loop — screen readers now report live playback position

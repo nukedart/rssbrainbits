@@ -494,7 +494,7 @@ export default function PodcastPlayer({ item, onClose }) {
                 {/* Secondary: volume + sleep */}
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <VolumeSlider volume={volume} onChange={changeVolume} T={T} light />
-                  <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer"} style={{
+                  <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer"} aria-label={sleepTimer ? `Sleep in ${sleepTimer} minutes` : "Sleep timer"} style={{
                     background: sleepTimer ? "rgba(255,255,255,.22)" : "rgba(255,255,255,.1)",
                     border: "none", borderRadius: 8, padding: "6px 10px",
                     cursor: "pointer", fontSize: sleepTimer ? 12 : 15, fontWeight: 700,
@@ -621,7 +621,7 @@ export default function PodcastPlayer({ item, onClose }) {
                 fontFamily: "inherit", minWidth: 40, textAlign: "center",
               }}>{rate}×</button>
               <VolumeSlider volume={volume} onChange={changeVolume} T={T} light={false} />
-              <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer (30 min)"} style={{
+              <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer (30 min)"} aria-label={sleepTimer ? `Sleep in ${sleepTimer} minutes` : "Sleep timer (30 min)"} style={{
                 background: sleepTimer ? T.accentSurface : T.surface2,
                 border: "none", borderRadius: 7, padding: "5px 9px",
                 cursor: "pointer", fontSize: sleepTimer ? 12 : 15, fontWeight: 700,
