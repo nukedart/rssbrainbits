@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.334] — 2026-06-10
+
+- [Polish] LoginPage: replace isDark?"#0e1117":"#fff" with T.accentText on logo + 2 submit buttons — correct text contrast across all 6 themes
+
 ## [1.46.333] — 2026-06-10
 
 - [Polish] SecondaryPages "New Collection" hover: replace hardcoded #fff with T.accentText for correct contrast in teal/blue/amber themes

@@ -86,7 +86,7 @@ export default function LoginPage() {
             width:52, height:52, borderRadius:14,
             background:`linear-gradient(135deg, ${T.accent} 0%, ${isDark?"#a371f7":"#7c4dff"} 100%)`,
             display:"inline-flex", alignItems:"center", justifyContent:"center",
-            fontSize:22, fontWeight:800, color: isDark?"#0e1117":"#fff",
+            fontSize:22, fontWeight:800, color: T.accentText,
             letterSpacing:"-.03em", marginBottom:14,
             boxShadow:`0 4px 20px ${T.accentSurface}`,
           }}>
@@ -131,7 +131,7 @@ export default function LoginPage() {
                     onBlur={e => e.target.style.borderColor=error?T.danger:T.border}
                   />
                   {error && <div style={{ fontSize:12, color:T.danger, lineHeight:1.5 }}>{error}</div>}
-                  <button type="submit" disabled={loading} style={{ padding:"12px 0", borderRadius:12, border:"none", background:T.accent, color: isDark?"#0e1117":"#fff", fontSize:14, fontWeight:700, cursor:loading?"wait":"pointer", fontFamily:"inherit", transition:"opacity .15s", opacity:loading?0.7:1, marginTop:2 }}>
+                  <button type="submit" disabled={loading} style={{ padding:"12px 0", borderRadius:12, border:"none", background:T.accent, color: T.accentText, fontSize:14, fontWeight:700, cursor:loading?"wait":"pointer", fontFamily:"inherit", transition:"opacity .15s", opacity:loading?0.7:1, marginTop:2 }}>
                     {loading ? "…" : mode==="signup" ? "Create account" : "Sign in"}
                   </button>
                   <button type="button" onClick={() => { setMode(mode==="signup"?"email":"signup"); setError(""); }}
@@ -162,7 +162,7 @@ export default function LoginPage() {
                     onBlur={e => e.target.style.borderColor=error?T.danger:T.border}
                   />
                   {error && <div style={{ fontSize:12, color:T.danger }}>{error}</div>}
-                  <button type="submit" disabled={loading} style={{ padding:"12px 0", borderRadius:12, border:"none", background:T.accent, color: isDark?"#0e1117":"#fff", fontSize:14, fontWeight:700, cursor:loading?"wait":"pointer", fontFamily:"inherit", opacity:loading?0.7:1, marginTop:2 }}>
+                  <button type="submit" disabled={loading} style={{ padding:"12px 0", borderRadius:12, border:"none", background:T.accent, color: T.accentText, fontSize:14, fontWeight:700, cursor:loading?"wait":"pointer", fontFamily:"inherit", opacity:loading?0.7:1, marginTop:2 }}>
                     {loading ? "Sending…" : "Send magic link"}
                   </button>
                 </form>
