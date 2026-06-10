@@ -288,7 +288,10 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                 }}>
                   {featured && (
                     <article
+                      tabIndex={0}
                       onClick={() => openByIdx(0)}
+                      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openByIdx(0); } }}
+                      aria-label={featured.title}
                       style={{ gridColumn: isMobile ? "1" : "span 8", background: T.card, borderRadius: 16, overflow: "hidden", cursor: "pointer", transition: "background .2s", position: "relative" }}
                       onMouseEnter={e => e.currentTarget.style.background = T.surface}
                       onMouseLeave={e => e.currentTarget.style.background = T.card}
@@ -328,7 +331,10 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                   <div style={{ gridColumn: isMobile ? "1" : "span 4", display: "flex", flexDirection: "column", gap: isMobile ? 16 : 24 }}>
                     {secondary && (
                       <article
+                        tabIndex={0}
                         onClick={() => openByIdx(1)}
+                        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openByIdx(1); } }}
+                        aria-label={secondary.title}
                         style={{ background: T.card, borderRadius: 16, padding: "24px", cursor: "pointer", flex: "0 0 auto", transition: "background .2s" }}
                         onMouseEnter={e => e.currentTarget.style.background = T.surface}
                         onMouseLeave={e => e.currentTarget.style.background = T.card}
@@ -350,7 +356,10 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
 
                     {tertiary && (
                       <article
+                        tabIndex={0}
                         onClick={() => openByIdx(2)}
+                        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openByIdx(2); } }}
+                        aria-label={tertiary.title}
                         style={{ background: T.surface, borderRadius: 16, padding: "24px", cursor: "pointer", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 160, transition: "background .2s" }}
                         onMouseEnter={e => e.currentTarget.style.background = T.card}
                         onMouseLeave={e => e.currentTarget.style.background = T.surface}
@@ -444,9 +453,14 @@ function BriefingRow({ item, isSelected, relTime, onClick, T }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      aria-label={item.title}
+      aria-pressed={isSelected}
       style={{
         display: "flex", alignItems: "flex-start", gap: 12,
         padding: "12px 20px", cursor: "pointer",
@@ -474,9 +488,13 @@ function ArticleRow({ item, relTime, onClick, T, isMobile }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      aria-label={item.title}
       style={{
         display: "flex", alignItems: isMobile ? "flex-start" : "center",
         justifyContent: "space-between",

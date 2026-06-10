@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.359] — 2026-06-10
+
+- [UX] HomePage BriefingRow, ArticleRow, featured article cards: add tabIndex, onKeyDown, aria-label — keyboard users can now navigate home screen articles with Enter/Space
+
 ## [1.46.358] — 2026-06-10
 
 - [UX] ReadLaterPage Card and ListRow: add role=button, tabIndex, onKeyDown, aria-label — keyboard users can now open saved articles with Enter/Space
