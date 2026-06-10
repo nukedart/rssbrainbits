@@ -205,16 +205,19 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
             <SectionLabel T={T}>Feed Pulse</SectionLabel>
             <div style={{ marginBottom: 32, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
               {feedPulse.map((f, i) => (
-                <div
+                <button
                   key={i}
                   onClick={() => onNavigate(`feed:${f.feedId}`)}
                   onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                   style={{
                     display: "flex", alignItems: "center", gap: 12,
-                    padding: "11px 16px",
+                    padding: "11px 16px", width: "100%",
+                    border: "none", background: "transparent",
                     borderBottom: i < feedPulse.length - 1 ? `1px solid ${T.border}` : "none",
                     cursor: "pointer", transition: "background .1s",
+                    fontFamily: "inherit", textAlign: "left",
+                    WebkitTapHighlightColor: "transparent",
                   }}
                 >
                   <span style={{
@@ -239,7 +242,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                   <div style={{ fontSize: 12, fontWeight: 700, color: T.textSecondary, minWidth: 24, textAlign: "right", flexShrink: 0 }}>
                     {f.count}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </>
@@ -263,16 +266,19 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                 </div>
               ) : (
                 todayLog.map((h, i) => (
-                  <div
+                  <button
                     key={h.url || i}
                     onClick={() => setOpenItem(h)}
                     onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                     style={{
                       display: "flex", alignItems: "center", gap: 10,
-                      padding: "10px 16px",
+                      padding: "10px 16px", width: "100%",
+                      border: "none", background: "transparent",
                       borderBottom: i < todayLog.length - 1 ? `1px solid ${T.border}` : "none",
                       cursor: "pointer", transition: "background .1s",
+                      fontFamily: "inherit", textAlign: "left",
+                      WebkitTapHighlightColor: "transparent",
                     }}
                   >
                     <span style={{ color: T.success, flexShrink: 0 }}><Ic.Check /></span>
@@ -288,7 +294,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                         {h.source}{h.read_at ? ` · ${relTime(h.read_at)}` : ""}
                       </div>
                     </div>
-                  </div>
+                  </button>
                 ))
               )}
             </div>

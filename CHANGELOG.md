@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.335] — 2026-06-10
+
+- [UX] TodayPage: Feed Pulse and Reading Log rows were non-semantic div+onClick elements — converted to buttons for keyboard accessibility and correct semantics
+
 ## [1.46.334] — 2026-06-10
 
 - [Polish] LoginPage: replace isDark?"#0e1117":"#fff" with T.accentText on logo + 2 submit buttons — correct text contrast across all 6 themes
