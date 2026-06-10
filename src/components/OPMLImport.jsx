@@ -293,7 +293,7 @@ export default function OPMLImport({ onImport, onClose }) {
                             display: "flex", alignItems: "center", justifyContent: "center",
                             transition: "background .1s, border-color .1s",
                           }}>
-                            {isSel && <span style={{ color: "#fff", fontSize: 10, lineHeight: 1, fontWeight: 700 }}>✓</span>}
+                            {isSel && <span style={{ color: T.accentText, fontSize: 10, lineHeight: 1, fontWeight: 700 }}>✓</span>}
                           </div>
 
                           {/* Favicon */}
