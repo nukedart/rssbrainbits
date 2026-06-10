@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.344 | UX | InboxPage folder picker: div+onClick → button+role=menuitem, container role=menu — keyboard accessible | `InboxPage.jsx:1769` | — |
 | 2026-06-10 | v1.46.343 | UX | Sidebar FeedContextMenu: role=menu + role=menuitem + aria-label — screen readers identify feed action menu | `Sidebar.jsx:129` | — |
 | 2026-06-10 | v1.46.342 | UX | SearchBar: results → button + role=listbox + role=search — full keyboard-accessible search flow | `SearchBar.jsx:80,128,153` | — |
 | 2026-06-10 | v1.46.341 | UX | PodcastPlayer: mini-player title area → button with aria-expanded — keyboard accessible expand | `PodcastPlayer.jsx:630` | — |

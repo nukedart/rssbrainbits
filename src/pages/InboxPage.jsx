@@ -1766,26 +1766,26 @@ function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, o
 
       {/* Folder picker */}
       {showFolderMenu && (
-        <div ref={menuRef} style={{ position: "absolute", right: 6, top: "100%", zIndex: 100, background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, boxShadow: "0 4px 20px rgba(0,0,0,.14)", minWidth: 152, padding: "4px 0", animation: "fadeInScale .12s ease" }}>
+        <div ref={menuRef} role="menu" aria-label="Move to folder" style={{ position: "absolute", right: 6, top: "100%", zIndex: 100, background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, boxShadow: "0 4px 20px rgba(0,0,0,.14)", minWidth: 152, padding: "4px 0", animation: "fadeInScale .12s ease" }}>
           <div style={{ padding: "5px 12px 6px", fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", borderBottom: `1px solid ${T.border}`, marginBottom: 3 }}>Move to folder</div>
-          <div onClick={e => { e.stopPropagation(); onMoveToFolder(null); setShowFolderMenu(false); }}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", fontSize: 13, cursor: "pointer", color: T.textSecondary }}
+          <button role="menuitem" onClick={e => { e.stopPropagation(); onMoveToFolder(null); setShowFolderMenu(false); }}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", fontSize: 13, cursor: "pointer", color: T.textSecondary, width: "100%", border: "none", background: "transparent", fontFamily: "inherit", textAlign: "left", WebkitTapHighlightColor: "transparent" }}
             onMouseEnter={e => e.currentTarget.style.background = T.surface2}
             onMouseLeave={e => e.currentTarget.style.background = "transparent"}
           >
             <span style={{ width: 7, height: 7, borderRadius: "50%", border: `1px solid ${T.border}`, flexShrink: 0 }} />
             No folder
-          </div>
+          </button>
           {folders.map(f => (
-            <div key={f.id}
+            <button key={f.id} role="menuitem"
               onClick={e => { e.stopPropagation(); onMoveToFolder(f.id); setShowFolderMenu(false); }}
-              style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", fontSize: 13, cursor: "pointer", color: T.text }}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", fontSize: 13, cursor: "pointer", color: T.text, width: "100%", border: "none", background: "transparent", fontFamily: "inherit", textAlign: "left", WebkitTapHighlightColor: "transparent" }}
               onMouseEnter={e => e.currentTarget.style.background = T.surface2}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: FCOLS[f.color] || "#8A9099", flexShrink: 0 }} />
               {f.name}
-            </div>
+            </button>
           ))}
         </div>
       )}

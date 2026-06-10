@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.344] — 2026-06-10
+
+- [UX] InboxPage folder picker: menu items div+onClick → button with role=menuitem; container gets role=menu — keyboard-accessible "move to folder" dropdown
+
 ## [1.46.343] — 2026-06-10
 
 - [UX] Sidebar FeedContextMenu: add role=menu, role=menuitem, aria-label — screen readers correctly identify the feed action menu and its items
