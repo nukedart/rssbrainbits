@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.376 | Perf | index.html: preconnect to Supabase origin — removes TCP/TLS latency on auth check fired every page load | `index.html` | — |
 | 2026-06-10 | v1.46.375 | Perf | ContentViewer: lazy+async on all article body images via HTML post-processing; remaining favicon/artwork fixes | `ContentViewer.jsx:92`, `FeedItem.jsx:220`, `AddModal.jsx:298` | — |
 | 2026-06-10 | v1.46.374 | Perf | FeedItem progress bars: transform:scaleX() replaces width animation — GPU-composited, no layout reflow | `FeedItem.jsx:231,273,537` | — |
 | 2026-06-10 | v1.46.373 | Perf | Add loading=lazy decoding=async to all 17 favicon/thumbnail images across list contexts | `FeedItem.jsx:267,548`, `Sidebar.jsx:206`, `InboxPage.jsx:1733`, `MobileFeedDrawer.jsx:39`, `+9 more` | — |

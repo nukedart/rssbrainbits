@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.376] — 2026-06-10
+
+- [Perf] index.html: add preconnect for Supabase origin — eliminates TCP/TLS handshake latency on the auth check that fires on every page load
+
 ## [1.46.375] — 2026-06-10
 
 - [Perf] ContentViewer: inject loading="lazy" decoding="async" into all article body images via HTML post-processing — defers every in-article image fetch until it scrolls into view
