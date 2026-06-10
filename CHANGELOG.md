@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.295] — 2026-06-09
+
+- [Perf] Memoized `HighlightedText` token/segment computation — bionic text split and highlight interval matching now run only when text or highlights change, not on every scroll re-render
+
 ## [1.46.294] — 2026-06-09
 
 - [Perf] Memoized `injectHtmlHighlights` result — skips full-article regex replacement on every scroll/state re-render; only reruns when article HTML or highlight list changes

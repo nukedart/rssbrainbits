@@ -817,18 +817,42 @@ function injectHtmlHighlights(html, highlights, colorDefs) {
 
 // ── HighlightedText — clean version without TTS word spans ───
 function HighlightedText({ text, highlights, onClickHighlight, bionic = false }) {
+  const hasHighlights = highlights && highlights.length > 0;
+
+  const tokens = useMemo(() => {
+    if (!text || !bionic || hasHighlights) return null;
+    return text.split(/(\s+)/);
+  }, [text, bionic, hasHighlights]);
+
+  const segments = useMemo(() => {
+    if (!text || !hasHighlights) return null;
+    const intervals = [];
+    highlights.forEach((h) => {
+      const idx = text.indexOf(h.passage);
+      if (idx !== -1) intervals.push({ start: idx, end: idx + h.passage.length, highlight: h });
+    });
+    intervals.sort((a, b) => a.start - b.start);
+    const segs = [];
+    let cursor = 0;
+    intervals.forEach(({ start, end, highlight }) => {
+      if (start < cursor) return;
+      if (start > cursor) segs.push({ type: "text", content: text.slice(cursor, start) });
+      segs.push({ type: "highlight", content: text.slice(start, end), highlight });
+      cursor = end;
+    });
+    if (cursor < text.length) segs.push({ type: "text", content: text.slice(cursor) });
+    return segs;
+  }, [text, highlights, hasHighlights]);
+
   if (!text) return null;
 
-  // Bionic: bold first ~45% of each word
   function BionicSpan({ word }) {
     const n = Math.max(1, Math.ceil(word.length * 0.45));
     return <><strong style={{ fontWeight: 700 }}>{word.slice(0, n)}</strong>{word.slice(n)}</>;
   }
 
-  // Render plain text with optional bionic mode (no highlights)
-  if (!highlights || highlights.length === 0) {
+  if (!hasHighlights) {
     if (!bionic) return <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>;
-    const tokens = text.split(/(\s+)/);
     return (
       <span style={{ whiteSpace: "pre-wrap" }}>
         {tokens.map((t, i) => /\S/.test(t) ? <BionicSpan key={i} word={t} /> : t)}
@@ -836,26 +860,9 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
     );
   }
 
-  const intervals = [];
-  highlights.forEach((h) => {
-    const idx = text.indexOf(h.passage);
-    if (idx !== -1) intervals.push({ start: idx, end: idx + h.passage.length, highlight: h });
-  });
-  intervals.sort((a, b) => a.start - b.start);
-
-  const segments = [];
-  let cursor = 0;
-  intervals.forEach(({ start, end, highlight }) => {
-    if (start < cursor) return;
-    if (start > cursor) segments.push({ type: "text", content: text.slice(cursor, start) });
-    segments.push({ type: "highlight", content: text.slice(start, end), highlight });
-    cursor = end;
-  });
-  if (cursor < text.length) segments.push({ type: "text", content: text.slice(cursor) });
-
   return (
     <span style={{ whiteSpace: "pre-wrap" }}>
-      {segments.map((seg, i) => {
+      {(segments || []).map((seg, i) => {
         if (seg.type === "text") return <span key={i}>{seg.content}</span>;
         const colorDef = HIGHLIGHT_COLORS.find((c) => c.id === seg.highlight.color) || HIGHLIGHT_COLORS[0];
         return (
