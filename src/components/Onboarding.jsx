@@ -55,7 +55,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
       position: "fixed", inset: 0, background: T.overlay, zIndex: 900,
       display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
     }}>
-      <div style={{
+      <div role="dialog" aria-modal="true" aria-label="Welcome to Feedbox" style={{
         background: T.card, borderRadius: 20, padding: "28px 24px 24px",
         width: "100%", maxWidth: 520, maxHeight: "90vh",
         display: "flex", flexDirection: "column", gap: 0,

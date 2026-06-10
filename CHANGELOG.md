@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.402] — 2026-06-10
+
+- [UX] Onboarding: add role=dialog + aria-modal + aria-label — screen readers announce the welcome dialog when it opens for new users
+
 ## [1.46.401] — 2026-06-10
 
 - [UX] SmartFeedModal + FolderModal: wire up visual labels to inputs via htmlFor/id — screen readers now read "Name" and "Keywords" labels when fields are focused
