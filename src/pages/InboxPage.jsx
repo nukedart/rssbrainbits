@@ -982,7 +982,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
           {/* Mark all read — desktop only; moved to bottom bar on mobile */}
           {unreadCount > 0 && !searchOpen && !isMobile && (
-            <button onClick={handleMarkAllRead} title="Mark all as read"
+            <button onClick={handleMarkAllRead} title="Mark all as read" aria-label="Mark all as read"
               style={{
                 background: "transparent", border: "none", borderRadius: 9,
                 width: isMobile ? 40 : 30, height: isMobile ? 40 : 30, cursor: "pointer", flexShrink: 0,
@@ -1008,6 +1008,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             <button
               onClick={() => { const next = !searchOpen; setSearchOpen(next); if (next) setTimeout(() => searchBarRef.current?.focusInput?.(), 50); else setLiveSearch(""); }}
               title="Search"
+              aria-label="Search"
               style={{
                 background: searchOpen ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
                 width: 30, height: 30, cursor: "pointer", flexShrink: 0,
@@ -1044,6 +1045,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             <button
               onClick={() => setViewMenuOpen(v => !v)}
               title="View options"
+              aria-label="View options"
               style={{
                 width: 30, height: 30, borderRadius: 8, border: "none",
                 background: viewMenuOpen ? T.surface2 : "transparent",

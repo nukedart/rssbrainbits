@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.309] — 2026-06-09
+
+- [Polish] InboxPage: add aria-label to mark-all-read, search, and view-options buttons — improves screen reader and voice control accessibility
+
 ## [1.46.308] — 2026-06-09
 
 - [Polish] ContentViewer: add aria-label to 5 icon-only buttons (prev/next, expand, reading prefs, open original, back to top) — improves screen reader and voice control accessibility
