@@ -5,21 +5,28 @@ import { useState, useEffect } from "react";
 // tablet:  768–1023px — icon sidebar, no sources panel
 // desktop: ≥ 1024px — full sidebar, all panels visible
 
+function getBreakpoint(w) {
+  if (w < 768) return "mobile";
+  if (w < 1024) return "tablet";
+  return "desktop";
+}
+
 export function useBreakpoint() {
-  const [width, setWidth] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 1280
+  const [bp, setBp] = useState(() =>
+    getBreakpoint(typeof window !== "undefined" ? window.innerWidth : 1280)
   );
 
   useEffect(() => {
-    function onResize() { setWidth(window.innerWidth); }
+    function onResize() {
+      setBp(prev => { const next = getBreakpoint(window.innerWidth); return prev === next ? prev : next; });
+    }
     window.addEventListener("resize", onResize, { passive: true });
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
   return {
-    width,
-    isMobile:  width < 768,
-    isTablet:  width >= 768 && width < 1024,
-    isDesktop: width >= 1024,
+    isMobile:  bp === "mobile",
+    isTablet:  bp === "tablet",
+    isDesktop: bp === "desktop",
   };
 }

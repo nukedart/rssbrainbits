@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.319] — 2026-06-09
+
+- [Perf] useBreakpoint: track breakpoint category string instead of raw pixel width — eliminates unnecessary re-renders in 10+ components on every resize event
+
 ## [1.46.318] — 2026-06-09
 
 - [Polish] App: replace main content div with <main> landmark; add aria-label="Main navigation" to Sidebar nav and BottomNav — improves screen reader landmark navigation
