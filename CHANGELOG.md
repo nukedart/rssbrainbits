@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.306] — 2026-06-09
+
+- [UX] Remove window.confirm from "mark all read" — marking as read is reversible, toast provides sufficient feedback, eliminating the extra click
+
 ## [1.46.305] — 2026-06-09
 
 - [Polish] ContentViewer article date: shows "2h ago" / "3d ago" for recent articles instead of full date — consistent with FeedItem list display

@@ -600,7 +600,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   async function handleMarkAllRead() {
     const urlsToMark = baseItems.map(i => i.url).filter(u => !readUrls.has(u));
     if (urlsToMark.length === 0) return;
-    if (!window.confirm(`Mark all ${urlsToMark.length} article${urlsToMark.length !== 1 ? "s" : ""} as read?`)) return;
     await markAllRead(user.id, urlsToMark);
     setReadUrls(prev => {
       const next = new Set([...prev, ...urlsToMark]);

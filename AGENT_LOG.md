@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.306 | UX | Remove window.confirm from mark-all-read — reversible action, toast is sufficient feedback | `InboxPage.jsx:603` | — |
 | 2026-06-09 | v1.46.305 | Polish | ContentViewer article date: relative format for recent (<7d) — consistent with FeedItem list display | `ContentViewer.jsx:23,709` | — |
 | 2026-06-09 | v1.46.304 | UX | ContentViewer close button: aria-label="Close article" — screen reader + keyboard nav accessibility | `ContentViewer.jsx:397` | — |
 | 2026-06-09 | v1.46.303 | Fix | Toast timer cleared on rapid successive calls — no early dismiss when save+bookmark fire together | `InboxPage.jsx:671` | — |
