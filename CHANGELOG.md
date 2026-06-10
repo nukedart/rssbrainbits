@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.352] — 2026-06-10
+
+- [UX] CardsPage "New card" modal: add role=dialog + aria-modal + aria-label — screen readers treat the card creation panel as a modal dialog
+
 ## [1.46.351] — 2026-06-10
 
 - [UX] InboxPage: display sheet gets role=dialog+aria-modal; toast + OPML progress get role=status+aria-live — screen readers announce toasts and modal state

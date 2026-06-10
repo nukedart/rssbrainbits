@@ -376,7 +376,7 @@ export default function CardsPage() {
               padding: 20, animation: "fadeIn .15s ease",
             }}
           >
-            <div style={{
+            <div role="dialog" aria-modal="true" aria-label="New card" style={{
               background: T.card, borderRadius: 18, padding: "24px",
               width: "100%", maxWidth: 500, boxShadow: "0 24px 64px rgba(0,0,0,.3)",
               display: "flex", flexDirection: "column", gap: 16,
