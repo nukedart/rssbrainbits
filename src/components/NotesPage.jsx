@@ -228,8 +228,14 @@ function HighlightCard({ highlight, onDelete, onEdit, onReread, T, isMobile }) {
           </div>
         </div>
       ) : highlight.note ? (
-        <div onClick={e => { e.stopPropagation(); setEditing(true); setNoteVal(highlight.note); }}
-          style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, background: T.surface, borderRadius: 6, padding: "6px 8px", marginBottom: 10, cursor: "text" }}>
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Edit note"
+          onClick={e => { e.stopPropagation(); setEditing(true); setNoteVal(highlight.note); }}
+          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); setEditing(true); setNoteVal(highlight.note); } }}
+          style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, background: T.surface, borderRadius: 6, padding: "6px 8px", marginBottom: 10, cursor: "text" }}
+        >
           <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, display: "block", marginBottom: 2 }}>Note</span>
           {highlight.note}
         </div>

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.347] — 2026-06-10
+
+- [UX] NotesPage NoteCard: note-display div gets role=button + tabIndex + keyboard handler — keyboard users can now edit notes
+
 ## [1.46.346] — 2026-06-10
 
 - [Polish] BottomNav CountBadge: color="#fff" → T.accentText — badge text readable in Distilled theme (light blue accent)
