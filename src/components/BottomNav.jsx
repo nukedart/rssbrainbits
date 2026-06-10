@@ -130,7 +130,7 @@ export default function BottomNav({
   });
 
   return (
-    <nav style={{ ...pillBase, padding: "0 6px" }}>
+    <nav aria-label="Main navigation" style={{ ...pillBase, padding: "0 6px" }}>
       {NAV_ITEMS.map(({ id, Icon, label, special }) => {
 
         if (special === "feeds") {

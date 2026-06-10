@@ -298,7 +298,7 @@ function AppShell() {
         onUnsubscribeFeed={async (feedId) => { await deleteFeed(feedId); handleFeedDeleted(feedId); }}
         onMarkFeedAllRead={handleMarkFeedAllRead}
       />
-      <div
+      <main
         onTouchStart={onEdgeTouchStart}
         onTouchMove={onEdgeTouchMove}
         onTouchEnd={onEdgeTouchEnd}
@@ -328,7 +328,7 @@ function AppShell() {
             onMouseLeave={e => { e.currentTarget.style.transform="scale(1)"; e.currentTarget.style.boxShadow=`0 4px 16px ${T.accent}55`; }}
           >+</button>
         )}
-      </div>
+      </main>
 
       {editingSF && (
         <Suspense fallback={null}>

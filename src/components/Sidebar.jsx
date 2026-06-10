@@ -472,7 +472,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
       </div>
 
       {/* ── Top nav ── */}
-      <nav style={{ padding: collapsed?"0 4px":"0 6px", display:"flex", flexDirection:"column", gap:1, flexShrink:0, marginBottom:2 }}>
+      <nav aria-label="Main navigation" style={{ padding: collapsed?"0 4px":"0 6px", display:"flex", flexDirection:"column", gap:1, flexShrink:0, marginBottom:2 }}>
         {PRIMARY_NAV.map(({ id, Icon, label, badge }) => (
           <NavItem key={id} id={id} Icon={Icon} label={label}
             active={active} badge={badge}
