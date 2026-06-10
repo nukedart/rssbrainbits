@@ -563,7 +563,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
                 }}>
                   <div style={{
                     width: 36, height: 36, borderRadius: "50%", background: bg,
-                    border: `2px solid ${active ? T.accent : "rgba(0,0,0,0.12)"}`,
+                    border: `2px solid ${active ? T.accent : T.border}`,
                     boxShadow: active ? `0 0 0 3px ${T.bg}, 0 0 0 5px ${T.accent}` : "none",
                     position: "relative", transition: "box-shadow .15s", flexShrink: 0,
                   }}>
