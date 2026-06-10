@@ -1028,7 +1028,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
 
           {/* Refresh button — desktop only; mobile uses pull-to-refresh */}
-          {!isMobile && <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} style={{
+          {!isMobile && <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} aria-label={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)} minutes ago` : "Refresh feeds"} style={{
             background: "transparent", border: "none", borderRadius: 8,
             width: 30, height: 30, cursor: "pointer", flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",

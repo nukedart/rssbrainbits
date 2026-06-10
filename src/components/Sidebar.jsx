@@ -375,7 +375,7 @@ function SectionLabel({ label, action, actionTitle, T }) {
     <div style={{ display:"flex", alignItems:"center", padding:"8px 10px 4px", flexShrink:0 }}>
       <span style={{ flex:1, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>{label}</span>
       {action && (
-        <button onClick={action} title={actionTitle}
+        <button onClick={action} title={actionTitle} aria-label={actionTitle}
           style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 3px", borderRadius:4, transition:"color .1s" }}
           onMouseEnter={e => e.currentTarget.style.color=T.accent}
           onMouseLeave={e => e.currentTarget.style.color=T.textTertiary}

@@ -1104,7 +1104,7 @@ function FolderRow({ folder, feedCount, T, onUpdate, onDelete, onMoveUp, onMoveD
         {showColors && (
           <div style={{ position: "absolute", top: 26, left: 0, display: "flex", gap: 5, background: T.card, border: `1px solid ${T.borderStrong}`, borderRadius: 10, padding: "7px 9px", boxShadow: "0 4px 16px rgba(0,0,0,.15)", zIndex: 20 }}>
             {Object.entries(FOLDER_COLORS).map(([key, hex]) => (
-              <button key={key} onClick={() => handleColorChange(key)} title={key}
+              <button key={key} onClick={() => handleColorChange(key)} title={key} aria-label={`Set folder color to ${key}`} aria-pressed={folder.color === key}
                 style={{ width: 18, height: 18, borderRadius: "50%", background: hex, border: folder.color === key ? `2px solid ${T.text}` : "2px solid transparent", cursor: "pointer", transition: "border .1s" }}
               />
             ))}

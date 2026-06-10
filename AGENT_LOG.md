@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.372 | UX | Sidebar+MobileFeedDrawer+InboxPage+SecondaryPages: aria-label on icon-only title-only buttons | `Sidebar.jsx:378`, `MobileFeedDrawer.jsx:111`, `InboxPage.jsx:1031`, `SecondaryPages.jsx:1107` | — |
 | 2026-06-10 | v1.46.371 | UX | PodcastPlayer sleep timer buttons: aria-label on both mini+expanded variants | `PodcastPlayer.jsx:497,624` | — |
 | 2026-06-10 | v1.46.370 | UX | PodcastPlayer SeekBar: update aria-valuenow in RAF loop — live playback position for screen readers | `PodcastPlayer.jsx:44` | — |
 | 2026-06-10 | v1.46.369 | UX | InboxPage SourceItem: role=button+tabIndex+onKeyDown+aria-label+aria-pressed — desktop source list keyboard nav | `InboxPage.jsx:1703` | — |

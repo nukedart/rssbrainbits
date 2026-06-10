@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.372] — 2026-06-10
+
+- [UX] Sidebar/MobileFeedDrawer/InboxPage/SecondaryPages: add aria-label to icon-only buttons that had only title attributes — complete screen reader label coverage
+
 ## [1.46.371] — 2026-06-10
 
 - [UX] PodcastPlayer sleep timer buttons: add aria-label to both mini and expanded player variants
