@@ -18,14 +18,12 @@ import SearchBar from "../components/SearchBar";
 const MobileSearchOverlay = lazy(() => import("../components/MobileSearchOverlay"));
 import { track } from "../lib/analytics";
 
-function dateBucket(dateStr) {
+function dateBucket(dateStr, todayTs) {
   if (!dateStr) return null;
   try {
     const d = new Date(dateStr);
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const itemStart  = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const diffDays = Math.round((todayStart - itemStart) / 86400000);
+    const itemTs = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const diffDays = Math.round((todayTs - itemTs) / 86400000);
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7)   return d.toLocaleDateString("en-US", { weekday: "long" });
@@ -1267,8 +1265,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           ) : (() => {
             const rows = [];
             let lastBucket = null;
+            const n = new Date(); const todayTs = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
             baseItems.slice(0, displayedCount).forEach((item, i) => {
-              const bucket = dateBucket(item.date);
+              const bucket = dateBucket(item.date, todayTs);
               if (bucket && bucket !== lastBucket) {
                 lastBucket = bucket;
                 rows.push(

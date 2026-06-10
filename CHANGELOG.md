@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.290] — 2026-06-09
+
+- [Perf] `dateBucket` now accepts a pre-computed `todayTs` — eliminates 2× `new Date()` per list item (120+ allocations saved per render with a full page of articles)
+
 ## [1.46.289] — 2026-06-09
 
 - [Perf] Memoized `unreadCount` in InboxPage — skips O(n) item filter on renders caused by cursor movement, modal state, and other non-data interactions
