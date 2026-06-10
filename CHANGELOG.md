@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.308] — 2026-06-09
+
+- [Polish] ContentViewer: add aria-label to 5 icon-only buttons (prev/next, expand, reading prefs, open original, back to top) — improves screen reader and voice control accessibility
+
 ## [1.46.307] — 2026-06-09
 
 - [Perf] HomePage: memoize dateLabel, topSources, totalUnread, and folder unread map — eliminates redundant re-computation on every render

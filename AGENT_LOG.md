@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.308 | Polish | ContentViewer: aria-label on 5 icon-only buttons (prev/next, expand, reading prefs, open original, back to top) | `ContentViewer.jsx:419,443,452,474,549,759` | — |
 | 2026-06-09 | v1.46.307 | Perf | HomePage: memoize dateLabel, topSources, totalUnread, folderUnreadMap | `HomePage.jsx:82-107` | — |
 | 2026-06-09 | v1.46.306 | UX | Remove window.confirm from mark-all-read — reversible action, toast is sufficient feedback | `InboxPage.jsx:603` | — |
 | 2026-06-09 | v1.46.305 | Polish | ContentViewer article date: relative format for recent (<7d) — consistent with FeedItem list display | `ContentViewer.jsx:23,709` | — |
