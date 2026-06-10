@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.416] — 2026-06-10
+
+- [UX] Icon-only close/remove buttons (HighlightsDrawer tag ×, NotePanel tag ×, ArticleNotesPanel ✕) now have aria-labels
+
 ## [1.46.415] — 2026-06-10
 
 - [UX] Transcript highlight picker buttons (color swatches + cancel) now have aria-labels for screen reader accessibility

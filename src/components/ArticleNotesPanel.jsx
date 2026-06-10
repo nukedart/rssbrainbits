@@ -106,7 +106,7 @@ function PanelContent({ articleTitle, notes, creating, setCreating, newTitle, se
       <div style={{ padding: "0 0 12px", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: T.text, flex: 1 }}>Article Notes</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: T.textTertiary, padding: "2px 6px", lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} aria-label="Close article notes" style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: T.textTertiary, padding: "2px 6px", lineHeight: 1 }}>✕</button>
         </div>
         {articleTitle && (
           <div style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>

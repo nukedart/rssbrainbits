@@ -73,7 +73,7 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
               display: "inline-flex", alignItems: "center", gap: 5,
             }}>
               {tag}
-              <button onClick={() => removeTag(tag)} style={{ background: "none", border: "none", cursor: "pointer", color: T.accent, fontSize: 13, lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => removeTag(tag)} aria-label={`Remove theme "${tag}"`} style={{ background: "none", border: "none", cursor: "pointer", color: T.accent, fontSize: 13, lineHeight: 1, padding: 0 }}>×</button>
             </span>
           ))}
           <input

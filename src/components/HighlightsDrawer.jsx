@@ -94,7 +94,7 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
                         {(h.tags || []).map(tag => (
                           <span key={tag} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 600, padding: "2px 7px 2px 8px", borderRadius: 20, background: T.accentSurface, color: T.accent, border: `1px solid ${T.accent}44` }}>
                             {tag}
-                            <button onClick={() => removeTag(h, tag)} style={{ background: "none", border: "none", cursor: "pointer", color: T.accent, padding: 0, lineHeight: 1, fontSize: 12, display: "flex", alignItems: "center" }}>×</button>
+                            <button onClick={() => removeTag(h, tag)} aria-label={`Remove theme "${tag}"`} style={{ background: "none", border: "none", cursor: "pointer", color: T.accent, padding: 0, lineHeight: 1, fontSize: 12, display: "flex", alignItems: "center" }}>×</button>
                           </span>
                         ))}
                         {editingTagId === h.id ? (
