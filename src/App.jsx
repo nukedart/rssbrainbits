@@ -281,6 +281,7 @@ function AppShell() {
         active={page}
         onNavigate={navigateTo}
         unreadCount={unreadCount}
+        dueCount={dueCount}
         feedErrorCount={feedErrorCount}
         feedUnreadCounts={feedUnreadCounts}
         smartFeeds={smartFeeds}

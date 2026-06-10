@@ -375,7 +375,7 @@ function SectionLabel({ label, action, actionTitle, T }) {
   );
 }
 
-export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCount=0, feedUnreadCounts={}, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, onMoveFeedToFolder, isOpen=true, onToggle, onAddSource, onUnsubscribeFeed, onMarkFeedAllRead }) {
+export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0, feedErrorCount=0, feedUnreadCounts={}, smartFeeds=[], onAddSmartFeed, onEditSmartFeed, folders=[], feeds=[], onAddFolder, onEditFolder, onMoveFeedToFolder, isOpen=true, onToggle, onAddSource, onUnsubscribeFeed, onMarkFeedAllRead }) {
   const { T, theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { isTablet, isMobile } = useBreakpoint();
@@ -420,7 +420,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, feedErrorCo
   ];
   const LIBRARY_NAV = [
     { id:"readlater", Icon:Icons.ReadLater, label:"Saved",   badge: 0 },
-    { id:"review",    Icon:Icons.Review,    label:"Review",  badge: 0 },
+    { id:"review",    Icon:Icons.Review,    label:"Review",  badge: dueCount },
     { id:"cards",     Icon:Icons.Cards,     label:"Cards",   badge: 0 },
   ];
 

@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.286 | Nav | Sidebar Review badge shows due count — matches BottomNav parity; desktop users see pending reviews | `Sidebar.jsx:421`, `App.jsx:281` | — |
 | 2026-06-09 | v1.46.285 | Perf | Memoized filteredItems + feedColorMap with useMemo — skips expensive array ops on UI-only re-renders | `InboxPage.jsx:290` | — |
 | 2026-06-09 | v1.46.284 | Perf | Removed unused `lucide-react` dep — never imported, 2.1MB node_modules savings | `package.json`, `package-lock.json` | — |
 | 2026-06-09 | v1.46.283 | Perf | Removed dead CSS — 5 unused @keyframes + 3 unused CSS classes from index.css | `index.css` | — |
