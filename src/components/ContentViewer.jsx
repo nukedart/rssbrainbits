@@ -883,7 +883,11 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
         const colorDef = HIGHLIGHT_COLORS.find((c) => c.id === seg.highlight.color) || HIGHLIGHT_COLORS[0];
         return (
           <mark key={i}
+            role="button"
+            tabIndex={0}
             onClick={() => onClickHighlight(seg.highlight)}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClickHighlight(seg.highlight); } }}
+            aria-label={seg.highlight.note ? `Highlight with note: ${seg.highlight.note}` : "Highlight — press Enter to add a note"}
             title={seg.highlight.note ? "Note: " + seg.highlight.note : "Click to add a note"}
             style={{
               backgroundColor: colorDef.bg, borderRadius: 3, padding: "1px 0",

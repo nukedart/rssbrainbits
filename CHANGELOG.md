@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.362] — 2026-06-10
+
+- [UX] ContentViewer highlight marks: add role=button, tabIndex, onKeyDown, aria-label — keyboard users can navigate to highlights and add notes by pressing Enter
+
 ## [1.46.361] — 2026-06-10
 
 - [UX] FeedItem ListItem+CardItem: add role=button, tabIndex, onKeyDown, aria-label — every inbox article is now keyboard-navigable
