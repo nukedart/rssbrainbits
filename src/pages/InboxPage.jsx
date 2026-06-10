@@ -1756,7 +1756,7 @@ function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, o
           <span style={{ display: "flex", gap: 1, flexShrink: 0 }}>
             {onMoveToFolder && folders.length > 0 && (
               <button onClick={e => { e.stopPropagation(); setShowFolderMenu(v => !v); }}
-                title="Move to folder"
+                aria-label="Move to folder"
                 style={{ background: "none", border: "none", color: T.textTertiary, cursor: "pointer", fontSize: 12, padding: "1px 4px", borderRadius: 4, lineHeight: 1, fontFamily: "inherit" }}
                 onMouseEnter={e => e.currentTarget.style.color = T.accent}
                 onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
@@ -1764,10 +1764,12 @@ function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, o
             )}
             {error && (
               <button onClick={e => { e.stopPropagation(); setShowError(v => !v); }}
+                aria-label="Show feed error"
                 style={{ background: `${T.danger}18`, border: "none", borderRadius: 4, color: T.danger, cursor: "pointer", fontSize: 10, fontWeight: 700, padding: "1px 4px", fontFamily: "inherit" }}>!</button>
             )}
             {onDelete && (
               <button onClick={e => { e.stopPropagation(); onDelete(); }}
+                aria-label="Remove feed"
                 style={{ background: "none", border: "none", color: T.textTertiary, cursor: "pointer", fontSize: 14, padding: "0 3px", lineHeight: 1, fontFamily: "inherit" }}
                 onMouseEnter={e => e.currentTarget.style.color = T.danger}
                 onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}

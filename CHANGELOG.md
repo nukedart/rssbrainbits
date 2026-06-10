@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.419] — 2026-06-10
+
+- [UX] Feed list action buttons (move to folder ⤴, error !, remove ×) in InboxPage now have aria-labels
+
 ## [1.46.418] — 2026-06-10
 
 - [UX] TagsInput remove-tag × button and NotesPage dismiss-AI-Distill ✕ button now have aria-labels
