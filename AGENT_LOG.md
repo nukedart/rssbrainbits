@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.380 | UX | BottomNav+Sidebar: aria-current on Feeds button and smart feed rows; aria-label on catch-up+smart feed buttons | `BottomNav.jsx:143`, `Sidebar.jsx:511,349` | — |
 | 2026-06-10 | v1.46.379 | Nav | MobileFeedDrawer: add built-in Catch Up to smart feeds section — closes desktop/mobile nav parity gap | `MobileFeedDrawer.jsx:336` | — |
 | 2026-06-10 | v1.46.378 | Nav | Sidebar: Stats link for all users, not just admins — closes mobile/desktop parity gap | `Sidebar.jsx:591` | — |
 | 2026-06-10 | v1.46.377 | Nav | Sidebar: add History to desktop library nav — closes mobile/desktop navigation parity gap | `Sidebar.jsx:435` | — |

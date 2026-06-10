@@ -140,6 +140,7 @@ export default function BottomNav({
               key="feeds"
               onClick={onOpenFeeds}
               aria-label="Open feeds"
+              aria-current={isActive ? "page" : undefined}
               style={btnStyle(isActive, false)}
               onTouchStart={e => { e.currentTarget.style.opacity = "0.5"; }}
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}

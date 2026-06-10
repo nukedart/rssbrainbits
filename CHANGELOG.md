@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.380] — 2026-06-10
+
+- [UX] BottomNav/Sidebar: add aria-current="page" to Feeds button and smart feed rows; add aria-label to Sidebar catch-up and smart feed buttons
+
 ## [1.46.379] — 2026-06-10
 
 - [Nav] MobileFeedDrawer: add built-in Catch Up item to Smart Feeds section — was in desktop sidebar but missing from mobile feed drawer

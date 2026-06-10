@@ -348,6 +348,8 @@ function SmartRow({ sf, active, onNavigate, onEdit, collapsed, T }) {
       <button
         onClick={() => onNavigate(`smart:${sf.id}`)}
         title={collapsed ? sf.name : undefined}
+        aria-label={sf.name}
+        aria-current={isActive ? "page" : undefined}
         style={{ display:"flex", alignItems:"center", gap:7, flex:1, padding: collapsed?"7px 6px":"5px 10px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed?"center":"flex-start" }}
       >
         <span style={{ width:7, height:7, borderRadius:"50%", background:color, flexShrink:0 }} />
@@ -511,6 +513,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
               <button
                 onClick={() => onNavigate("catch-up")}
                 title={collapsed ? "Catch up" : undefined}
+                aria-label="Catch up"
+                aria-current={active === "catch-up" ? "page" : undefined}
                 style={{ display:"flex", alignItems:"center", gap:7, flex:1, padding: collapsed?"7px 6px":"5px 10px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed?"center":"flex-start" }}
               >
                 <span style={{ width:7, height:7, borderRadius:"50%", background: active==="catch-up" ? T.accent : T.textTertiary, flexShrink:0, opacity: active==="catch-up" ? 1 : 0.6 }} />
