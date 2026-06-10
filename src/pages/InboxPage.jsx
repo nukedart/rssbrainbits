@@ -1081,7 +1081,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                     {[{ mode: "list", label: "List", icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg> },
                       { mode: "card", label: "Cards", icon: <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg> }
                     ].map(({ mode, label, icon }) => (
-                      <button key={mode} onClick={() => toggleViewMode(mode)} style={{
+                      <button key={mode} onClick={() => toggleViewMode(mode)} aria-pressed={viewMode === mode} style={{
                         flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                         padding: "6px 8px", borderRadius: 8, border: "none",
                         background: viewMode === mode ? T.accentSurface : T.surface,
@@ -1342,7 +1342,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               <div style={{ fontSize:12, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".07em", marginBottom:10 }}>Images</div>
               <div style={{ display:"flex", gap:6 }}>
                 {[["left","Left"],["right","Right"],["none","None"]].map(([val,label]) => (
-                  <button key={val} onClick={() => updateDisplayPref("imgPosition", val)} style={{
+                  <button key={val} onClick={() => updateDisplayPref("imgPosition", val)} aria-pressed={displayPrefs.imgPosition===val} style={{
                     flex:1, padding:"10px 0", borderRadius:10, border:"none",
                     background: displayPrefs.imgPosition===val ? T.accentSurface : T.surface,
                     color: displayPrefs.imgPosition===val ? T.accent : T.textSecondary,

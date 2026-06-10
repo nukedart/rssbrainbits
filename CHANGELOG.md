@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.422] — 2026-06-10
+
+- [UX] InboxPage display sheet image-position and view-mode toggle buttons now report current selection via aria-pressed
+
 ## [1.46.421] — 2026-06-10
 
 - [UX] Clear search × buttons in SearchBar and CardsPage now have aria-label="Clear search"
