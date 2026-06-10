@@ -44,6 +44,7 @@ function SeekBar({ audioRef, T, light }) {
           if (thumbRef.current) thumbRef.current.style.left    = `${pct * 100}%`;
           if (ctRef.current)    ctRef.current.textContent      = fmt(ct);
           if (durRef.current)   durRef.current.textContent     = fmt(dur);
+          if (trackRef.current) trackRef.current.setAttribute("aria-valuenow", Math.round(pct * 100));
         }
       }
       raf = requestAnimationFrame(tick);

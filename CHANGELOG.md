@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.370] — 2026-06-10
+
+- [UX] PodcastPlayer SeekBar: update aria-valuenow in RAF loop — screen readers now report live playback position
+
 ## [1.46.369] — 2026-06-10
 
 - [UX] InboxPage SourceItem: add role=button, tabIndex, onKeyDown, aria-label, aria-pressed — desktop source list keyboard-navigable
