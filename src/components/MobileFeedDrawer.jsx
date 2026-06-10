@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "../hooks/useTheme";
 
 const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -154,8 +154,8 @@ export default function MobileFeedDrawer({
     setDragY(0);
   }
 
-  const uncategorized = feeds.filter(f => !f.folder_id);
-  const totalUnread = Object.values(feedUnreadCounts).reduce((s, n) => s + n, 0);
+  const uncategorized = useMemo(() => feeds.filter(f => !f.folder_id), [feeds]);
+  const totalUnread = useMemo(() => Object.values(feedUnreadCounts).reduce((s, n) => s + n, 0), [feedUnreadCounts]);
 
   return (
     <>

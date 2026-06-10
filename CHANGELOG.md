@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.314] — 2026-06-09
+
+- [Perf] MobileFeedDrawer: memoize uncategorized feeds and totalUnread — avoids recomputation during drag-to-dismiss gestures
+
 ## [1.46.313] — 2026-06-09
 
 - [Polish] Sidebar: aria-label + aria-pressed on theme toggle buttons; aria-label on smart feed edit button
