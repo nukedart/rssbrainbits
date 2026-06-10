@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.369 | UX | InboxPage SourceItem: role=button+tabIndex+onKeyDown+aria-label+aria-pressed — desktop source list keyboard nav | `InboxPage.jsx:1703` | — |
 | 2026-06-10 | v1.46.368 | UX | NotesPage tag spans: role=button+tabIndex+onKeyDown+aria-label — keyboard tag filter | `NotesPage.jsx:294` | — |
 | 2026-06-10 | v1.46.367 | UX | MobileSearchOverlay result rows: role=button+tabIndex+onKeyDown+aria-label — keyboard search result selection | `MobileSearchOverlay.jsx:223` | — |
 | 2026-06-10 | v1.46.366 | UX | PodcastPlayer SeekBar: role=slider+tabIndex+onKeyDown(±5s, Home/End) — keyboard podcast seeking | `PodcastPlayer.jsx:112` | — |

@@ -1702,7 +1702,12 @@ function SourceItem({ label, icon, feedUrl, feedId, active, onClick, onDelete, o
   return (
     <div style={{ position: "relative" }}>
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={label}
+        aria-pressed={active}
         onClick={onClick}
+        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick?.(); } }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{

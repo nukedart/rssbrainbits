@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.369] — 2026-06-10
+
+- [UX] InboxPage SourceItem: add role=button, tabIndex, onKeyDown, aria-label, aria-pressed — desktop source list keyboard-navigable
+
 ## [1.46.368] — 2026-06-10
 
 - [UX] NotesPage tag spans: add role=button, tabIndex, onKeyDown, aria-label — keyboard users can filter notes by tag
