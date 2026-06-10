@@ -2,7 +2,7 @@
 import { getCachedFeed, setCachedFeed } from "./feedCache.js";
 import { getAiProvider } from "./apiKeys.js";
 import { supabase } from "./supabase.js";
-import { Readability } from "@mozilla/readability";
+// Readability is loaded lazily inside fetchArticleContent to keep the initial bundle lean.
 
 // Own Cloudflare Worker proxy — fast, free, private, no rate limits.
 // Set VITE_PROXY_URL in .env.local and GitHub secrets after deploying.
@@ -431,7 +431,7 @@ export async function fetchArticleContent(articleUrl) {
   // ── Try Readability first ─────────────────────────────────────
   let readabilityResult = null;
   try {
-    // Readability mutates the document, so clone it
+    const { Readability } = await import("@mozilla/readability");
     const docClone = doc.cloneNode(true);
     readabilityResult = new Readability(docClone).parse();
   } catch { /* fall through */ }

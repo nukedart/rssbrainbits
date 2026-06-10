@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.299] — 2026-06-09
+
+- [Perf] Lazy-load `@mozilla/readability` inside `fetchArticleContent` — cuts fetchers chunk from 55 KB to 22 KB; Readability (~34 KB) only loads when a user opens an article
+
 ## [1.46.298] — 2026-06-09
 
 - [Nav] Reordered mobile bottom nav to match desktop sidebar: Inbox → Today → Saved → Review → Cards — eliminates the Today/Review position inconsistency between mobile and desktop

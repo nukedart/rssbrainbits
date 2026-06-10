@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-09 | v1.46.299 | Perf | Lazy-load Readability inside fetchArticleContent — fetchers chunk 55KB→22KB; 34KB saved on initial inbox load | `fetchers.js:5,434` | — |
 | 2026-06-09 | v1.46.298 | Nav | Reordered mobile bottom nav: Inbox→Today→Saved→Review→Cards — matches desktop sidebar order | `BottomNav.jsx:45` | — |
 | 2026-06-09 | v1.46.297 | Perf | Memoized filtered list and time-bucket groups in ReadLaterPage — no re-filtering on every render | `ReadLaterPage.jsx:92` | — |
 | 2026-06-09 | v1.46.296 | Perf | Memoized feedPulse, dateLabel, oldestSaved in TodayPage — feed list sort+map skips on re-renders | `TodayPage.jsx:110` | — |
