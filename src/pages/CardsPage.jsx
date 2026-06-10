@@ -731,7 +731,11 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
           />
         ) : (
           <div
+            role="button"
+            tabIndex={0}
+            aria-label={h.note ? `Edit annotation: ${h.note}` : "Add annotation"}
             onClick={onEditStart}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === "F2") { e.preventDefault(); onEditStart(); } }}
             title="Click to annotate"
             style={{
               fontSize: 13, borderRadius: 9, padding: h.note ? "9px 11px" : "8px 11px",

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.365] — 2026-06-10
+
+- [UX] CardsPage annotation editor: add role=button, tabIndex, onKeyDown (Enter/F2) — keyboard users can add/edit card annotations without a mouse
+
 ## [1.46.364] — 2026-06-10
 
 - [Perf] App.jsx + SecondaryPages.jsx: remove redundant dynamic imports of supabase.js (already statically imported) — eliminates Vite mixed-import warning and reduces bundler overhead
