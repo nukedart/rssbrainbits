@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.325] — 2026-06-10
+
+- [Perf] Sidebar: pre-group feeds by folder_id into a Map (useMemo) instead of re-running feeds.filter() per folder on every render
+
 ## [1.46.324] — 2026-06-10
 
 - [Polish] HighlightsDrawer: role="dialog" + aria-modal + aria-labelledby + Close aria-label — screen readers announce this side panel as a dialog

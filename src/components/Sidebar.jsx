@@ -420,6 +420,11 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
   const W = collapsed ? 52 : 208;
 
   const uncategorized = useMemo(() => feeds.filter(f => !f.folder_id), [feeds]);
+  const feedsByFolder = useMemo(() => {
+    const m = new Map();
+    feeds.forEach(f => { if (f.folder_id) { const a = m.get(f.folder_id) || []; a.push(f); m.set(f.folder_id, a); } });
+    return m;
+  }, [feeds]);
 
   const PRIMARY_NAV = useMemo(() => [
     { id:"inbox",     Icon:Icons.Inbox,     label:"Inbox",   badge: unreadCount },
@@ -524,7 +529,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
 
         {/* Folders */}
         {folders.map(folder => {
-          const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
+          const folderFeeds = feedsByFolder.get(folder.id) || [];
           return (
             <FolderSection
               key={folder.id}
