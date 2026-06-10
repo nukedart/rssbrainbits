@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.332] — 2026-06-10
+
+- [Nav] MobileFeedDrawer quick-nav pills: replace redundant Today/Saved (already in bottom pill) with History and Stats, exposing pages with no other mobile entry point
+
 ## [1.46.331] — 2026-06-10
 
 - [Perf] MobileFeedDrawer: drag handle gets touch-action:pan-x so browser compositor handles horizontal natively while JS handles the vertical dismiss gesture

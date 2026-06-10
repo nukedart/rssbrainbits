@@ -282,8 +282,8 @@ export default function MobileFeedDrawer({
         {/* Quick-nav: pages not in the bottom pill */}
         <div style={{ display:"flex", gap:8, padding:"0 16px 12px", flexShrink:0 }}>
           {[
-            { id:"today",     label:"Today"    },
-            { id:"readlater", label:"Saved"    },
+            { id:"history",   label:"History"  },
+            { id:"analytics", label:"Stats"    },
             { id:"settings",  label:"Settings" },
           ].map(({ id, label }) => {
             const isActive = active === id;

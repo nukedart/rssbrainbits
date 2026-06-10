@@ -352,10 +352,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   // ── Feed → folder color map (for per-feed colored dots in list rows) ────────
   const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
   const feedColorMap = useMemo(() => {
+    const folderById = new Map(folders.map(f => [f.id, f]));
     const map = {};
     feeds.forEach(feed => {
       if (feed.folder_id) {
-        const folder = folders.find(f => f.id === feed.folder_id);
+        const folder = folderById.get(feed.folder_id);
         if (folder?.color) map[feed.id] = FCOLS[folder.color] || "#8A9099";
       }
     });
