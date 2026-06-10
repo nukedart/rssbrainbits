@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.288] — 2026-06-09
+
+- [Perf] Memoized `FeedRow` in Sidebar with a smart comparator — skips re-renders on shortcuts popup / context menu open; only re-renders rows whose active state actually changes
+
 ## [1.46.287] — 2026-06-09
 
 - [Perf] Memoized `parseYouTubeUrl` result in ContentViewer — avoids repeated URL parsing on scroll, highlight, and TTS re-renders

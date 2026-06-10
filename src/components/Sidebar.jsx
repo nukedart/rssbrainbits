@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
@@ -175,7 +175,7 @@ function FeedContextMenu({ feed, x, y, onClose, onUnsubscribe, onMarkAllRead, T 
 }
 
 // ── Individual feed row (nested under folder or uncategorized) ─
-function FeedRow({ feed, unread, active, onNavigate, onCtxMenu, T, indent = 0 }) {
+const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onCtxMenu, T, indent = 0 }) {
   const favicon = feedFavicon(feed.url);
   const isActive = active === `feed:${feed.id}`;
   const name = feedDisplayName(feed);
@@ -221,7 +221,14 @@ function FeedRow({ feed, unread, active, onNavigate, onCtxMenu, T, indent = 0 })
       )}
     </button>
   );
-}
+}, (prev, next) =>
+  prev.feed === next.feed &&
+  prev.unread === next.unread &&
+  prev.T === next.T &&
+  prev.indent === next.indent &&
+  (prev.active === next.active ||
+    (prev.active !== `feed:${prev.feed.id}` && next.active !== `feed:${next.feed.id}`))
+);
 
 // ── Folder row with nested feeds ──────────────────────────────
 function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, expanded, onToggle, T, collapsed, onMoveFeedToFolder, onEditFolder, onCtxMenu }) {
