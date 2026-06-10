@@ -303,9 +303,13 @@ function Card({ item, T, onOpen, onRemove }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onOpen(item)}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(item); } }}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
+      aria-label={item.title || item.url}
       style={{
         borderRadius: 14, overflow: "hidden", cursor: "pointer",
         background: T.card, border: `1px solid ${T.border}`,
@@ -408,9 +412,13 @@ function ListRow({ item, T, onOpen, onRemove }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onOpen(item)}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(item); } }}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
+      aria-label={item.title || item.url}
       style={{
         display: "flex", alignItems: "center", gap: 12,
         padding: "10px 4px",

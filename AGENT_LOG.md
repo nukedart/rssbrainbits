@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-10 | v1.46.358 | UX | ReadLaterPage Card+ListRow: role=button, tabIndex, onKeyDown, aria-label — keyboard accessibility for saved articles | `ReadLaterPage.jsx:305,414` | — |
 | 2026-06-10 | v1.46.357 | UX | AnalyticsPage: role=tablist+tab+aria-selected on tab bar; aria-pressed on provider cards | `AnalyticsPage.jsx:478,248` | — |
 | 2026-06-10 | v1.46.356 | UX | HighlightsDrawer export buttons: aria-label; ContentViewer Share aria-label reflects feedback | `HighlightsDrawer.jsx:53`, `ContentViewer.jsx:538` | — |
 | 2026-06-10 | v1.46.355 | UX | Sidebar footer: Settings aria-label+aria-current; theme toggles aria-pressed; shortcuts aria-expanded | `Sidebar.jsx:632,655,660` | — |
