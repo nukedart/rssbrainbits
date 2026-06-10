@@ -3,7 +3,8 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
-| 2026-06-10 | v1.46.326 | Polish | ContentViewer: reader prefs width/font buttons get aria-label + aria-pressed | `ContentViewer.jsx:500,508` | — |
+| 2026-06-10 | v1.46.328 | Polish | ContentViewer: font-size range input gets aria-label + aria-valuetext | `ContentViewer.jsx:491` | — |
+| 2026-06-10 | v1.46.327 | Polish | ContentViewer: reader prefs width/font buttons get aria-label + aria-pressed | `ContentViewer.jsx:500,508` | — |
 | 2026-06-10 | v1.46.325 | Perf | Sidebar: feedsByFolder Map replaces per-folder feeds.filter() — O(feeds) not O(folders×feeds) | `Sidebar.jsx:422` | — |
 | 2026-06-10 | v1.46.324 | Polish | HighlightsDrawer: role="dialog" + aria-modal + aria-labelledby + Close aria-label | `HighlightsDrawer.jsx:41` | — |
 | 2026-06-09 | v1.46.323 | Polish | AddModal: role="dialog" + aria-labelledby; MobileSearchOverlay: role="search" on search bar | `AddModal.jsx:184` `MobileSearchOverlay.jsx:127` | — |

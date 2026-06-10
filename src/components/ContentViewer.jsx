@@ -489,6 +489,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Size</span>
                     <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
+                      aria-label="Font size"
+                      aria-valuetext={`${readerPrefs.fontSize}px`}
                       onChange={e => updatePref("fontSize", parseInt(e.target.value))}
                       style={{ width: 90, accentColor: T.accent }} />
                     <span style={{ fontSize: 11, color: T.textSecondary, minWidth: 24, textAlign: "right" }}>{readerPrefs.fontSize}</span>
