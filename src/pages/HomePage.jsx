@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { getFeeds, getSaved, getReadingStats } from "../lib/supabase";
@@ -78,8 +78,10 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
     setOpenIdx(idx);
   }
 
-  const today = new Date();
-  const dateLabel = today.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const dateLabel = useMemo(
+    () => new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+    []
+  );
   const featured  = items[0] || null;
   const secondary = items[1] || null;
   const tertiary  = items[2] || null;
@@ -90,21 +92,26 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
     return `${Math.max(1, Math.round(words / 200))} min read`;
   }
 
-  function folderUnread(folder) {
-    return feeds.filter(f => f.folder_id === folder.id)
-      .reduce((sum, f) => sum + (feedUnreadCounts[f.id] || 0), 0);
-  }
+  const folderUnreadMap = useMemo(() =>
+    folders.reduce((acc, folder) => {
+      acc[folder.id] = feeds.filter(f => f.folder_id === folder.id)
+        .reduce((sum, f) => sum + (feedUnreadCounts[f.id] || 0), 0);
+      return acc;
+    }, {}),
+  [folders, feeds, feedUnreadCounts]);
 
-  // Top sources by total item count this session
-  const topSources = Object.entries(
+  const topSources = useMemo(() => Object.entries(
     feeds.reduce((acc, f) => {
       const count = getCachedFeed(f.url)?.data?.items?.length || 0;
       if (count > 0) acc[f.name || f.url] = (acc[f.name || f.url] || 0) + count;
       return acc;
     }, {})
-  ).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  ).sort((a, b) => b[1] - a[1]).slice(0, 3), [feeds]);
 
-  const totalUnread = Object.values(feedUnreadCounts).reduce((s, c) => s + c, 0);
+  const totalUnread = useMemo(
+    () => Object.values(feedUnreadCounts).reduce((s, c) => s + c, 0),
+    [feedUnreadCounts]
+  );
 
   function relativeTime(dateStr) {
     if (!dateStr) return "";
@@ -237,9 +244,9 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                     </div>
                   )}
                   {/* Folder unread pills */}
-                  {folders.filter(f => folderUnread(f) > 0).map(folder => {
+                  {folders.filter(f => folderUnreadMap[f.id] > 0).map(folder => {
                     const dot = FCOLS[folder.color] || "#8A9099";
-                    const unread = folderUnread(folder);
+                    const unread = folderUnreadMap[folder.id];
                     return (
                       <button key={folder.id}
                         onClick={() => onNavigate?.(`folder:${folder.id}`)}

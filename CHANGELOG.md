@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.307] — 2026-06-09
+
+- [Perf] HomePage: memoize dateLabel, topSources, totalUnread, and folder unread map — eliminates redundant re-computation on every render
+
 ## [1.46.306] — 2026-06-09
 
 - [UX] Remove window.confirm from "mark all read" — marking as read is reversible, toast provides sufficient feedback, eliminating the extra click
