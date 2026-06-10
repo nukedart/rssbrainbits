@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.289] — 2026-06-09
+
+- [Perf] Memoized `unreadCount` in InboxPage — skips O(n) item filter on renders caused by cursor movement, modal state, and other non-data interactions
+
 ## [1.46.288] — 2026-06-09
 
 - [Perf] Memoized `FeedRow` in Sidebar with a smart comparator — skips re-renders on shortcuts popup / context menu open; only re-renders rows whose active state actually changes

@@ -717,7 +717,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     : activeSource === "all" ? "All Items"
     : feeds.find((f) => f.id === activeSource)?.name || "Feed";
 
-  const unreadCount = allItems.filter((i) => !readUrls.has(i.url)).length;
+  const unreadCount = useMemo(() => allItems.filter(i => !readUrls.has(i.url)).length, [allItems, readUrls]);
 
   // Report total unread count to parent (for sidebar badge)
   useEffect(() => {
