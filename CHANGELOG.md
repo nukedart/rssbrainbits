@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.429] — 2026-06-11 22:21
+
+- [Feature] AI tag suggestions in highlight NotePanel: when a highlight is opened for annotation, Haiku suggests up to 5 relevant theme tags based on the passage text; click any chip to apply instantly
+
 ## [1.46.428] — 2026-06-11 22:18
 
 - [Feature] Reading activity heatmap: 12-week GitHub-style calendar grid on Reading Stats page, color-coded by daily article count; hover each cell to see date and count

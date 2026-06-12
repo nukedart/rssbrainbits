@@ -2,19 +2,25 @@ import { useState, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { Button } from "./UI";
 import { HIGHLIGHT_COLORS } from "./SelectionToolbar";
+import { suggestTags } from "../lib/fetchers";
 
 export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpdateTags }) {
   const { T } = useTheme();
   const [note, setNote] = useState(highlight?.note || "");
   const [tags, setTags] = useState(highlight?.tags || []);
   const [tagInput, setTagInput] = useState("");
+  const [aiSuggestions, setAiSuggestions] = useState([]);
   const color = HIGHLIGHT_COLORS.find((c) => c.id === highlight?.color) || HIGHLIGHT_COLORS[0];
 
   useEffect(() => {
     setNote(highlight?.note || "");
     setTags(highlight?.tags || []);
     setTagInput("");
-  }, [highlight]);
+    setAiSuggestions([]);
+    if (highlight?.passage) {
+      suggestTags(highlight.passage, "").then(setAiSuggestions).catch(() => {});
+    }
+  }, [highlight?.id]);
 
   if (!highlight) return null;
 
@@ -90,6 +96,29 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
             }}
           />
         </div>
+        {aiSuggestions.filter(s => !tags.includes(s)).length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8, alignItems: "center" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: T.textTertiary }}>Suggested</span>
+            {aiSuggestions.filter(s => !tags.includes(s)).map(suggestion => (
+              <button
+                key={suggestion}
+                onClick={() => {
+                  const next = [...tags, suggestion];
+                  setTags(next);
+                  onUpdateTags?.(highlight.id, next);
+                  setAiSuggestions(prev => prev.filter(s => s !== suggestion));
+                }}
+                style={{
+                  fontSize: 11, padding: "3px 9px", borderRadius: 20,
+                  border: `1px dashed ${T.accent}`, background: T.accentSurface,
+                  color: T.accent, cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                + {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
           <Button variant="danger" size="sm" onClick={() => { onDelete(highlight.id); onClose(); }}>Delete</Button>
