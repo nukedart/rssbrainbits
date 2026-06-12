@@ -851,6 +851,20 @@ export async function askQuestion(text, title, question) {
   return data.answer || "No answer found.";
 }
 
+export async function lookupTerm(term) {
+  if (!WORKER_BASE) return null;
+  try {
+    const res = await fetch(`${WORKER_BASE}/ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "", title: "", question: `Define or explain the following in 2 clear sentences. Be concise: "${term.slice(0, 400)}"` }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.answer || null;
+  } catch { return null; }
+}
+
 export async function suggestTags(text, title) {
   if (!WORKER_BASE) return [];
   try {

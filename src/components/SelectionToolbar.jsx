@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { lookupTerm } from "../lib/fetchers";
 
 export const HIGHLIGHT_COLORS = [
   { id: "yellow", label: "Yellow", bg: "#FEF08A", border: "#EAB308", text: "#713F12" },
@@ -16,6 +17,7 @@ export function getHighlightStyle(colorId) {
 export default function SelectionToolbar({ containerRef, onHighlight }) {
   const { T } = useTheme();
   const [toolbar, setToolbar] = useState(null);
+  const [lookupResult, setLookupResult] = useState(null); // null | "loading" | string
   const toolbarRef = useRef(null);
   const tapStartRef = useRef(null);
 
@@ -30,6 +32,7 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
         if (!containerRef.current?.contains(range.commonAncestorContainer)) { setToolbar(null); return; }
         const rect = range.getBoundingClientRect();
         setToolbar({ x: rect.left + rect.width / 2, y: rect.top, selectedText: text, range: range.cloneRange() });
+        setLookupResult(null);
       }, 10);
     }
 
@@ -93,30 +96,65 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
     onHighlight({ passage: toolbar.selectedText, color: colorId, position: toolbar.range.startOffset });
     window.getSelection()?.removeAllRanges();
     setToolbar(null);
+    setLookupResult(null);
   }
 
-  const TOOLBAR_W = 210;
+  async function handleLookup() {
+    setLookupResult("loading");
+    const result = await lookupTerm(toolbar.selectedText);
+    setLookupResult(result || "No explanation available.");
+  }
+
+  const TOOLBAR_W = lookupResult ? 280 : 248;
   const left = Math.max(8, Math.min(toolbar.x - TOOLBAR_W / 2, window.innerWidth - TOOLBAR_W - 8));
+  const topOffset = lookupResult && lookupResult !== "loading" ? 80 : 56;
 
   return (
-    <div ref={toolbarRef} role="toolbar" aria-label="Highlight color" style={{
-      position: "fixed", left, top: toolbar.y - 56,
+    <div ref={toolbarRef} style={{
+      position: "fixed", left, top: toolbar.y - topOffset,
       width: TOOLBAR_W, background: T.card, border: `1px solid ${T.border}`,
       borderRadius: 12, boxShadow: "0 4px 20px rgba(0,0,0,.15)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      gap: 6, padding: "8px 12px", zIndex: 600, animation: "slideUp .15s ease",
+      zIndex: 600, animation: "slideUp .15s ease", overflow: "hidden",
     }}>
-      <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 600, marginRight: 2 }}>Highlight</span>
-      {HIGHLIGHT_COLORS.map((c) => (
-        <button key={c.id} aria-label={`Highlight ${c.label}`} onClick={() => handlePickColor(c.id)} style={{
-          width: 22, height: 22, borderRadius: "50%",
-          background: c.bg, border: `2px solid ${c.border}`,
-          cursor: "pointer", transition: "transform .1s", flexShrink: 0,
-        }}
-          onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.25)"; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-        />
-      ))}
+      {/* Lookup result panel */}
+      {lookupResult && lookupResult !== "loading" && (
+        <div style={{ padding: "10px 12px 8px", borderBottom: `1px solid ${T.border}` }}>
+          <p style={{ margin: 0, fontSize: 12, color: T.text, lineHeight: 1.55 }}>{lookupResult}</p>
+        </div>
+      )}
+      {lookupResult === "loading" && (
+        <div style={{ padding: "8px 12px", borderBottom: `1px solid ${T.border}`, fontSize: 12, color: T.textTertiary }}>Looking up…</div>
+      )}
+      {/* Toolbar buttons */}
+      <div role="toolbar" aria-label="Highlight color" style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        gap: 6, padding: "8px 12px",
+      }}>
+        <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 600, marginRight: 2 }}>Highlight</span>
+        {HIGHLIGHT_COLORS.map((c) => (
+          <button key={c.id} aria-label={`Highlight ${c.label}`} onClick={() => handlePickColor(c.id)} style={{
+            width: 22, height: 22, borderRadius: "50%",
+            background: c.bg, border: `2px solid ${c.border}`,
+            cursor: "pointer", transition: "transform .1s", flexShrink: 0,
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.25)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+          />
+        ))}
+        <div style={{ width: 1, height: 16, background: T.border, flexShrink: 0, marginLeft: 2 }} />
+        <button
+          aria-label="Look up selected text"
+          onClick={handleLookup}
+          disabled={lookupResult === "loading"}
+          style={{
+            background: lookupResult && lookupResult !== "loading" ? T.accentSurface : "transparent",
+            border: `1px solid ${lookupResult && lookupResult !== "loading" ? T.accent : T.border}`,
+            borderRadius: 6, padding: "3px 8px", cursor: "pointer",
+            fontSize: 11, fontWeight: 600, color: lookupResult && lookupResult !== "loading" ? T.accent : T.textSecondary,
+            fontFamily: "inherit", flexShrink: 0, transition: "background .1s",
+          }}
+        >?</button>
+      </div>
     </div>
   );
 }

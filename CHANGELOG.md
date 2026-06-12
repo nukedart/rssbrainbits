@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.431] — 2026-06-11 22:30
+
+- [Feature] Inline word/term lookup: select any text in the reader and tap "?" in the highlight toolbar to get a 2-sentence AI explanation inline, without leaving the article
+
 ## [1.46.430] — 2026-06-11 22:26
 
 - [UX] Catch-up swipe-to-dismiss: in Catch-Up mode on mobile, swiping right now flies the article card off-screen before marking it read, giving tactile feedback that the item is cleared
