@@ -70,6 +70,8 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
             </div>
           ) : highlights.map((h) => {
             const color = HIGHLIGHT_COLORS.find((c) => c.id === h.color) || HIGHLIGHT_COLORS[0];
+            const isImg = (h.passage || "").startsWith("[IMAGE]: ");
+            const imgUrl = isImg ? h.passage.slice(9) : null;
             return (
               <div key={h.id} role="button" tabIndex={0}
                 onClick={() => onSelectHighlight(h)}
@@ -81,9 +83,16 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
                 <div style={{ display: "flex", gap: 10 }}>
                   <div style={{ width: 3, borderRadius: 2, flexShrink: 0, background: color.border, alignSelf: "stretch" }} />
                   <div style={{ flex: 1 }}>
+                    {isImg ? (
+                      <img src={imgUrl} alt="Saved image" loading="lazy"
+                        style={{ width: "100%", borderRadius: 8, maxHeight: 140, objectFit: "cover", display: "block", marginBottom: h.note ? 8 : 0 }}
+                        onError={e => { e.target.style.display = "none"; }}
+                      />
+                    ) : (
                     <div style={{ fontSize: 13, color: T.text, lineHeight: 1.6, fontStyle: "italic", marginBottom: h.note ? 8 : 0, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                       "{h.passage}"
                     </div>
+                    )}
                     {h.note ? (
                       <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, background: T.surface, borderRadius: 8, padding: "7px 10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{h.note}</div>
                     ) : (

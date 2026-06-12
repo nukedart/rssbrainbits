@@ -735,6 +735,8 @@ function reviewChip(entry, T) {
 function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T, onEditStart, onEditChange, onEditSave, onEditCancel, onUpdateTags, onTagClick, onDelete }) {
   const [hovered, setHovered] = useState(false);
   const chip = reviewChip(reviewEntry, T);
+  const isImg = (h.passage || "").startsWith("[IMAGE]: ");
+  const imgUrl = isImg ? h.passage.slice(9) : null;
 
   return (
     <div
@@ -754,6 +756,12 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
         borderLeft: `3px solid ${col.border}`,
         position: "relative",
       }}>
+        {isImg ? (
+          <img src={imgUrl} alt="Saved image" loading="lazy"
+            style={{ width: "100%", borderRadius: 8, maxHeight: 220, objectFit: "cover", display: "block", marginBottom: 4 }}
+            onError={e => { e.target.style.display = "none"; }}
+          />
+        ) : (
         <div style={{
           fontSize: 16, color: T.text, lineHeight: 1.72,
           fontFamily: "var(--reader-font-family)",
@@ -763,6 +771,7 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
         }}>
           "{h.passage}"
         </div>
+        )}
 
         {/* Delete — top-right of passage, hover reveal */}
         <button

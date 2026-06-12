@@ -74,6 +74,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const [showReaderControls, setShowReaderControls] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [exportFeedback, setExportFeedback]   = useState(null);
+  const [imgFeedback, setImgFeedback]         = useState(null);
   const [readProgress, setReadProgress]         = useState(0);
   const [shareFeedback, setShareFeedback]       = useState(null);
   const scrollContainerRef = useRef(null);
@@ -211,6 +212,20 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     setActiveNote(newH); // open NotePanel immediately — complete the card in one action
     track("article_highlighted", { color, passage_length: passage.length, source: item.source });
   }, [user, item, content]);
+
+  async function handleImageHighlight(src) {
+    if (!user || !src) return;
+    const passage = "[IMAGE]: " + src;
+    if (highlights.some(h => h.passage === passage)) {
+      setImgFeedback("Already saved"); setTimeout(() => setImgFeedback(null), 1500); return;
+    }
+    const newH = await addHighlight(user.id, {
+      article_url: item.url, article_title: content?.title || item.title,
+      passage, color: "blue", position: 0,
+    });
+    setHighlights(prev => [...prev, newH]);
+    setImgFeedback("✓ Image saved"); setTimeout(() => setImgFeedback(null), 1500);
+  }
 
   async function handleSaveNote(highlightId, note) {
     await updateHighlightNote(highlightId, note);
@@ -781,7 +796,14 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               )}
 
               {/* Article body */}
-              <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em" }}>
+              <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em", position: "relative" }}
+                onClick={e => { if (e.target.tagName === "IMG") handleImageHighlight(e.target.src); }}
+              >
+              {imgFeedback && (
+                <div style={{ position: "fixed", bottom: isMobile ? 80 : 24, left: "50%", transform: "translateX(-50%)", zIndex: 900, background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, padding: "8px 16px", fontSize: 13, fontWeight: 600, color: T.text, boxShadow: "0 2px 12px rgba(0,0,0,.12)", pointerEvents: "none", animation: "fadeInScale .15s ease" }}>
+                  {imgFeedback}
+                </div>
+              )}
                 {showTranslation && translatedText ? (
                   <div>
                     {translatedText.split(/\n\n+/).filter(Boolean).map((para, i) => (

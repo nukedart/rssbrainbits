@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.435] — 2026-06-11 22:52
+
+- [Feature] Image highlighting: click any image in the article reader to save it as a highlight; thumbnail appears in Highlights drawer and Cards; hover glow indicates images are clickable
+
 ## [1.46.434] — 2026-06-11 22:46
 
 - [Feature] Chat with highlights: inside any theme on CardsPage, an "Ask" input lets you ask Haiku questions about that theme's highlights; answer appears inline below the input

@@ -158,7 +158,8 @@ button { transition: opacity .12s, background .12s, color .12s, border-color .12
 .fb-article-body p{margin:0 0 1.35em}.fb-article-body p:first-of-type{font-size:1.06em;line-height:1.8}.fb-article-body p:last-child{margin-bottom:0}
 .fb-article-body ul,.fb-article-body ol{margin:0 0 1.35em;padding-left:1.6em}
 .fb-article-body li{margin-bottom:.55em;line-height:1.7}
-.fb-article-body img{max-width:100%;height:auto;border-radius:12px;margin:2em 0;display:block;box-shadow:0 4px 20px rgba(0,0,0,.09)}
+.fb-article-body img{max-width:100%;height:auto;border-radius:12px;margin:2em 0;display:block;box-shadow:0 4px 20px rgba(0,0,0,.09);cursor:pointer;transition:box-shadow .15s,transform .15s}
+.fb-article-body img:hover{box-shadow:0 4px 20px rgba(0,0,0,.09),0 0 0 3px var(--accent,#4f8ef7)55;transform:scale(1.005)}
 .fb-article-body a{color:var(--accent,#4f8ef7);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;transition:opacity .12s}
 .fb-article-body a:hover{opacity:.75}
 .fb-article-body blockquote{border-left:3px solid var(--accent,#4f8ef7);margin:1.75em 0;padding:.85em 1.2em .85em 1.4em;background:rgba(128,128,128,.06);border-radius:0 10px 10px 0;font-style:italic;font-size:1.04em;line-height:1.75}
