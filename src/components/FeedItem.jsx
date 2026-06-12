@@ -290,7 +290,7 @@ function MobileThumb({ item, T, size = 72 }) {
 }
 
 // ── List view item (Things 3 task-row pattern) ───────────────
-function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor, displayPrefs = {}, dismissOnRead }) {
+function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor, displayPrefs = {}, dismissOnRead, inMultiSelect, isChecked }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -328,6 +328,17 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               transition: "opacity .15s",
             }}
           >
+            {inMultiSelect && (
+              <div style={{
+                width: 22, height: 22, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
+                background: isChecked ? T.accent : "transparent",
+                border: `2px solid ${isChecked ? T.accent : T.textTertiary}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "background .1s, border-color .1s",
+              }}>
+                {isChecked && <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+            )}
             {imgPos === "left" && thumb}
 
             {/* Text block */}
@@ -410,6 +421,17 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             transition: "background .15s, opacity .15s",
           }}
         >
+          {inMultiSelect && (
+            <div style={{
+              width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+              background: isChecked ? T.accent : "transparent",
+              border: `2px solid ${isChecked ? T.accent : T.textTertiary}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "background .1s, border-color .1s",
+            }}>
+              {isChecked && <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+            </div>
+          )}
           {/* Thumbnail (md/lg) or type icon (sm) */}
           {cardSize !== "sm"
             ? <ListThumb item={item} cardSize={cardSize} T={T} />
@@ -485,7 +507,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Card view item ────────────────────────────────────────────
-function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor, dismissOnRead }) {
+function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor, dismissOnRead, inMultiSelect, isChecked }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -547,6 +569,18 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             {progress > 5 && progress < 95 && (
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
                 <div style={{ height: "100%", width: "100%", background: T.accent, transform: `scaleX(${progress / 100})`, transformOrigin: "left" }} />
+              </div>
+            )}
+            {inMultiSelect && (
+              <div style={{
+                position: "absolute", top: 8, left: 8, zIndex: 5,
+                width: 22, height: 22, borderRadius: "50%",
+                background: isChecked ? T.accent : "rgba(0,0,0,.4)",
+                border: `2px solid ${isChecked ? T.accent : "rgba(255,255,255,.7)"}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "background .1s, border-color .1s",
+              }}>
+                {isChecked && <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
             )}
           </div>
@@ -625,11 +659,11 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Public export ─────────────────────────────────────────────
-export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false, feedColor, displayPrefs, dismissOnRead }) {
+export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false, feedColor, displayPrefs, dismissOnRead, inMultiSelect = false, isChecked = false }) {
   if (viewMode === "card") {
-    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} dismissOnRead={dismissOnRead} />;
+    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} dismissOnRead={dismissOnRead} inMultiSelect={inMultiSelect} isChecked={isChecked} />;
   }
-  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} displayPrefs={displayPrefs} dismissOnRead={dismissOnRead} />;
+  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} displayPrefs={displayPrefs} dismissOnRead={dismissOnRead} inMultiSelect={inMultiSelect} isChecked={isChecked} />;
 }, (prev, next) =>
   prev.item === next.item &&
   prev.isSelected === next.isSelected &&
@@ -638,5 +672,7 @@ export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md"
   prev.viewMode === next.viewMode &&
   prev.cardSize === next.cardSize &&
   prev.feedColor === next.feedColor &&
-  prev.displayPrefs === next.displayPrefs
+  prev.displayPrefs === next.displayPrefs &&
+  prev.inMultiSelect === next.inMultiSelect &&
+  prev.isChecked === next.isChecked
 );

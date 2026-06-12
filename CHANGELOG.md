@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.432] — 2026-06-11 22:38
+
+- [Feature] Bulk select: long-press any feed item to enter multi-select mode, then tap to select/deselect items; action bar at bottom offers "Mark read", "Save all", and "Cancel"
+
 ## [1.46.431] — 2026-06-11 22:30
 
 - [Feature] Inline word/term lookup: select any text in the reader and tap "?" in the highlight toolbar to get a 2-sentence AI explanation inline, without leaving the article

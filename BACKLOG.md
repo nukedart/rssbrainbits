@@ -15,7 +15,7 @@ Mark items `[x]` when shipped.
 - [x] **Reading streak / habit tracker** — On StatsPage or TodayPage: GitHub-style heatmap (12 weeks × 7 days) of daily articles read. Data from `history` table already in Supabase.
 - [x] **AI tag suggestions on highlight** — When NotePanel opens on a highlight, call Haiku with the highlight text and return top 3 suggested tags; show as one-click chips. Reuses existing AI infra in fetchers.js.
 - [x] **Catch-up swipe-to-dismiss** — In Catch-Up filterMode on mobile, add swipe-right gesture on FeedItem to mark as read and remove from list with a spring animation.
-- [ ] **Inline word/term lookup** — In ContentViewer, add "Lookup" option to the highlight selection popover; calls Haiku "define/explain in 2 sentences"; shows result in a small inline tooltip or bottom sheet. Reuses AI infra.
+- [x] **Inline word/term lookup** — In ContentViewer, add "Lookup" option to the highlight selection popover; calls Haiku "define/explain in 2 sentences"; shows result in a small inline tooltip or bottom sheet. Reuses AI infra.
 - [ ] **Bulk select + mark read/save** — Long-press a FeedItem to enter multi-select mode; action bar appears at bottom for "Mark all read" / "Save all" / "Cancel". Works in any filter mode.
 
 ---

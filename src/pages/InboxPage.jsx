@@ -107,6 +107,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [isPulling, setIsPulling]   = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const pullRef = useRef(null);
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const [selectedUrls, setSelectedUrls]       = useState(new Set());
+  const longPressTimerRef = useRef(null);
   const pullStartY = useRef(null); // touch start Y for pull-to-refresh
   const fetchAllRef = useRef(null); // stable ref to fetchAll — accessible from PTR handlers
   const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
@@ -617,6 +620,32 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     if (!urlsToMark.length) return;
     urlsToMark.forEach(u => handleMarkRead(u));
     showToast(`✓ ${urlsToMark.length} marked read`);
+  }
+
+  function startLongPress(url) {
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = setTimeout(() => {
+      try { navigator.vibrate?.(30); } catch {}
+      setMultiSelectMode(true);
+      setSelectedUrls(new Set([url]));
+    }, 500);
+  }
+  function cancelLongPress() { clearTimeout(longPressTimerRef.current); }
+  function toggleSelectUrl(url) {
+    setSelectedUrls(prev => { const n = new Set(prev); n.has(url) ? n.delete(url) : n.add(url); return n; });
+  }
+  function cancelMultiSelect() { setMultiSelectMode(false); setSelectedUrls(new Set()); }
+  function handleBulkMarkRead() {
+    const urls = [...selectedUrls];
+    urls.forEach(u => handleMarkRead(u));
+    showToast(`✓ Marked ${urls.length} as read`);
+    cancelMultiSelect();
+  }
+  async function handleBulkSave() {
+    const items = baseItems.filter(i => selectedUrls.has(i.url) && !savedUrls.has(i.url));
+    await Promise.all(items.map(item => handleSaveItem(item)));
+    showToast(`✓ Saved ${items.length}`);
+    cancelMultiSelect();
   }
 
   async function handleMarkAllRead() {
@@ -1282,12 +1311,19 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {viewMode === "card" ? (
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: isMobile ? 8 : (cardSize === "lg" ? 18 : 14) }}>
               {baseItems.slice(0, displayedCount).map((item, i) => (
-                <div key={item.url + i}>
+                <div key={item.url + i}
+                  onPointerDown={() => startLongPress(item.url)}
+                  onPointerUp={cancelLongPress}
+                  onPointerMove={cancelLongPress}
+                  onPointerCancel={cancelLongPress}
+                >
                 <FeedItem item={item} viewMode="card" cardSize={isMobile ? "sm" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
                   feedColor={feedColorMap[item.feedId]}
-                  onClick={() => { openByIdx(i); }}
+                  inMultiSelect={multiSelectMode}
+                  isChecked={multiSelectMode && selectedUrls.has(item.url)}
+                  onClick={multiSelectMode ? () => toggleSelectUrl(item.url) : () => { openByIdx(i); }}
                   onSave={() => handleSaveItem(item)}
                   isSaved={savedUrls.has(item.url)}
                   onReadLater={() => handleReadLater(item)}
@@ -1314,7 +1350,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 );
               }
               rows.push(
-                <div key={item.url + i} data-url={item.url} style={{ borderBottom: `1px solid ${T.border}` }}>
+                <div key={item.url + i} data-url={item.url} style={{ borderBottom: `1px solid ${T.border}` }}
+                  onPointerDown={() => startLongPress(item.url)}
+                  onPointerUp={cancelLongPress}
+                  onPointerMove={cancelLongPress}
+                  onPointerCancel={cancelLongPress}
+                >
                   <FeedItem item={item} viewMode="list" cardSize={cardSize}
                     isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
                     isRead={readUrls.has(item.url)}
@@ -1322,7 +1363,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                     feedColor={feedColorMap[item.feedId]}
                     displayPrefs={isMobile ? displayPrefs : undefined}
                     dismissOnRead={isMobile && filterMode === "catch-up"}
-                    onClick={() => { setCursorIdx(i); openByIdx(i); }}
+                    inMultiSelect={multiSelectMode}
+                    isChecked={multiSelectMode && selectedUrls.has(item.url)}
+                    onClick={multiSelectMode ? () => toggleSelectUrl(item.url) : () => { setCursorIdx(i); openByIdx(i); }}
                     onSave={() => handleSaveItem(item)}
                     onReadLater={() => handleReadLater(item)}
                     onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
@@ -1553,6 +1596,42 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           </div>
         </div>
       )}
+      {/* Bulk select action bar */}
+      {multiSelectMode && (
+        <div style={{
+          position: "fixed", bottom: isMobile ? 56 : 0, left: 0, right: 0, zIndex: 500,
+          background: T.card, borderTop: `1px solid ${T.border}`,
+          boxShadow: "0 -2px 16px rgba(0,0,0,.12)",
+          display: "flex", alignItems: "center", gap: 8,
+          padding: `12px 16px calc(12px + env(safe-area-inset-bottom, 0px))`,
+        }}>
+          <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: T.text }}>
+            {selectedUrls.size} selected
+          </span>
+          <button onClick={handleBulkMarkRead} disabled={selectedUrls.size === 0} style={{
+            background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
+            padding: "7px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+            color: T.text, fontFamily: "inherit", transition: "background .1s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.surface2; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.surface; }}
+          >Mark read</button>
+          <button onClick={handleBulkSave} disabled={selectedUrls.size === 0} style={{
+            background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
+            padding: "7px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+            color: T.text, fontFamily: "inherit", transition: "background .1s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.surface2; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.surface; }}
+          >Save all</button>
+          <button onClick={cancelMultiSelect} style={{
+            background: T.accentSurface, border: `1px solid ${T.accent}`, borderRadius: 8,
+            padding: "7px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+            color: T.accent, fontFamily: "inherit",
+          }}>Cancel</button>
+        </div>
+      )}
+
       {/* FolderModal is owned by App.jsx — onAddFolder/onEditFolder props trigger it */}
     </div>
   );
