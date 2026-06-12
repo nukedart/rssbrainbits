@@ -865,6 +865,24 @@ export async function lookupTerm(term) {
   } catch { return null; }
 }
 
+export async function translateText(text, title) {
+  if (!WORKER_BASE) return null;
+  try {
+    const res = await fetch(`${WORKER_BASE}/ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: text.slice(0, 7000),
+        title: title || "",
+        question: "Translate the following article to English. Preserve paragraph structure. Return only the translated text, no commentary or preamble.",
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.answer || null;
+  } catch { return null; }
+}
+
 export async function suggestTags(text, title) {
   if (!WORKER_BASE) return [];
   try {

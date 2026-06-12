@@ -3,7 +3,7 @@ import { useSwipe } from "../hooks/useSwipe.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { Button, Spinner } from "./UI";
-import { fetchArticleContent, summarizeContent, suggestTags, askQuestion, parseYouTubeUrl, fetchYouTubeTranscript } from "../lib/fetchers";
+import { fetchArticleContent, summarizeContent, suggestTags, askQuestion, parseYouTubeUrl, fetchYouTubeTranscript, translateText } from "../lib/fetchers";
 import SelectionToolbar, { HIGHLIGHT_COLORS } from "./SelectionToolbar";
 import NotePanel from "./NotePanel";
 import HighlightsDrawer from "./HighlightsDrawer";
@@ -53,6 +53,9 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   });
   const [summarizing, setSummarizing] = useState(false);
   const [summaryStyle, setSummaryStyle] = useState("keypoints"); // keypoints | brief | actions
+  const [translatedText, setTranslatedText] = useState(null);
+  const [translating, setTranslating]       = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
 
   // Highlights
   const [highlights, setHighlights]   = useState([]);
@@ -326,6 +329,14 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     setTimeout(() => setExportFeedback(null), 2200);
   }
 
+  async function handleTranslate() {
+    if (translatedText) { setShowTranslation(v => !v); return; }
+    setTranslating(true);
+    const result = await translateText(content?.bodyText || "", content?.title || item?.title || "");
+    setTranslating(false);
+    if (result) { setTranslatedText(result); setShowTranslation(true); }
+  }
+
   // ── AI Summary ─────────────────────────────────────────────
   async function handleSummarize(style) {
     const text = content?.bodyText || item?.description || "";
@@ -592,6 +603,10 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             handleExportHighlights={handleExportHighlights}
             handleExportObsidian={handleExportObsidian}
             exportFeedback={exportFeedback}
+            onTranslate={handleTranslate}
+            translating={translating}
+            hasTranslation={!!translatedText}
+            showTranslation={showTranslation}
           />
         </div>
       </div>
@@ -745,9 +760,35 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                 </p>
               )}
 
+              {/* Translation toggle */}
+              {translatedText && (
+                <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+                  {[["original", "Original"], ["translated", "Translated"]].map(([val, label]) => {
+                    const active = val === "translated" ? showTranslation : !showTranslation;
+                    return (
+                      <button key={val} onClick={() => setShowTranslation(val === "translated")}
+                        style={{
+                          padding: "4px 12px", borderRadius: 20, border: `1px solid ${active ? T.accent : T.border}`,
+                          background: active ? T.accentSurface : "transparent",
+                          color: active ? T.accent : T.textTertiary,
+                          fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                          transition: "background .1s, color .1s, border-color .1s",
+                        }}
+                      >{label}</button>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Article body */}
               <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em" }}>
-                {processedBodyHtml && !readerPrefs.bionic ? (
+                {showTranslation && translatedText ? (
+                  <div>
+                    {translatedText.split(/\n\n+/).filter(Boolean).map((para, i) => (
+                      <p key={i} style={{ margin: "0 0 1.4em" }}>{para}</p>
+                    ))}
+                  </div>
+                ) : processedBodyHtml && !readerPrefs.bionic ? (
                   <div
                     className="fb-article-body"
                     dangerouslySetInnerHTML={{ __html: processedBodyHtml }}
@@ -1081,7 +1122,7 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
 
 
 // ── Overflow menu — secondary article actions ─────────────────
-function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setShowTags, showDrawer, setShowDrawer, handleShare, shareFeedback, handleExportHighlights, handleExportObsidian, exportFeedback }) {
+function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setShowTags, showDrawer, setShowDrawer, handleShare, shareFeedback, handleExportHighlights, handleExportObsidian, exportFeedback, onTranslate, translating, hasTranslation, showTranslation }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -1122,6 +1163,12 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
           {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback || "Copy highlights as MD", () => handleExportHighlights(false), true)}
           {!yt?.isYouTube && highlights.length > 0 && menuItem("Download highlights .md", () => handleExportHighlights(true))}
           {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback === "✓ Copied for Obsidian" ? exportFeedback : "Copy for Obsidian ⟦ ⟧", () => handleExportObsidian())}
+          {!yt?.isYouTube && content && (
+            <>
+              <div style={{ height:1, background:T.border, margin:"4px 0" }} />
+              {menuItem(translating ? "Translating…" : hasTranslation ? (showTranslation ? "Show original" : "Show translation") : "Translate to English", onTranslate)}
+            </>
+          )}
         </div>
       )}
     </div>

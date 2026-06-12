@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.433] — 2026-06-11 22:42
+
+- [Feature] Article translation: overflow menu → "Translate to English" calls Haiku to translate article body in-place; Original/Translated toggle pills appear above the text
+
 ## [1.46.432] — 2026-06-11 22:38
 
 - [Feature] Bulk select: long-press any feed item to enter multi-select mode, then tap to select/deselect items; action bar at bottom offers "Mark read", "Save all", and "Cancel"

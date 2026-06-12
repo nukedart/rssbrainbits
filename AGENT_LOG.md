@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-11 | v1.46.433 | Feature | Article translation: "Translate to English" in overflow menu; Haiku translates body; toggle pills switch between original and translated | `ContentViewer.jsx:6,55,332`, `fetchers.js:868` | — |
 | 2026-06-11 | v1.46.432 | Feature | Bulk select: long-press any feed item to enter multi-select mode; tap items to select; action bar offers Mark read / Save all / Cancel | `FeedItem.jsx:293,488,648`, `InboxPage.jsx:109,639` | — |
 | 2026-06-11 | v1.46.431 | Feature | Inline lookup: "?" button in SelectionToolbar calls Haiku to explain any selected text in 2 sentences | `SelectionToolbar.jsx:1`, `fetchers.js:854` | — |
 | 2026-06-11 | v1.46.430 | UX | Catch-up swipe-to-dismiss: fly-off animation on swipe-right in Catch-Up mode on mobile | `FeedItem.jsx:103,145`, `InboxPage.jsx:1318` | — |
