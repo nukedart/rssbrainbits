@@ -7,9 +7,9 @@ Mark items `[x]` when shipped.
 
 ## Quick Wins (High value, low effort — do these first)
 
-- [ ] **Mute/block keywords** — Client-side keyword filter in InboxPage; matches item title/description; persisted to localStorage. UI: Settings > Muted Keywords (add/remove list). Zero schema changes needed.
-- [ ] **Reading time estimate** — Word count ÷ 200 wpm on extracted article text; show "~N min" in FeedItem card and in ContentViewer header toolbar.
-- [ ] **Podcast/YouTube playback speed** — Speed selector (0.75×/1×/1.25×/1.5×/2×) in PodcastPlayer.jsx using `<audio>.playbackRate`. Persist preference to localStorage.
+- [x] **Mute/block keywords** — Client-side keyword filter in InboxPage; matches item title/description; persisted to localStorage. UI: Settings > Muted Keywords (add/remove list). Zero schema changes needed.
+- [x] **Reading time estimate** — Already implemented in FeedItem.jsx:19 and ContentViewer.jsx:84.
+- [x] **Podcast/YouTube playback speed** — Already implemented in PodcastPlayer.jsx:8 (RATES array + rate state + playbackRate).
 - [ ] **Export highlights to Obsidian (formatted Markdown)** — In ContentViewer highlights export menu, add "Copy for Obsidian" option: frontmatter block (`title`, `source`, `date`), each highlight as `> blockquote` with annotation and `#tags` on next line, wikilink-style `[[tag]]` index. Uses existing `highlightsToMarkdown` in exportUtils.js.
 - [ ] **Feed health indicator** — In ManageFeedsPage, show last-published date per feed and a "⚠ No posts in 60+ days" warning badge. Computed from cached feed data already in localStorage.
 - [ ] **Reading streak / habit tracker** — On StatsPage or TodayPage: GitHub-style heatmap (12 weeks × 7 days) of daily articles read. Data from `history` table already in Supabase.

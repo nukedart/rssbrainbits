@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.426] — 2026-06-11 22:11
+
+- [Feature] Export highlights to Obsidian: new "Copy for Obsidian" menu item in the article overflow menu generates YAML frontmatter + blockquote highlights with [[wikilink]] tags, ready to paste directly into an Obsidian note
+
 ## [1.46.425] — 2026-06-11 22:00
 
 ### Changes since v1.46.424

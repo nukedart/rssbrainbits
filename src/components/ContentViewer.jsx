@@ -16,7 +16,7 @@ import {
 } from "../lib/supabase";
 import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
-import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
+import { highlightsToMarkdown, highlightsToObsidian, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
 import { isProUser, PLANS } from "../lib/plan";
 
@@ -317,6 +317,15 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     }
   }
 
+  async function handleExportObsidian() {
+    const md = highlightsToObsidian(highlights, content?.title || item.title, item.url);
+    if (!md) return;
+    track("highlights_exported", { format: "obsidian", count: highlights.length });
+    const ok = await copyToClipboard(md);
+    setExportFeedback(ok ? "✓ Copied for Obsidian" : "Copy failed");
+    setTimeout(() => setExportFeedback(null), 2200);
+  }
+
   // ── AI Summary ─────────────────────────────────────────────
   async function handleSummarize(style) {
     const text = content?.bodyText || item?.description || "";
@@ -581,6 +590,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             handleShare={handleShare}
             shareFeedback={shareFeedback}
             handleExportHighlights={handleExportHighlights}
+            handleExportObsidian={handleExportObsidian}
             exportFeedback={exportFeedback}
           />
         </div>
@@ -1071,7 +1081,7 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
 
 
 // ── Overflow menu — secondary article actions ─────────────────
-function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setShowTags, showDrawer, setShowDrawer, handleShare, shareFeedback, handleExportHighlights, exportFeedback }) {
+function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setShowTags, showDrawer, setShowDrawer, handleShare, shareFeedback, handleExportHighlights, handleExportObsidian, exportFeedback }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -1111,6 +1121,7 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
           {!yt?.isYouTube && menuItem(`Highlights${highlights.length > 0 ? ` (${highlights.length})` : ""}`, () => setShowDrawer(true))}
           {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback || "Copy highlights as MD", () => handleExportHighlights(false), true)}
           {!yt?.isYouTube && highlights.length > 0 && menuItem("Download highlights .md", () => handleExportHighlights(true))}
+          {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback === "✓ Copied for Obsidian" ? exportFeedback : "Copy for Obsidian ⟦ ⟧", () => handleExportObsidian())}
         </div>
       )}
     </div>

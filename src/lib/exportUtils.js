@@ -66,6 +66,39 @@ export function allHighlightsToMarkdown(highlights) {
   return lines.join("\n");
 }
 
+// Export highlights for one article formatted for Obsidian
+// Produces YAML frontmatter + blockquote highlights with [[wikilink]] tags
+export function highlightsToObsidian(highlights, articleTitle, articleUrl) {
+  if (!highlights?.length) return "";
+
+  const allTags = [...new Set(highlights.flatMap(h => h.tags || []))];
+  const date = new Date().toISOString().slice(0, 10);
+
+  const lines = [];
+  lines.push("---");
+  lines.push(`title: "${(articleTitle || "Article").replace(/"/g, '\\"')}"`);
+  lines.push(`source: "${articleUrl || ""}"`);
+  lines.push(`date: ${date}`);
+  lines.push(`tags: [feedbox${allTags.map(t => `, ${t}`).join("")}]`);
+  lines.push("---");
+  lines.push("");
+
+  highlights.forEach(h => {
+    lines.push(`> ${h.passage}`);
+    lines.push("");
+    if (h.note) {
+      lines.push(h.note);
+      lines.push("");
+    }
+    if (h.tags?.length) {
+      lines.push(h.tags.map(t => `[[${t}]]`).join("  "));
+      lines.push("");
+    }
+  });
+
+  return lines.join("\n");
+}
+
 // Copy text to clipboard, return success bool
 export async function copyToClipboard(text) {
   try {
