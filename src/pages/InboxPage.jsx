@@ -89,6 +89,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [toast, setToast]               = useState(null);
   const [searchResult, setSearchResult]   = useState(null);
   const [liveSearch, setLiveSearch]       = useState(""); // client-side search across unread
+  const [mutedKeywords, setMutedKeywords] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("fb-muted-keywords") || "[]"); } catch { return []; }
+  });
   const [feedErrors, setFeedErrors]         = useState({});   // feedId -> error message
   const [feedLoading, setFeedLoading]       = useState({});   // feedId -> bool
   const [lastRefresh, setLastRefresh]       = useState(null);
@@ -336,6 +339,13 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
     if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  sessionFilterUrlsRef.current.has(i.url));
+    if (mutedKeywords.length > 0) {
+      const muteTerms = mutedKeywords.map(k => k.toLowerCase());
+      items = items.filter(i => {
+        const haystack = `${i.title||""} ${i.description||""}`.toLowerCase();
+        return !muteTerms.some(term => haystack.includes(term));
+      });
+    }
     if (liveSearch.trim().length > 1) {
       const q = liveSearch.toLowerCase();
       items = items.filter(i =>
@@ -347,7 +357,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     return items.sort((a, b) => (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allItems, savedItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, liveSearch, readFilter]);
+  }, [allItems, savedItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, liveSearch, readFilter, mutedKeywords]);
 
   // ── Feed → folder color map (for per-feed colored dots in list rows) ────────
   const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -375,6 +385,17 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   // Reset new-article banner when the user switches source/folder/filter context
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { newItemUrlsRef.current = new Set(); setNewArticleCount(0); }, [activeSource, filterMode, folderDef?.id, feedDef?.id, smartFeedDef?.id]);
+
+  // Sync muted keywords if changed from another tab or Settings page
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === "fb-muted-keywords") {
+        try { setMutedKeywords(JSON.parse(e.newValue || "[]")); } catch { setMutedKeywords([]); }
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   // ── Open item by index ────────────────────────────────────────
   function openByIdx(idx) {

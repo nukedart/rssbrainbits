@@ -85,7 +85,7 @@ find src -name "*.jsx" -o -name "*.js" | xargs grep -l "v$CURRENT" 2>/dev/null |
 done
 
 # ── Step 3: CHANGELOG entry ───────────────────────────────────
-DATE=$(date +%Y-%m-%d)
+DATE=$(date +"%Y-%m-%d %H:%M")
 
 # If CHANGELOG.md has a pre-written [Unreleased] section, promote it.
 # Otherwise auto-generate from git log.

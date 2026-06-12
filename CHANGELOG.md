@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.424] — 2026-06-11 21:58
+
+- [Feature] Muted keywords: add/remove keywords in Settings > Muted Keywords; articles whose title or description match any muted keyword are hidden from all feeds; persisted to localStorage with live sync across tabs
+
 ## [1.46.423] — 2026-06-10
 
 - [UX] ManageFeeds tab (Feeds/Collections) and filter type (All/YouTube/Podcasts/Articles) buttons now have aria-pressed

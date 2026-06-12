@@ -491,6 +491,25 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
   const planName = getPlanName(user);
   const opmlInputRef = useRef(null);
   const [opmlState, setOpmlState] = useState(null); // null | { status: "importing"|"done"|"error", added, failed, total }
+  const [mutedKeywords, setMutedKeywords] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("fb-muted-keywords") || "[]"); } catch { return []; }
+  });
+  const [newKeyword, setNewKeyword] = useState("");
+
+  function saveMuted(updated) {
+    localStorage.setItem("fb-muted-keywords", JSON.stringify(updated));
+    // Notify other tabs / InboxPage via storage event
+    window.dispatchEvent(new StorageEvent("storage", { key: "fb-muted-keywords", newValue: JSON.stringify(updated) }));
+    setMutedKeywords(updated);
+  }
+  function addKeyword() {
+    const kw = newKeyword.trim().toLowerCase();
+    if (!kw || mutedKeywords.includes(kw)) { setNewKeyword(""); return; }
+    saveMuted([...mutedKeywords, kw]);
+    setNewKeyword("");
+  }
+  function removeKeyword(kw) { saveMuted(mutedKeywords.filter(k => k !== kw)); }
+
   const shortcuts = [
     { key: "J / ↓",   action: "Next article" },
     { key: "K / ↑",   action: "Previous article" },
@@ -607,6 +626,62 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               {["10", "20", "50"].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
+        </Card>
+
+        {/* Muted Keywords */}
+        <Card title="Muted Keywords" T={T}>
+          <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 12 }}>
+            Articles whose title or description contain a muted keyword are hidden from all feeds.
+          </div>
+          <div style={{ display: "flex", gap: 8, marginBottom: mutedKeywords.length > 0 ? 12 : 0 }}>
+            <input
+              value={newKeyword}
+              onChange={e => setNewKeyword(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && addKeyword()}
+              placeholder="e.g. crypto, sponsored"
+              aria-label="New muted keyword"
+              style={{
+                flex: 1, fontSize: 13, padding: "6px 10px", borderRadius: 8,
+                border: `1px solid ${T.border}`, background: T.surface,
+                color: T.text, fontFamily: "inherit", outline: "none",
+              }}
+            />
+            <button
+              onClick={addKeyword}
+              aria-label="Add muted keyword"
+              style={{
+                padding: "6px 14px", borderRadius: 8, border: "none",
+                background: T.accent, color: T.accentText, fontFamily: "inherit",
+                fontSize: 13, fontWeight: 600, cursor: "pointer",
+              }}
+            >Mute</button>
+          </div>
+          {mutedKeywords.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {mutedKeywords.map(kw => (
+                <span key={kw} style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  background: T.surface2, border: `1px solid ${T.border}`,
+                  borderRadius: 20, padding: "3px 10px 3px 12px",
+                  fontSize: 12, color: T.text,
+                }}>
+                  {kw}
+                  <button
+                    onClick={() => removeKeyword(kw)}
+                    aria-label={`Remove muted keyword ${kw}`}
+                    style={{
+                      background: "none", border: "none", cursor: "pointer",
+                      color: T.textTertiary, fontSize: 14, lineHeight: 1,
+                      padding: "0 2px", display: "flex", alignItems: "center",
+                    }}
+                  >×</button>
+                </span>
+              ))}
+            </div>
+          )}
+          {mutedKeywords.length === 0 && (
+            <div style={{ fontSize: 12, color: T.textTertiary, fontStyle: "italic" }}>No keywords muted yet.</div>
+          )}
         </Card>
 
         {/* Reading Stats */}
