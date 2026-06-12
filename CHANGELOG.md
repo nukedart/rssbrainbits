@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.428] — 2026-06-11 22:18
+
+- [Feature] Reading activity heatmap: 12-week GitHub-style calendar grid on Reading Stats page, color-coded by daily article count; hover each cell to see date and count
+
 ## [1.46.427] — 2026-06-11 22:14
 
 - [Feature] Feed health indicator: ManageFeeds now shows "⚠ No posts in 60+ days" warning on dormant feeds, computed from cached item dates; hover to see exact last-post date

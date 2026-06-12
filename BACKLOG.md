@@ -11,7 +11,7 @@ Mark items `[x]` when shipped.
 - [x] **Reading time estimate** — Already implemented in FeedItem.jsx:19 and ContentViewer.jsx:84.
 - [x] **Podcast/YouTube playback speed** — Already implemented in PodcastPlayer.jsx:8 (RATES array + rate state + playbackRate).
 - [x] **Export highlights to Obsidian (formatted Markdown)** — In ContentViewer highlights export menu, add "Copy for Obsidian" option: frontmatter block (`title`, `source`, `date`), each highlight as `> blockquote` with annotation and `#tags` on next line, wikilink-style `[[tag]]` index. Uses existing `highlightsToMarkdown` in exportUtils.js.
-- [ ] **Feed health indicator** — In ManageFeedsPage, show last-published date per feed and a "⚠ No posts in 60+ days" warning badge. Computed from cached feed data already in localStorage.
+- [x] **Feed health indicator** — In ManageFeedsPage, show last-published date per feed and a "⚠ No posts in 60+ days" warning badge. Computed from cached feed data already in localStorage.
 - [ ] **Reading streak / habit tracker** — On StatsPage or TodayPage: GitHub-style heatmap (12 weeks × 7 days) of daily articles read. Data from `history` table already in Supabase.
 - [ ] **AI tag suggestions on highlight** — When NotePanel opens on a highlight, call Haiku with the highlight text and return top 3 suggested tags; show as one-click chips. Reuses existing AI infra in fetchers.js.
 - [ ] **Catch-up swipe-to-dismiss** — In Catch-Up filterMode on mobile, add swipe-right gesture on FeedItem to mark as read and remove from list with a spring animation.

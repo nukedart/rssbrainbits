@@ -113,6 +113,30 @@ export function StatsPage() {
   const weekTotal = stats?.thisWeek || 0;
   const dailyAvg  = stats ? Math.round((stats.thisWeek || 0) / 7 * 10) / 10 : 0;
 
+  // Build 12-week (84-day) heatmap: columns=weeks (old→new), rows=Sun–Sat
+  const { heatmapCols, heatmapMax } = useMemo(() => {
+    if (!stats) return { heatmapCols: [], heatmapMax: 1 };
+    const today = new Date();
+    // Start from the Sunday 83 days before today (fills 12 complete week columns)
+    const startOffset = 83 - today.getDay(); // days back to last Sunday 12 weeks ago
+    const cols = []; // 12 columns, each has 7 cells (Sun=0 … Sat=6)
+    let maxCount = 1;
+    for (let w = 0; w < 12; w++) {
+      const col = [];
+      for (let dow = 0; dow < 7; dow++) {
+        const daysBack = startOffset - w * 7 - dow;
+        const d = new Date(today);
+        d.setDate(today.getDate() - daysBack);
+        const iso = d.toISOString().slice(0, 10);
+        const count = daysBack < 0 ? -1 : (stats.perDay[iso] || 0); // -1 = future
+        if (count > maxCount) maxCount = count;
+        col.push({ iso, count, dow });
+      }
+      cols.push(col);
+    }
+    return { heatmapCols: cols, heatmapMax: maxCount };
+  }, [stats]);
+
   return (
     <PageShell title="Reading Stats" subtitle="Your reading activity">
       {loading && <div style={{ display:"flex", justifyContent:"center", paddingTop:80 }}><Spinner size={28} /></div>}
@@ -187,6 +211,51 @@ export function StatsPage() {
               })}
             </div>
           </div>
+
+          {/* 12-week activity heatmap */}
+          {heatmapCols.length > 0 && (
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: "16px" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.textSecondary, marginBottom: 12, textTransform: "uppercase", letterSpacing: ".06em" }}>12-week activity</div>
+              <div style={{ display: "flex", gap: 3, alignItems: "flex-start" }}>
+                {/* Day-of-week labels */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 3, paddingTop: 0, marginRight: 2 }}>
+                  {["S","M","T","W","T","F","S"].map((label, i) => (
+                    <div key={i} style={{ width: 10, height: 10, fontSize: 8, color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {i % 2 === 1 ? label : ""}
+                    </div>
+                  ))}
+                </div>
+                {/* Week columns */}
+                {heatmapCols.map((col, wi) => (
+                  <div key={wi} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                    {col.map(({ iso, count, dow }) => {
+                      const isFuture = count === -1;
+                      const intensity = isFuture ? 0 : count === 0 ? 0 : Math.ceil((count / heatmapMax) * 4);
+                      const isToday = iso === new Date().toISOString().slice(0, 10);
+                      const bg = isFuture ? "transparent"
+                        : intensity === 0 ? T.surface2
+                        : intensity === 1 ? `${T.accent}40`
+                        : intensity === 2 ? `${T.accent}70`
+                        : intensity === 3 ? `${T.accent}99`
+                        : T.accent;
+                      return (
+                        <div
+                          key={iso}
+                          title={isFuture ? "" : `${new Date(iso + "T12:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}: ${count} article${count !== 1 ? "s" : ""}`}
+                          style={{
+                            width: 10, height: 10, borderRadius: 2,
+                            background: bg,
+                            border: isToday ? `1px solid ${T.accent}` : "none",
+                            cursor: count > 0 ? "default" : "default",
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Streak motivation */}
           {stats.streak === 0 && (
