@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-11 | v1.46.427 | Feature | Feed health indicator: ⚠ dormant badge on feeds with no posts in 60+ days in ManageFeeds | `SecondaryPages.jsx:929` | — |
 | 2026-06-11 | v1.46.426 | Feature | Obsidian export: "Copy for Obsidian" menu item outputs YAML frontmatter + [[wikilink]] tags from highlights | `exportUtils.js:69`, `ContentViewer.jsx:19,319` | — |
 | 2026-06-11 | v1.46.424 | Feature | Muted keywords filter: hide articles matching muted terms from all feeds; Settings > Muted Keywords card to add/remove | `InboxPage.jsx:91,341`, `SecondaryPages.jsx:488` | — |
 | 2026-06-10 | v1.46.423 | UX | ManageFeeds tab + filter type buttons: aria-pressed for screen reader state announcements | `SecondaryPages.jsx:1234,1282` | — |

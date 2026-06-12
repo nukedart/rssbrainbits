@@ -927,6 +927,13 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
   const lastSync = age === null ? "Not synced" : age < 1 ? "Just now" : age < 60 ? `${age}m ago` : `${Math.round(age / 60)}h ago`;
   const type = feedType(feed);
   const cachedCount = getCachedFeed(feed.url)?.data?.items?.length ?? null;
+  const latestPublished = useMemo(() => {
+    const items = getCachedFeed(feed.url)?.data?.items;
+    if (!items?.length) return null;
+    const dates = items.map(i => i.date ? new Date(i.date).getTime() : 0).filter(Boolean);
+    return dates.length ? Math.max(...dates) : null;
+  }, [feed.url]);
+  const isDormant = latestPublished !== null && (Date.now() - latestPublished) > 60 * 86400000;
   const currentFolder = folders.find(f => f.id === feed.folder_id);
 
   async function handleMoveToFolder(folderId) {
@@ -986,6 +993,11 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
           onSave={handleRename}
         />
         <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{host}</span>
+        {isDormant && (
+          <span title={`Last post: ${new Date(latestPublished).toLocaleDateString()}`} style={{ fontSize: 10, color: T.warning, fontWeight: 600, letterSpacing: ".02em" }}>
+            ⚠ No posts in 60+ days
+          </span>
+        )}
       </div>
 
       {/* Article count */}

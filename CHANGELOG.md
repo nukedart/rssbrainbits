@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.427] — 2026-06-11 22:14
+
+- [Feature] Feed health indicator: ManageFeeds now shows "⚠ No posts in 60+ days" warning on dormant feeds, computed from cached item dates; hover to see exact last-post date
+
 ## [1.46.426] — 2026-06-11 22:11
 
 - [Feature] Export highlights to Obsidian: new "Copy for Obsidian" menu item in the article overflow menu generates YAML frontmatter + blockquote highlights with [[wikilink]] tags, ready to paste directly into an Obsidian note
