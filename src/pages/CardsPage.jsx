@@ -9,6 +9,7 @@ import { Spinner } from "../components/UI";
 import TagsInput from "../components/TagsInput";
 import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags, deleteHighlight, getHighlightReviews } from "../lib/supabase";
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
+import { askQuestion } from "../lib/fetchers";
 
 const AVATAR_COLORS = ["#2F6FED","#AA8439","#65D5C4","#8B5CF6","#EF4444","#22C55E","#F97316","#EC4899"];
 function themeAvatar(name) {
@@ -53,6 +54,9 @@ export default function CardsPage() {
   const [cardSearch, setCardSearch] = useState("");
   const [globalSearch, setGlobalSearch] = useState("");
   const [newCard, setNewCard] = useState({ passage: "", note: "", color: "yellow", tags: [] });
+  const [chatInput, setChatInput]   = useState("");
+  const [chatAnswer, setChatAnswer] = useState(null);
+  const [chatLoading, setChatLoading] = useState(false);
 
   const allExistingTags = useMemo(() =>
     [...new Set(highlights.flatMap(h => h.tags || []))].sort(),
@@ -124,6 +128,26 @@ export default function CardsPage() {
     a.click();
     URL.revokeObjectURL(a.href);
   }
+
+  async function handleChat(e) {
+    e.preventDefault();
+    if (!chatInput.trim() || chatLoading) return;
+    setChatLoading(true);
+    setChatAnswer(null);
+    const themeCards = selectedTheme === "__untagged__"
+      ? untagged
+      : buckets.find(([t]) => t === selectedTheme)?.[1] || [];
+    const context = themeCards
+      .map(h => `Passage: ${h.passage}${h.note ? `\nNote: ${h.note}` : ""}`)
+      .join("\n\n");
+    try {
+      const answer = await askQuestion(context, selectedTheme || "highlights", chatInput.trim());
+      setChatAnswer(answer);
+    } catch { setChatAnswer("Sorry, couldn't get an answer. Check that AI features are configured."); }
+    setChatLoading(false);
+  }
+
+  useEffect(() => { setChatInput(""); setChatAnswer(null); }, [selectedTheme]);
 
   useEffect(() => {
     if (!user) return;
@@ -289,6 +313,53 @@ export default function CardsPage() {
           {cards.length === 0 && (
             <div style={{ textAlign: "center", padding: "40px 0", color: T.textTertiary, fontSize: 13 }}>
               {cardSearch ? "No cards match your search." : "No cards in this theme yet."}
+            </div>
+          )}
+
+          {/* Chat with highlights */}
+          {allCards.length > 0 && (
+            <div style={{ marginTop: 32, borderTop: `1px solid ${T.border}`, paddingTop: 24 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 12 }}>
+                Ask about these {allCards.length} highlights
+              </div>
+              <form onSubmit={handleChat} style={{ display: "flex", gap: 8 }}>
+                <input
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  placeholder={`Ask anything about "${themeLabel}"…`}
+                  aria-label="Ask a question about your highlights"
+                  disabled={chatLoading}
+                  style={{
+                    flex: 1, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10,
+                    padding: "10px 14px", fontSize: 13, color: T.text, fontFamily: "inherit",
+                    outline: "none", transition: "border-color .12s",
+                    opacity: chatLoading ? 0.6 : 1,
+                  }}
+                  onFocus={e => e.target.style.borderColor = T.accent}
+                  onBlur={e => e.target.style.borderColor = T.border}
+                />
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim() || chatLoading}
+                  style={{
+                    background: T.accent, color: T.accentText, border: "none",
+                    borderRadius: 10, padding: "10px 16px", cursor: chatInput.trim() && !chatLoading ? "pointer" : "default",
+                    fontSize: 13, fontWeight: 600, fontFamily: "inherit", flexShrink: 0,
+                    opacity: !chatInput.trim() || chatLoading ? 0.5 : 1, transition: "opacity .1s",
+                  }}
+                >{chatLoading ? "…" : "Ask"}</button>
+              </form>
+
+              {chatAnswer && (
+                <div style={{
+                  marginTop: 14, padding: "14px 16px", background: T.surface,
+                  border: `1px solid ${T.border}`, borderRadius: 12,
+                  fontSize: 13, color: T.text, lineHeight: 1.65,
+                }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.accent, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 8 }}>Answer</div>
+                  {chatAnswer}
+                </div>
+              )}
             </div>
           )}
         </div>

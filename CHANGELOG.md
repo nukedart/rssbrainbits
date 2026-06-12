@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.434] — 2026-06-11 22:46
+
+- [Feature] Chat with highlights: inside any theme on CardsPage, an "Ask" input lets you ask Haiku questions about that theme's highlights; answer appears inline below the input
+
 ## [1.46.433] — 2026-06-11 22:42
 
 - [Feature] Article translation: overflow menu → "Translate to English" calls Haiku to translate article body in-place; Original/Translated toggle pills appear above the text
