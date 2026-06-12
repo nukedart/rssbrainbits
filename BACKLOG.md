@@ -24,7 +24,7 @@ Mark items `[x]` when shipped.
 
 - [x] **Article translation** — Button in ContentViewer toolbar; calls Haiku "translate this to English, preserve formatting"; replaces body text in-place. Show original/translated toggle.
 - [x] **Chat with my highlights** — Input box on CardsPage: user types a question; selected highlights (filtered by active tag) are sent as context to Haiku; answer rendered below. Uses existing highlights data.
-- [ ] **Image highlighting** — Tap/click an image in ContentViewer to save it as a highlight; store `type: 'image'` + `image_url` in highlights table. Show image thumbnail in HighlightsDrawer and CardsPage.
+- [x] **Image highlighting** — Tap/click an image in ContentViewer to save it as a highlight; store `type: 'image'` + `image_url` in highlights table. Show image thumbnail in HighlightsDrawer and CardsPage.
 
 ---
 

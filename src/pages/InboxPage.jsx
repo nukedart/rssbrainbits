@@ -3,7 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
 import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem, unsaveItem, getSaved,
-         addReadLater, removeReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed } from "../lib/supabase";
+         addReadLater, removeReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed, getAllHighlights } from "../lib/supabase";
 import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChannelRSS } from "../lib/fetchers";
 import { getCachedFeed, invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem, { invalidateProgressCache } from "../components/FeedItem";
@@ -110,6 +110,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [selectedUrls, setSelectedUrls]       = useState(new Set());
   const longPressTimerRef = useRef(null);
+  const [interestKeywords, setInterestKeywords] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("fb-interest-kw") || "[]"); } catch { return []; }
+  });
+  const [smartSort, setSmartSort] = useState(() => localStorage.getItem("fb-smart-sort") === "true");
   const pullStartY = useRef(null); // touch start Y for pull-to-refresh
   const fetchAllRef = useRef(null); // stable ref to fetchAll — accessible from PTR handlers
   const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
@@ -166,6 +170,25 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
   }, [forceOpenSearch]);
 
+
+  // ── Interest keyword profile — built once per session from highlight history ──
+  useEffect(() => {
+    if (!user) return;
+    getAllHighlights(user.id, 500).then(highlights => {
+      const STOP = new Set(["the","a","an","is","are","was","were","be","been","have","has","had","do","does","will","would","could","should","may","might","can","to","of","in","for","on","with","at","by","from","that","this","it","its","as","or","and","but","if","we","you","he","she","they","not","no","all","more","some","any","one","new","also","just","into","about","than","then","there","these","those","after","before","other","over","out","up","so"]);
+      const counts = {};
+      for (const h of highlights) {
+        if ((h.passage || "").startsWith("[IMAGE]: ")) continue;
+        const words = h.passage.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/);
+        for (const w of words) {
+          if (w.length > 4 && !STOP.has(w)) counts[w] = (counts[w] || 0) + 1;
+        }
+      }
+      const kws = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 80).map(([w]) => w);
+      setInterestKeywords(kws);
+      try { localStorage.setItem("fb-interest-kw", JSON.stringify(kws)); } catch {}
+    }).catch(() => {});
+  }, [user?.id]);
 
   // ── Background sync: listen for SW "BG_SYNC" message ─────
   useEffect(() => {
@@ -358,9 +381,20 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         (i.author||"").toLowerCase().includes(q)
       );
     }
+    if (smartSort && interestKeywords.length > 0) {
+      const scoreItem = (item) => {
+        const text = `${item.title||""} ${item.description||""}`.toLowerCase();
+        return interestKeywords.reduce((s, kw) => s + (text.includes(kw) ? 1 : 0), 0);
+      };
+      return items.sort((a, b) => {
+        const sd = scoreItem(b) - scoreItem(a);
+        if (sd !== 0) return sd;
+        return (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0);
+      });
+    }
     return items.sort((a, b) => (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allItems, savedItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, liveSearch, readFilter, mutedKeywords]);
+  }, [allItems, savedItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, liveSearch, readFilter, mutedKeywords, smartSort, interestKeywords]);
 
   // ── Feed → folder color map (for per-feed colored dots in list rows) ────────
   const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -1019,6 +1053,29 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
           {/* Spacer — pushes controls right when title is visible */}
           {(!searchOpen || isMobile) && <div style={{ flex: 1 }} />}
+
+          {/* Smart sort toggle */}
+          {!searchOpen && interestKeywords.length > 0 && (
+            <button
+              onClick={() => { const v = !smartSort; setSmartSort(v); localStorage.setItem("fb-smart-sort", v); }}
+              title={smartSort ? "Smart sort: on — sorted by your interests" : "Smart sort: off — tap to sort by your interests"}
+              aria-pressed={smartSort}
+              style={{
+                background: smartSort ? T.accentSurface : "transparent",
+                border: `1px solid ${smartSort ? T.accent : T.border}`,
+                borderRadius: 20, padding: "3px 10px", cursor: "pointer",
+                fontSize: 11, fontWeight: 600, fontFamily: "inherit", flexShrink: 0,
+                color: smartSort ? T.accent : T.textTertiary,
+                transition: "background .12s, color .12s, border-color .12s",
+                display: "flex", alignItems: "center", gap: 4,
+              }}
+              onMouseEnter={e => { if (!smartSort) { e.currentTarget.style.borderColor = T.textTertiary; e.currentTarget.style.color = T.textSecondary; }}}
+              onMouseLeave={e => { if (!smartSort) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textTertiary; }}}
+            >
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6 1l1.2 2.5 2.8.4-2 2 .5 2.7L6 7.4l-2.5 1.2.5-2.7-2-2 2.8-.4z"/></svg>
+              Smart
+            </button>
+          )}
 
           {/* All / Unread toggle — desktop only; moved to bottom bar on mobile */}
           {filterMode !== "unread" && !searchOpen && !isMobile && (
