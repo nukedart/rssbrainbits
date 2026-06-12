@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-12 | v1.46.437 | Feature | Offline reading: IndexedDB article cache persists across sessions; pre-caching silently fetches recent articles after feed load; reader auto-falls-back to cache when offline | `offlineCache.js` (new), `fetchers.js:1,399,568`, `InboxPage.jsx:7,305`, `main.jsx:7,10` | — |
 | 2026-06-11 | v1.46.436 | Feature | Smart sort: keyword interest profile from highlight history; "Smart" toolbar toggle re-ranks inbox items by relevance; cached in localStorage | `InboxPage.jsx:6,117,175,380,1044` | — |
 | 2026-06-11 | v1.46.435 | Feature | Image highlighting: click images in reader to save as highlight; [IMAGE]: prefix in passage; thumbnails in HighlightsDrawer and CardsPage | `ContentViewer.jsx:77,215,799`, `HighlightsDrawer.jsx:72`, `CardsPage.jsx:737,757`, `index.css:161` | — |
 | 2026-06-11 | v1.46.434 | Feature | Chat with highlights: Ask input in theme view on CardsPage sends all highlights as context to Haiku; answer rendered inline | `CardsPage.jsx:11,57,135,310` | — |

@@ -5,7 +5,7 @@
  * Caches the app shell for offline support.
  */
 
-const CACHE = "feedbox-v1.17";
+const CACHE = "feedbox-v1.18";
 const SHELL = [
   "/", "/index.html", "/feedbox-logo.png", "/favicon.svg", "/manifest.json",
   "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png",

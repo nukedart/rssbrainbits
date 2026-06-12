@@ -4,8 +4,10 @@ import App from "./App.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./index.css";
 import { initReaderPrefs } from "./lib/readerPrefs.js";
+import { pruneOldOfflineArticles } from "./lib/offlineCache.js";
 
 initReaderPrefs();
+pruneOldOfflineArticles();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

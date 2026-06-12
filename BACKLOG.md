@@ -30,8 +30,8 @@ Mark items `[x]` when shipped.
 
 ## Large Effort (Complex — tackle last)
 
-- [ ] **Smart feed AI noise scoring** — Score each incoming item 1–10 for relevance using a keyword interest profile derived from user's highlight history. New `relevance_score` column. Start with keyword matching before ML.
-- [ ] **Offline reading (pre-cache article text)** — Service Worker background sync: after feed fetch, extract full article text for unread items and store in IndexedDB. Reader falls back to IndexedDB when offline.
+- [x] **Smart feed AI noise scoring** — Score each incoming item 1–10 for relevance using a keyword interest profile derived from user's highlight history. New `relevance_score` column. Start with keyword matching before ML.
+- [x] **Offline reading (pre-cache article text)** — Service Worker background sync: after feed fetch, extract full article text for unread items and store in IndexedDB. Reader falls back to IndexedDB when offline.
 - [ ] **Newsletter subscriptions** — User gets a unique `user-id@inbound.feedbox.email`; emails routed via Cloudflare Email Workers → Edge Function → parsed as feed items. Requires email routing infrastructure.
 
 ---

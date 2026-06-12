@@ -2,6 +2,7 @@
 import { getCachedFeed, setCachedFeed } from "./feedCache.js";
 import { getAiProvider } from "./apiKeys.js";
 import { supabase } from "./supabase.js";
+import { getOfflineArticle, setOfflineArticle } from "./offlineCache.js";
 // Readability is loaded lazily inside fetchArticleContent to keep the initial bundle lean.
 
 // Own Cloudflare Worker proxy — fast, free, private, no rate limits.
@@ -393,6 +394,11 @@ function stripHtml(html) {
 // This is what powers the reader view — NOT the RSS description.
 export async function fetchArticleContent(articleUrl) {
   if (_articleCache.has(articleUrl)) return _articleCache.get(articleUrl);
+
+  // Check persistent offline cache — serves cached articles when offline
+  const persisted = await getOfflineArticle(articleUrl);
+  if (persisted) { _articleCache.set(articleUrl, persisted); return persisted; }
+
   const rawHtml = await proxiedFetch(articleUrl);
 
   // Detect Cloudflare/bot challenges — throw so caller can fall back to RSS content
@@ -457,6 +463,7 @@ export async function fetchArticleContent(articleUrl) {
     const result = { title, description, image, url: articleUrl, bodyText, bodyHtml };
     if (_articleCache.size >= 50) _articleCache.delete(_articleCache.keys().next().value);
     _articleCache.set(articleUrl, result);
+    setOfflineArticle(articleUrl, result);
     return result;
   }
 
@@ -563,7 +570,40 @@ export async function fetchArticleContent(articleUrl) {
   const result = { title, description, image, url: articleUrl, bodyText, bodyHtml };
   if (_articleCache.size >= 50) _articleCache.delete(_articleCache.keys().next().value);
   _articleCache.set(articleUrl, result);
+  setOfflineArticle(articleUrl, result);
   return result;
+}
+
+// ── Offline pre-caching ───────────────────────────────────────
+// Called after feeds load to silently cache article text for offline reading.
+// Rate-limited to 1 article/3s, capped at 20 articles from the last 48h.
+let _precaching = false;
+export async function preCacheArticles(items) {
+  if (_precaching || !navigator.onLine) return;
+  _precaching = true;
+  try {
+    const TWO_DAYS = 48 * 60 * 60 * 1000;
+    const candidates = items.filter(item => {
+      if (!item.url || item.isPodcast) return false;
+      if (parseYouTubeUrl(item.url).isYouTube) return false;
+      if (item.fetchFullContent) return false; // already have fullText from RSS
+      const age = Date.now() - new Date(item.date).getTime();
+      return age >= 0 && age < TWO_DAYS;
+    }).slice(0, 20);
+
+    for (const item of candidates) {
+      if (!navigator.onLine) break;
+      // Skip if already cached (in-memory or IndexedDB)
+      if (_articleCache.has(item.url)) continue;
+      const existing = await getOfflineArticle(item.url);
+      if (existing) continue;
+      try { await fetchArticleContent(item.url); } catch { /* best-effort */ }
+      // Pause 3s between fetches to avoid hammering proxies
+      await new Promise(r => setTimeout(r, 3000));
+    }
+  } finally {
+    _precaching = false;
+  }
 }
 
 // ── YouTube ───────────────────────────────────────────────────

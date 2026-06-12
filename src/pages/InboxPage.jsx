@@ -4,7 +4,7 @@ import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
 import { getFeeds, addFeed, deleteFeed, addToHistory, saveItem, unsaveItem, getSaved,
          addReadLater, removeReadLater, getReadUrls, markRead, markAllRead, markUnread, matchesSmartFeed, getAllHighlights } from "../lib/supabase";
-import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChannelRSS } from "../lib/fetchers";
+import { fetchRSSFeed, fetchArticleContent, parseYouTubeUrl, resolveYouTubeChannelRSS, preCacheArticles } from "../lib/fetchers";
 import { getCachedFeed, invalidateAllFeeds, invalidateCachedFeed, cacheAge } from "../lib/feedCache";
 import FeedItem, { invalidateProgressCache } from "../components/FeedItem";
 const ContentViewer = lazy(() => import("../components/ContentViewer"));
@@ -302,6 +302,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       setLastRefresh(new Date());
       // Store all known URLs for new-article detection on next refresh
       setAllItems(prev => { prevItemUrlsRef.current = new Set(prev.map(i => i.url)); return prev; });
+      // Background pre-cache recent articles for offline reading
+      preCacheArticles([...itemMap.values()]);
     };
 
     fetchAllRef.current = fetchAll;

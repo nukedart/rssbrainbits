@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.437] — 2026-06-12 15:16
+
+- [Feature] Offline reading: articles are silently pre-cached to IndexedDB after each feed load (up to 20 recent items, rate-limited to 1/3s); ContentViewer falls back to cached content when offline, with no code change required in the reader
+
 ## [1.46.436] — 2026-06-11 22:57
 
 - [Feature] Smart sort: "Smart" toggle in inbox toolbar re-ranks articles by keyword relevance to your highlight history; interest profile extracted automatically from your highlights and cached locally
