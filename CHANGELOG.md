@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.430] — 2026-06-11 22:26
+
+- [UX] Catch-up swipe-to-dismiss: in Catch-Up mode on mobile, swiping right now flies the article card off-screen before marking it read, giving tactile feedback that the item is cleared
+
 ## [1.46.429] — 2026-06-11 22:21
 
 - [Feature] AI tag suggestions in highlight NotePanel: when a highlight is opened for annotation, Haiku suggests up to 5 relevant theme tags based on the passage text; click any chip to apply instantly

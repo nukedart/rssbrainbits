@@ -1321,6 +1321,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                     isSaved={savedUrls.has(item.url)}
                     feedColor={feedColorMap[item.feedId]}
                     displayPrefs={isMobile ? displayPrefs : undefined}
+                    dismissOnRead={isMobile && filterMode === "catch-up"}
                     onClick={() => { setCursorIdx(i); openByIdx(i); }}
                     onSave={() => handleSaveItem(item)}
                     onReadLater={() => handleReadLater(item)}

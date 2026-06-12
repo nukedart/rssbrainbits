@@ -100,7 +100,7 @@ function ActionBtn({ icon, title, onClick, T, color }) {
 }
 
 // ── Swipe wrapper — right = mark read/unread, left = save for later ──────────
-function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile }) {
+function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile, dismissOnRead }) {
   const rowRef  = useRef(null);
   const hintRef = useRef(null);
   const touch   = useRef(null);
@@ -146,8 +146,20 @@ function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile }) {
     const tc = touch.current;
     touch.current = null;
     if (!tc || !tc.locked) return;
-    if (tc.dx > THRESHOLD) onMarkRead?.();
-    else if (tc.dx < -THRESHOLD) onReadLater?.();
+    if (tc.dx > THRESHOLD) {
+      if (dismissOnRead && rowRef.current) {
+        // Fly off to the right, then call onMarkRead after animation
+        rowRef.current.style.transition = "transform .22s ease-in, opacity .22s ease-in";
+        rowRef.current.style.transform = "translateX(110vw)";
+        rowRef.current.style.opacity = "0";
+        if (hintRef.current) hintRef.current.style.display = "none";
+        setTimeout(() => onMarkRead?.(), 220);
+        return;
+      }
+      onMarkRead?.();
+    } else if (tc.dx < -THRESHOLD) {
+      onReadLater?.();
+    }
     if (rowRef.current) { rowRef.current.style.transform = "translateX(0)"; rowRef.current.style.transition = "transform .18s ease"; setTimeout(() => { if (rowRef.current) rowRef.current.style.transition = ""; }, 200); }
     if (hintRef.current) hintRef.current.style.display = "none";
   }
@@ -278,7 +290,7 @@ function MobileThumb({ item, T, size = 72 }) {
 }
 
 // ── List view item (Things 3 task-row pattern) ───────────────
-function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor, displayPrefs = {} }) {
+function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor, displayPrefs = {}, dismissOnRead }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -296,7 +308,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
       : null;
     const thumb = imgPos !== "none" ? <MobileThumb item={item} T={T} size={imgSize} /> : null;
     return (
-      <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
+      <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile} dismissOnRead={dismissOnRead}>
         {({ swiped, close } = {}) => (
           <div
             role="button"
@@ -473,7 +485,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Card view item ────────────────────────────────────────────
-function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor }) {
+function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected, isRead, isSaved, cardSize = "md", feedColor, dismissOnRead }) {
   const { T } = useTheme();
   const { isMobile } = useBreakpoint();
   const [hovered, setHovered] = useState(false);
@@ -485,7 +497,7 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   const progress = getStoredProgress(item.url);
 
   return (
-    <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile}>
+    <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile} dismissOnRead={dismissOnRead}>
       {({ swiped, close } = {}) => (
         <div
           role="button"
@@ -613,11 +625,11 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 }
 
 // ── Public export ─────────────────────────────────────────────
-export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false, feedColor, displayPrefs }) {
+export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false, feedColor, displayPrefs, dismissOnRead }) {
   if (viewMode === "card") {
-    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} />;
+    return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} dismissOnRead={dismissOnRead} />;
   }
-  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} displayPrefs={displayPrefs} />;
+  return <ListItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} displayPrefs={displayPrefs} dismissOnRead={dismissOnRead} />;
 }, (prev, next) =>
   prev.item === next.item &&
   prev.isSelected === next.isSelected &&
