@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.438] — 2026-06-14 10:11
+
+- [UX] Remove decorative per-row border dividers in inbox list — FeedItem padding and hover background already separate items; the border was adding chrome that competed with content
+
 ## [1.46.437] — 2026-06-12 15:16
 
 - [Feature] Offline reading: articles are silently pre-cached to IndexedDB after each feed load (up to 20 recent items, rate-limited to 1/3s); ContentViewer falls back to cached content when offline, with no code change required in the reader

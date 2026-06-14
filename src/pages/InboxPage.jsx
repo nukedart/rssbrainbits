@@ -1409,7 +1409,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 );
               }
               rows.push(
-                <div key={item.url + i} data-url={item.url} style={{ borderBottom: `1px solid ${T.border}` }}
+                <div key={item.url + i} data-url={item.url}
                   onPointerDown={() => startLongPress(item.url)}
                   onPointerUp={cancelLongPress}
                   onPointerMove={cancelLongPress}
