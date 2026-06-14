@@ -915,7 +915,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
 
       {/* ── Article list ── */}
-      <div style={{ flex: !isMobile && openItem ? "0 0 420px" : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
+      <div style={{ flex: !isMobile && openItem ? `0 0 ${isTablet ? 280 : 420}px` : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
         {/* Toolbar */}
         <div style={{ padding: isMobile ? "0 12px" : "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 6 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 64 : 54, borderBottom: `1px solid ${T.border}` }}>

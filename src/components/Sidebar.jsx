@@ -427,8 +427,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
 
   if (isMobile) return null;
 
-  const collapsed = isTablet || !isOpen;
-  const W = collapsed ? 52 : 208;
+  const collapsed = !isTablet && !isOpen;
+  const W = collapsed ? 52 : (isTablet ? 180 : 208);
 
   const uncategorized = useMemo(() => feeds.filter(f => !f.folder_id), [feeds]);
   const feedsByFolder = useMemo(() => {

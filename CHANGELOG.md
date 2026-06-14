@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.439] — 2026-06-14 10:57
+
+- [Feature] iPad layout: sidebar expands to 180px with labels and full feed list on tablet (768–1023px), replacing the unusable 52px icon-only state; article split-pane narrows list to 280px on tablet so the article view has adequate width
+
 ## [1.46.438] — 2026-06-14 10:11
 
 - [UX] Remove decorative per-row border dividers in inbox list — FeedItem padding and hover background already separate items; the border was adding chrome that competed with content
