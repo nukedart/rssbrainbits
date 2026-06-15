@@ -172,7 +172,11 @@ button { transition: opacity .12s, background .12s, color .12s, border-color .12
 .fb-article-body th{background:rgba(128,128,128,.07);font-weight:600}
 .fb-article-body mark{border-radius:3px;padding:1px 0;cursor:pointer}
 .fb-article-body hr{border:none;height:1px;background:rgba(128,128,128,.18);margin:2.5em auto;width:60%}
-.fb-article-body ::selection{background:var(--accent,#4f8ef7)44}
+/* Selection highlight — covers all article render modes (HTML, bionic, plain text) */
+.fb-article-reader ::selection{background:rgba(254,240,138,.55);color:inherit}
+.fb-article-reader ::-moz-selection{background:rgba(254,240,138,.55);color:inherit}
+.fb-article-body ::selection{background:rgba(254,240,138,.55);color:inherit}
+.fb-article-body ::-moz-selection{background:rgba(254,240,138,.55);color:inherit}
 
 /* ── Accessibility: respect Reduce Motion (iOS Settings → Accessibility → Motion) ── */
 @media (prefers-reduced-motion: reduce) {

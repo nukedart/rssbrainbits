@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-15 | v1.46.441 | Fix | Highlighting: yellow ::selection CSS all article modes; toolbar flips below selection if near top; header+scroll reset on article switch | `index.css:173`, `ContentViewer.jsx:186,799`, `SelectionToolbar.jsx:34,109` | — |
 | 2026-06-15 | v1.46.440 | Perf/Fix | Pre-compute _ts sort key in mergeAndSort; folder filter Set; analytics static import removes build warning | `InboxPage.jsx:246-270,362`, `analytics.js:12-52` | — |
 | 2026-06-14 | v1.46.439 | Feature | iPad layout: sidebar expands with labels+feed list (180px) on tablet; split-pane list narrows to 280px when article open | `Sidebar.jsx:430-431`, `InboxPage.jsx:918` | — |
 | 2026-06-14 | v1.46.438 | UX | Remove decorative borderBottom from inbox item rows — padding + hover bg sufficient separation | `InboxPage.jsx:1412` | — |

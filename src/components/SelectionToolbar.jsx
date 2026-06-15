@@ -31,7 +31,7 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
         const range = selection.getRangeAt(0);
         if (!containerRef.current?.contains(range.commonAncestorContainer)) { setToolbar(null); return; }
         const rect = range.getBoundingClientRect();
-        setToolbar({ x: rect.left + rect.width / 2, y: rect.top, selectedText: text, range: range.cloneRange() });
+        setToolbar({ x: rect.left + rect.width / 2, y: rect.top, bottom: rect.bottom, selectedText: text, range: range.cloneRange() });
         setLookupResult(null);
       }, 10);
     }
@@ -106,12 +106,15 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
   }
 
   const TOOLBAR_W = lookupResult ? 280 : 248;
+  const TOOLBAR_H = lookupResult && lookupResult !== "loading" ? 90 : 52;
   const left = Math.max(8, Math.min(toolbar.x - TOOLBAR_W / 2, window.innerWidth - TOOLBAR_W - 8));
-  const topOffset = lookupResult && lookupResult !== "loading" ? 80 : 56;
+  // Show above selection if there's room, otherwise flip below
+  const aboveY = toolbar.y - TOOLBAR_H - 8;
+  const top = aboveY >= 8 ? aboveY : toolbar.bottom + 8;
 
   return (
     <div ref={toolbarRef} style={{
-      position: "fixed", left, top: toolbar.y - topOffset,
+      position: "fixed", left, top,
       width: TOOLBAR_W, background: T.card, border: `1px solid ${T.border}`,
       borderRadius: 12, boxShadow: "0 4px 20px rgba(0,0,0,.15)",
       zIndex: 600, animation: "slideUp .15s ease", overflow: "hidden",

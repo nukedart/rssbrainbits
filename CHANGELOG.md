@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.441] — 2026-06-15 07:50
+
+- [Fix] Highlighting: selected text now shows a clear yellow highlight (rgba 55% opacity) across all article rendering modes (HTML, bionic, plain text); previously the selection was 27% opacity blue and invisible in dark mode, and missing entirely in non-HTML paths
+- [Fix] Highlighting: SelectionToolbar now flips below the selection when there isn't enough room above the viewport top, preventing it from clipping off-screen
+- [Fix] Reader header: reset headerVisible, headerAccRef, and scrollTop to 0 when switching articles — previously the auto-hide state from a previous article persisted into the next, making the back button appear hidden behind the hero image
+
 ## [1.46.440] — 2026-06-15 07:39
 
 - [Perf] Pre-compute sort timestamp (_ts) per feed item so mergeAndSort compares numbers instead of constructing Date objects on every comparison — eliminates ~11k Date allocations per full feed load

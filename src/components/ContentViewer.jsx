@@ -184,7 +184,9 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   useEffect(() => {
     if (!user || !item?.url) return;
     setHeaderVisible(true);
+    headerAccRef.current = 0;
     lastScrollYRef.current = 0;
+    if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
     getHighlights(user.id, item.url).then(setHighlights).catch(console.error);
     // Load saved reading progress
     getReadingProgress(user.id, item.url).then(prog => {
@@ -796,7 +798,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               )}
 
               {/* Article body */}
-              <div ref={articleRef} style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em", position: "relative" }}
+              <div ref={articleRef} className="fb-article-reader" style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em", position: "relative" }}
                 onClick={e => { if (e.target.tagName === "IMG") handleImageHighlight(e.target.src); }}
               >
               {imgFeedback && (
