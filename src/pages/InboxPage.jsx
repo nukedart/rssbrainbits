@@ -243,8 +243,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       }
 
       function mergeAndSort(newItems) {
-        newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item }); });
-        const sorted = [...itemMap.values()].sort((a, b) => new Date(b.date) - new Date(a.date));
+        newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item, _ts: new Date(item.date || 0).getTime() }); });
+        const sorted = [...itemMap.values()].sort((a, b) => b._ts - a._ts);
         if (prevItemUrlsRef.current.size > 0) {
           const freshUrls = sorted.filter(i => !prevItemUrlsRef.current.has(i.url)).map(i => i.url);
           freshUrls.forEach(u => newItemUrlsRef.current.add(u));
@@ -262,12 +262,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           const cached = getCachedFeed(feed.url);
           if (cached?.data?.items) {
             cached.data.items.forEach(item => {
-              if (item.url) itemMap.set(normaliseUrl(item.url), { ...item, feedId: feed.id, source: feed.name || cached.data.title, fetchFullContent: !!feed.fetch_full_content, type: feed.type || "rss" });
+              if (item.url) itemMap.set(normaliseUrl(item.url), { ...item, feedId: feed.id, source: feed.name || cached.data.title, fetchFullContent: !!feed.fetch_full_content, type: feed.type || "rss", _ts: new Date(item.date || 0).getTime() });
             });
           }
         });
         if (itemMap.size > 0) {
-          setAllItems([...itemMap.values()].sort((a, b) => new Date(b.date) - new Date(a.date)));
+          setAllItems([...itemMap.values()].sort((a, b) => b._ts - a._ts));
           setLoadingItems(false);
         }
       }
@@ -358,8 +358,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     if (filterMode === "folder") {
       if (!folderDef) return [];
-      const folderFeedIds = feeds.filter(f => f.folder_id === folderDef.id).map(f => f.id);
-      items = items.filter((i) => folderFeedIds.includes(i.feedId));
+      const folderFeedIds = new Set(feeds.filter(f => f.folder_id === folderDef.id).map(f => f.id));
+      items = items.filter((i) => folderFeedIds.has(i.feedId));
     }
     if (filterMode === "catch-up") {
       const sevenDaysAgo = Date.now() - 7 * 86400000;

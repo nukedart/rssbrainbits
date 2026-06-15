@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-15 | v1.46.440 | Perf/Fix | Pre-compute _ts sort key in mergeAndSort; folder filter Set; analytics static import removes build warning | `InboxPage.jsx:246-270,362`, `analytics.js:12-52` | — |
 | 2026-06-14 | v1.46.439 | Feature | iPad layout: sidebar expands with labels+feed list (180px) on tablet; split-pane list narrows to 280px when article open | `Sidebar.jsx:430-431`, `InboxPage.jsx:918` | — |
 | 2026-06-14 | v1.46.438 | UX | Remove decorative borderBottom from inbox item rows — padding + hover bg sufficient separation | `InboxPage.jsx:1412` | — |
 | 2026-06-12 | v1.46.437 | Feature | Offline reading: IndexedDB article cache persists across sessions; pre-caching silently fetches recent articles after feed load; reader auto-falls-back to cache when offline | `offlineCache.js` (new), `fetchers.js:1,399,568`, `InboxPage.jsx:7,305`, `main.jsx:7,10` | — |

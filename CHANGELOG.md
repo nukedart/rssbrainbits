@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.440] — 2026-06-15 07:39
+
+- [Perf] Pre-compute sort timestamp (_ts) per feed item so mergeAndSort compares numbers instead of constructing Date objects on every comparison — eliminates ~11k Date allocations per full feed load
+- [Perf] Folder filter now uses a Set for O(1) feedId lookup instead of Array.includes O(n)
+- [Fix] analytics.js: replaced unnecessary dynamic import of supabase with static import — removes build warning and eliminates one async tick per track() call
+
 ## [1.46.439] — 2026-06-14 10:57
 
 - [Feature] iPad layout: sidebar expands to 180px with labels and full feed list on tablet (768–1023px), replacing the unusable 52px icon-only state; article split-pane narrows list to 280px on tablet so the article view has adequate width

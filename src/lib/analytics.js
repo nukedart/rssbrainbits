@@ -9,7 +9,8 @@
 // SQL to run in Supabase:
 //   See supabase/migrations/analytics_events.sql
 
-let _supabase = null;
+import { supabase } from "./supabase.js";
+
 let _userId = null;
 
 // Stable session ID for grouping events within one browser session
@@ -28,20 +29,10 @@ export function identify(user) {
   _userId = user?.id ?? null;
 }
 
-// Lazily import supabase to avoid circular deps
-async function getClient() {
-  if (!_supabase) {
-    const mod = await import("./supabase.js");
-    _supabase = mod.supabase;
-  }
-  return _supabase;
-}
-
 // Main tracking function — fire and forget, never throws
 export async function track(event, properties = {}) {
   try {
-    const sb = await getClient();
-    await sb.from("analytics_events").insert({
+    await supabase.from("analytics_events").insert({
       event,
       user_id: _userId,
       session_id: SESSION_ID,
