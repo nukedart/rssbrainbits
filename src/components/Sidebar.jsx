@@ -445,7 +445,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
     { id:"readlater", Icon:Icons.ReadLater, label:"Saved",   badge: 0 },
     { id:"review",    Icon:Icons.Review,    label:"Review",  badge: dueCount },
     { id:"cards",     Icon:Icons.Cards,     label:"Cards",   badge: 0 },
-    { id:"history",   Icon:Icons.History,   label:"History", badge: 0 },
   ], [dueCount]);
 
   return (
@@ -512,26 +511,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
         {(smartFeeds.length > 0 || feeds.length > 0) && (
           <>
             {!collapsed && <SectionLabel label="Smart" action={onAddSmartFeed} actionTitle="New smart feed" T={T} />}
-            {/* Built-in: Catch up (articles older than 7 days, unread) */}
-            <div style={{ display:"flex", alignItems:"center", borderRadius:8, background: active==="catch-up"?T.surface:"transparent", transition:"background .15s", marginBottom:1 }}
-              onMouseEnter={e => { if (active!=="catch-up") e.currentTarget.style.background=T.surface; }}
-              onMouseLeave={e => { if (active!=="catch-up") e.currentTarget.style.background="transparent"; }}
-            >
-              <button
-                onClick={() => onNavigate("catch-up")}
-                title={collapsed ? "Catch up" : undefined}
-                aria-label="Catch up"
-                aria-current={active === "catch-up" ? "page" : undefined}
-                style={{ display:"flex", alignItems:"center", gap:7, flex:1, padding: collapsed?"7px 6px":"5px 10px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", textAlign:"left", minWidth:0, justifyContent: collapsed?"center":"flex-start" }}
-              >
-                <span style={{ width:7, height:7, borderRadius:"50%", background: active==="catch-up" ? T.accent : T.textTertiary, flexShrink:0, opacity: active==="catch-up" ? 1 : 0.6 }} />
-                {!collapsed && (
-                  <span style={{ flex:1, fontSize:12.5, fontWeight:active==="catch-up"?500:400, color:active==="catch-up"?T.accent:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
-                    Catch up
-                  </span>
-                )}
-              </button>
-            </div>
             {smartFeeds.map(sf => (
               <SmartRow key={sf.id} sf={sf} active={active} onNavigate={onNavigate} onEdit={onEditSmartFeed} collapsed={collapsed} T={T} />
             ))}

@@ -22,7 +22,6 @@ const CardsPage      = lazy(() => import("./pages/CardsPage"));
 
 // Named exports from SecondaryPages all share one chunk
 const lazySecondary = () => import("./pages/SecondaryPages");
-const HistoryPage    = lazy(() => lazySecondary().then(m => ({ default: m.HistoryPage })));
 const ReadLaterPage  = lazy(() => import("./pages/ReadLaterPage"));
 const SettingsPage   = lazy(() => lazySecondary().then(m => ({ default: m.SettingsPage })));
 const StatsPage      = lazy(() => lazySecondary().then(m => ({ default: m.StatsPage })));
@@ -77,7 +76,7 @@ function AppShell() {
   useEffect(() => { identify(user); }, [user]);
 
   useEffect(() => {
-    const PAGE_TITLES = { inbox: "Inbox", today: "Today", cards: "Cards", review: "Review", readlater: "Saved", history: "History", stats: "Stats", settings: "Settings", analytics: "Analytics" };
+    const PAGE_TITLES = { inbox: "Inbox", today: "Today", cards: "Cards", review: "Review", readlater: "Saved", stats: "Stats", settings: "Settings", analytics: "Analytics" };
     const base = page.startsWith("feed:") ? "Feed" : page.startsWith("folder:") ? "Folder" : page.startsWith("smart:") ? "Smart Feed" : PAGE_TITLES[page];
     document.title = base ? `${base} — Feedbox` : "Feedbox";
   }, [page]);
@@ -236,11 +235,9 @@ function AppShell() {
       return <InboxPage filterMode="youtube-all" ytFeedIds={ytFeeds.map(f => f.id)} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} onNavigate={navigateTo} />;
     }
     switch (page) {
-      case "catch-up":     return <InboxPage filterMode="catch-up" onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} user={user} onNavigate={navigateTo} />;
       case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={setPodcastItem} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} forceOpenSearch={forceOpenSearch} onForcedSearchClose={() => setForceOpenSearch(false)} onNavigate={navigateTo} />;
       case "today":        return <TodayPage feeds={feeds} onNavigate={navigateTo} feedUnreadCounts={feedUnreadCounts} unreadCount={unreadCount} />;
       case "readlater":    return <ReadLaterPage />;
-      case "history":      return <HistoryPage />;
       case "stats":        return <StatsPage />;
       case "notes":        return <CardsPage />; // redirect legacy notes links to Cards
       case "review":       return <ReviewPage onDueCount={setDueCount} />;

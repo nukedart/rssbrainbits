@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.442] — 2026-06-15 08:02
+
+- [UX] Removed History nav item and Catch-Up smart filter — keeps nav to essential views only (Inbox, Today, Cards, Review, Saved)
+
 ## [1.46.441] — 2026-06-15 07:50
 
 - [Fix] Highlighting: selected text now shows a clear yellow highlight (rgba 55% opacity) across all article rendering modes (HTML, bionic, plain text); previously the selection was 27% opacity blue and invisible in dark mode, and missing entirely in non-HTML paths

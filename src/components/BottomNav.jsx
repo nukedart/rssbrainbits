@@ -134,7 +134,7 @@ export default function BottomNav({
       {NAV_ITEMS.map(({ id, Icon, label, special }) => {
 
         if (special === "feeds") {
-          const isActive = active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:") || active === "catch-up";
+          const isActive = active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:") ;
           return (
             <button
               key="feeds"
