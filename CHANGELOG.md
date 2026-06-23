@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.443] — 2026-06-23 16:59
+
+- [UX] Login page simplified to OAuth-only (GitHub + Google) — removes email/password and magic-link forms, reducing auth surface area and login friction
+
 ## [1.46.442] — 2026-06-15 08:02
 
 - [UX] Removed History nav item and Catch-Up smart filter — keeps nav to essential views only (Inbox, Today, Cards, Review, Saved)

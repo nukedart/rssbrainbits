@@ -3,6 +3,7 @@
 Each row is one `/iterate` run. Token costs are for the full Claude Code session — run `/cost` at the end of a session to get the number, then note it in the Session Cost column.
 
 | Date | Version | Area | Change | Files | Session Cost |
+| 2026-06-23 | v1.46.443 | UX | Login simplified to OAuth-only (GitHub + Google) — removed email/password and magic-link forms | `LoginPage.jsx:31-91` | — |
 | 2026-06-15 | v1.46.442 | UX | Removed History nav + Catch-Up smart filter for minimal nav | `App.jsx:25,80,239,243`, `BottomNav.jsx:137`, `Sidebar.jsx` | — |
 | 2026-06-15 | v1.46.441 | Fix | Highlighting: yellow ::selection CSS all article modes; toolbar flips below selection if near top; header+scroll reset on article switch | `index.css:173`, `ContentViewer.jsx:186,799`, `SelectionToolbar.jsx:34,109` | — |
 | 2026-06-15 | v1.46.440 | Perf/Fix | Pre-compute _ts sort key in mergeAndSort; folder filter Set; analytics static import removes build warning | `InboxPage.jsx:246-270,362`, `analytics.js:12-52` | — |
