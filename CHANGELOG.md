@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.447] — 2026-06-24 10:09
+
+- [Fix] Podcast player now shows loading spinner immediately on play instead of waiting for the browser's `waiting` event — eliminates the 1–3s "frozen" gap before buffering feedback appears
+
 ## [1.46.446] — 2026-06-24 09:47
 
 ### Changes since v1.46.445

@@ -265,7 +265,7 @@ export default function PodcastPlayer({ item, onClose }) {
 
   const [expanded,   setExpanded]  = useState(false);
   const [playing,    setPlaying]   = useState(false);
-  const [loading,    setLoading]   = useState(false); // driven by waiting/canplay events
+  const [loading,    setLoading]   = useState(true);  // true until canplay — shows spinner immediately
   const [rate,       setRate]      = useState(1);
   const [volume,     setVolume]    = useState(1);
   const [sleepTimer, setSleep]     = useState(null);
@@ -341,7 +341,8 @@ export default function PodcastPlayer({ item, onClose }) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.play().catch(() => {}); // silently ignored if browser blocks (iOS policy)
+    if (audio.readyState < 3) setLoading(true); // show spinner immediately if not buffered
+    audio.play().catch(() => { setLoading(false); });
   }, [item?.audioUrl]);
 
   // Persist seek position every 10s (not on every timeupdate)
@@ -363,6 +364,7 @@ export default function PodcastPlayer({ item, onClose }) {
       audio.pause();
     } else {
       setPlaying(true); // optimistic — corrected by playing/pause events if needed
+      if (audio.readyState < 3) setLoading(true);
       audio.play().catch(err => {
         console.error(err);
         setPlaying(false);
