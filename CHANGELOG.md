@@ -3,6 +3,16 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.445] — 2026-06-23 23:24
+
+### Changes since v1.46.443
+
+---
+
+## [1.46.444] — 2026-06-23 23:23
+
+- [Fix] Removed dead email/magic-link auth functions from supabase.js and useAuth.jsx — these were unused after the LoginPage OAuth-only simplification
+
 ## [1.46.443] — 2026-06-23 16:59
 
 - [UX] Login page simplified to OAuth-only (GitHub + Google) — removes email/password and magic-link forms, reducing auth surface area and login friction
