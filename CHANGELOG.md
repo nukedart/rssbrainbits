@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.448] — 2026-06-24 13:11
+
+- [Polish] Unified "Saved" bookmark icon between Sidebar and BottomNav — desktop and mobile now show the same icon shape for the same page
+
 ## [1.46.447] — 2026-06-24 10:09
 
 - [Fix] Podcast player now shows loading spinner immediately on play instead of waiting for the browser's `waiting` event — eliminates the 1–3s "frozen" gap before buffering feedback appears
