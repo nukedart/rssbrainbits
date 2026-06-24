@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.446] — 2026-06-24 09:47
+
+### Changes since v1.46.445
+
+---
+
 ## [1.46.445] — 2026-06-23 23:24
 
 ### Changes since v1.46.443
