@@ -47,8 +47,8 @@ const NAV_ITEMS = [
   { id: "inbox",     Icon: InboxIcon,  label: "Inbox"  },
   { id: "today",     Icon: TodayIcon,  label: "Today"  },
   { id: "readlater", Icon: SavedIcon,  label: "Saved"  },
-  { id: "review",    Icon: ReviewIcon, label: "Review" },
   { id: "cards",     Icon: CardIcon,   label: "Cards"  },
+  { id: "review",    Icon: ReviewIcon, label: "Review" },
 ];
 
 function CountBadge({ count, T }) {

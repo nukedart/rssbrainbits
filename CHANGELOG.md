@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.449] — 2026-06-25 16:10
+
+- [Nav] Cards moved before Review in Sidebar and BottomNav — matches the natural read→highlight→Cards→Review journey and reflects product priority
+
 ## [1.46.448] — 2026-06-24 13:11
 
 - [Polish] Unified "Saved" bookmark icon between Sidebar and BottomNav — desktop and mobile now show the same icon shape for the same page
