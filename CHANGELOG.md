@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.456] — 2026-06-26 09:10
+
+- [UX] Bottom nav: remove text labels, increase icon size 20→22px and pill padding for a cleaner icon-only tab bar
+
 ## [1.46.455] — 2026-06-26 08:54
 
 - [UX] Bottom nav active state: icon pill background (iOS-style), labels 9→10px, badge positions adjusted — active page is now immediately obvious at a glance
