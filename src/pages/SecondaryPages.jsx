@@ -1455,7 +1455,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
             {/* Feed groups */}
             {feeds.length === 0 ? (
               <div style={{ textAlign: "center", padding: "60px 20px", color: T.textTertiary }}>
-                <div style={{ fontSize: 36, marginBottom: 12 }}>📡</div>
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45, marginBottom: 12 }}><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
                 <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 6 }}>No sources yet</div>
                 <div style={{ fontSize: 13, marginBottom: 20 }}>Add your first RSS feed, podcast, or YouTube channel.</div>
                 <button onClick={onAddSource}
@@ -1495,7 +1495,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
 
             {folders.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px 20px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, color: T.textTertiary }}>
-                <div style={{ fontSize: 32, marginBottom: 10 }}>📁</div>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45, marginBottom: 10 }}><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 6 }}>No collections yet</div>
                 <div style={{ fontSize: 13, marginBottom: 18 }}>Organize your feeds into collections to keep things tidy.</div>
                 <button onClick={onAddFolder}

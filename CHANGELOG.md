@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.458] — 2026-06-26 14:39
+
+- [Polish] Replace 📡 and 📁 emoji empty states in Manage Feeds with theme-aware SVGs
+
 ## [1.46.457] — 2026-06-26 14:38
 
 - [Perf] TodayPage Queue rows pre-populate from shared localStorage caches (reviews + saved) — skeletons gone on repeat visits
