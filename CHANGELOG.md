@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.452] — 2026-06-26 07:15
+
+- [Polish] Today page Queue now shows skeleton rows while loading instead of misleading "No cards due" / "Nothing saved" false empty states
+
+
 ## [1.46.451] — 2026-06-26 07:11
 
 - [Perf] Cards page now loads instantly on repeat visits via stale-while-revalidate localStorage cache for highlights and review state

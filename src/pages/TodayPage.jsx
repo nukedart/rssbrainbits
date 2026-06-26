@@ -70,8 +70,8 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
 
   const [streak, setStreak]         = useState(0);
   const [thisWeek, setThisWeek]     = useState(0);
-  const [reviewDue, setReviewDue]   = useState(0);
-  const [savedItems, setSavedItems] = useState([]);
+  const [reviewDue, setReviewDue]   = useState(null);
+  const [savedItems, setSavedItems] = useState(null);
   const [todayLog, setTodayLog]     = useState([]);
   const [loading, setLoading]       = useState(true);
   const [openItem, setOpenItem]     = useState(null);
@@ -126,7 +126,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
   const maxPulse = feedPulse[0]?.count || 1;
 
   const oldestSaved = useMemo(() =>
-    savedItems.length > 0 ? daysSince(savedItems[savedItems.length - 1]?.saved_at) : 0,
+    savedItems?.length > 0 ? daysSince(savedItems[savedItems.length - 1]?.saved_at) : 0,
   [savedItems]);
 
   const pad = isMobile ? "0 16px 96px" : "0 24px 48px";
@@ -170,22 +170,24 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
             T={T}
             icon={<Ic.Review />}
             accent={reviewDue > 0}
-            label={reviewDue > 0 ? `${reviewDue} card${reviewDue !== 1 ? "s" : ""} due` : "No cards due"}
-            sub={reviewDue > 0 ? "Spaced repetition · tap to review" : "All caught up"}
+            label={reviewDue === null ? "" : (reviewDue > 0 ? `${reviewDue} card${reviewDue !== 1 ? "s" : ""} due` : "No cards due")}
+            sub={reviewDue === null ? "" : (reviewDue > 0 ? "Spaced repetition · tap to review" : "All caught up")}
             cta={reviewDue > 0 ? "Review" : null}
             onCta={() => onNavigate("review")}
+            loading={reviewDue === null}
           />
           <QueueRow
             T={T}
             icon={<Ic.Saved />}
             accent={false}
-            label={savedItems.length > 0 ? `${savedItems.length} saved` : "Nothing saved"}
-            sub={savedItems.length > 0
+            label={savedItems === null ? "" : (savedItems.length > 0 ? `${savedItems.length} saved` : "Nothing saved")}
+            sub={savedItems === null ? "" : (savedItems.length > 0
               ? (oldestSaved > 1 ? `Oldest ${oldestSaved}d ago — don't let it pile up` : "Saved recently")
-              : "Bookmark articles to read later"}
-            cta={savedItems.length > 0 ? "Read" : null}
+              : "Bookmark articles to read later")}
+            cta={savedItems !== null && savedItems.length > 0 ? "Read" : null}
             onCta={() => onNavigate("readlater")}
             warn={oldestSaved > 7}
+            loading={savedItems === null}
           />
           <QueueRow
             T={T}
@@ -337,8 +339,19 @@ function SectionLabel({ T, children }) {
   );
 }
 
-function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, last }) {
+function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, last, loading }) {
   const [hov, setHov] = useState(false);
+  if (loading) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderBottom: `1px solid ${T.border}` }}>
+        <div className="skeleton" style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0 }} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+          <div className="skeleton" style={{ height: 13, borderRadius: 4, width: "45%" }} />
+          <div className="skeleton" style={{ height: 10, borderRadius: 4, width: "65%" }} />
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       onMouseEnter={() => setHov(true)}
