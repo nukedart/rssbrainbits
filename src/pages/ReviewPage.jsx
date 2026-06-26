@@ -120,6 +120,22 @@ export default function ReviewPage({ onDueCount }) {
 
   useEffect(() => {
     if (!user) return;
+    const hKey = `fb-highlights-${user.id}`;
+    const rKey = `fb-highlight-reviews-${user.id}`;
+    try {
+      const hs = JSON.parse(localStorage.getItem(hKey) || "null");
+      const rs = JSON.parse(localStorage.getItem(rKey) || "null");
+      if (hs && rs) {
+        setHighlights(hs);
+        const map = {};
+        rs.forEach(r => { map[r.highlight_id] = r; });
+        setReviews(map);
+        const quota = getDailyQuota();
+        const doneToday = getTodayCount(user.id);
+        setSessionQuota(Math.max(0, quota - doneToday));
+        setLoading(false);
+      }
+    } catch {}
     Promise.all([getAllHighlights(user.id), getHighlightReviews(user.id)])
       .then(([hs, rs]) => {
         setHighlights(hs);
@@ -140,10 +156,15 @@ export default function ReviewPage({ onDueCount }) {
           } catch {}
         }
         setReviews(map);
-        // Compute how many cards remain in today's quota
-        const quota = getDailyQuota();
-        const doneToday = getTodayCount(user.id);
-        setSessionQuota(Math.max(0, quota - doneToday));
+        try { localStorage.setItem(hKey, JSON.stringify(hs)); } catch {}
+        try { localStorage.setItem(rKey, JSON.stringify(rs)); } catch {}
+        // Recompute quota only if not already set from cache
+        setSessionQuota(prev => {
+          if (prev !== null) return prev;
+          const quota = getDailyQuota();
+          const doneToday = getTodayCount(user.id);
+          return Math.max(0, quota - doneToday);
+        });
       })
       .catch(console.error)
       .finally(() => setLoading(false));

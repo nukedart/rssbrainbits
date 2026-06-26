@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.453] — 2026-06-26 07:17
+
+- [Perf] Review page now starts instantly on repeat visits by reading from the shared highlights/review localStorage cache written by the Cards page — queue appears without waiting for Supabase
+
+
 ## [1.46.452] — 2026-06-26 07:15
 
 - [Polish] Today page Queue now shows skeleton rows while loading instead of misleading "No cards due" / "Nothing saved" false empty states
