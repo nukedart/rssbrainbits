@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.457] — 2026-06-26 14:38
+
+- [Perf] TodayPage Queue rows pre-populate from shared localStorage caches (reviews + saved) — skeletons gone on repeat visits
+
 ## [1.46.456] — 2026-06-26 09:10
 
 - [UX] Bottom nav: remove text labels, increase icon size 20→22px and pill padding for a cleaner icon-only tab bar

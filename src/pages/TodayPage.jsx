@@ -82,6 +82,17 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
       const raw = localStorage.getItem(`fb-streak-${user.id}`);
       setStreak(raw ? (JSON.parse(raw).streak ?? 0) : 0);
     } catch {}
+    try {
+      const rs = JSON.parse(localStorage.getItem(`fb-highlight-reviews-${user.id}`) || "null");
+      if (rs) {
+        const today = new Date().toISOString().slice(0, 10);
+        setReviewDue(rs.filter(r => !r.next_review || r.next_review <= today).length);
+      }
+    } catch {}
+    try {
+      const sv = JSON.parse(localStorage.getItem(`fb-saved-${user.id}`) || "null");
+      if (sv) setSavedItems(sv);
+    } catch {}
 
     setLoading(true);
     Promise.allSettled([

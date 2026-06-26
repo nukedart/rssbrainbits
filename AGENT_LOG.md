@@ -14,6 +14,8 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-26 | v1.46.453 | Perf | Review page reads from shared highlights/review cache (written by Cards) — session starts instantly | `ReviewPage.jsx:121-167` | — |
 | 2026-06-26 | v1.46.454 | Polish | Replaced emoji empty-state icons with theme-aware SVGs in Inbox and Cards pages | `InboxPage.jsx:1364`, `CardsPage.jsx:645` | — |
 | 2026-06-26 | v1.46.455 | UX | Bottom nav icon pill active state + labels 9→10px + badge offset fix | `BottomNav.jsx:54-177` | — |
+| 2026-06-26 | v1.46.456 | UX | Bottom nav: icon-only (no labels), icon 20→22px, pill padding 3→6px vertical | `BottomNav.jsx:116-177` | — |
+| 2026-06-26 | v1.46.457 | Perf | TodayPage Queue pre-populates reviewDue + savedItems from shared caches before Supabase fetch | `TodayPage.jsx:81-95` | — |
 | 2026-06-15 | v1.46.442 | UX | Removed History nav + Catch-Up smart filter for minimal nav | `App.jsx:25,80,239,243`, `BottomNav.jsx:137`, `Sidebar.jsx` | — |
 | 2026-06-15 | v1.46.441 | Fix | Highlighting: yellow ::selection CSS all article modes; toolbar flips below selection if near top; header+scroll reset on article switch | `index.css:173`, `ContentViewer.jsx:186,799`, `SelectionToolbar.jsx:34,109` | — |
 | 2026-06-15 | v1.46.440 | Perf/Fix | Pre-compute _ts sort key in mergeAndSort; folder filter Set; analytics static import removes build warning | `InboxPage.jsx:246-270,362`, `analytics.js:12-52` | — |
