@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.462] — 2026-06-26 15:34
+
+- [Nav] Sidebar active state matches BottomNav icon-pill design — consistent active indicator across desktop and mobile
+
 ## [1.46.461] — 2026-06-26 14:44
 
 - [Polish] Replace 🏷️ ✍️ 📝 emoji tab icons in Notes empty states and 😵‍💫 in ErrorBoundary with SVGs

@@ -60,14 +60,14 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
         justifyContent: collapsed ? "center" : "flex-start",
         borderRadius: 8, border:"none", cursor:"pointer",
         width:"100%", textAlign:"left",
-        background: isActive ? T.accentSurface : "transparent",
+        background: "transparent",
         fontFamily:"inherit", transition:"background .12s",
         position: "relative",
       }}
       onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
       onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
     >
-      <span style={{ color: isActive ? T.accent : T.textTertiary, display:"flex", flexShrink:0, position:"relative" }}>
+      <span style={{ display:"flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: collapsed ? "4px" : "4px 8px", transition: "background .12s", color: isActive ? T.accent : T.textTertiary, flexShrink:0, position:"relative" }}>
         <Icon />
         {badge > 0 && collapsed && (
           <span style={{
