@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.450] — 2026-06-26 06:51
+
+- [Perf] Saved page now loads instantly on repeat visits via stale-while-revalidate localStorage cache; also excludes unused search_vector column from Supabase query to reduce payload size
+
 ## [1.46.449] — 2026-06-25 16:10
 
 - [Nav] Cards moved before Review in Sidebar and BottomNav — matches the natural read→highlight→Cards→Review journey and reflects product priority

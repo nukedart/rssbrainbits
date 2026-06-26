@@ -53,13 +53,25 @@ export default function ReadLaterPage() {
 
   useEffect(() => {
     if (!user) return;
-    getReadLater(user.id).then(setItems).catch(() => {}).finally(() => setLoading(false));
+    const cacheKey = `fb-saved-${user.id}`;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) { setItems(JSON.parse(cached)); setLoading(false); }
+    } catch {}
+    getReadLater(user.id).then(data => {
+      setItems(data);
+      try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch {}
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [user]);
 
   function handleRemove(url, e) {
     e?.stopPropagation();
     removeReadLater(user.id, url).catch(() => {});
-    setItems(prev => prev.filter(i => i.url !== url));
+    setItems(prev => {
+      const next = prev.filter(i => i.url !== url);
+      try { localStorage.setItem(`fb-saved-${user.id}`, JSON.stringify(next)); } catch {}
+      return next;
+    });
     if (openItem?.url === url) setOpenItem(null);
   }
 
@@ -75,7 +87,11 @@ export default function ReadLaterPage() {
         item = { url, title: c.title || url, source: new URL(url).hostname, description: c.description, image: c.image };
       } catch {}
       await addReadLater(user.id, item);
-      setItems(prev => [{ ...item, saved_at: new Date().toISOString(), is_read_later: true }, ...prev]);
+      setItems(prev => {
+        const next = [{ ...item, saved_at: new Date().toISOString(), is_read_later: true }, ...prev];
+        try { localStorage.setItem(`fb-saved-${user.id}`, JSON.stringify(next)); } catch {}
+        return next;
+      });
       setAddUrl(""); setShowAdd(false);
     } catch (err) {
       setAddError(err.message || "Failed to save article.");

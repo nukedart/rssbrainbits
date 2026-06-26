@@ -233,8 +233,10 @@ export async function deleteNote(noteId) {
 // ── Read Later ────────────────────────────────────────────────
 export async function getReadLater(userId) {
   const { data, error } = await supabase
-    .from("saved").select("*").eq("user_id", userId).eq("is_read_later", true)
-    .order("saved_at", { ascending: false });
+    .from("saved")
+    .select("id,url,title,source,summary,saved_at,is_read_later")
+    .eq("user_id", userId).eq("is_read_later", true)
+    .order("saved_at", { ascending: false }).limit(500);
   if (error) throw error;
   return data;
 }
