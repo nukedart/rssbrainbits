@@ -64,7 +64,7 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
         <div style={{ flex: 1, padding: "12px 0" }}>
           {highlights.length === 0 ? (
             <div style={{ textAlign: "center", padding: "48px 24px" }}>
-              <div style={{ fontSize: 32, marginBottom: 10 }}>✍️</div>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45, marginBottom: 10 }}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
               <div style={{ fontSize: 14, color: T.textSecondary, fontWeight: 600, marginBottom: 4 }}>No highlights yet</div>
               <div style={{ fontSize: 13, color: T.textTertiary }}>Select any text in the article to highlight it.</div>
             </div>

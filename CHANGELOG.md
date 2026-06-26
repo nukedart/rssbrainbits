@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.459] — 2026-06-26 14:41
+
+- [Polish] Replace ✍️, 🕑, ⚠️ emoji in Highlights drawer, History empty state, and ErrorBoundary with SVG icons
+
 ## [1.46.458] — 2026-06-26 14:39
 
 - [Polish] Replace 📡 and 📁 emoji empty states in Manage Feeds with theme-aware SVGs
