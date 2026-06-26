@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.455] — 2026-06-26 08:54
+
+- [UX] Bottom nav active state: icon pill background (iOS-style), labels 9→10px, badge positions adjusted — active page is now immediately obvious at a glance
+
 ## [1.46.454] — 2026-06-26 07:21
 
 - [Polish] Replace emoji icons in Inbox and Cards empty states with theme-aware SVGs — consistent rendering across all platforms and themes

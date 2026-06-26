@@ -55,7 +55,7 @@ function CountBadge({ count, T }) {
   const label = count > 99 ? "99+" : String(count);
   return (
     <span style={{
-      position: "absolute", top: -5, right: label.length > 2 ? -10 : -7,
+      position: "absolute", top: -5, right: label.length > 2 ? -2 : 1,
       minWidth: 15, height: 15,
       borderRadius: 99,
       background: T.accent,
@@ -116,7 +116,7 @@ export default function BottomNav({
   const btnStyle = (isActive, isDisabled) => ({
     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
     gap: 2,
-    padding: "7px 10px",
+    padding: "7px 3px",
     border: "none",
     background: "transparent",
     borderRadius: 8,
@@ -146,8 +146,10 @@ export default function BottomNav({
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <Icon size={20} sw={isActive ? 1.7 : 1.3} />
-              <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 500, letterSpacing: ".01em", lineHeight: 1 }}>Feeds</span>
+              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "3px 8px", transition: "background .14s" }}>
+                <Icon size={20} sw={isActive ? 1.7 : 1.3} />
+              </span>
+              <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, letterSpacing: ".01em", lineHeight: 1 }}>Feeds</span>
             </button>
           );
         }
@@ -165,7 +167,9 @@ export default function BottomNav({
             onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >
             <span style={{ position: "relative", display: "flex" }}>
-              <Icon size={20} sw={isActive ? 1.7 : 1.3} filled={isActive} />
+              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "3px 8px", transition: "background .14s" }}>
+                <Icon size={20} sw={isActive ? 1.7 : 1.3} filled={isActive} />
+              </span>
               {id === "inbox" && unreadCount > 0 && !isActive && (
                 <CountBadge count={unreadCount} T={T} />
               )}
@@ -173,7 +177,7 @@ export default function BottomNav({
                 <CountBadge count={dueCount} T={T} />
               )}
             </span>
-            <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 500, letterSpacing: ".01em", lineHeight: 1 }}>{label}</span>
+            <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, letterSpacing: ".01em", lineHeight: 1 }}>{label}</span>
           </button>
         );
       })}
