@@ -11,6 +11,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-26 | v1.46.450 | Perf | Saved page stale-while-revalidate localStorage cache + exclude search_vector from query | `ReadLaterPage.jsx:54-67`, `supabase.js:234-240` | — |
 | 2026-06-26 | v1.46.451 | Perf | Cards page stale-while-revalidate localStorage cache for highlights + review state | `CardsPage.jsx:152-177` | — |
 | 2026-06-26 | v1.46.452 | Polish | Today page Queue shows skeletons during load instead of false "No cards due"/"Nothing saved" | `TodayPage.jsx:73-74,340-354` | — |
+| 2026-06-26 | v1.46.453 | Perf | Review page reads from shared highlights/review cache (written by Cards) — session starts instantly | `ReviewPage.jsx:121-167` | — |
 | 2026-06-15 | v1.46.442 | UX | Removed History nav + Catch-Up smart filter for minimal nav | `App.jsx:25,80,239,243`, `BottomNav.jsx:137`, `Sidebar.jsx` | — |
 | 2026-06-15 | v1.46.441 | Fix | Highlighting: yellow ::selection CSS all article modes; toolbar flips below selection if near top; header+scroll reset on article switch | `index.css:173`, `ContentViewer.jsx:186,799`, `SelectionToolbar.jsx:34,109` | — |
 | 2026-06-15 | v1.46.440 | Perf/Fix | Pre-compute _ts sort key in mergeAndSort; folder filter Set; analytics static import removes build warning | `InboxPage.jsx:246-270,362`, `analytics.js:12-52` | — |

@@ -1361,7 +1361,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
           {!loadingItems && baseItems.length === 0 && (readFilter === "saved" || feeds.length > 0) && (
             <EmptyState
-              icon={readFilter === "unread" ? "✅" : readFilter === "saved" ? "🔖" : "⏳"}
+              icon={readFilter === "unread"
+                ? <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45 }}><circle cx="12" cy="12" r="10"/><path d="M7 12l3.5 3.5L17 9"/></svg>
+                : readFilter === "saved"
+                ? <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45 }}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                : <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45 }}><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
+              }
               title={readFilter === "unread" ? "All caught up!" : readFilter === "saved" ? "Nothing saved yet" : "Fetching articles…"}
               subtitle={readFilter === "unread" ? "No unread articles. Switch to All to see everything." : readFilter === "saved" ? "Tap the bookmark icon while reading to save articles." : "Loading from your feeds."}
             />

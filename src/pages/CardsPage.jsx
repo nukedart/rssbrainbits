@@ -642,7 +642,7 @@ export default function CardsPage() {
         {/* Empty state / bucket grid — hidden during global search */}
         {!globalResults && buckets.length === 0 && untagged.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 24px" }}>
-            <div style={{ fontSize: 38, marginBottom: 14 }}>🗂</div>
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ color: T.textTertiary, opacity: 0.45, marginBottom: 14 }}><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h8M6 13h5"/></svg>
             <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 8, letterSpacing: "-.01em" }}>No cards yet</div>
             <div style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.7, maxWidth: 320, margin: "0 auto 20px" }}>
               Open any article, select a passage to highlight, then add theme tags like "stoicism" or "leadership" to build your knowledge map.

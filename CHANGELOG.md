@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.454] — 2026-06-26 07:21
+
+- [Polish] Replace emoji icons in Inbox and Cards empty states with theme-aware SVGs — consistent rendering across all platforms and themes
+
 ## [1.46.453] — 2026-06-26 07:17
 
 - [Perf] Review page now starts instantly on repeat visits by reading from the shared highlights/review localStorage cache written by the Cards page — queue appears without waiting for Supabase
