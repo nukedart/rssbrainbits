@@ -21,6 +21,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-26 | v1.46.460 | Polish | Replace ⚠️ 📡 emoji in ContentViewer article-error + RSS-fallback states with SVGs | `ContentViewer.jsx:694,768` | — |
 | 2026-06-26 | v1.46.461 | Polish | Replace 🏷️ ✍️ 📝 Notes tab empty-state icons and 😵‍💫 ErrorBoundary with SVGs | `NotesPage.jsx:790`, `ErrorBoundary.jsx:48` | — |
 | 2026-06-26 | v1.46.462 | Nav | Sidebar nav item active state now uses icon-pill design to match BottomNav | `Sidebar.jsx:56-71` | — |
+| 2026-06-26 | v1.46.463 | Polish | Remove last functional 🔖 emoji from AddModal Save button | `AddModal.jsx:423` | — |
 | 2026-06-15 | v1.46.442 | UX | Removed History nav + Catch-Up smart filter for minimal nav | `App.jsx:25,80,239,243`, `BottomNav.jsx:137`, `Sidebar.jsx` | — |
 | 2026-06-15 | v1.46.441 | Fix | Highlighting: yellow ::selection CSS all article modes; toolbar flips below selection if near top; header+scroll reset on article switch | `index.css:173`, `ContentViewer.jsx:186,799`, `SelectionToolbar.jsx:34,109` | — |
 | 2026-06-15 | v1.46.440 | Perf/Fix | Pre-compute _ts sort key in mergeAndSort; folder filter Set; analytics static import removes build warning | `InboxPage.jsx:246-270,362`, `analytics.js:12-52` | — |

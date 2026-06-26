@@ -420,7 +420,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                 catch (err) { setError(err.message || "Failed to save."); }
                 finally { setLoading(false); }
               }} disabled={!url.trim() || loading} style={{ flex: 1, justifyContent: "center" }}>
-                {loading ? "Saving…" : "🔖 Save"}
+                {loading ? "Saving…" : "Save"}
               </Button>
             )}
             <Button

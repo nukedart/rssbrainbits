@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.463] — 2026-06-26 16:42
+
+- [Polish] Remove last 🔖 emoji from AddModal Save button label — complete emoji removal pass
+
 ## [1.46.462] — 2026-06-26 15:34
 
 - [Nav] Sidebar active state matches BottomNav icon-pill design — consistent active indicator across desktop and mobile
