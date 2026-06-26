@@ -691,7 +691,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         {/* Article error */}
         {!yt.isYouTube && error && (
           <div style={{ textAlign: "center", padding: "40px 20px", maxWidth: 360, margin: "0 auto" }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: T.textTertiary, opacity: 0.55, marginBottom: 12 }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             <div style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 6 }}>Couldn't load article</div>
             <div style={{ fontSize: 13, color: T.textSecondary, marginBottom: 20, lineHeight: 1.6 }}>{error}</div>
             <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
@@ -765,7 +765,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               {/* RSS-fallback notice — shown when article couldn't be fetched */}
               {content._fromRSS && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 20px", padding: "8px 12px", borderRadius: 8, background: T.surface2, fontSize: 12, color: T.textTertiary }}>
-                  <span>📡</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
                   <span>Showing RSS feed preview — </span>
                   <a href={item?.url} target="_blank" rel="noopener noreferrer" style={{ color: T.accent, textDecoration: "none", fontWeight: 600 }}>read full article ↗</a>
                 </div>

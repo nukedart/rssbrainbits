@@ -18,6 +18,7 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-26 | v1.46.457 | Perf | TodayPage Queue pre-populates reviewDue + savedItems from shared caches before Supabase fetch | `TodayPage.jsx:81-95` | — |
 | 2026-06-26 | v1.46.458 | Polish | Replace 📡 📁 emoji empty states in Manage Feeds with SVGs | `SecondaryPages.jsx:1458,1498` | — |
 | 2026-06-26 | v1.46.459 | Polish | Replace ✍️ 🕑 ⚠️ emoji in Highlights drawer, History, ErrorBoundary with SVGs | `HighlightsDrawer.jsx:67`, `SecondaryPages.jsx:59`, `UI.jsx:126` | — |
+| 2026-06-26 | v1.46.460 | Polish | Replace ⚠️ 📡 emoji in ContentViewer article-error + RSS-fallback states with SVGs | `ContentViewer.jsx:694,768` | — |
 | 2026-06-15 | v1.46.442 | UX | Removed History nav + Catch-Up smart filter for minimal nav | `App.jsx:25,80,239,243`, `BottomNav.jsx:137`, `Sidebar.jsx` | — |
 | 2026-06-15 | v1.46.441 | Fix | Highlighting: yellow ::selection CSS all article modes; toolbar flips below selection if near top; header+scroll reset on article switch | `index.css:173`, `ContentViewer.jsx:186,799`, `SelectionToolbar.jsx:34,109` | — |
 | 2026-06-15 | v1.46.440 | Perf/Fix | Pre-compute _ts sort key in mergeAndSort; folder filter Set; analytics static import removes build warning | `InboxPage.jsx:246-270,362`, `analytics.js:12-52` | — |

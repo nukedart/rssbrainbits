@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.460] — 2026-06-26 14:42
+
+- [Polish] Replace ⚠️ and 📡 emoji in ContentViewer article-error and RSS-fallback states with SVGs
+
 ## [1.46.459] — 2026-06-26 14:41
 
 - [Polish] Replace ✍️, 🕑, ⚠️ emoji in Highlights drawer, History empty state, and ErrorBoundary with SVG icons
