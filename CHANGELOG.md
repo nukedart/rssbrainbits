@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.461] — 2026-06-26 14:44
+
+- [Polish] Replace 🏷️ ✍️ 📝 emoji tab icons in Notes empty states and 😵‍💫 in ErrorBoundary with SVGs
+
 ## [1.46.460] — 2026-06-26 14:42
 
 - [Polish] Replace ⚠️ and 📡 emoji in ContentViewer article-error and RSS-fallback states with SVGs
