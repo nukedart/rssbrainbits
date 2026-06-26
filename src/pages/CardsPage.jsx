@@ -151,12 +151,27 @@ export default function CardsPage() {
 
   useEffect(() => {
     if (!user) return;
+    const hKey = `fb-highlights-${user.id}`;
+    const rKey = `fb-highlight-reviews-${user.id}`;
+    try {
+      const hs = JSON.parse(localStorage.getItem(hKey) || "null");
+      const rs = JSON.parse(localStorage.getItem(rKey) || "null");
+      if (hs && rs) {
+        setHighlights(hs);
+        const map = {};
+        rs.forEach(r => { map[r.highlight_id] = r; });
+        setReviews(map);
+        setLoading(false);
+      }
+    } catch {}
     Promise.all([getAllHighlights(user.id), getHighlightReviews(user.id)])
       .then(([hs, rs]) => {
         setHighlights(hs);
         const map = {};
         rs.forEach(r => { map[r.highlight_id] = r; });
         setReviews(map);
+        try { localStorage.setItem(hKey, JSON.stringify(hs)); } catch {}
+        try { localStorage.setItem(rKey, JSON.stringify(rs)); } catch {}
       })
       .catch(console.error)
       .finally(() => setLoading(false));

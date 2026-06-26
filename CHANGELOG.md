@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.451] — 2026-06-26 07:11
+
+- [Perf] Cards page now loads instantly on repeat visits via stale-while-revalidate localStorage cache for highlights and review state
+
 ## [1.46.450] — 2026-06-26 06:51
 
 - [Perf] Saved page now loads instantly on repeat visits via stale-while-revalidate localStorage cache; also excludes unused search_vector column from Supabase query to reduce payload size
