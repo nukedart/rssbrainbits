@@ -24,6 +24,8 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-06-26 | v1.46.463 | Polish | Remove last functional 🔖 emoji from AddModal Save button | `AddModal.jsx:423` | — |
 | 2026-06-26 | v1.46.464 | Fix | Add keyboard focus outlines to Inbox filter toggle buttons for WCAG accessibility | `InboxPage.jsx:1086-1093` | — |
 | 2026-06-26 | v1.46.465 | Polish | Standardize "Mark all read" button border radius 9→8px for consistency | `InboxPage.jsx:1103` | — |
+| 2026-06-26 | v1.46.466 | Security | Fix XSS vulnerability (remove dangerouslySetInnerHTML) + fix 26 npm audit CVEs | `ContentViewer.jsx`, `package.json` | — |
+| 2026-06-26 | v1.46.467 | Security | Add feed URL validation + clarify API key docs (server-side only) | `supabase.js:45`, `.env.example` | — |
 | 2026-06-15 | v1.46.442 | UX | Removed History nav + Catch-Up smart filter for minimal nav | `App.jsx:25,80,239,243`, `BottomNav.jsx:137`, `Sidebar.jsx` | — |
 | 2026-06-15 | v1.46.441 | Fix | Highlighting: yellow ::selection CSS all article modes; toolbar flips below selection if near top; header+scroll reset on article switch | `index.css:173`, `ContentViewer.jsx:186,799`, `SelectionToolbar.jsx:34,109` | — |
 | 2026-06-15 | v1.46.440 | Perf/Fix | Pre-compute _ts sort key in mergeAndSort; folder filter Set; analytics static import removes build warning | `InboxPage.jsx:246-270,362`, `analytics.js:12-52` | — |

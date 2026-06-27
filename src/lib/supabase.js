@@ -43,6 +43,18 @@ export async function getFeeds(userId) {
 }
 
 export async function addFeed(userId, feed) {
+  // Validate feed URL format
+  if (feed.url) {
+    try {
+      const url = new URL(feed.url);
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        throw new Error("Feed URL must use http or https protocol");
+      }
+    } catch (e) {
+      throw new Error("Invalid feed URL: " + (e.message || "malformed URL"));
+    }
+  }
+
   const { data, error } = await supabase
     .from("feeds").insert({ user_id: userId, ...feed }).select().single();
   if (error) throw error;

@@ -3,6 +3,19 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.466] — 2026-06-26 23:25
+
+### Changes since v1.46.465
+
+---
+
+## [1.46.466] — 2026-06-26 23:21
+
+- [Security] Remove XSS vulnerability: eliminate dangerouslySetInnerHTML, always use safe HighlightedText component for rendering
+- [Security] Add feed URL validation: whitelist http/https only, reject javascript:/data: URLs
+- [Security] Clarify Anthropic API key handling docs: keys must stay server-side (Edge Functions), never bundle in frontend
+- [Security] Generate comprehensive security audit report (SECURITY_AUDIT.md): 5 issues identified, 3 remediated in this release
+
 ## [1.46.465] — 2026-06-26 22:23
 
 - [Polish] Standardize "Mark all read" button border radius to 8px for design system consistency

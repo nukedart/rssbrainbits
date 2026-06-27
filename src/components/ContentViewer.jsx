@@ -93,11 +93,6 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     if (!item?.url) return null;
     try { return `https://www.google.com/s2/favicons?domain=${new URL(item.url).hostname}&sz=32`; } catch { return null; }
   }, [item?.url]);
-  const processedBodyHtml = useMemo(() => {
-    if (!content?.bodyHtml) return null;
-    const withHighlights = injectHtmlHighlights(content.bodyHtml, highlights, HIGHLIGHT_COLORS);
-    return withHighlights.replace(/<img(?![^>]*loading=)/gi, '<img loading="lazy" decoding="async"');
-  }, [content?.bodyHtml, highlights]);
 
   // ── Restore cached summary when item changes ──────────────
   useEffect(() => {
@@ -812,11 +807,6 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                       <p key={i} style={{ margin: "0 0 1.4em" }}>{para}</p>
                     ))}
                   </div>
-                ) : processedBodyHtml && !readerPrefs.bionic ? (
-                  <div
-                    className="fb-article-body"
-                    dangerouslySetInnerHTML={{ __html: processedBodyHtml }}
-                  />
                 ) : (
                   <HighlightedText
                     text={content.bodyText}
@@ -894,19 +884,6 @@ function classifyArticleError(msg = "") {
 // Wraps matched passage text in <mark> elements inside HTML strings.
 // Simple regex approach — works for most articles; skips passages that
 // straddle tag boundaries (rare in practice).
-function injectHtmlHighlights(html, highlights, colorDefs) {
-  if (!highlights?.length) return html;
-  let result = html;
-  for (const h of highlights) {
-    const colorDef = colorDefs.find(c => c.id === h.color) || colorDefs[0];
-    const esc = h.passage.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    result = result.replace(
-      new RegExp(esc, "g"),
-      `<mark style="background:${colorDef.bg};border-radius:3px;padding:1px 0;cursor:pointer">${h.passage}</mark>`
-    );
-  }
-  return result;
-}
 
 // ── HighlightedText — clean version without TTS word spans ───
 function HighlightedText({ text, highlights, onClickHighlight, bionic = false }) {
