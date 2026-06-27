@@ -1089,8 +1089,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   color: readFilter === val ? T.text : T.textTertiary,
                   fontWeight: readFilter === val ? 600 : 400,
                   fontSize: 11, cursor: "pointer", fontFamily: "inherit",
-                  transition: "background .15s, color .15s",
-                }}>{label}</button>
+                  transition: "background .15s, color .15s, outline .1s",
+                  outline: "none",
+                }} onFocus={e => { e.currentTarget.style.outline = `2px solid ${T.accent}44`; e.currentTarget.style.outlineOffset = "2px"; }} onBlur={e => { e.currentTarget.style.outline = "none"; }}>{label}</button>
               ))}
             </div>
           )}

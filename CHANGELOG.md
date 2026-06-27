@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.464] — 2026-06-26 22:20
+
+- [Fix] Inbox filter toggle buttons now show keyboard focus outline for better WCAG accessibility
+
 ## [1.46.463] — 2026-06-26 16:42
 
 - [Polish] Remove last 🔖 emoji from AddModal Save button label — complete emoji removal pass
