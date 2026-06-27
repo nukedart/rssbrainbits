@@ -1100,7 +1100,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {unreadCount > 0 && !searchOpen && !isMobile && (
             <button onClick={handleMarkAllRead} title="Mark all as read" aria-label="Mark all as read"
               style={{
-                background: "transparent", border: "none", borderRadius: 9,
+                background: "transparent", border: "none", borderRadius: 8,
                 width: isMobile ? 40 : 30, height: isMobile ? 40 : 30, cursor: "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: T.textTertiary, transition: "background .15s, color .15s",

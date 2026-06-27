@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.465] — 2026-06-26 22:23
+
+- [Polish] Standardize "Mark all read" button border radius to 8px for design system consistency
+
 ## [1.46.464] — 2026-06-26 22:20
 
 - [Fix] Inbox filter toggle buttons now show keyboard focus outline for better WCAG accessibility
