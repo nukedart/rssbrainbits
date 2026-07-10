@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.467] — 2026-07-10 13:35
+
+- [Nav] BottomNav icon buttons widened from 42px to 44px tap target (padding 8px 2px → 8px 3px) to meet Apple HIG / WCAG 2.5.5 minimum touch-target size on mobile
+
 ## [1.46.466] — 2026-06-26 23:25
 
 ### Changes since v1.46.465

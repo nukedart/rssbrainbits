@@ -115,7 +115,7 @@ export default function BottomNav({
 
   const btnStyle = (isActive, isDisabled) => ({
     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-    padding: "8px 2px",
+    padding: "8px 3px",
     border: "none",
     background: "transparent",
     borderRadius: 8,
