@@ -440,3 +440,24 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 |------|-----------|-------|-------------|
 | 2026-05-26 | 1 | Feature: Anki-style Review + Supabase SR persistence + Cards due status + scroll fix + FeedItem perf + Reeder-style mobile density | — |
 | 2026-03-27 | 2 | Nav: label consistency, touch cancel fix | — |
+
+## Security Audit & Fixes (2026-06-26)
+
+**P0 Deployed (v1.46.466):**
+- Fixed XSS vulnerability in ContentViewer.jsx (removed dangerouslySetInnerHTML)
+- Added feed URL validation in supabase.js (whitelist http/https)
+- Clarified API key docs (.env.example) — server-side only
+
+**Outstanding:**
+- npm audit: 26 vulnerabilities (1 low, 20 moderate, 5 high)
+- `npm audit fix --force` introduced Vite breaking change — needs careful resolution in separate branch
+- SECURITY_AUDIT.md generated with full details of 5 issues and remediation roadmap
+
+## Mobile UI/UX Audit — P1 Fixes (2026-07-05)
+
+Full UI/UX audit vs Feedly/Inoreader/BazQux found no popstate/back-button handling anywhere in the app (Android back or edge-swipe-back exits the app instead of closing overlays), three sub-16px inputs triggering iOS Safari auto-zoom, and a manifest.json locking orientation to portrait with a stray unused splash color. All three fixed below.
+
+| Date | Version | Area | Change | Files | Session Cost |
+| 2026-07-05 | v1.46.467 | UX | Back button/gesture now closes topmost open overlay (article, drawer, search, modals) via LIFO history stack instead of exiting the app | `lib/backStack.js`, `hooks/useBackButtonClose.js`, `App.jsx`, `InboxPage.jsx`, `ContentViewer.jsx` | — |
+| 2026-07-05 | v1.46.467 | Fix | Bumped sub-16px input font sizes to 16px to stop iOS Safari auto-zoom on focus | `TagsInput.jsx:73`, `AddModal.jsx:272,360,398`, `SecondaryPages.jsx:961` | — |
+| 2026-07-05 | v1.46.467 | Fix | Removed portrait orientation lock from PWA manifest; corrected splash background/theme color to match actual dark theme | `manifest.json` | — |

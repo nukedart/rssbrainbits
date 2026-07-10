@@ -70,7 +70,7 @@ export default function TagsInput({ tags, onAdd, onRemove, allTags = [], onTagCl
           aria-expanded={showSuggestions && suggestions.length > 0}
           style={{
             border: "none", background: "none", outline: "none",
-            fontSize: 13, color: T.text, fontFamily: "inherit", minWidth: 80, flex: 1,
+            fontSize: 16, color: T.text, fontFamily: "inherit", minWidth: 80, flex: 1,
           }}
         />
       </div>

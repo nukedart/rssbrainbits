@@ -958,7 +958,7 @@ function InlineNameEditor({ name, T, onSave, placeholder }) {
       <input ref={inputRef} value={val} onChange={e => setVal(e.target.value)}
         onBlur={commit}
         onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setVal(name || ""); setEditing(false); } }}
-        style={{ flex: 1, background: T.surface2, border: `1.5px solid ${T.accent}`, borderRadius: 6, padding: "3px 8px", fontSize: 13, color: T.text, fontFamily: "inherit", outline: "none", minWidth: 0 }}
+        style={{ flex: 1, background: T.surface2, border: `1.5px solid ${T.accent}`, borderRadius: 6, padding: "3px 8px", fontSize: 16, color: T.text, fontFamily: "inherit", outline: "none", minWidth: 0 }}
         onClick={e => e.stopPropagation()}
       />
     );

@@ -16,6 +16,7 @@ import {
 } from "../lib/supabase";
 import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
+import { useBackButtonClose } from "../hooks/useBackButtonClose.js";
 import { highlightsToMarkdown, highlightsToObsidian, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
 import { isProUser, PLANS } from "../lib/plan";
@@ -61,6 +62,10 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const [highlights, setHighlights]   = useState([]);
   const [activeNote, setActiveNote]   = useState(null);
   const [showDrawer, setShowDrawer]   = useState(false);
+
+  // Back button closes these sub-panels instead of the whole article/app
+  useBackButtonClose(!!activeNote, () => setActiveNote(null));
+  useBackButtonClose(showDrawer, () => setShowDrawer(false));
 
   // Tags
   const [tags, setTags]         = useState([]);

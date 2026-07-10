@@ -5,6 +5,7 @@ import { Spinner, ErrorBoundary } from "./components/UI";
 import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
 import { useBreakpoint } from "./hooks/useBreakpoint.js";
+import { useBackButtonClose } from "./hooks/useBackButtonClose.js";
 import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
          getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder,
          getFeeds, addFeed, deleteFeed, markAllRead } from "./lib/supabase";
@@ -74,6 +75,12 @@ function AppShell() {
   const [edgeDx, setEdgeDx] = useState(0);
   const edgeTouchRef = useRef(null);
   useEffect(() => { identify(user); }, [user]);
+
+  // ── Back button closes overlays instead of exiting the app ─────
+  useBackButtonClose(mobileDrawerOpen, () => setMobileDrawerOpen(false));
+  useBackButtonClose(!!editingSF, () => setEditingSF(null));
+  useBackButtonClose(!!editingFolder, () => setEditingFolder(null));
+  useBackButtonClose(!!podcastItem, () => setPodcastItem(null));
 
   useEffect(() => {
     const PAGE_TITLES = { inbox: "Inbox", today: "Today", cards: "Cards", review: "Review", readlater: "Saved", stats: "Stats", settings: "Settings", analytics: "Analytics" };

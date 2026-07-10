@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.467] — 2026-07-10 16:07
+
+- [UX] Hardware/gesture back button now closes the open article, feed drawer, search overlay, and modals instead of exiting the app — added a shared back-button stack (`src/lib/backStack.js`, `useBackButtonClose` hook) with no prior popstate handling anywhere in the app
+- [Fix] Inputs below 16px (tag input, add-source URL/nickname/podcast search, inline feed/folder rename) no longer trigger iOS Safari's auto-zoom on focus
+- [Fix] PWA manifest no longer locks orientation to portrait — tablets can rotate; splash screen background/theme color corrected to match the app's actual dark theme instead of a stale unused color
+
 ## [1.46.466] — 2026-06-26 23:25
 
 ### Changes since v1.46.465

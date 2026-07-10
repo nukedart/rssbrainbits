@@ -14,6 +14,7 @@ import { Button, EmptyState, Spinner } from "../components/UI";
 import PlanGate from "../components/PlanGate";
 import { checkLimit } from "../lib/plan";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
+import { useBackButtonClose } from "../hooks/useBackButtonClose.js";
 import SearchBar from "../components/SearchBar";
 const MobileSearchOverlay = lazy(() => import("../components/MobileSearchOverlay"));
 import { track } from "../lib/analytics";
@@ -169,6 +170,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       onForcedSearchClose?.();
     }
   }, [forceOpenSearch]);
+
+  // Back button closes full-screen mobile overlays instead of exiting the app
+  useBackButtonClose(showAdd, () => setShowAdd(false));
+  useBackButtonClose(isMobile && searchOpen, () => { setSearchOpen(false); setLiveSearch(""); });
+  useBackButtonClose(isMobile && !!openItem, () => { invalidateProgressCache(openItem?.url); setOpenItem(null); setOpenIdx(-1); window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); });
+  useBackButtonClose(!!searchResult, () => setSearchResult(null));
 
 
   // ── Interest keyword profile — built once per session from highlight history ──

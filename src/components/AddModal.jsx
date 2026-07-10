@@ -269,7 +269,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                   width: "100%", boxSizing: "border-box",
                   background: T.surface, border: `1.5px solid ${T.border}`,
                   borderRadius: 12, padding: "13px 16px",
-                  fontSize: 15, color: T.text,
+                  fontSize: 16, color: T.text,
                   fontFamily: "inherit", outline: "none",
                 }}
                 onFocus={e => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = `0 0 0 3px ${T.accent}22`; }}
@@ -357,7 +357,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                 width: "100%", boxSizing: "border-box",
                 background: T.surface, border: `1.5px solid ${T.border}`,
                 borderRadius: 12, padding: "13px 16px",
-                fontSize: 15, color: T.text,
+                fontSize: 16, color: T.text,
                 fontFamily: "inherit", outline: "none",
               }}
               onFocus={e => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = `0 0 0 3px ${T.accent}22`; }}
@@ -395,7 +395,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                   width: "100%", boxSizing: "border-box",
                   background: T.surface, border: `1.5px solid ${T.border}`,
                   borderRadius: 12, padding: "11px 16px",
-                  fontSize: 14, color: T.text,
+                  fontSize: 16, color: T.text,
                   fontFamily: "inherit", outline: "none",
                 }}
                 onFocus={e => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = `0 0 0 3px ${T.accent}22`; }}
