@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.468] — 2026-07-10 17:58
+
+- [Fix] Regenerated package-lock.json to match package.json — a stale lock file (missing esbuild@0.28.1 and other entries, left over from a prior `npm audit fix --force` attempt) made `npm ci` fail in GitHub Actions, silently breaking the last two production deploys (v1.46.466, v1.46.467) even though local builds succeeded
+
 ## [1.46.467] — 2026-07-10 16:07
 
 - [UX] Hardware/gesture back button now closes the open article, feed drawer, search overlay, and modals instead of exiting the app — added a shared back-button stack (`src/lib/backStack.js`, `useBackButtonClose` hook) with no prior popstate handling anywhere in the app

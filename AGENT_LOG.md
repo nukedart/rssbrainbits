@@ -461,3 +461,9 @@ Full UI/UX audit vs Feedly/Inoreader/BazQux found no popstate/back-button handli
 | 2026-07-05 | v1.46.467 | UX | Back button/gesture now closes topmost open overlay (article, drawer, search, modals) via LIFO history stack instead of exiting the app | `lib/backStack.js`, `hooks/useBackButtonClose.js`, `App.jsx`, `InboxPage.jsx`, `ContentViewer.jsx` | — |
 | 2026-07-05 | v1.46.467 | Fix | Bumped sub-16px input font sizes to 16px to stop iOS Safari auto-zoom on focus | `TagsInput.jsx:73`, `AddModal.jsx:272,360,398`, `SecondaryPages.jsx:961` | — |
 | 2026-07-05 | v1.46.467 | Fix | Removed portrait orientation lock from PWA manifest; corrected splash background/theme color to match actual dark theme | `manifest.json` | — |
+
+## Broken Production Deploy — Lock File Fix (2026-07-10)
+
+GitHub Actions deploys for v1.46.466 and v1.46.467 both failed silently at `npm ci` (package-lock.json out of sync with package.json — missing `esbuild@0.28.1` and related entries, likely left over from an abandoned `npm audit fix --force` attempt noted in the 2026-06-26 security audit). Local builds always succeeded because `npm run build` doesn't re-validate the lock file, so this went unnoticed for two releases. Regenerated the lock file and verified `npm ci` passes.
+
+| 2026-07-10 | v1.46.468 | Fix | Regenerated package-lock.json to resolve npm ci failure that broke the last two GitHub Actions deploys | `package-lock.json` | — |
