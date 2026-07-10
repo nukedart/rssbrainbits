@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.469] — 2026-07-10 18:43
+
+- [Fix] v1.46.468's lockfile regen wasn't the real fix — `vitest ^4.1.2` requires `vite ^6/^7/^8` as a peer, which pulled in a nested `vite@8.1.0` + `esbuild@0.28.1` that npm's dependency graph never fully resolved into the lockfile, so `npm ci` kept failing in GitHub Actions (Node 22) even after regenerating. Pinned `vitest` and `@vitest/coverage-v8` to `^3.2.7`, the last major line compatible with our `vite@5.3.1`, removing the mismatched nested tree entirely. This is what actually broke production deploys since v1.46.466.
+
 ## [1.46.468] — 2026-07-10 17:58
 
 - [Fix] Regenerated package-lock.json to match package.json — a stale lock file (missing esbuild@0.28.1 and other entries, left over from a prior `npm audit fix --force` attempt) made `npm ci` fail in GitHub Actions, silently breaking the last two production deploys (v1.46.466, v1.46.467) even though local builds succeeded
