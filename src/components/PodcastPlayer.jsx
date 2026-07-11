@@ -675,9 +675,10 @@ export default function PodcastPlayer({ item, onClose }) {
         boxShadow: "0 8px 32px rgba(0,0,0,.22)",
         overflow: "hidden",
       }}>
-        {/* Progress strip */}
+        {/* Progress strip — width must be 100% with transformOrigin left so the
+            RAF-driven scaleX() transform actually has something to scale */}
         <div style={{ height: 2, background: T.surface2 }}>
-          <div ref={miniBarFillRef} style={{ height: "100%", width: "0%", background: T.accent }} />
+          <div ref={miniBarFillRef} style={{ height: "100%", width: "100%", background: T.accent, transform: "scaleX(0)", transformOrigin: "left" }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", padding: "9px 10px 9px 12px", gap: 10 }}>
           {/* Artwork */}

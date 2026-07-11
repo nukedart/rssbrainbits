@@ -484,3 +484,4 @@ User requested 5 consecutive /iterate loops focused specifically on performance,
 
 | 2026-07-10 | v1.46.471 | Perf | Podcast seek bar + mini-bar progress RAF loops now stop while paused instead of polling at 60fps for the entire mounted lifetime; resume on next play event | `PodcastPlayer.jsx` (SeekBar ~L30-63, mini-bar ~L321-350) | — |
 | 2026-07-10 | v1.46.472 | Perf | Podcast position-save interval now skips the localStorage write while paused (position isn't changing, so periodic writes during idle sessions were pure waste) | `PodcastPlayer.jsx:~375-385` | — |
+| 2026-07-10 | v1.46.473 | Fix | Desktop podcast mini-bar progress strip was fixed at width:0% while only its transform was updated, so it never visibly showed progress; matched to mobile's width:100%+transformOrigin:left pattern | `PodcastPlayer.jsx:~679-682` | — |

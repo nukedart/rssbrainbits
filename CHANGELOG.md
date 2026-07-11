@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.473] — 2026-07-10 23:29
+
+- [Fix] Desktop podcast mini-bar's progress strip was pinned at `width: 0%` while only its `transform: scaleX()` was being updated every 500ms — scaling a zero-width element never produces visible width, so the progress indicator silently never appeared on desktop. Matched it to the mobile version's `width: 100%` + `transformOrigin: left` pattern so the existing RAF-driven transform actually has something to scale.
+
 ## [1.46.472] — 2026-07-10 23:28
 
 - [Perf] Podcast position-save timer was writing the same playback position to localStorage every 10 seconds even while paused, for as long as the player stayed mounted (potentially indefinitely). Now skips the write while paused, since the position isn't moving.
