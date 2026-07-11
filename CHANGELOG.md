@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.475] — 2026-07-10 23:34
+
+- [Perf] Podcast player's seek bar showed "0:00" total duration until the browser finished loading real audio metadata over the network — even though the RSS feed's iTunes duration tag already gave us the real runtime for free (already shown in feed list rows). The seek bar now seeds its duration display from that known value immediately, and only defers to real metadata once it actually loads.
+
 ## [1.46.474] — 2026-07-10 23:31
 
 - [Perf] RSS 2.0 item parsing (`parseRSSItem` in `fetchers.js`) was walking each item's full DOM subtree twice per item — once inside image extraction, once for the iTunes podcast duration/creator fallback. Both now share a single subtree walk, roughly halving per-item DOM traversal work during every feed refresh.

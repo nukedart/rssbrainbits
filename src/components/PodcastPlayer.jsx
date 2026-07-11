@@ -18,8 +18,17 @@ function fmt(s) {
   return `${m}:${String(sec).padStart(2,"0")}`;
 }
 
+// iTunes <itunes:duration> can be plain seconds ("2732") or HH:MM:SS/MM:SS —
+// normalise to seconds so it can go through fmt() like everything else.
+function parseDuration(raw) {
+  if (!raw) return null;
+  const parts = String(raw).trim().split(":").map(Number);
+  if (parts.some(isNaN)) return null;
+  return parts.reduce((acc, n) => acc * 60 + n, 0);
+}
+
 // ── SeekBar — fully ref-driven via RAF, zero React re-renders during playback
-function SeekBar({ audioRef, T, light }) {
+function SeekBar({ audioRef, T, light, initialDuration }) {
   const trackRef = useRef(null);
   const fillRef  = useRef(null);
   const thumbRef = useRef(null);
@@ -46,7 +55,10 @@ function SeekBar({ audioRef, T, light }) {
           if (fillRef.current)  fillRef.current.style.transform = `scaleX(${pct})`;
           if (thumbRef.current) thumbRef.current.style.left    = `${pct * 100}%`;
           if (ctRef.current)    ctRef.current.textContent      = fmt(ct);
-          if (durRef.current)   durRef.current.textContent     = fmt(dur);
+          // Only overwrite once real metadata is in — leave the RSS-seeded
+          // duration estimate (below) alone until then, rather than clobbering
+          // it with "0:00" while the audio file is still loading.
+          if (durRef.current && dur > 0) durRef.current.textContent = fmt(dur);
           if (trackRef.current) trackRef.current.setAttribute("aria-valuenow", Math.round(pct * 100));
         }
       }
@@ -66,6 +78,16 @@ function SeekBar({ audioRef, T, light }) {
       audio?.removeEventListener("playing", start);
     };
   }, []); // audioRef is a stable ref object
+
+  // Seed the duration display from the RSS feed's already-known iTunes
+  // duration immediately, instead of showing "0:00" until the browser
+  // finishes loading real audio metadata over the network.
+  useEffect(() => {
+    const seeded = parseDuration(initialDuration);
+    if (seeded && durRef.current && !(audioRef.current?.duration > 0)) {
+      durRef.current.textContent = fmt(seeded);
+    }
+  }, [initialDuration]);
 
   function getPct(e) {
     if (!trackRef.current) return 0;
@@ -511,7 +533,7 @@ export default function PodcastPlayer({ item, onClose }) {
 
                 {/* Seekbar */}
                 <div style={{ marginBottom: 16 }}>
-                  <SeekBar audioRef={audioRef} T={T} light />
+                  <SeekBar audioRef={audioRef} T={T} light initialDuration={item.audioDuration} />
                 </div>
 
                 {/* Main controls */}
@@ -636,7 +658,7 @@ export default function PodcastPlayer({ item, onClose }) {
               </div>
               <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</div>
             </div>
-            <div style={{ marginBottom: 14 }}><SeekBar audioRef={audioRef} T={T} light={false} /></div>
+            <div style={{ marginBottom: 14 }}><SeekBar audioRef={audioRef} T={T} light={false} initialDuration={item.audioDuration} /></div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 14 }}>
               <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light={false} />
               <PlayBtn size={56} playing={playing} loading={loading} onClick={togglePlay} T={T} light={false} />
