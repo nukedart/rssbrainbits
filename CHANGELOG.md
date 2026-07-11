@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.470] — 2026-07-10 21:28
+
+- [Fix] Removed a stray orphaned `)}` left over from a past refactor in `CardsPage.jsx` — the delete button on card items used to be conditionally rendered on hover, then switched to always-mounted with an inline opacity toggle, but the old closing tokens were never cleaned up. JSX tolerates a bare `}` as literal text instead of failing the build, so this was silently rendering a stray `)` character next to the delete button on every card, and triggering an esbuild warning on every single build.
+
 ## [1.46.469] — 2026-07-10 18:43
 
 - [Fix] v1.46.468's lockfile regen wasn't the real fix — `vitest ^4.1.2` requires `vite ^6/^7/^8` as a peer, which pulled in a nested `vite@8.1.0` + `esbuild@0.28.1` that npm's dependency graph never fully resolved into the lockfile, so `npm ci` kept failing in GitHub Actions (Node 22) even after regenerating. Pinned `vitest` and `@vitest/coverage-v8` to `^3.2.7`, the last major line compatible with our `vite@5.3.1`, removing the mismatched nested tree entirely. This is what actually broke production deploys since v1.46.466.

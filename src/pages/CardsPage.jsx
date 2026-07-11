@@ -806,7 +806,6 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
           >
             <TrashIcon />
           </button>
-        )}
       </div>
 
       {/* Annotation + tags + footer */}

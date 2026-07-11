@@ -471,3 +471,9 @@ GitHub Actions deploys for v1.46.466 and v1.46.467 both failed silently at `npm 
 v1.46.468's lockfile regen didn't fix CI — `npm ci` still failed with the same "Missing: esbuild@0.28.1" error against the identical commit. Root cause: `vitest ^4.1.2` requires `vite ^6/^7/^8` as a peer dependency; since the project pins `vite ^5.3.1`, npm nested a private `vite@8.1.0` (whose peer `esbuild` range is `^0.27.0 || ^0.28.0`) under `node_modules/vitest`, and that peer edge never got a concrete resolved entry in the lockfile — reproducible regardless of which npm/Node version generated the lock. Fixed by pinning `vitest`/`@vitest/coverage-v8` to `^3.2.7`, the latest 3.x line whose `vite` dependency range (`^5.0.0 || ^6.0.0 || ^7.0.0-0`) actually includes our installed `vite@5.3.1`.
 
 | 2026-07-10 | v1.46.469 | Fix | Downgraded vitest 4.1.2 → 3.2.7 (and @vitest/coverage-v8 to match) to resolve the real vite-peer mismatch causing broken GitHub Actions deploys since v1.46.466 | `package.json`, `package-lock.json` | — |
+
+## /iterate — Cards page stray character (2026-07-10)
+
+Every build logged an esbuild warning ("The character `}` is not valid inside a JSX element") pointing at `CardsPage.jsx`, but the build never failed because JSX tolerates a bare `}` as literal text rather than erroring. Traced it to a stray orphaned `)}` left over from when the card delete button was switched from conditional-on-hover rendering to always-mounted-with-opacity-toggle — the old closing tokens were never removed, so a literal `)` was being rendered next to the delete button on every card.
+
+| 2026-07-10 | v1.46.470 | Fix | Removed orphaned `)}` in CardsPage.jsx that rendered a stray `)` character next to the card delete button and triggered an esbuild warning on every build | `CardsPage.jsx:809` | — |
