@@ -246,7 +246,11 @@ function normaliseDate(raw) {
 }
 
 function parseRSSItem(item, isAtom) {
-  const image = extractItemImage(item);
+  // Single subtree walk shared by image extraction and (for RSS 2.0) the
+  // iTunes duration / creator fallback below — item.querySelectorAll("*")
+  // used to run twice per item, once in each place.
+  const allEls = Array.from(item.querySelectorAll("*"));
+  const image  = extractItemImage(item, allEls);
 
   if (isAtom) {
     // Prefer content over summary for full-text Atom feeds
@@ -281,8 +285,7 @@ function parseRSSItem(item, isAtom) {
   const audioUrl = enclosure?.getAttribute("type")?.startsWith("audio")
     ? enclosure.getAttribute("url") : null;
 
-  // iTunes duration
-  const allEls = Array.from(item.querySelectorAll("*"));
+  // iTunes duration — reuses the allEls subtree walk computed above
   const durationEl = allEls.find(el => el.localName === "duration");
   const audioDuration = durationEl?.textContent?.trim() || null;
 
@@ -302,10 +305,9 @@ function parseRSSItem(item, isAtom) {
   };
 }
 
-function extractItemImage(item) {
+function extractItemImage(item, allEls) {
   // Use nodeName/localName checks — querySelector with CSS-escaped namespace prefixes
   // (media\\:content) is unreliable across browsers when parsing XML documents.
-  const allEls = Array.from(item.querySelectorAll("*"));
   const byName = (...names) => allEls.find(el => names.includes(el.nodeName) || names.includes(el.localName));
   const allByName = (...names) => allEls.filter(el => names.includes(el.nodeName) || names.includes(el.localName));
 

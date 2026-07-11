@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.474] — 2026-07-10 23:31
+
+- [Perf] RSS 2.0 item parsing (`parseRSSItem` in `fetchers.js`) was walking each item's full DOM subtree twice per item — once inside image extraction, once for the iTunes podcast duration/creator fallback. Both now share a single subtree walk, roughly halving per-item DOM traversal work during every feed refresh.
+
 ## [1.46.473] — 2026-07-10 23:29
 
 - [Fix] Desktop podcast mini-bar's progress strip was pinned at `width: 0%` while only its `transform: scaleX()` was being updated every 500ms — scaling a zero-width element never produces visible width, so the progress indicator silently never appeared on desktop. Matched it to the mobile version's `width: 100%` + `transformOrigin: left` pattern so the existing RAF-driven transform actually has something to scale.
