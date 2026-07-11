@@ -28,14 +28,17 @@ function SeekBar({ audioRef, T, light }) {
   const dragging = useRef(false);
 
   // RAF loop — updates DOM directly without touching React state
-  // Throttled to ~2fps (500ms) — more than enough for a podcast seek bar
+  // Throttled to ~2fps (500ms) — more than enough for a podcast seek bar.
+  // Only runs while audio is actually playing — paused/idle sessions (the
+  // majority of a podcast player's mounted lifetime) burn zero frames.
   useEffect(() => {
-    let raf;
+    const audio = audioRef.current;
+    let raf = null;
     let lastTs = 0;
+
     function tick(ts) {
       if (!dragging.current && ts - lastTs >= 500) {
         lastTs = ts;
-        const audio = audioRef.current;
         if (audio) {
           const ct  = audio.currentTime || 0;
           const dur = audio.duration    || 0;
@@ -47,10 +50,21 @@ function SeekBar({ audioRef, T, light }) {
           if (trackRef.current) trackRef.current.setAttribute("aria-valuenow", Math.round(pct * 100));
         }
       }
-      raf = requestAnimationFrame(tick);
+      if (audio && !audio.paused) raf = requestAnimationFrame(tick);
+      else raf = null;
     }
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    function start() {
+      if (raf == null) raf = requestAnimationFrame(tick);
+    }
+
+    start();
+    audio?.addEventListener("play",    start);
+    audio?.addEventListener("playing", start);
+    return () => {
+      if (raf != null) cancelAnimationFrame(raf);
+      audio?.removeEventListener("play",    start);
+      audio?.removeEventListener("playing", start);
+    };
   }, []); // audioRef is a stable ref object
 
   function getPct(e) {
@@ -318,23 +332,36 @@ export default function PodcastPlayer({ item, onClose }) {
     };
   }, [item?.audioUrl]);
 
-  // RAF loop for mini-bar progress strip — throttled to 500ms
+  // RAF loop for mini-bar progress strip — throttled to 500ms, and only
+  // ticking while actually playing (paused/minimized sessions burn nothing).
   useEffect(() => {
-    let raf;
+    const audio = audioRef.current;
+    let raf = null;
     let lastTs = 0;
+
     function tick(ts) {
       if (ts - lastTs >= 500) {
         lastTs = ts;
-        const audio = audioRef.current;
         if (audio && miniBarFillRef.current) {
           const pct = audio.duration ? audio.currentTime / audio.duration : 0;
           miniBarFillRef.current.style.transform = `scaleX(${pct})`;
         }
       }
-      raf = requestAnimationFrame(tick);
+      if (audio && !audio.paused) raf = requestAnimationFrame(tick);
+      else raf = null;
     }
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    function start() {
+      if (raf == null) raf = requestAnimationFrame(tick);
+    }
+
+    start();
+    audio?.addEventListener("play",    start);
+    audio?.addEventListener("playing", start);
+    return () => {
+      if (raf != null) cancelAnimationFrame(raf);
+      audio?.removeEventListener("play",    start);
+      audio?.removeEventListener("playing", start);
+    };
   }, [isMobile]);
 
   // Auto-play when a new episode is set — user already clicked "Play episode"

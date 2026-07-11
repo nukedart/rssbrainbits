@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.471] — 2026-07-10 23:25
+
+- [Perf] Podcast player's seek bar and mini-bar progress strip were driving continuous `requestAnimationFrame` loops (up to 60 callbacks/sec) for the entire time a podcast was loaded — including while paused, backgrounded, or minimized, which is most of a typical session. Both loops now stop the moment playback pauses and resume on the next play event, eliminating wasted CPU/battery wake-ups.
+
 ## [1.46.470] — 2026-07-10 21:28
 
 - [Fix] Removed a stray orphaned `)}` left over from a past refactor in `CardsPage.jsx` — the delete button on card items used to be conditionally rendered on hover, then switched to always-mounted with an inline opacity toggle, but the old closing tokens were never cleaned up. JSX tolerates a bare `}` as literal text instead of failing the build, so this was silently rendering a stray `)` character next to the delete button on every card, and triggering an esbuild warning on every single build.

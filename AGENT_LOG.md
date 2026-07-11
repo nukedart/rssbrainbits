@@ -477,3 +477,9 @@ v1.46.468's lockfile regen didn't fix CI — `npm ci` still failed with the same
 Every build logged an esbuild warning ("The character `}` is not valid inside a JSX element") pointing at `CardsPage.jsx`, but the build never failed because JSX tolerates a bare `}` as literal text rather than erroring. Traced it to a stray orphaned `)}` left over from when the card delete button was switched from conditional-on-hover rendering to always-mounted-with-opacity-toggle — the old closing tokens were never removed, so a literal `)` was being rendered next to the delete button on every card.
 
 | 2026-07-10 | v1.46.470 | Fix | Removed orphaned `)}` in CardsPage.jsx that rendered a stray `)` character next to the card delete button and triggered an esbuild warning on every build | `CardsPage.jsx:809` | — |
+
+## /iterate — Performance run, podcast player rebuild (2026-07-10, 5-iteration run)
+
+User requested 5 consecutive /iterate loops focused specifically on performance, targeting the podcast player/features for rebuild. Iteration 1 below; more to follow in this same session.
+
+| 2026-07-10 | v1.46.471 | Perf | Podcast seek bar + mini-bar progress RAF loops now stop while paused instead of polling at 60fps for the entire mounted lifetime; resume on next play event | `PodcastPlayer.jsx` (SeekBar ~L30-63, mini-bar ~L321-350) | — |
