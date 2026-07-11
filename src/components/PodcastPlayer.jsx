@@ -372,12 +372,15 @@ export default function PodcastPlayer({ item, onClose }) {
     audio.play().catch(() => { setLoading(false); });
   }, [item?.audioUrl]);
 
-  // Persist seek position every 10s (not on every timeupdate)
+  // Persist seek position every 10s (not on every timeupdate).
+  // Skipped while paused — the position isn't moving, so re-writing the
+  // same value to localStorage every 10s during an idle/paused session
+  // (which can last indefinitely while the player stays mounted) is pure waste.
   useEffect(() => {
     if (!posKey) return;
     const id = setInterval(() => {
       const audio = audioRef.current;
-      if (audio?.currentTime > 0) {
+      if (audio?.currentTime > 0 && !audio.paused) {
         try { localStorage.setItem(posKey, audio.currentTime.toString()); } catch {}
       }
     }, 10000);

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.472] — 2026-07-10 23:28
+
+- [Perf] Podcast position-save timer was writing the same playback position to localStorage every 10 seconds even while paused, for as long as the player stayed mounted (potentially indefinitely). Now skips the write while paused, since the position isn't moving.
+
 ## [1.46.471] — 2026-07-10 23:25
 
 - [Perf] Podcast player's seek bar and mini-bar progress strip were driving continuous `requestAnimationFrame` loops (up to 60 callbacks/sec) for the entire time a podcast was loaded — including while paused, backgrounded, or minimized, which is most of a typical session. Both loops now stop the moment playback pauses and resume on the next play event, eliminating wasted CPU/battery wake-ups.

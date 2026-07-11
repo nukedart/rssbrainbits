@@ -483,3 +483,4 @@ Every build logged an esbuild warning ("The character `}` is not valid inside a 
 User requested 5 consecutive /iterate loops focused specifically on performance, targeting the podcast player/features for rebuild. Iteration 1 below; more to follow in this same session.
 
 | 2026-07-10 | v1.46.471 | Perf | Podcast seek bar + mini-bar progress RAF loops now stop while paused instead of polling at 60fps for the entire mounted lifetime; resume on next play event | `PodcastPlayer.jsx` (SeekBar ~L30-63, mini-bar ~L321-350) | — |
+| 2026-07-10 | v1.46.472 | Perf | Podcast position-save interval now skips the localStorage write while paused (position isn't changing, so periodic writes during idle sessions were pure waste) | `PodcastPlayer.jsx:~375-385` | — |
