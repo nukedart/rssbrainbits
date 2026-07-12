@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.477] — 2026-07-11 23:23
+
+- [Perf] Feed list items (`FeedItem.jsx`) recomputed reading time by splitting the full article text on every render, unmemoized. Now cached via `useMemo`, keyed on the article text — only recomputes when the underlying content actually changes.
+
 ## [1.46.476] — 2026-07-11 21:23
 
 - [Fix] Reverted all 5 podcast performance changes from v1.46.471–475 (`PodcastPlayer.jsx`, `fetchers.js`) — user reported podcast playback broken (tapping play does nothing) after that run. Restored to the pre-run baseline (v1.46.470) while the actual cause is isolated; static review of the diffs didn't find an obvious bug, so this may turn out to be unrelated, but rolling back first restores a known-working state.

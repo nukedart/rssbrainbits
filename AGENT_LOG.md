@@ -495,3 +495,9 @@ User requested 5 consecutive /iterate loops focused specifically on performance,
 User reported "tapping play does nothing" shortly after the 5-iteration run above. Line-by-line re-review of all 5 diffs found no logic bug — `audio.play()`, the enclosure/audioUrl detection, and the play/pause click handlers were untouched by any of the 5 changes. Browser extension wasn't connected, so live console/network inspection wasn't possible. Reverted `PodcastPlayer.jsx` and `fetchers.js` to the pre-run baseline (v1.46.470) as a bisection step: if this fixes playback, the bug is in one of the 5 changes and will be re-isolated by re-applying them one at a time; if it doesn't, the cause is unrelated (e.g. audio host/CORS, autoplay policy) and investigation continues elsewhere.
 
 | 2026-07-11 | v1.46.476 | Fix | Reverted all 5 podcast perf changes (v1.46.471-475) back to v1.46.470 baseline after user reported broken podcast playback; cause not yet confirmed | `PodcastPlayer.jsx`, `fetchers.js` | — |
+
+## /iterate — 6-loop run, performance + minimal UI (2026-07-11)
+
+User requested 6 iterations focused on performance and UI minimalism. Given the unresolved podcast regression above (root cause still unconfirmed despite thorough static review, and no browser access available to verify runtime behavior), this run deliberately avoids core interactive wiring (article open/read/save handlers, click paths) in favor of changes that are functionally inert by construction — pure display memoization and CSS-only simplification — so a repeat of that incident is structurally less likely.
+
+| 2026-07-11 | v1.46.477 | Perf | FeedItem ListItem+CardItem: memoized readingTime() computation (was splitting full article text on every render, unmemoized) | `FeedItem.jsx:306-309,529-532` | — |

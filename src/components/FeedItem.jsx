@@ -1,4 +1,4 @@
-import { useState, useRef, memo } from "react";
+import { useState, useRef, useMemo, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { parseYouTubeUrl } from "../lib/fetchers";
@@ -300,6 +300,13 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   const imgSize  = displayPrefs.imgSize ?? 72;
   const rawFont  = displayPrefs.fontSize;
   const titleSize = typeof rawFont === "number" ? rawFont : rawFont === "large" ? 18 : 16;
+  // readingTime() splits the full article text on every call — memoize so it
+  // only recomputes when the underlying text actually changes. Computed here
+  // (not inside the desktop branch below) since hooks can't be conditional.
+  const readingTimeText = useMemo(
+    () => readingTime(item.fullText || item.description),
+    [item.fullText, item.description]
+  );
 
   // ── Mobile: Reeder-style row — image left/right/none, configurable preview ──
   if (isMobile) {
@@ -472,7 +479,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               <span style={{ fontSize: 11, color: T.textTertiary }}>{item.source}</span>
               {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
               {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent }}>· {item.audioDuration}</span>}
-              {!item.isPodcast && (item.fullText || item.description) && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTime(item.fullText || item.description)}</span>}
+              {!item.isPodcast && readingTimeText && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTimeText}</span>}
             </div>
           </div>
 
@@ -517,6 +524,12 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
     ? `https://img.youtube.com/vi/${yt.videoId}/mqdefault.jpg`
     : item.image || null;
   const progress = getStoredProgress(item.url);
+  // readingTime() splits the full article text on every call — memoize so it
+  // only recomputes when the underlying text actually changes.
+  const readingTimeText = useMemo(
+    () => readingTime(item.fullText || item.description),
+    [item.fullText, item.description]
+  );
 
   return (
     <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile} dismissOnRead={dismissOnRead}>
@@ -626,9 +639,9 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             {/* Reading time — md/lg only; sm cards are too compact */}
             {cardSize !== "sm" && (
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, marginBottom: 8 }}>
-                {!item.isPodcast && (item.fullText || item.description) && (
+                {!item.isPodcast && readingTimeText && (
                   <span style={{ fontSize: 10, color: T.textTertiary }}>
-                    {readingTime(item.fullText || item.description)}
+                    {readingTimeText}
                   </span>
                 )}
                 {!item.isPodcast && item.date && (item.fullText || item.description) && <span style={{ fontSize: 10, color: T.textTertiary }}>·</span>}
