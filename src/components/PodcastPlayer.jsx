@@ -18,17 +18,8 @@ function fmt(s) {
   return `${m}:${String(sec).padStart(2,"0")}`;
 }
 
-// iTunes <itunes:duration> can be plain seconds ("2732") or HH:MM:SS/MM:SS —
-// normalise to seconds so it can go through fmt() like everything else.
-function parseDuration(raw) {
-  if (!raw) return null;
-  const parts = String(raw).trim().split(":").map(Number);
-  if (parts.some(isNaN)) return null;
-  return parts.reduce((acc, n) => acc * 60 + n, 0);
-}
-
 // ── SeekBar — fully ref-driven via RAF, zero React re-renders during playback
-function SeekBar({ audioRef, T, light, initialDuration }) {
+function SeekBar({ audioRef, T, light }) {
   const trackRef = useRef(null);
   const fillRef  = useRef(null);
   const thumbRef = useRef(null);
@@ -37,17 +28,14 @@ function SeekBar({ audioRef, T, light, initialDuration }) {
   const dragging = useRef(false);
 
   // RAF loop — updates DOM directly without touching React state
-  // Throttled to ~2fps (500ms) — more than enough for a podcast seek bar.
-  // Only runs while audio is actually playing — paused/idle sessions (the
-  // majority of a podcast player's mounted lifetime) burn zero frames.
+  // Throttled to ~2fps (500ms) — more than enough for a podcast seek bar
   useEffect(() => {
-    const audio = audioRef.current;
-    let raf = null;
+    let raf;
     let lastTs = 0;
-
     function tick(ts) {
       if (!dragging.current && ts - lastTs >= 500) {
         lastTs = ts;
+        const audio = audioRef.current;
         if (audio) {
           const ct  = audio.currentTime || 0;
           const dur = audio.duration    || 0;
@@ -55,39 +43,15 @@ function SeekBar({ audioRef, T, light, initialDuration }) {
           if (fillRef.current)  fillRef.current.style.transform = `scaleX(${pct})`;
           if (thumbRef.current) thumbRef.current.style.left    = `${pct * 100}%`;
           if (ctRef.current)    ctRef.current.textContent      = fmt(ct);
-          // Only overwrite once real metadata is in — leave the RSS-seeded
-          // duration estimate (below) alone until then, rather than clobbering
-          // it with "0:00" while the audio file is still loading.
-          if (durRef.current && dur > 0) durRef.current.textContent = fmt(dur);
+          if (durRef.current)   durRef.current.textContent     = fmt(dur);
           if (trackRef.current) trackRef.current.setAttribute("aria-valuenow", Math.round(pct * 100));
         }
       }
-      if (audio && !audio.paused) raf = requestAnimationFrame(tick);
-      else raf = null;
+      raf = requestAnimationFrame(tick);
     }
-    function start() {
-      if (raf == null) raf = requestAnimationFrame(tick);
-    }
-
-    start();
-    audio?.addEventListener("play",    start);
-    audio?.addEventListener("playing", start);
-    return () => {
-      if (raf != null) cancelAnimationFrame(raf);
-      audio?.removeEventListener("play",    start);
-      audio?.removeEventListener("playing", start);
-    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, []); // audioRef is a stable ref object
-
-  // Seed the duration display from the RSS feed's already-known iTunes
-  // duration immediately, instead of showing "0:00" until the browser
-  // finishes loading real audio metadata over the network.
-  useEffect(() => {
-    const seeded = parseDuration(initialDuration);
-    if (seeded && durRef.current && !(audioRef.current?.duration > 0)) {
-      durRef.current.textContent = fmt(seeded);
-    }
-  }, [initialDuration]);
 
   function getPct(e) {
     if (!trackRef.current) return 0;
@@ -354,36 +318,23 @@ export default function PodcastPlayer({ item, onClose }) {
     };
   }, [item?.audioUrl]);
 
-  // RAF loop for mini-bar progress strip — throttled to 500ms, and only
-  // ticking while actually playing (paused/minimized sessions burn nothing).
+  // RAF loop for mini-bar progress strip — throttled to 500ms
   useEffect(() => {
-    const audio = audioRef.current;
-    let raf = null;
+    let raf;
     let lastTs = 0;
-
     function tick(ts) {
       if (ts - lastTs >= 500) {
         lastTs = ts;
+        const audio = audioRef.current;
         if (audio && miniBarFillRef.current) {
           const pct = audio.duration ? audio.currentTime / audio.duration : 0;
           miniBarFillRef.current.style.transform = `scaleX(${pct})`;
         }
       }
-      if (audio && !audio.paused) raf = requestAnimationFrame(tick);
-      else raf = null;
+      raf = requestAnimationFrame(tick);
     }
-    function start() {
-      if (raf == null) raf = requestAnimationFrame(tick);
-    }
-
-    start();
-    audio?.addEventListener("play",    start);
-    audio?.addEventListener("playing", start);
-    return () => {
-      if (raf != null) cancelAnimationFrame(raf);
-      audio?.removeEventListener("play",    start);
-      audio?.removeEventListener("playing", start);
-    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [isMobile]);
 
   // Auto-play when a new episode is set — user already clicked "Play episode"
@@ -394,15 +345,12 @@ export default function PodcastPlayer({ item, onClose }) {
     audio.play().catch(() => { setLoading(false); });
   }, [item?.audioUrl]);
 
-  // Persist seek position every 10s (not on every timeupdate).
-  // Skipped while paused — the position isn't moving, so re-writing the
-  // same value to localStorage every 10s during an idle/paused session
-  // (which can last indefinitely while the player stays mounted) is pure waste.
+  // Persist seek position every 10s (not on every timeupdate)
   useEffect(() => {
     if (!posKey) return;
     const id = setInterval(() => {
       const audio = audioRef.current;
-      if (audio?.currentTime > 0 && !audio.paused) {
+      if (audio?.currentTime > 0) {
         try { localStorage.setItem(posKey, audio.currentTime.toString()); } catch {}
       }
     }, 10000);
@@ -533,7 +481,7 @@ export default function PodcastPlayer({ item, onClose }) {
 
                 {/* Seekbar */}
                 <div style={{ marginBottom: 16 }}>
-                  <SeekBar audioRef={audioRef} T={T} light initialDuration={item.audioDuration} />
+                  <SeekBar audioRef={audioRef} T={T} light />
                 </div>
 
                 {/* Main controls */}
@@ -658,7 +606,7 @@ export default function PodcastPlayer({ item, onClose }) {
               </div>
               <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</div>
             </div>
-            <div style={{ marginBottom: 14 }}><SeekBar audioRef={audioRef} T={T} light={false} initialDuration={item.audioDuration} /></div>
+            <div style={{ marginBottom: 14 }}><SeekBar audioRef={audioRef} T={T} light={false} /></div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 14 }}>
               <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light={false} />
               <PlayBtn size={56} playing={playing} loading={loading} onClick={togglePlay} T={T} light={false} />
@@ -697,10 +645,9 @@ export default function PodcastPlayer({ item, onClose }) {
         boxShadow: "0 8px 32px rgba(0,0,0,.22)",
         overflow: "hidden",
       }}>
-        {/* Progress strip — width must be 100% with transformOrigin left so the
-            RAF-driven scaleX() transform actually has something to scale */}
+        {/* Progress strip */}
         <div style={{ height: 2, background: T.surface2 }}>
-          <div ref={miniBarFillRef} style={{ height: "100%", width: "100%", background: T.accent, transform: "scaleX(0)", transformOrigin: "left" }} />
+          <div ref={miniBarFillRef} style={{ height: "100%", width: "0%", background: T.accent }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", padding: "9px 10px 9px 12px", gap: 10 }}>
           {/* Artwork */}

@@ -489,3 +489,9 @@ User requested 5 consecutive /iterate loops focused specifically on performance,
 | 2026-07-10 | v1.46.475 | Perf | Podcast seek bar now seeds its duration display from the RSS feed's already-known iTunes duration instead of showing 0:00 until real audio metadata loads over the network | `PodcastPlayer.jsx` (parseDuration + SeekBar) | — |
 
 5-iteration performance run on podcast features complete (v1.46.471–475): eliminated wasted RAF polling while paused (2 loops), eliminated redundant localStorage writes while paused, fixed a desktop-only rendering bug where progress never visibly displayed, halved per-item RSS parsing DOM traversal, and improved perceived duration display latency. All verified via npm test + npm run build + green GitHub Actions before each deploy.
+
+## Podcast playback regression — rollback (2026-07-11)
+
+User reported "tapping play does nothing" shortly after the 5-iteration run above. Line-by-line re-review of all 5 diffs found no logic bug — `audio.play()`, the enclosure/audioUrl detection, and the play/pause click handlers were untouched by any of the 5 changes. Browser extension wasn't connected, so live console/network inspection wasn't possible. Reverted `PodcastPlayer.jsx` and `fetchers.js` to the pre-run baseline (v1.46.470) as a bisection step: if this fixes playback, the bug is in one of the 5 changes and will be re-isolated by re-applying them one at a time; if it doesn't, the cause is unrelated (e.g. audio host/CORS, autoplay policy) and investigation continues elsewhere.
+
+| 2026-07-11 | v1.46.476 | Fix | Reverted all 5 podcast perf changes (v1.46.471-475) back to v1.46.470 baseline after user reported broken podcast playback; cause not yet confirmed | `PodcastPlayer.jsx`, `fetchers.js` | — |
