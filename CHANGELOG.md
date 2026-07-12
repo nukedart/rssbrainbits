@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.479] — 2026-07-12 15:08
+
+- [Perf] Every visible feed row was re-rendering on any InboxPage state change (search, scroll, filters) regardless of whether its own data changed — `FeedItem`'s `memo()` was silently defeated because `onClick`/`onSave`/`onReadLater`/`onMarkRead` were fresh closures created per-item on every render. Introduced a memoized `FeedItemRow` wrapper with stable per-item callbacks (via a latest-handler ref, same pattern already used elsewhere in this file) — `memo()` now actually skips unaffected rows. No change in click behavior, verified by tracing every branch (multi-select, card vs. list open routing, mark-read toggle, long-press) against the original.
+
 ## [1.46.478] — 2026-07-11 23:24
 
 - [Perf] Mobile feed rows stripped HTML tags and whitespace from the article description via two regex `.replace()` calls on every render, unmemoized. Now cached via `useMemo`, keyed on the actual inputs.

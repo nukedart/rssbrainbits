@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, memo, lazy, Suspense } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
@@ -31,6 +31,54 @@ function dateBucket(dateStr, todayTs) {
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   } catch { return null; }
 }
+
+// ── Memoized row wrapper — keeps FeedItem's memo() effective ───────────
+// InboxPage re-renders often (search, scroll state, filters). Every one of
+// those handler props used to be a fresh arrow-function closure created in
+// the .map()/.forEach() below, which defeated FeedItem's memo() and forced
+// every visible row to re-render regardless of whether its own data changed.
+// This wrapper derives per-item callbacks with useCallback (stable across
+// parent re-renders as long as `item`/`idx` don't change) and always invokes
+// the *current* handler via a ref, so behavior is identical to calling the
+// inline closures directly — nothing here changes what actually happens on
+// click, only how often FeedItem has to re-render to find that out.
+const FeedItemRow = memo(function FeedItemRow({
+  item, idx, viewMode, cardSize, isSelected, isRead, isSaved, feedColor,
+  displayPrefs, dismissOnRead, multiSelectMode, isChecked, onPlayPodcast,
+  withDataUrl, alsoSetCursor, handlersRef,
+}) {
+  const handleClick = useCallback(() => {
+    if (multiSelectMode) { handlersRef.current.toggleSelectUrl(item.url); return; }
+    if (alsoSetCursor) handlersRef.current.setCursorIdx(idx);
+    handlersRef.current.openByIdx(idx);
+  }, [multiSelectMode, alsoSetCursor, item.url, idx, handlersRef]);
+
+  const handleSave = useCallback(() => handlersRef.current.handleSaveItem(item), [item, handlersRef]);
+  const handleReadLater = useCallback(() => handlersRef.current.handleReadLater(item), [item, handlersRef]);
+  const handleMarkReadToggle = useCallback(() => {
+    if (isRead) handlersRef.current.handleMarkUnread(item.url);
+    else handlersRef.current.handleMarkRead(item.url);
+  }, [isRead, item.url, handlersRef]);
+  const handlePointerDown = useCallback(() => handlersRef.current.startLongPress(item.url), [item.url, handlersRef]);
+  const handlePointerEnd = useCallback(() => handlersRef.current.cancelLongPress(), [handlersRef]);
+
+  return (
+    <div {...(withDataUrl ? { "data-url": item.url } : {})}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerEnd}
+      onPointerMove={handlePointerEnd}
+      onPointerCancel={handlePointerEnd}
+    >
+      <FeedItem item={item} viewMode={viewMode} cardSize={cardSize}
+        isSelected={isSelected} isRead={isRead} isSaved={isSaved}
+        feedColor={feedColor} displayPrefs={displayPrefs} dismissOnRead={dismissOnRead}
+        inMultiSelect={multiSelectMode} isChecked={isChecked}
+        onClick={handleClick} onSave={handleSave} onReadLater={handleReadLater}
+        onMarkRead={handleMarkReadToggle} onPlayPodcast={onPlayPodcast}
+      />
+    </div>
+  );
+});
 
 export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, folderDef = null, ytFeedIds = null, onUnreadCount, onFeedErrors, onFeedUnreadCounts, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose, forceOpenSearch = false, onForcedSearchClose, onNavigate }) {
   const { T } = useTheme();
@@ -136,6 +184,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     });
   }
   const listRef = useRef(null);
+  const handlersRef = useRef({}); // always holds the latest row-action handlers — see FeedItemRow above
   const searchBarRef = useRef(null); // for f-key focus
   const markReadFnRef = useRef(null);
   const autoMarkReadRef = useRef(autoMarkRead);
@@ -917,6 +966,18 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     pullStartY.current = null;
   }
 
+  // Keep the ref current every render so FeedItemRow's stable callbacks
+  // always call through to the latest version of each handler.
+  handlersRef.current.openByIdx        = openByIdx;
+  handlersRef.current.toggleSelectUrl  = toggleSelectUrl;
+  handlersRef.current.handleSaveItem   = handleSaveItem;
+  handlersRef.current.handleReadLater  = handleReadLater;
+  handlersRef.current.handleMarkRead   = handleMarkRead;
+  handlersRef.current.handleMarkUnread = handleMarkUnread;
+  handlersRef.current.startLongPress   = startLongPress;
+  handlersRef.current.cancelLongPress  = cancelLongPress;
+  handlersRef.current.setCursorIdx     = setCursorIdx;
+
   return (
     <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
 
@@ -1383,25 +1444,19 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {viewMode === "card" ? (
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: isMobile ? 8 : (cardSize === "lg" ? 18 : 14) }}>
               {baseItems.slice(0, displayedCount).map((item, i) => (
-                <div key={item.url + i}
-                  onPointerDown={() => startLongPress(item.url)}
-                  onPointerUp={cancelLongPress}
-                  onPointerMove={cancelLongPress}
-                  onPointerCancel={cancelLongPress}
-                >
-                <FeedItem item={item} viewMode="card" cardSize={isMobile ? "sm" : cardSize}
+                <FeedItemRow key={item.url + i}
+                  item={item} idx={i} viewMode="card" cardSize={isMobile ? "sm" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
-                  feedColor={feedColorMap[item.feedId]}
-                  inMultiSelect={multiSelectMode}
-                  isChecked={multiSelectMode && selectedUrls.has(item.url)}
-                  onClick={multiSelectMode ? () => toggleSelectUrl(item.url) : () => { openByIdx(i); }}
-                  onSave={() => handleSaveItem(item)}
                   isSaved={savedUrls.has(item.url)}
-                  onReadLater={() => handleReadLater(item)}
-                  onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
+                  feedColor={feedColorMap[item.feedId]}
+                  multiSelectMode={multiSelectMode}
+                  isChecked={multiSelectMode && selectedUrls.has(item.url)}
                   onPlayPodcast={onPlayPodcast}
-                /></div>
+                  withDataUrl={false}
+                  alsoSetCursor={false}
+                  handlersRef={handlersRef}
+                />
               ))}
             </div>
           ) : (() => {
@@ -1422,28 +1477,21 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 );
               }
               rows.push(
-                <div key={item.url + i} data-url={item.url}
-                  onPointerDown={() => startLongPress(item.url)}
-                  onPointerUp={cancelLongPress}
-                  onPointerMove={cancelLongPress}
-                  onPointerCancel={cancelLongPress}
-                >
-                  <FeedItem item={item} viewMode="list" cardSize={cardSize}
-                    isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
-                    isRead={readUrls.has(item.url)}
-                    isSaved={savedUrls.has(item.url)}
-                    feedColor={feedColorMap[item.feedId]}
-                    displayPrefs={isMobile ? displayPrefs : undefined}
-                    dismissOnRead={isMobile && filterMode === "catch-up"}
-                    inMultiSelect={multiSelectMode}
-                    isChecked={multiSelectMode && selectedUrls.has(item.url)}
-                    onClick={multiSelectMode ? () => toggleSelectUrl(item.url) : () => { setCursorIdx(i); openByIdx(i); }}
-                    onSave={() => handleSaveItem(item)}
-                    onReadLater={() => handleReadLater(item)}
-                    onMarkRead={() => readUrls.has(item.url) ? handleMarkUnread(item.url) : handleMarkRead(item.url)}
-                    onPlayPodcast={onPlayPodcast}
-                  />
-                </div>
+                <FeedItemRow key={item.url + i}
+                  item={item} idx={i} viewMode="list" cardSize={cardSize}
+                  isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
+                  isRead={readUrls.has(item.url)}
+                  isSaved={savedUrls.has(item.url)}
+                  feedColor={feedColorMap[item.feedId]}
+                  displayPrefs={isMobile ? displayPrefs : undefined}
+                  dismissOnRead={isMobile && filterMode === "catch-up"}
+                  multiSelectMode={multiSelectMode}
+                  isChecked={multiSelectMode && selectedUrls.has(item.url)}
+                  onPlayPodcast={onPlayPodcast}
+                  withDataUrl={true}
+                  alsoSetCursor={true}
+                  handlersRef={handlersRef}
+                />
               );
             });
             return rows;
