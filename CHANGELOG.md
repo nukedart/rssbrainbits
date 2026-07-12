@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.482] — 2026-07-12 15:15
+
+- [Polish] Flattened the Cards page "New Card" modal backdrop — removed `backdrop-filter: blur(6px)` in favor of a plain dim overlay (slightly darker to compensate), consistent with the bottom-nav and reader-header simplification.
+
 ## [1.46.481] — 2026-07-12 15:13
 
 - [Polish/Perf] Flattened the article reader's header bar — removed `backdrop-filter: blur(14px)` in favor of a solid background, matching the bottom-nav simplification.

@@ -511,3 +511,6 @@ User clarified "minimal UI" means less visual noise (flatter, calmer surfaces) r
 
 | 2026-07-12 | v1.46.480 | Polish/Perf | Flattened BottomNav pill — removed backdrop-filter blur+saturate glass effect, solid background + softer shadow | `BottomNav.jsx:94-111` | — |
 | 2026-07-12 | v1.46.481 | Polish/Perf | Flattened ContentViewer reader header — removed backdrop-filter blur(14px), solid T.bg background | `ContentViewer.jsx:442-446` | — |
+| 2026-07-12 | v1.46.482 | Polish | Flattened CardsPage "New Card" modal backdrop — removed blur(6px), plain dim overlay (opacity bumped .45→.55 to compensate) | `CardsPage.jsx:461-463` | — |
+
+6-iteration run complete (v1.46.477–482): 3 pure-performance memoization fixes (readingTime, preview text, and the FeedItem memo()-defeat root cause), plus 3 "less visual noise" flattening passes removing backdrop-filter blur from BottomNav, ContentViewer header, and CardsPage modal. Noted but intentionally left alone: `HomePage.jsx` is fully dead code (not imported anywhere) — a cleanup candidate for a future "leaner codebase" pass, not this run's "visual noise" goal since it's never rendered. Also left `PodcastPlayer.jsx` untouched this run pending confirmation on the still-open playback regression from the prior 5-iteration run.

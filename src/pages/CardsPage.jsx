@@ -459,7 +459,7 @@ export default function CardsPage() {
             onKeyDown={e => { if (e.key === "Escape") setShowNewCard(false); }}
             style={{
               position: "fixed", inset: 0, zIndex: 800,
-              background: "rgba(0,0,0,.45)", backdropFilter: "blur(6px)",
+              background: "rgba(0,0,0,.55)",
               display: "flex", alignItems: "center", justifyContent: "center",
               padding: 20, animation: "fadeIn .15s ease",
             }}
