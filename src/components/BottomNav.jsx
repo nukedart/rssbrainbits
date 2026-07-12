@@ -96,9 +96,7 @@ export default function BottomNav({
     bottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
     left: "50%",
     zIndex: 600,
-    background: hexToRgba(T.card, 0.92),
-    backdropFilter: "blur(24px) saturate(180%)",
-    WebkitBackdropFilter: "blur(24px) saturate(180%)",
+    background: T.card,
     transform: `translateX(-50%) translateY(${visible ? "0" : "120px"})`,
     transition: "transform .3s cubic-bezier(.4,0,.2,1)",
     willChange: "transform",
@@ -107,8 +105,8 @@ export default function BottomNav({
     borderRadius: 999,
     border: `1px solid ${hexToRgba(T.border, 0.6)}`,
     boxShadow: isDark
-      ? "0 4px 24px rgba(0,0,0,.28)"
-      : "0 2px 12px rgba(0,0,0,.07)",
+      ? "0 2px 12px rgba(0,0,0,.18)"
+      : "0 1px 6px rgba(0,0,0,.05)",
     padding: "0 4px",
     maxWidth: "calc(100vw - 32px)",
   };

@@ -506,3 +506,7 @@ User requested 6 iterations focused on performance and UI minimalism. Given the 
 User explicitly chose to proceed with the highest-risk fix (touching article open/read/save click handlers) despite no browser access to verify live, given the podcast regression earlier this run. Implemented via a new memoized `FeedItemRow` wrapper component that derives stable per-item callbacks using a "latest handler via ref" pattern (`handlersRef`) — mirrors the existing `markReadFnRef` convention already used in this file. Traced every click-routing branch (multi-select toggle, card vs. list open behavior incl. `setCursorIdx` ordering, mark-read/unread toggle, long-press start/cancel) against the original inline closures to confirm exact behavioral equivalence before deploying.
 
 | 2026-07-11 | v1.46.479 | Perf | Fixed FeedItem memo() being defeated by per-render closure props in InboxPage — new memoized FeedItemRow wrapper with ref-based stable callbacks; rows no longer re-render on unrelated InboxPage state changes | `InboxPage.jsx:35-81,196(handlersRef),968-977(ref sync),1446-1460,1480-1495` | — |
+
+User clarified "minimal UI" means less visual noise (flatter, calmer surfaces) rather than less information density or leaner code — remaining iterations target decorative effects like backdrop-filter blur, which is both visual clutter and expensive to composite.
+
+| 2026-07-12 | v1.46.480 | Polish/Perf | Flattened BottomNav pill — removed backdrop-filter blur+saturate glass effect, solid background + softer shadow | `BottomNav.jsx:94-111` | — |
