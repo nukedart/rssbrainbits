@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.481] — 2026-07-12 15:13
+
+- [Polish/Perf] Flattened the article reader's header bar — removed `backdrop-filter: blur(14px)` in favor of a solid background, matching the bottom-nav simplification.
+
 ## [1.46.480] — 2026-07-12 15:11
 
 - [Polish/Perf] Flattened the mobile bottom nav pill — removed the frosted-glass `backdrop-filter: blur(24px) saturate(180%)` effect (expensive to composite on every scroll/frame it's visible) in favor of a solid, calmer surface with a softer shadow.

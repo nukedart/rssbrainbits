@@ -440,8 +440,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         zIndex: 10,
       }}>
       <div style={{
-        background: `${T.bg}d8`,
-        backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
+        background: T.bg,
         padding: isMobile ? "8px 12px" : "10px 16px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 10,
       }}>
         <button onClick={onClose} aria-label="Close article" style={{

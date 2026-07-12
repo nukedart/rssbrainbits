@@ -510,3 +510,4 @@ User explicitly chose to proceed with the highest-risk fix (touching article ope
 User clarified "minimal UI" means less visual noise (flatter, calmer surfaces) rather than less information density or leaner code — remaining iterations target decorative effects like backdrop-filter blur, which is both visual clutter and expensive to composite.
 
 | 2026-07-12 | v1.46.480 | Polish/Perf | Flattened BottomNav pill — removed backdrop-filter blur+saturate glass effect, solid background + softer shadow | `BottomNav.jsx:94-111` | — |
+| 2026-07-12 | v1.46.481 | Polish/Perf | Flattened ContentViewer reader header — removed backdrop-filter blur(14px), solid T.bg background | `ContentViewer.jsx:442-446` | — |
