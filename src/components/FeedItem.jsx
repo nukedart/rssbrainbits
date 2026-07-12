@@ -307,12 +307,18 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
     () => readingTime(item.fullText || item.description),
     [item.fullText, item.description]
   );
+  // Strips HTML + whitespace from the description on every render otherwise —
+  // memoized here (above the mobile/desktop branch, since hooks can't be
+  // conditional) so it only recomputes when the actual inputs change.
+  const preview = useMemo(
+    () => (previewN > 0 && !item.isPodcast
+      ? (item.description || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 300)
+      : null),
+    [previewN, item.isPodcast, item.description]
+  );
 
   // ── Mobile: Reeder-style row — image left/right/none, configurable preview ──
   if (isMobile) {
-    const preview = previewN > 0 && !item.isPodcast
-      ? (item.description || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 300)
-      : null;
     const thumb = imgPos !== "none" ? <MobileThumb item={item} T={T} size={imgSize} /> : null;
     return (
       <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile} dismissOnRead={dismissOnRead}>

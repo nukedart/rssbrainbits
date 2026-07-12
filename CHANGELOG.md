@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.478] — 2026-07-11 23:24
+
+- [Perf] Mobile feed rows stripped HTML tags and whitespace from the article description via two regex `.replace()` calls on every render, unmemoized. Now cached via `useMemo`, keyed on the actual inputs.
+
 ## [1.46.477] — 2026-07-11 23:23
 
 - [Perf] Feed list items (`FeedItem.jsx`) recomputed reading time by splitting the full article text on every render, unmemoized. Now cached via `useMemo`, keyed on the article text — only recomputes when the underlying content actually changes.
