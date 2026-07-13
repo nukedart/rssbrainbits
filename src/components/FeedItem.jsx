@@ -1,9 +1,26 @@
-import { useState, useRef, useMemo, memo } from "react";
+import { useState, useRef, useMemo, useEffect, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { parseYouTubeUrl } from "../lib/fetchers";
 
 const haptic = (ms = 8) => { try { navigator.vibrate?.(ms); } catch {} };
+
+// Warm the DNS/TCP/TLS connection to a podcast host as soon as its episode
+// is visible in the feed, so playback (from either the mini-player or the
+// full reader) doesn't pay that handshake cost after the user taps play.
+const preconnectedHosts = new Set();
+function warmPodcastHost(audioUrl) {
+  if (!audioUrl) return;
+  try {
+    const origin = new URL(audioUrl).origin;
+    if (preconnectedHosts.has(origin)) return;
+    preconnectedHosts.add(origin);
+    const link = document.createElement("link");
+    link.rel = "preconnect";
+    link.href = origin;
+    document.head.appendChild(link);
+  } catch {}
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -679,6 +696,10 @@ function CardItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 
 // ── Public export ─────────────────────────────────────────────
 export default memo(function FeedItem({ item, viewMode = "list", cardSize = "md", onClick, onSave, onReadLater, onMarkRead, onPlayPodcast, isSelected = false, isRead = false, isSaved = false, feedColor, displayPrefs, dismissOnRead, inMultiSelect = false, isChecked = false }) {
+  useEffect(() => {
+    if (item.isPodcast) warmPodcastHost(item.audioUrl);
+  }, [item.isPodcast, item.audioUrl]);
+
   if (viewMode === "card") {
     return <CardItem item={item} onClick={onClick} onSave={onSave} onReadLater={onReadLater} onMarkRead={onMarkRead} onPlayPodcast={onPlayPodcast} isSelected={isSelected} isRead={isRead} isSaved={isSaved} cardSize={cardSize} feedColor={feedColor} dismissOnRead={dismissOnRead} inMultiSelect={inMultiSelect} isChecked={isChecked} />;
   }

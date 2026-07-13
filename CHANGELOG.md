@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.483] — 2026-07-13 09:59
+
+- [Perf] Podcast episodes took a noticeable moment to start playing after tapping play — from either the feed-list mini-player or the full-reader view — because the DNS/TCP/TLS handshake to the podcast host only began at the moment of the click. `FeedItem` now preconnects to a podcast's audio host as soon as its episode is visible in the feed list (deduped per origin), so that handshake is already warm by the time the user taps play, for both playback paths.
+
 ## [1.46.482] — 2026-07-12 15:15
 
 - [Polish] Flattened the Cards page "New Card" modal backdrop — removed `backdrop-filter: blur(6px)` in favor of a plain dim overlay (slightly darker to compensate), consistent with the bottom-nav and reader-header simplification.
