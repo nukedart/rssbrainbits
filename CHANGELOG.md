@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.485] — 2026-07-14 09:52
+
+- [Feature] Virtual Zettelkasten — the card system now builds knowledge connections from what you read. New pure connection engine (`src/lib/zettel.js`, fully unit-tested): cards relate by shared themes (weighted double) and shared source. The Shuffle spotlight becomes a graph browser — every card shows its **Connected cards**, tap to traverse idea neighborhoods. Theme views gain a **Related themes** trail (co-occurring tags, tap to jump). Review adds the synthesis ritual: revealed cards without an annotation show an "In your own words" nudge that opens the existing note flow — highlight is the front of the card, your own words are the back. All client-side; no schema change.
+
+- [Feature] Readwise-inspired card system upgrades (concepts only — no Readwise assets or branding). **Shuffle** on the Cards page spotlights one random highlight in a modal ("Show another" to keep drawing) for serendipitous resurfacing. **Mastered** action on Review retires a card you know cold (~10 years out, no schema change) while counting as a completed review for streaks. **Cards per review session** setting (5/10/20/50) in Settings → Reading; this replaces the internal never-configurable daily quota of 5 as the single session-size control (legacy key honored as fallback, new default 10).
+
 ## [1.46.484] — 2026-07-14 07:37
 
 - [UX] Reeder-style refresh, round 3 — the pages layer. Cards, Review, Today, Home, Read Later, and the secondary pages (History/Saved/Settings/Manage Feeds) join the SHAPE system: flat hairline `radiusCard` surfaces with no resting shadows (the Review flashcard keeps the one intentional float shadow — it's a literal card), `radiusSm` controls, `accentSurface` hover/active states everywhere, pill progress bars, and iOS-style grouped settings sections. Cards-page theme tiles trade their colored hover glow for the app-standard accent wash; Read Later grid drops its hover lift for the same. Labels normalized to 11px/.05em uppercase across all pages.

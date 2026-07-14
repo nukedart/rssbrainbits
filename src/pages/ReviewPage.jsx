@@ -40,8 +40,11 @@ function intervalLabel(interval) {
 }
 
 // ── Daily quota helpers ──────────────────────────────────────────
+// Single user-facing control: "Cards per review session" in Settings
+// (fb-review-count). Legacy fb-review-quota kept as fallback; it never
+// had a Settings UI, so most users only ever had the old default of 5.
 function getDailyQuota() {
-  return parseInt(localStorage.getItem("fb-review-quota") || "5", 10);
+  return parseInt(localStorage.getItem("fb-review-count") || localStorage.getItem("fb-review-quota") || "10", 10);
 }
 
 function getTodayCount(userId) {
@@ -107,6 +110,7 @@ export default function ReviewPage({ onDueCount }) {
   const [addingNote, setAddingNote]     = useState(false);
   const [noteText, setNoteText]         = useState("");
   const [swipeHintDone, setSwipeHintDone] = useState(() => !!localStorage.getItem("fb-swipe-hint-done"));
+  const [sessionSize] = useState(() => parseInt(localStorage.getItem("fb-review-count") || "10", 10));
 
   // Stable refs so keyboard/touch handlers never capture stale closures
   const revealedRef   = useRef(false);
@@ -184,11 +188,11 @@ export default function ReviewPage({ onDueCount }) {
 
   const allDue = useMemo(() => highlights.filter(h => isDue(reviews[h.id])), [highlights, reviews]);
   useEffect(() => { onDueCount?.(allDue.length); }, [allDue.length, onDueCount]);
-  // Cap queue to today's remaining quota
+  // Cap queue to today's remaining quota and the configured session size
   const queue   = useMemo(() => {
     if (sessionQuota === null) return [];
-    return allDue.slice(0, sessionQuota);
-  }, [allDue, sessionQuota]);
+    return allDue.slice(0, Math.min(sessionQuota, sessionSize));
+  }, [allDue, sessionQuota, sessionSize]);
   const current = queue[queueIdx];
   const done    = !loading && sessionQuota !== null && queueIdx >= queue.length;
   const total   = queue.length;
@@ -214,6 +218,26 @@ export default function ReviewPage({ onDueCount }) {
     }, 270);
   }
   handleRatingRef.current = handleRating;
+
+  function handleMaster() {
+    if (!current || !user || exitAnimRef.current) return;
+    const ease = reviews[current.id]?.ease ?? 2.5;
+    const updated = { ease, interval: 3650, next_review: addDays(todayStr(), 3650) };
+    setReviews(prev => ({ ...prev, [current.id]: { highlight_id: current.id, ...updated } }));
+    upsertHighlightReview(user.id, current.id, updated).catch(console.error);
+    incTodayCount(user.id);
+    setSessionGot(n => n + 1);
+    setExitAnim("left");
+    setTimeout(() => {
+      setExitAnim(null);
+      setRevealed(false);
+      setAddingNote(false);
+      setNoteText("");
+      setQueueIdx(i => i + 1);
+      setSessionCount(n => n + 1);
+      setCardKey(k => k + 1);
+    }, 270);
+  }
 
   // Keyboard: Space/Enter = reveal, ←/J = Again, →/K = Got it
   useEffect(() => {
@@ -472,13 +496,13 @@ export default function ReviewPage({ onDueCount }) {
                     <button
                       onClick={() => { setAddingNote(true); setNoteText(""); }}
                       style={{
-                        width: "100%", padding: "12px", borderRadius: SHAPE.radiusSm, cursor: "pointer",
+                        width: "100%", padding: "10px 14px", borderRadius: SHAPE.radiusSm, cursor: "pointer",
                         border: `1px dashed ${T.border}`, background: "transparent",
-                        color: T.textTertiary, fontSize: 13, fontFamily: "inherit",
-                        fontStyle: "italic", textAlign: "center",
+                        color: T.textSecondary, fontSize: 13, fontFamily: "inherit",
+                        textAlign: "center",
                         marginBottom: current.tags?.length ? 16 : 0,
                       }}
-                    >+ Add annotation</button>
+                    >✍ In your own words — what does this mean to you?</button>
                   )}
                   {current.tags?.length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -571,6 +595,24 @@ export default function ReviewPage({ onDueCount }) {
           </span>
         </button>
       </div>
+
+      {/* Mastered — retire card from rotation */}
+      {revealed && (
+        <div style={{ padding: "0 16px", flexShrink: 0, textAlign: "center" }}>
+          <button
+            onClick={handleMaster}
+            style={{
+              border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
+              color: T.textTertiary, fontSize: 12, borderRadius: SHAPE.radiusSm,
+              padding: "8px 12px", transition: "color .12s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = T.text}
+            onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
+          >
+            ✓ Mastered — retire this card
+          </button>
+        </div>
+      )}
 
       {/* Hint row — swipe on mobile, keyboard on desktop */}
       {isMobile ? (

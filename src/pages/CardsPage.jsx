@@ -11,6 +11,7 @@ import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTag
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 import { askQuestion } from "../lib/fetchers";
 import { SHAPE } from "../lib/tokens";
+import { relatedHighlights, coOccurringTags } from "../lib/zettel";
 
 const AVATAR_COLORS = ["#2F6FED","#AA8439","#65D5C4","#8B5CF6","#EF4444","#22C55E","#F97316","#EC4899"];
 function themeAvatar(name) {
@@ -58,6 +59,7 @@ export default function CardsPage() {
   const [chatInput, setChatInput]   = useState("");
   const [chatAnswer, setChatAnswer] = useState(null);
   const [chatLoading, setChatLoading] = useState(false);
+  const [shuffleHighlight, setShuffleHighlight] = useState(null);
 
   const allExistingTags = useMemo(() =>
     [...new Set(highlights.flatMap(h => h.tags || []))].sort(),
@@ -72,6 +74,14 @@ export default function CardsPage() {
     });
     return s;
   }, [highlights, reviews]);
+
+  const connectedCards = useMemo(() =>
+    shuffleHighlight ? relatedHighlights(shuffleHighlight, highlights, 4) : [],
+  [shuffleHighlight, highlights]);
+
+  const relatedThemes = useMemo(() =>
+    (selectedTheme && selectedTheme !== "__untagged__") ? coOccurringTags(selectedTheme, highlights, 6) : [],
+  [selectedTheme, highlights]);
 
   async function saveNote(h) {
     const note = editNote.trim();
@@ -88,6 +98,11 @@ export default function CardsPage() {
   async function handleDeleteCard(id) {
     setHighlights(prev => prev.filter(x => x.id !== id));
     try { await deleteHighlight(id); } catch {}
+  }
+
+  function shuffleSpotlight() {
+    if (!highlights.length) return;
+    setShuffleHighlight(highlights[Math.floor(Math.random() * highlights.length)]);
   }
 
   async function createCard() {
@@ -274,6 +289,30 @@ export default function CardsPage() {
               </div>
             </div>
           </div>
+
+          {/* Related themes trail */}
+          {relatedThemes.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>
+                Related themes
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {relatedThemes.map(({ tag, count }) => (
+                  <button
+                    key={tag}
+                    onClick={() => { setSelectedTheme(tag); setCardSearch(""); }}
+                    style={{
+                      display: "inline-flex", alignItems: "center",
+                      padding: "3px 8px", borderRadius: 20,
+                      background: T.accentSurface, color: T.accent,
+                      fontSize: 12, fontWeight: 500, border: `1px solid ${T.accent}33`,
+                      cursor: "pointer", fontFamily: "inherit",
+                    }}
+                  >#{tag} · {count}</button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Search within theme */}
           {allCards.length > 3 && (
@@ -565,6 +604,119 @@ export default function CardsPage() {
           </div>
         )}
 
+        {/* Shuffle spotlight modal */}
+        {shuffleHighlight && (
+          <div
+            tabIndex={-1}
+            ref={el => el?.focus()}
+            onClick={e => { if (e.target === e.currentTarget) setShuffleHighlight(null); }}
+            onKeyDown={e => { if (e.key === "Escape") setShuffleHighlight(null); }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 800,
+              background: T.overlay,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 20, animation: "fadeIn .15s ease", outline: "none",
+            }}
+          >
+            <div role="dialog" aria-modal="true" aria-label="Highlight spotlight" style={{
+              position: "relative", background: T.card, borderRadius: SHAPE.radiusCard,
+              border: `1px solid ${T.border}`, boxShadow: SHAPE.shadowFloat,
+              width: "100%", maxWidth: 520, padding: "24px",
+              display: "flex", flexDirection: "column", gap: 16,
+            }}>
+              <button
+                onClick={() => setShuffleHighlight(null)}
+                aria-label="Close"
+                style={{
+                  position: "absolute", top: 16, right: 16,
+                  background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm,
+                  width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16,
+                  display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit",
+                }}
+              >×</button>
+
+              <div style={{
+                fontSize: 16, color: T.text, lineHeight: 1.65, fontStyle: "italic",
+                fontFamily: "var(--reader-font-family)", paddingRight: 24,
+              }}>
+                "{shuffleHighlight.passage}"
+              </div>
+
+              {shuffleHighlight.note && (
+                <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.6 }}>
+                  {shuffleHighlight.note}
+                </div>
+              )}
+
+              {(shuffleHighlight.tags || []).length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {shuffleHighlight.tags.map(tag => (
+                    <span key={tag} style={{
+                      display: "inline-flex", alignItems: "center",
+                      padding: "3px 8px", borderRadius: 20,
+                      background: T.accentSurface, color: T.accent,
+                      fontSize: 12, fontWeight: 500, border: `1px solid ${T.accent}33`,
+                    }}>#{tag}</span>
+                  ))}
+                </div>
+              )}
+
+              {shuffleHighlight.article_title && (
+                <div style={{ fontSize: 12, color: T.textTertiary }}>
+                  {shuffleHighlight.article_title}
+                </div>
+              )}
+
+              {connectedCards.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>
+                    Connected cards
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {connectedCards.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => setShuffleHighlight(c)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 8,
+                          background: "none", border: "none", cursor: "pointer",
+                          padding: "6px 8px", borderRadius: SHAPE.radiusSm,
+                          fontFamily: "inherit", textAlign: "left", width: "100%",
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+                        onMouseLeave={e => e.currentTarget.style.background = "none"}
+                      >
+                        <span style={{
+                          flex: 1, minWidth: 0, fontSize: 13, color: T.textSecondary,
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        }}>{c.passage}</span>
+                        {c.tags?.[0] && (
+                          <span style={{
+                            flexShrink: 0, display: "inline-flex", alignItems: "center",
+                            padding: "2px 7px", borderRadius: 20,
+                            background: T.accentSurface, color: T.accent,
+                            fontSize: 11, fontWeight: 500,
+                          }}>#{c.tags[0]}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={shuffleSpotlight}
+                style={{
+                  alignSelf: "flex-start",
+                  background: T.surface2, color: T.textSecondary, border: "none",
+                  borderRadius: SHAPE.radiusSm, padding: "9px 18px", cursor: "pointer",
+                  fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+                }}
+              >Show another</button>
+            </div>
+          </div>
+        )}
+
         {/* Global search results */}
         {globalResults && (
           <div>
@@ -637,6 +789,19 @@ export default function CardsPage() {
                 whiteSpace: "nowrap",
               }}
             >{sortAZ ? "A→Z" : "By count"}</button>
+            {highlights.length > 0 && (
+              <button
+                onClick={shuffleSpotlight}
+                title="Spotlight a random highlight"
+                aria-label="Spotlight a random highlight"
+                style={{
+                  background: T.surface, border: `1px solid ${T.border}`,
+                  borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", color: T.textSecondary,
+                  fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s, border-color .12s",
+                  whiteSpace: "nowrap",
+                }}
+              >⤭ Shuffle</button>
+            )}
           </div>
         )}
 

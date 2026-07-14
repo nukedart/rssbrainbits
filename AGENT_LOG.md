@@ -526,3 +526,7 @@ User reported podcasts take a long time to start playing, confirmed the delay is
 | 2026-07-14 | v1.46.484 | UX | Reeder refresh round 2: modals, mobile sheets, podcast mini-players, reader panels, and UI primitives aligned to SHAPE scale; added shadowFloatUp/shadowFloatLeft directional tokens; search-header stray shadow removed at judge stage | `tokens.js:186`, `AddModal.jsx:185`, `MobileFeedDrawer.jsx:196`, `PodcastPlayer.jsx:516`, `NotePanel.jsx:48`, `UI.jsx:10` | — |
 
 | 2026-07-14 | v1.46.484 | UX | Reeder refresh round 3: all six page files on SHAPE scale — flat hairline cards, accentSurface hovers, pill progress bars, grouped settings; judge fixed one hover-color inconsistency (ReadLater grid) | `CardsPage.jsx`, `ReviewPage.jsx:507`, `TodayPage.jsx`, `HomePage.jsx`, `ReadLaterPage.jsx:333`, `SecondaryPages.jsx` | — |
+
+| 2026-07-14 | v1.46.485 | Feature | Readwise-inspired card upgrades: Shuffle spotlight (CardsPage), Mastered retire action (ReviewPage), session-size setting; judge fixes: dead Escape handler (focus), unified fb-review-count vs legacy quota key | `CardsPage.jsx:574`, `ReviewPage.jsx:43,219`, `SecondaryPages.jsx:699` | — |
+
+| 2026-07-14 | v1.46.485 | Feature | Virtual Zettelkasten: zettel.js connection engine + 8 unit tests (Haiku-built), Connected cards traversal in spotlight, Related themes trail, synthesis nudge on Review | `src/lib/zettel.js`, `src/test/zettel.test.js`, `CardsPage.jsx:78,293,670`, `ReviewPage.jsx:496` | — |

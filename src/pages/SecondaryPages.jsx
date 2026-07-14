@@ -696,6 +696,24 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               {["10", "20", "50"].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: T.text }}>Cards per review session</div>
+              <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>How many due cards each Review session serves</div>
+            </div>
+            <select
+              defaultValue={localStorage.getItem("fb-review-count") || "10"}
+              onChange={e => localStorage.setItem("fb-review-count", e.target.value)}
+              aria-label="Cards per review session"
+              style={{
+                fontSize: 13, padding: "5px 10px", borderRadius: SHAPE.radiusSm,
+                border: `1px solid ${T.border}`, background: T.surface,
+                color: T.text, fontFamily: "inherit", cursor: "pointer",
+              }}
+            >
+              {["5", "10", "20", "50"].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
         </Card>
 
         {/* Muted Keywords */}
