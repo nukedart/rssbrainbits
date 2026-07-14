@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.486] — 2026-07-14 12:08
+
+- [Feature] Zettelkasten backlinks in theme lists — expanding a card now shows its Connected cards inline (up to 3, same connection engine), and tapping one opens the spotlight browser on that card for onward traversal. Computed only for the one expanded card, so long theme lists pay zero cost.
+
 ## [1.46.485] — 2026-07-14 09:52
 
 - [Feature] Virtual Zettelkasten — the card system now builds knowledge connections from what you read. New pure connection engine (`src/lib/zettel.js`, fully unit-tested): cards relate by shared themes (weighted double) and shared source. The Shuffle spotlight becomes a graph browser — every card shows its **Connected cards**, tap to traverse idea neighborhoods. Theme views gain a **Related themes** trail (co-occurring tags, tap to jump). Review adds the synthesis ritual: revealed cards without an annotation show an "In your own words" nudge that opens the existing note flow — highlight is the front of the card, your own words are the back. All client-side; no schema change.

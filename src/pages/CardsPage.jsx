@@ -360,6 +360,8 @@ export default function CardsPage() {
                   onUpdateTags={(tags) => updateTags(h, tags)}
                   onTagClick={t => { setSelectedTheme(t); setCardSearch(""); }}
                   onDelete={() => handleDeleteCard(h.id)}
+                  allHighlights={highlights}
+                  onOpenCard={setShuffleHighlight}
                 />
               );
             })}
@@ -913,11 +915,15 @@ function reviewChip(entry, T) {
 }
 
 // ── Card item component ───────────────────────────────────────
-function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T, onEditStart, onEditChange, onEditSave, onEditCancel, onUpdateTags, onTagClick, onDelete }) {
+function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T, onEditStart, onEditChange, onEditSave, onEditCancel, onUpdateTags, onTagClick, onDelete, allHighlights, onOpenCard }) {
   const [hovered, setHovered] = useState(false);
   const chip = reviewChip(reviewEntry, T);
   const isImg = (h.passage || "").startsWith("[IMAGE]: ");
   const imgUrl = isImg ? h.passage.slice(9) : null;
+  const connectedCards = useMemo(
+    () => (isEditing && allHighlights ? relatedHighlights(h, allHighlights, 3) : []),
+    [isEditing, h, allHighlights]
+  );
 
   return (
     <div
@@ -1022,6 +1028,44 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
           allTags={allExistingTags}
           onTagClick={onTagClick}
         />
+
+        {/* Connected cards — only when expanded */}
+        {isEditing && connectedCards.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>
+              Connected cards
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {connectedCards.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => onOpenCard(c)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    background: "none", border: "none", cursor: "pointer",
+                    padding: "6px 8px", borderRadius: SHAPE.radiusSm,
+                    fontFamily: "inherit", textAlign: "left", width: "100%",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+                  onMouseLeave={e => e.currentTarget.style.background = "none"}
+                >
+                  <span style={{
+                    flex: 1, minWidth: 0, fontSize: 13, color: T.textSecondary,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>{c.passage}</span>
+                  {c.tags?.[0] && (
+                    <span style={{
+                      flexShrink: 0, display: "inline-flex", alignItems: "center",
+                      padding: "2px 7px", borderRadius: 20,
+                      background: T.accentSurface, color: T.accent,
+                      fontSize: 11, fontWeight: 500,
+                    }}>#{c.tags[0]}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Footer: source link + review chip */}
         {(h.article_title || chip.label) && (

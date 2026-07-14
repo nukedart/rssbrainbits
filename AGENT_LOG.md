@@ -530,3 +530,5 @@ User reported podcasts take a long time to start playing, confirmed the delay is
 | 2026-07-14 | v1.46.485 | Feature | Readwise-inspired card upgrades: Shuffle spotlight (CardsPage), Mastered retire action (ReviewPage), session-size setting; judge fixes: dead Escape handler (focus), unified fb-review-count vs legacy quota key | `CardsPage.jsx:574`, `ReviewPage.jsx:43,219`, `SecondaryPages.jsx:699` | — |
 
 | 2026-07-14 | v1.46.485 | Feature | Virtual Zettelkasten: zettel.js connection engine + 8 unit tests (Haiku-built), Connected cards traversal in spotlight, Related themes trail, synthesis nudge on Review | `src/lib/zettel.js`, `src/test/zettel.test.js`, `CardsPage.jsx:78,293,670`, `ReviewPage.jsx:496` | — |
+
+| 2026-07-14 | v1.46.486 | Feature | Backlinks: expanded cards in theme lists show Connected cards inline, tap-to-traverse via spotlight; computation gated to the single expanded card | `CardsPage.jsx:918-925,1030-1063,363` | — |
