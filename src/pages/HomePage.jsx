@@ -7,6 +7,7 @@ import { getCachedFeed } from "../lib/feedCache";
 import { Spinner } from "../components/UI";
 import ContentViewer from "../components/ContentViewer";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
+import { SHAPE } from "../lib/tokens";
 
 const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 
@@ -138,7 +139,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
         <div style={{ fontSize: 48 }}>📭</div>
         <h2 style={{ fontSize: 24, fontWeight: 700, color: T.text, margin: 0, fontFamily: "var(--reader-font-family)", fontStyle: "italic" }}>No feeds yet</h2>
         <p style={{ fontSize: 14, color: T.textSecondary, maxWidth: 300, lineHeight: 1.6, margin: 0 }}>Add some RSS feeds, podcasts, or YouTube channels to start your Daily Briefing.</p>
-        <button onClick={() => onNavigate?.("inbox")} style={{ marginTop: 8, padding: "10px 22px", borderRadius: 8, border: "none", background: T.accent, color: T.accentText, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+        <button onClick={() => onNavigate?.("inbox")} style={{ marginTop: 8, padding: "10px 22px", borderRadius: SHAPE.radiusSm, border: "none", background: T.accent, color: T.accentText, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
           Go to Inbox →
         </button>
       </div>
@@ -208,7 +209,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
               {(readStats || folders.length > 0 || savedCount > 0) && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: isMobile ? 28 : 40 }}>
                   {readStats?.streak > 0 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: SHAPE.radiusCard, padding: "10px 14px", border: `1px solid ${T.border}` }}>
                       <span style={{ fontSize: 16 }}>🔥</span>
                       <div>
                         <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1 }}>{readStats.streak}</div>
@@ -217,7 +218,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                     </div>
                   )}
                   {totalUnread > 0 && (
-                    <button onClick={() => onNavigate?.("inbox")} style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: "inherit" }}>
+                    <button onClick={() => onNavigate?.("inbox")} style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: SHAPE.radiusCard, padding: "10px 14px", border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: "inherit" }}>
                       <span style={{ fontSize: 16 }}>📬</span>
                       <div style={{ textAlign: "left" }}>
                         <div style={{ fontSize: 15, fontWeight: 700, color: T.accent, lineHeight: 1 }}>{totalUnread > 999 ? `${Math.floor(totalUnread/1000)}k+` : totalUnread}</div>
@@ -226,7 +227,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                     </button>
                   )}
                   {savedCount > 0 && (
-                    <button onClick={() => onNavigate?.("readlater")} style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: "inherit" }}>
+                    <button onClick={() => onNavigate?.("readlater")} style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: SHAPE.radiusCard, padding: "10px 14px", border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: "inherit" }}>
                       <span style={{ fontSize: 16 }}>⭐</span>
                       <div style={{ textAlign: "left" }}>
                         <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1 }}>{savedCount}</div>
@@ -235,7 +236,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                     </button>
                   )}
                   {readStats?.allTime > 0 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: SHAPE.radiusCard, padding: "10px 14px", border: `1px solid ${T.border}` }}>
                       <span style={{ fontSize: 16 }}>📚</span>
                       <div>
                         <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1 }}>{readStats.allTime}</div>
@@ -250,7 +251,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                     return (
                       <button key={folder.id}
                         onClick={() => onNavigate?.(`folder:${folder.id}`)}
-                        style={{ display: "flex", alignItems: "center", gap: 8, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: "inherit" }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, background: T.card, borderRadius: SHAPE.radiusCard, padding: "10px 14px", border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: "inherit" }}
                       >
                         <span style={{ width: 8, height: 8, borderRadius: 2, background: dot, flexShrink: 0 }} />
                         <div style={{ textAlign: "left" }}>
@@ -262,7 +263,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                   })}
                   {/* Top sources */}
                   {topSources.length > 0 && !isMobile && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: 12, padding: "10px 14px", border: `1px solid ${T.border}`, marginLeft: "auto" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.card, borderRadius: SHAPE.radiusCard, padding: "10px 14px", border: `1px solid ${T.border}`, marginLeft: "auto" }}>
                       <div>
                         <div style={{ fontSize: 10, color: T.textTertiary, letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 4 }}>Top sources</div>
                         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -292,7 +293,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                       onClick={() => openByIdx(0)}
                       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openByIdx(0); } }}
                       aria-label={featured.title}
-                      style={{ gridColumn: isMobile ? "1" : "span 8", background: T.card, borderRadius: 16, overflow: "hidden", cursor: "pointer", transition: "background .2s", position: "relative" }}
+                      style={{ gridColumn: isMobile ? "1" : "span 8", background: T.card, borderRadius: SHAPE.radiusCard, overflow: "hidden", cursor: "pointer", transition: "background .2s", position: "relative" }}
                       onMouseEnter={e => e.currentTarget.style.background = T.surface}
                       onMouseLeave={e => e.currentTarget.style.background = T.card}
                     >
@@ -304,7 +305,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                             />
                           : <FallbackArt source={featured.source} T={T} size="large" />
                         }
-                        <div style={{ position: "absolute", top: 16, left: 16, padding: "4px 12px", borderRadius: 999, background: `${T.accent}30`, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: T.accent, fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase" }}>
+                        <div style={{ position: "absolute", top: 16, left: 16, padding: "4px 12px", borderRadius: SHAPE.radiusPill, background: `${T.accent}30`, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: T.accent, fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase" }}>
                           Featured
                         </div>
                       </div>
@@ -335,7 +336,7 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                         onClick={() => openByIdx(1)}
                         onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openByIdx(1); } }}
                         aria-label={secondary.title}
-                        style={{ background: T.card, borderRadius: 16, padding: "24px", cursor: "pointer", flex: "0 0 auto", transition: "background .2s" }}
+                        style={{ background: T.card, borderRadius: SHAPE.radiusCard, padding: "24px", cursor: "pointer", flex: "0 0 auto", transition: "background .2s" }}
                         onMouseEnter={e => e.currentTarget.style.background = T.surface}
                         onMouseLeave={e => e.currentTarget.style.background = T.card}
                       >
@@ -360,12 +361,12 @@ export default function HomePage({ feeds: propFeeds = null, folders = [], feedUn
                         onClick={() => openByIdx(2)}
                         onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openByIdx(2); } }}
                         aria-label={tertiary.title}
-                        style={{ background: T.surface, borderRadius: 16, padding: "24px", cursor: "pointer", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 160, transition: "background .2s" }}
+                        style={{ background: T.surface, borderRadius: SHAPE.radiusCard, padding: "24px", cursor: "pointer", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 160, transition: "background .2s" }}
                         onMouseEnter={e => e.currentTarget.style.background = T.card}
                         onMouseLeave={e => e.currentTarget.style.background = T.surface}
                       >
                         <div>
-                          <div style={{ width: 40, height: 3, borderRadius: 999, background: T.accent, marginBottom: 20 }} />
+                          <div style={{ width: 40, height: 3, borderRadius: SHAPE.radiusPill, background: T.accent, marginBottom: 20 }} />
                           <h3 style={{ fontFamily: "var(--reader-font-family)", fontStyle: "italic", fontSize: 22, fontWeight: 700, color: T.text, margin: "0 0 10px", lineHeight: 1.3 }}>
                             {tertiary.title}
                           </h3>
@@ -470,7 +471,7 @@ function BriefingRow({ item, isSelected, relTime, onClick, T }) {
       }}
     >
       {item.image && (
-        <img src={item.image} alt="" loading="lazy" decoding="async" style={{ width: 48, height: 36, objectFit: "cover", borderRadius: 6, flexShrink: 0, marginTop: 2 }} onError={e => { e.target.style.display = "none"; }} />
+        <img src={item.image} alt="" loading="lazy" decoding="async" style={{ width: 48, height: 36, objectFit: "cover", borderRadius: SHAPE.radiusMd, flexShrink: 0, marginTop: 2 }} onError={e => { e.target.style.display = "none"; }} />
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: isSelected ? 600 : 500, color: isSelected ? T.accent : T.text, lineHeight: 1.35, marginBottom: 3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontFamily: "var(--reader-font-family)" }}>
@@ -500,7 +501,7 @@ function ArticleRow({ item, relTime, onClick, T, isMobile }) {
         justifyContent: "space-between",
         flexDirection: isMobile ? "column" : "row",
         padding: isMobile ? "16px 12px" : "20px 16px",
-        borderRadius: 12, cursor: "pointer",
+        borderRadius: SHAPE.radiusSm, cursor: "pointer",
         background: hovered ? T.surface : "transparent",
         transition: "background .2s",
       }}
@@ -538,7 +539,7 @@ function ArticleRow({ item, relTime, onClick, T, isMobile }) {
 
 function Pill({ label, T }) {
   return (
-    <span style={{ padding: "3px 10px", borderRadius: 999, background: T.surface, color: T.textSecondary, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em" }}>{label}</span>
+    <span style={{ padding: "3px 10px", borderRadius: SHAPE.radiusPill, background: T.surface, color: T.textSecondary, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em" }}>{label}</span>
   );
 }
 

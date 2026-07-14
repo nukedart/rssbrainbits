@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { SHAPE } from "../lib/tokens";
 
 const FOLDER_COLORS = [
   { id:"gray",   hex:"#8A9099" },
@@ -31,10 +32,10 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
   };
 
   const cardStyle = {
-    background: T.card, borderRadius: 18, padding: "26px 24px 22px",
+    background: T.card, borderRadius: SHAPE.radiusCard, padding: "26px 24px 22px",
     width: "100%", maxWidth: "min(420px, 95vw)",
     border: `1px solid ${T.border}`,
-    boxShadow: "0 24px 80px rgba(0,0,0,.2)",
+    boxShadow: SHAPE.shadowFloat,
     animation: "fadeInScale .18s ease",
   };
 
@@ -47,12 +48,12 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
           <div style={{ flex: 1 }}>
             <div id="folder-modal-title" style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{isNew ? "New collection" : "Edit collection"}</div>
           </div>
-          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: 7, width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm, width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
         </div>
 
         {/* Name */}
         <div style={{ marginBottom: 16 }}>
-          <label htmlFor="folder-name" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: T.textTertiary, display: "block", marginBottom: 6 }}>Collection name</label>
+          <label htmlFor="folder-name" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: T.textTertiary, display: "block", marginBottom: 6 }}>Collection name</label>
           <input
             id="folder-name"
             value={name}
@@ -60,7 +61,7 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
             onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onClose(); }}
             placeholder="e.g. Tech, News, Work…"
             autoFocus
-            style={{ width: "100%", background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 9, padding: "9px 12px", fontSize: 14, color: T.text, fontFamily: "inherit", outline: "none" }}
+            style={{ width: "100%", background: T.surface2, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 12px", fontSize: 14, color: T.text, fontFamily: "inherit", outline: "none" }}
             onFocus={e => { e.target.style.borderColor = T.accent; }}
             onBlur={e => { e.target.style.borderColor = T.border; }}
           />
@@ -68,7 +69,7 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
 
         {/* Color picker */}
         <div style={{ marginBottom: 22 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: T.textTertiary, display: "block", marginBottom: 8 }}>Color</label>
+          <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: T.textTertiary, display: "block", marginBottom: 8 }}>Color</label>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {FOLDER_COLORS.map(c => (
               <button
@@ -90,20 +91,20 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
         {/* Actions */}
         <div style={{ display: "flex", gap: 8 }}>
           {!isNew && !confirmDelete && (
-            <button onClick={() => setConfirmDelete(true)} style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 9, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
+            <button onClick={() => setConfirmDelete(true)} style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
               Delete
             </button>
           )}
           {confirmDelete && (
-            <button onClick={() => onDelete(folder.id)} style={{ background: `${T.danger}22`, border: `1px solid ${T.danger}`, borderRadius: 9, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
+            <button onClick={() => onDelete(folder.id)} style={{ background: `${T.danger}22`, border: `1px solid ${T.danger}`, borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
               Confirm delete
             </button>
           )}
           <div style={{ flex: 1 }} />
-          <button onClick={onClose} style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 9, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.textSecondary, fontFamily: "inherit" }}>
+          <button onClick={onClose} style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.textSecondary, fontFamily: "inherit" }}>
             Cancel
           </button>
-          <button onClick={handleSave} disabled={!name.trim()} style={{ background: name.trim() ? T.accent : T.surface2, border: "none", borderRadius: 9, padding: "9px 18px", cursor: name.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 600, color: name.trim() ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "background .15s, color .15s" }}>
+          <button onClick={handleSave} disabled={!name.trim()} style={{ background: name.trim() ? T.accent : T.surface2, border: "none", borderRadius: SHAPE.radiusSm, padding: "9px 18px", cursor: name.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 600, color: name.trim() ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "background .15s, color .15s" }}>
             {isNew ? "Create folder" : "Save"}
           </button>
         </div>

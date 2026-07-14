@@ -3,6 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { getReadingStats, getHighlightReviews, getSaved, getHistory } from "../lib/supabase";
+import { SHAPE } from "../lib/tokens";
 
 const ContentViewer = lazy(() => import("../components/ContentViewer"));
 
@@ -176,7 +177,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
 
         {/* ── Queue ─────────────────────────────────────────── */}
         <SectionLabel T={T}>Your Queue</SectionLabel>
-        <div style={{ marginBottom: 32, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+        <div style={{ marginBottom: 32, background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, overflow: "hidden" }}>
           <QueueRow
             T={T}
             icon={<Ic.Review />}
@@ -216,17 +217,17 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
         {feedPulse.length > 0 && (
           <>
             <SectionLabel T={T}>Feed Pulse</SectionLabel>
-            <div style={{ marginBottom: 32, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+            <div style={{ marginBottom: 32, background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, overflow: "hidden" }}>
               {feedPulse.map((f, i) => (
                 <button
                   key={i}
                   onClick={() => onNavigate(`feed:${f.feedId}`)}
-                  onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = T.accentSurface; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                   style={{
                     display: "flex", alignItems: "center", gap: 12,
                     padding: "11px 16px", width: "100%",
-                    border: "none", background: "transparent",
+                    border: "none", background: "transparent", borderRadius: SHAPE.radiusSm,
                     borderBottom: i < feedPulse.length - 1 ? `1px solid ${T.border}` : "none",
                     cursor: "pointer", transition: "background .1s",
                     fontFamily: "inherit", textAlign: "left",
@@ -244,9 +245,9 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                   }}>
                     {f.name}
                   </div>
-                  <div style={{ flex: 1, height: 3, background: T.surface2, borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{ flex: 1, height: 3, background: T.surface2, borderRadius: SHAPE.radiusPill, overflow: "hidden" }}>
                     <div style={{
-                      height: "100%", borderRadius: 2,
+                      height: "100%", borderRadius: SHAPE.radiusPill,
                       width: `${Math.max(4, (f.count / maxPulse) * 100)}%`,
                       background: f.color || T.accent,
                       opacity: 0.7,
@@ -272,7 +273,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                 </span>
               )}
             </SectionLabel>
-            <div style={{ border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 32 }}>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, overflow: "hidden", marginBottom: 32 }}>
               {todayLog.length === 0 ? (
                 <div style={{ padding: "20px 16px", fontSize: 13, color: T.textTertiary }}>
                   Nothing read yet today. Open the Inbox to get started.
@@ -282,12 +283,12 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                   <button
                     key={h.url || i}
                     onClick={() => setOpenItem(h)}
-                    onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
+                    onMouseEnter={e => { e.currentTarget.style.background = T.accentSurface; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                     style={{
                       display: "flex", alignItems: "center", gap: 10,
                       padding: "10px 16px", width: "100%",
-                      border: "none", background: "transparent",
+                      border: "none", background: "transparent", borderRadius: SHAPE.radiusSm,
                       borderBottom: i < todayLog.length - 1 ? `1px solid ${T.border}` : "none",
                       cursor: "pointer", transition: "background .1s",
                       fontFamily: "inherit", textAlign: "left",
@@ -341,8 +342,8 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
 function SectionLabel({ T, children }) {
   return (
     <div style={{
-      fontSize: 10, fontWeight: 700, color: T.textTertiary,
-      textTransform: "uppercase", letterSpacing: ".14em",
+      fontSize: 11, fontWeight: 700, color: T.textTertiary,
+      textTransform: "uppercase", letterSpacing: ".05em",
       marginBottom: 10,
     }}>
       {children}
@@ -371,7 +372,8 @@ function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, last, loading
         display: "flex", alignItems: "center", gap: 12,
         padding: "13px 16px",
         borderBottom: last ? "none" : `1px solid ${T.border}`,
-        background: hov ? T.surface : "transparent",
+        background: hov ? T.accentSurface : "transparent",
+        borderRadius: SHAPE.radiusSm,
         transition: "background .1s",
       }}
     >
@@ -401,7 +403,7 @@ function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, last, loading
           style={{
             background: accent ? T.accent : T.surface2,
             color: accent ? T.accentText : T.textSecondary,
-            border: "none", borderRadius: 8,
+            border: "none", borderRadius: SHAPE.radiusSm,
             padding: "7px 13px", fontSize: 12, fontWeight: 700,
             cursor: "pointer", fontFamily: "inherit", flexShrink: 0,
             transition: "opacity .1s",

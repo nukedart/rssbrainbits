@@ -3,6 +3,7 @@ import { useTheme } from "../hooks/useTheme";
 import { Button } from "./UI";
 import { HIGHLIGHT_COLORS } from "./SelectionToolbar";
 import { suggestTags } from "../lib/fetchers";
+import { SHAPE } from "../lib/tokens";
 
 export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpdateTags }) {
   const { T } = useTheme();
@@ -44,9 +45,10 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
     <div style={{ position: "fixed", inset: 0, zIndex: 700, background: T.overlay, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div role="dialog" aria-modal="true" aria-label="Highlight note" style={{
-        background: T.card, borderRadius: "20px 20px 0 0",
+        background: T.card, borderRadius: `${SHAPE.radiusCard}px ${SHAPE.radiusCard}px 0 0`,
+        border: `1px solid ${T.border}`, borderBottom: "none",
         padding: "20px 20px 40px", width: "100%", maxWidth: 560,
-        boxShadow: "0 -4px 30px rgba(0,0,0,.15)", animation: "slideUp .2s ease",
+        boxShadow: SHAPE.shadowFloatUp, animation: "slideUp .2s ease",
       }}>
         <div style={{ width: 36, height: 4, borderRadius: 2, background: T.border, margin: "0 auto 20px" }} />
 
@@ -61,7 +63,7 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
           placeholder="Add a thought, connection, or question…" autoFocus rows={3}
           style={{
             width: "100%", boxSizing: "border-box", background: T.surface,
-            border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 14px",
+            border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "10px 14px",
             fontSize: 14, color: T.text, fontFamily: "inherit", lineHeight: 1.6,
             resize: "vertical", outline: "none",
           }}
@@ -90,7 +92,7 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
             onBlur={commitTag}
             placeholder="e.g. stoicism, creativity…"
             style={{
-              fontSize: 12, padding: "3px 10px", borderRadius: 20, minWidth: 140,
+              fontSize: 12, padding: "3px 10px", borderRadius: SHAPE.radiusSm, minWidth: 140,
               border: `1px dashed ${T.border}`, background: "transparent",
               color: T.text, fontFamily: "inherit", outline: "none",
             }}

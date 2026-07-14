@@ -4,10 +4,16 @@
 import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useBreakpoint } from "../hooks/useBreakpoint";
+import { SHAPE } from "../lib/tokens";
 
 const RATES    = [1, 1.25, 1.5, 1.75, 2];
 const SKIP_BCK = 15;
 const SKIP_FWD = 30;
+
+function hexToRgba(hex, alpha) {
+  const h = hex.replace("#", "");
+  return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${alpha})`;
+}
 
 function fmt(s) {
   if (!s || isNaN(s)) return "0:00";
@@ -510,23 +516,23 @@ export default function PodcastPlayer({ item, onClose }) {
         {/* ── Mini-player bar ── */}
         <div style={{
           position: "fixed",
-          bottom: "calc(env(safe-area-inset-bottom, 0px) + 82px)",
-          left: 8, right: 8,
+          bottom: `calc(env(safe-area-inset-bottom, 0px) + 82px)`,
+          left: SHAPE.barInset, right: SHAPE.barInset,
           zIndex: 800,
-          borderRadius: 16,
-          background: T.card,
+          borderRadius: SHAPE.radiusCard,
+          background: hexToRgba(T.card, 0.72),
           border: `1px solid ${T.border}`,
-          backdropFilter: "blur(24px) saturate(180%)",
-          WebkitBackdropFilter: "blur(24px) saturate(180%)",
-          boxShadow: "0 8px 32px rgba(0,0,0,.22)",
+          backdropFilter: SHAPE.blur,
+          WebkitBackdropFilter: SHAPE.blur,
+          boxShadow: SHAPE.shadowFloat,
           overflow: "hidden",
           transition: "opacity .2s",
           opacity: expanded ? 0 : 1,
           pointerEvents: expanded ? "none" : "auto",
         }}>
           {/* Progress strip — updated via RAF ref, no React state */}
-          <div style={{ height: 3, background: T.surface2 }}>
-            <div ref={miniBarFillRef} style={{ height: "100%", width: "100%", background: T.accent, transform: "scaleX(0)", transformOrigin: "left" }} />
+          <div style={{ height: 3, background: T.surface2, borderRadius: SHAPE.radiusPill }}>
+            <div ref={miniBarFillRef} style={{ height: "100%", width: "100%", background: T.accent, borderRadius: SHAPE.radiusPill, transform: "scaleX(0)", transformOrigin: "left" }} />
           </div>
           {/* Row */}
           <div
@@ -558,7 +564,7 @@ export default function PodcastPlayer({ item, onClose }) {
             </button>
             {/* Close */}
             <button onClick={e => { e.stopPropagation(); onClose(); }} aria-label="Close player" style={{
-              width: 30, height: 30, borderRadius: "50%", border: "none",
+              width: 30, height: 30, borderRadius: SHAPE.radiusSm, border: "none",
               background: "transparent", color: T.textTertiary,
               cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}>
@@ -635,19 +641,19 @@ export default function PodcastPlayer({ item, onClose }) {
 
       {/* ── Mini bar — always visible, non-blocking ── */}
       <div style={{
-        position: "fixed", bottom: isMobile ? 80 : 16, right: 16,
+        position: "fixed", bottom: isMobile ? 80 : SHAPE.barInset, right: SHAPE.barInset,
         zIndex: 1000, width: isMobile ? "calc(100vw - 32px)" : 360,
-        borderRadius: 14,
-        background: T.card,
+        borderRadius: SHAPE.radiusCard,
+        background: hexToRgba(T.card, 0.72),
         border: `1px solid ${T.border}`,
-        backdropFilter: "blur(24px) saturate(180%)",
-        WebkitBackdropFilter: "blur(24px) saturate(180%)",
-        boxShadow: "0 8px 32px rgba(0,0,0,.22)",
+        backdropFilter: SHAPE.blur,
+        WebkitBackdropFilter: SHAPE.blur,
+        boxShadow: SHAPE.shadowFloat,
         overflow: "hidden",
       }}>
         {/* Progress strip */}
-        <div style={{ height: 2, background: T.surface2 }}>
-          <div ref={miniBarFillRef} style={{ height: "100%", width: "0%", background: T.accent }} />
+        <div style={{ height: 2, background: T.surface2, borderRadius: SHAPE.radiusPill }}>
+          <div ref={miniBarFillRef} style={{ height: "100%", width: "0%", background: T.accent, borderRadius: SHAPE.radiusPill }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", padding: "9px 10px 9px 12px", gap: 10 }}>
           {/* Artwork */}
@@ -679,7 +685,7 @@ export default function PodcastPlayer({ item, onClose }) {
           <button onClick={() => setExpanded(v => !v)} aria-label={expanded ? "Collapse player" : "Expand player"} style={{
             width: 28, height: 28, background: "none", border: "none",
             cursor: "pointer", color: T.textTertiary,
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6,
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: SHAPE.radiusSm,
           }}>
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               {expanded ? <path d="M4 10l4-4 4 4"/> : <path d="M4 6l4 4 4-4"/>}
@@ -689,7 +695,7 @@ export default function PodcastPlayer({ item, onClose }) {
           <button onClick={onClose} aria-label="Close player" style={{
             width: 28, height: 28, background: "none", border: "none",
             cursor: "pointer", color: T.textTertiary,
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6,
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: SHAPE.radiusSm,
           }}>
             <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M4 4l8 8M12 4l-8 8"/>

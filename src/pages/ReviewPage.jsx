@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { getAllHighlights, getHighlightReviews, upsertHighlightReview, updateHighlightNote } from "../lib/supabase";
 import { Spinner } from "../components/UI";
+import { SHAPE } from "../lib/tokens";
 
 const MIN_EASE = 1.3;
 const MAX_EASE = 3.0;
@@ -359,10 +360,10 @@ export default function ReviewPage({ onDueCount }) {
           aria-valuemin={0}
           aria-valuemax={total}
           aria-label={`Review progress: ${queueIdx} of ${total} done`}
-          style={{ height: 6, background: T.surface2, borderRadius: 99, overflow: "hidden" }}
+          style={{ height: 6, background: T.surface2, borderRadius: SHAPE.radiusPill, overflow: "hidden" }}
         >
           <div style={{
-            height: "100%", borderRadius: 99,
+            height: "100%", borderRadius: SHAPE.radiusPill,
             width: "100%",
             background: T.accent,
             transform: `scaleX(${progress})`,
@@ -385,9 +386,9 @@ export default function ReviewPage({ onDueCount }) {
       >
         <div key={cardKey} style={{ width: "100%", maxWidth: 580, animation: cardAnim }}>
           <div style={{
-            background: T.card, borderRadius: 22,
+            background: T.card, borderRadius: SHAPE.radiusCard,
             border: `1px solid ${T.border}`,
-            boxShadow: "0 8px 48px rgba(0,0,0,.10), 0 1px 4px rgba(0,0,0,.05)",
+            boxShadow: SHAPE.shadowFloat,
             overflow: "hidden",
           }}>
 
@@ -449,19 +450,19 @@ export default function ReviewPage({ onDueCount }) {
                         style={{
                           width: "100%", boxSizing: "border-box", resize: "none",
                           fontSize: 14, lineHeight: 1.6, fontFamily: "inherit",
-                          padding: "10px 12px", borderRadius: 10,
+                          padding: "10px 12px", borderRadius: SHAPE.radiusSm,
                           border: `1px solid ${T.accent}`,
                           background: T.bg, color: T.text, outline: "none",
                         }}
                       />
                       <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                         <button onClick={handleSaveNote} style={{
-                          flex: 1, padding: "9px", borderRadius: 10, border: "none",
+                          flex: 1, padding: "9px", borderRadius: SHAPE.radiusSm, border: "none",
                           background: T.accent, color: T.accentText,
                           fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
                         }}>Save</button>
                         <button onClick={() => { setAddingNote(false); setNoteText(""); }} style={{
-                          padding: "9px 16px", borderRadius: 10,
+                          padding: "9px 16px", borderRadius: SHAPE.radiusSm,
                           border: `1px solid ${T.border}`, background: "transparent",
                           color: T.textSecondary, fontSize: 13, fontFamily: "inherit", cursor: "pointer",
                         }}>Cancel</button>
@@ -471,7 +472,7 @@ export default function ReviewPage({ onDueCount }) {
                     <button
                       onClick={() => { setAddingNote(true); setNoteText(""); }}
                       style={{
-                        width: "100%", padding: "12px", borderRadius: 10, cursor: "pointer",
+                        width: "100%", padding: "12px", borderRadius: SHAPE.radiusSm, cursor: "pointer",
                         border: `1px dashed ${T.border}`, background: "transparent",
                         color: T.textTertiary, fontSize: 13, fontFamily: "inherit",
                         fontStyle: "italic", textAlign: "center",
@@ -503,7 +504,7 @@ export default function ReviewPage({ onDueCount }) {
                   style={{
                     width: "100%", border: "none", cursor: "pointer", fontFamily: "inherit",
                     background: T.accent, color: T.accentText,
-                    borderRadius: 14, padding: "15px",
+                    borderRadius: SHAPE.radiusSm, padding: "15px",
                     fontSize: 16, fontWeight: 700, letterSpacing: "-.01em",
                     transition: "opacity .12s",
                   }}
@@ -531,7 +532,7 @@ export default function ReviewPage({ onDueCount }) {
           onClick={() => handleRating(false)}
           style={{
             flex: 1, border: `1.5px solid ${T.border}`,
-            background: T.surface, borderRadius: 16, padding: "15px 8px",
+            background: T.surface, borderRadius: SHAPE.radiusSm, padding: "15px 8px",
             cursor: "pointer", fontFamily: "inherit",
             display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             transition: "background .1s",
@@ -553,7 +554,7 @@ export default function ReviewPage({ onDueCount }) {
           onClick={() => handleRating(true)}
           style={{
             flex: 1, border: "none",
-            background: T.accent, borderRadius: 16, padding: "15px 8px",
+            background: T.accent, borderRadius: SHAPE.radiusSm, padding: "15px 8px",
             cursor: "pointer", fontFamily: "inherit",
             display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             transition: "opacity .1s",

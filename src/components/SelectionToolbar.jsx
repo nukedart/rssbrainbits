@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { lookupTerm } from "../lib/fetchers";
+import { SHAPE } from "../lib/tokens";
 
 export const HIGHLIGHT_COLORS = [
   { id: "yellow", label: "Yellow", bg: "#FEF08A", border: "#EAB308", text: "#713F12" },
@@ -116,7 +117,7 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
     <div ref={toolbarRef} style={{
       position: "fixed", left, top,
       width: TOOLBAR_W, background: T.card, border: `1px solid ${T.border}`,
-      borderRadius: 12, boxShadow: "0 4px 20px rgba(0,0,0,.15)",
+      borderRadius: SHAPE.radiusMd, boxShadow: SHAPE.shadowFloat,
       zIndex: 600, animation: "slideUp .15s ease", overflow: "hidden",
     }}>
       {/* Lookup result panel */}

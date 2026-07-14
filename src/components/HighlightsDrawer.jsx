@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { HIGHLIGHT_COLORS } from "./SelectionToolbar";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
+import { SHAPE } from "../lib/tokens";
 
 export default function HighlightsDrawer({ highlights, onSelectHighlight, onClose, onUpdateTags, articleTitle, articleUrl }) {
   const { T } = useTheme();
@@ -40,7 +41,8 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div role="dialog" aria-modal="true" aria-labelledby="highlights-drawer-title" style={{
         width: "min(380px, 100vw)", background: T.card, height: "100%",
-        overflowY: "auto", boxShadow: "-4px 0 30px rgba(0,0,0,.12)",
+        overflowY: "auto", boxShadow: SHAPE.shadowFloatLeft, borderLeft: `1px solid ${T.border}`,
+        borderRadius: `${SHAPE.radiusCard}px 0 0 ${SHAPE.radiusCard}px`,
         display: "flex", flexDirection: "column", animation: "slideInRight .2s ease",
       }}>
         <div style={{ padding: "20px 18px 14px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, background: T.card, zIndex: 10 }}>
@@ -76,7 +78,7 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
               <div key={h.id} role="button" tabIndex={0}
                 onClick={() => onSelectHighlight(h)}
                 onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelectHighlight(h); } }}
-                style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, cursor: "pointer", transition: "background .1s" }}
+                style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, borderRadius: SHAPE.radiusMd, cursor: "pointer", transition: "background .1s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = T.surface; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >

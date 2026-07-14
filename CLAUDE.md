@@ -56,6 +56,66 @@ Type these in the chat to trigger focused agent workflows:
 | `/nav`         | **Audit only** — navigation consistency, mobile overflow, label clarity. No changes made |
 | `/polish`      | **Audit only** — hardcoded colors, spacing, radius, theme consistency. No changes made |
 | `/features`    | **Audit only** — competitive gap analysis vs Feedly/Reeder/Readwise, produces prioritized backlog |
+| `/orchestrate` | **Orchestrator loop** — plan → route to cheapest capable model → delegate → adversarial judge → integrate (see below) |
+
+## Orchestrator–Worker–Judge (for non-trivial, multi-part tasks)
+
+For any non-trivial request, the top-level session acts as the **Orchestrator**: it plans, delegates to cheaper models, adversarially reviews all work, and integrates. It does NOT implement sub-tasks itself unless explicitly instructed or the escalation rules below apply.
+
+**Skip the ceremony** if the whole request is doable yourself in under ~30 lines of change — just do it and note that you did.
+
+### Operating Loop
+
+**1. PLAN**
+- Restate the goal in one sentence.
+- Decompose into discrete, independently verifiable sub-tasks. For each: inputs, expected output format, acceptance criteria, files/context the worker needs.
+- Identify which sub-tasks can run **in parallel** (no shared file writes, no ordering dependency) and which are sequential.
+- Output the plan as a task table (sub-task, agent, model tier, parallel group, acceptance criteria) before dispatching anything.
+
+**2. ROUTE (model selection)**
+Assign each sub-task to the project agent that owns the domain (`frontend`, `backend`, `qa` — see `.claude/agents/`) with the cheapest model that can pass its acceptance criteria, via the Agent tool's `model` override:
+
+| Tier | Model | Use for |
+|------|-------|---------|
+| Worker-S | `haiku` | Mechanical work: renames, boilerplate, format conversion, test scaffolding, docs from templates, grep/summarize, simple CRUD |
+| Worker-M | `sonnet` | Standard implementation: features with clear specs, refactors, unit tests, API integration, bug fixes with known repro |
+| Escalate | Fable/Opus (self) | Architecture decisions, ambiguous requirements, cross-cutting changes, security-sensitive code, anything a worker failed twice |
+
+Routing rules:
+- Default down, escalate up. Never assign Fable-tier work that Sonnet can do.
+- If acceptance criteria can't be checked mechanically (tests, lint, diff review), it is NOT a Haiku task.
+- Record the tier per task in the plan table so cost is visible; log every routing decision — if asked "why this model?", you must have an answer.
+
+**3. DELEGATE**
+Dispatch each sub-task with a **self-contained brief** — workers have no memory of this conversation. Each brief must include:
+- Objective (one sentence)
+- Exact files/paths in scope; files that are OFF LIMITS
+- Output contract (file diff, JSON, markdown — be exact)
+- Acceptance criteria (checkable)
+- Constraints (token efficiency rules above, no new dependencies, match existing style)
+- "Do not expand scope. If blocked, return BLOCKED: <reason> instead of guessing."
+
+Run independent sub-tasks in parallel. Never let two workers write the same file.
+
+**4. JUDGE (adversarial review)**
+When workers return, switch roles: you are a **hostile senior reviewer** whose goal is to find reasons to REJECT the work. For each result:
+- Verify the output contract was met exactly.
+- Check acceptance criteria one by one — inspect the actual diff, never trust the worker's summary.
+- Actively hunt for: hallucinated APIs, silent scope creep, deleted code that wasn't asked for, missing edge cases, security issues (injection, secrets, unsafe deserialization), broken imports, tests that assert nothing.
+- Use the `qa` agent to run `npm test` and review the diff before accepting.
+- Verdict per task: **ACCEPT**, **REVISE** (send back with a specific defect list, max 2 retries), or **ESCALATE** (do it yourself at Fable tier).
+
+Rule: work is guilty until proven correct. A judge that accepts everything is failing.
+
+**5. INTEGRATE & REPORT**
+- Merge accepted work; resolve cross-task conflicts yourself.
+- Run `npm test` on the integrated result; write the `CHANGELOG.md` and `AGENT_LOG.md` entries per the changelog rule below before any deploy.
+- Report to the user ONLY after everything passes: what was done (one line per sub-task), model used + retry count, anything rejected/escalated and why, open risks or follow-ups.
+
+### Hard Rules
+- The user never sees unreviewed worker output.
+- Max 2 revision cycles per worker task; then escalate — don't loop.
+- Parallel workers must have disjoint write sets.
 
 ## Changelog rule (MANDATORY — applies to every code change)
 

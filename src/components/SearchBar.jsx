@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
+import { SHAPE } from "../lib/tokens";
 import { searchItems } from "../lib/supabase";
 import { track } from "../lib/analytics";
 
@@ -134,7 +135,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
           position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
           background: T.card,
           border: `1px solid ${T.border}`,
-          borderRadius: 16,
+          borderRadius: SHAPE.radiusCard,
           boxShadow: "0 12px 40px rgba(0,0,0,.14)",
           zIndex: 1000, overflow: "hidden",
           animation: "fadeIn .12s ease",
@@ -176,7 +177,7 @@ const SearchBar = forwardRef(function SearchBar({ onSelectResult, onClose, onLiv
                 onTouchEnd={e => { e.currentTarget.style.background = "transparent"; }}
                 onTouchCancel={e => { e.currentTarget.style.background = "transparent"; }}
               >
-                <div style={{ width: 20, height: 20, borderRadius: 5, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                <div style={{ width: 20, height: 20, borderRadius: SHAPE.radiusXs, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
                   {favicon
                     ? <img src={favicon} alt="" width={16} height={16} loading="lazy" decoding="async" style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />
                     : <span style={{ fontSize: 10 }}>📰</span>

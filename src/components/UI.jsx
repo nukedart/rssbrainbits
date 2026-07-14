@@ -1,12 +1,13 @@
 import { Component } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { SHAPE } from "../lib/tokens";
 
 export function Card({ children, style = {}, onClick }) {
   const { T } = useTheme();
   return (
     <div onClick={onClick} style={{
       background: T.card,
-      borderRadius: 14, padding: "16px 18px",
+      borderRadius: SHAPE.radiusCard, padding: "16px 18px",
       cursor: onClick ? "pointer" : "default",
       transition: "background .3s ease-in-out", ...style,
     }}
@@ -19,7 +20,7 @@ export function Card({ children, style = {}, onClick }) {
 export function Button({ children, onClick, variant = "primary", size = "md", disabled = false, style = {} }) {
   const { T } = useTheme();
   const base = {
-    border: "none", borderRadius: 10, fontWeight: 600,
+    border: "none", borderRadius: SHAPE.radiusSm, fontWeight: 600,
     cursor: disabled ? "not-allowed" : "pointer",
     transition: "opacity .15s", opacity: disabled ? 0.5 : 1,
     fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 6,
@@ -59,7 +60,7 @@ export function Input({ value, onChange, placeholder, onKeyDown, style = {}, aut
       onKeyDown={onKeyDown} autoFocus={autoFocus}
       style={{
         width: "100%", background: T.surface, border: `1px solid ${T.border}`,
-        borderRadius: 10, padding: "10px 14px", fontSize: 14, color: T.text,
+        borderRadius: SHAPE.radiusSm, padding: "10px 14px", fontSize: 14, color: T.text,
         fontFamily: "inherit", outline: "none", boxSizing: "border-box", ...style,
       }}
       onFocus={e => { e.target.style.borderColor = T.accent; }}
@@ -131,7 +132,7 @@ export class ErrorBoundary extends Component {
           {this.state.error?.message || "An unexpected error occurred."}
         </div>
         <button onClick={reload} style={{
-          background: EB.accent, color: EB.accentText, border: "none", borderRadius: 6,
+          background: EB.accent, color: EB.accentText, border: "none", borderRadius: SHAPE.radiusSm,
           padding: "10px 22px", fontSize: 14, fontWeight: 600, cursor: "pointer",
           fontFamily: "inherit",
         }}>Reload app</button>

@@ -20,6 +20,7 @@ import { useBackButtonClose } from "../hooks/useBackButtonClose.js";
 import { highlightsToMarkdown, highlightsToObsidian, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
 import { isProUser, PLANS } from "../lib/plan";
+import { SHAPE } from "../lib/tokens";
 
 function formatArticleDate(dateStr) {
   if (!dateStr) return null;
@@ -444,7 +445,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         padding: isMobile ? "8px 12px" : "10px 16px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 10,
       }}>
         <button onClick={onClose} aria-label="Close article" style={{
-          background: T.surface2, border: "none", borderRadius: 8,
+          background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm,
           width: isMobile ? 38 : 32, height: isMobile ? 38 : 32,
           cursor: "pointer", display: "flex",
           alignItems: "center", justifyContent: "center", color: T.textSecondary,
@@ -455,7 +456,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         {/* Prev — desktop only; mobile uses swipe-right-body */}
         {!isMobile && onPrev && (
           <button onClick={onPrev} title="Previous article (k)" aria-label="Previous article"
-            style={{ background: "transparent", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "background .12s, color .12s" }}
+            style={{ background: "transparent", border: "none", borderRadius: SHAPE.radiusSm, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "background .12s, color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
           >‹</button>
@@ -479,7 +480,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         {/* Next — desktop only; mobile uses swipe-left */}
         {!isMobile && onNext && (
           <button onClick={onNext} title="Next article (j)" aria-label="Next article"
-            style={{ background: "transparent", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "background .12s, color .12s" }}
+            style={{ background: "transparent", border: "none", borderRadius: SHAPE.radiusSm, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.textTertiary, fontSize: 14, flexShrink: 0, WebkitTapHighlightColor: "transparent", transition: "background .12s, color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
           >›</button>
@@ -492,7 +493,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             title="Open in full view"
             aria-label="Open in full view"
             style={{
-              background: "transparent", border: "none", borderRadius: 8,
+              background: "transparent", border: "none", borderRadius: SHAPE.radiusSm,
               width: 28, height: 28, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               color: T.textTertiary, flexShrink: 0, transition: "background .12s, color .12s",
@@ -511,7 +512,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           {!yt.isYouTube && content && (
             <div style={{ position: "relative" }}>
               <button onClick={() => setShowReaderControls(v => !v)} title="Reading preferences" aria-label="Reading preferences" aria-expanded={showReaderControls}
-                style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s" }}
+                style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s" }}
                 onMouseEnter={e => { if (!showReaderControls) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
                 onMouseLeave={e => { if (!showReaderControls) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
               >Aa</button>
@@ -519,7 +520,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                 <div style={{
                   position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 300,
                   background: T.card, border: `1px solid ${T.border}`,
-                  borderRadius: 14, boxShadow: "0 8px 32px rgba(0,0,0,.18)",
+                  borderRadius: SHAPE.radiusMd, boxShadow: SHAPE.shadowFloat, backdropFilter: SHAPE.blur, WebkitBackdropFilter: SHAPE.blur,
                   padding: "14px 16px", minWidth: 220,
                   display: "flex", flexDirection: "column", gap: 12,
                   animation: "fadeInScale .15s ease",
@@ -563,7 +564,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           {/* Save — tap to save, tap again to unsave */}
           <button onClick={handleSave} title={saved ? "Remove from Saved" : "Save article"}
             aria-label={saved ? "Remove from Saved" : "Save article"}
-            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background = saved ? T.accentSurface : T.surface2; e.currentTarget.style.color = saved ? T.danger : T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background = saved ? T.accentSurface : "transparent"; e.currentTarget.style.color = saved ? T.accent : T.textTertiary; }}
           >
@@ -574,7 +575,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
           {/* Share */}
           <button onClick={handleShare} title={shareFeedback || "Share"} aria-label={shareFeedback || "Share article"}
-            style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: shareFeedback ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+            style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: shareFeedback ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
             onMouseEnter={e => { if (!shareFeedback) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
             onMouseLeave={e => { if (!shareFeedback) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
           >
@@ -589,7 +590,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
               title="Open original article"
               aria-label="Open original article"
-              style={{ background: "transparent", border: "none", borderRadius: 8, padding: "6px 8px", cursor: "pointer", color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+              style={{ background: "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
               onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
               onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
             >
@@ -797,7 +798,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               )}
 
               {/* Article body */}
-              <div ref={articleRef} className="fb-article-reader" style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.9, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em", position: "relative" }}
+              <div ref={articleRef} className="fb-article-reader" style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.68, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em", position: "relative" }}
                 onClick={e => { if (e.target.tagName === "IMG") handleImageHighlight(e.target.src); }}
               >
               {imgFeedback && (
@@ -839,7 +840,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               marginLeft: "auto", marginRight: 16, marginBottom: 16,
               width: 38, height: 38, borderRadius: "50%",
               background: T.card, border: `1px solid ${T.border}`,
-              boxShadow: "0 2px 12px rgba(0,0,0,.15)",
+              boxShadow: SHAPE.shadowFloat, backdropFilter: SHAPE.blur, WebkitBackdropFilter: SHAPE.blur,
               cursor: "pointer", fontSize: 18, color: T.textSecondary,
               transition: "background .15s, color .15s", zIndex: 20,
               animation: "fadeInScale .2s ease",
@@ -1155,12 +1156,12 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
         aria-label="More options"
         aria-expanded={open}
         aria-haspopup="menu"
-        style={{ background: open ? T.surface2 : "transparent", border:"none", borderRadius:8, padding:"6px 8px", cursor:"pointer", fontSize:16, color: open ? T.textSecondary : T.textTertiary, fontFamily:"inherit", lineHeight:1, display:"flex", alignItems:"center", justifyContent:"center", width:34, height:32, transition:"background .12s, color .12s" }}
+        style={{ background: open ? T.surface2 : "transparent", border:"none", borderRadius:SHAPE.radiusSm, padding:"6px 8px", cursor:"pointer", fontSize:16, color: open ? T.textSecondary : T.textTertiary, fontFamily:"inherit", lineHeight:1, display:"flex", alignItems:"center", justifyContent:"center", width:34, height:32, transition:"background .12s, color .12s" }}
         onMouseEnter={e => { if (!open) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
         onMouseLeave={e => { if (!open) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
       >···</button>
       {open && (
-        <div role="menu" aria-label="Article options" style={{ position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:200, background:T.card, border:`1px solid ${T.border}`, borderRadius:12, boxShadow:"0 4px 24px rgba(0,0,0,.14)", minWidth:180, padding:"4px 0", animation:"fadeInScale .12s ease" }}>
+        <div role="menu" aria-label="Article options" style={{ position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:200, background:T.card, border:`1px solid ${T.border}`, borderRadius:SHAPE.radiusMd, boxShadow:SHAPE.shadowFloat, backdropFilter:SHAPE.blur, WebkitBackdropFilter:SHAPE.blur, minWidth:180, padding:"4px 0", animation:"fadeInScale .12s ease" }}>
           {item?.url && menuItem("Open in browser ↗", () => window.open(item.url, "_blank"))}
           <div style={{ height:1, background:T.border, margin:"4px 0" }} />
           {menuItem(showTags ? "Hide tags" : `Tags${tags.length > 0 ? ` (${tags.length})` : ""}`, () => setShowTags(v => !v))}

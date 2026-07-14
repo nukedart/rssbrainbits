@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { SHAPE } from "../lib/tokens";
 import { Input, Button, Spinner } from "./UI";
 import { detectInputType, discoverFeed, parseXUrl, xToRSSUrl, searchApplePodcasts, resolvePodcastFeedUrl, isRSSUrl, isSpotifyPodcastUrl } from "../lib/fetchers";
 
@@ -183,10 +184,10 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
     >
       <div role="dialog" aria-modal="true" aria-labelledby="add-modal-title" style={{
         background: T.card,
-        borderRadius: 24,
+        borderRadius: SHAPE.radiusCard,
         width: "100%", maxWidth: "min(440px, 94vw)",
         maxHeight: "90vh", overflowY: "auto",
-        boxShadow: "0 32px 96px rgba(0,0,0,.32), 0 0 0 1px rgba(255,255,255,.04) inset",
+        boxShadow: SHAPE.shadowFloat,
         animation: "fadeInScale .18s ease",
         border: `1px solid ${T.border}`,
         overflow: "hidden",
@@ -268,7 +269,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                 style={{
                   width: "100%", boxSizing: "border-box",
                   background: T.surface, border: `1.5px solid ${T.border}`,
-                  borderRadius: 12, padding: "13px 16px",
+                  borderRadius: SHAPE.radiusSm, padding: "13px 16px",
                   fontSize: 16, color: T.text,
                   fontFamily: "inherit", outline: "none",
                 }}
@@ -356,7 +357,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
               style={{
                 width: "100%", boxSizing: "border-box",
                 background: T.surface, border: `1.5px solid ${T.border}`,
-                borderRadius: 12, padding: "13px 16px",
+                borderRadius: SHAPE.radiusSm, padding: "13px 16px",
                 fontSize: 16, color: T.text,
                 fontFamily: "inherit", outline: "none",
               }}
@@ -394,7 +395,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                 style={{
                   width: "100%", boxSizing: "border-box",
                   background: T.surface, border: `1.5px solid ${T.border}`,
-                  borderRadius: 12, padding: "11px 16px",
+                  borderRadius: SHAPE.radiusSm, padding: "11px 16px",
                   fontSize: 16, color: T.text,
                   fontFamily: "inherit", outline: "none",
                 }}
@@ -450,7 +451,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
               <div style={{ maxHeight: 300, overflowY: "auto" }}>
                 {Object.entries(DISCOVER_FEEDS).map(([category, feeds]) => (
                   <div key={category}>
-                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: T.textTertiary, padding: "6px 2px 4px" }}>{category}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: T.textTertiary, padding: "6px 2px 4px" }}>{category}</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       {feeds.map(feed => (
                         <div key={feed.url}

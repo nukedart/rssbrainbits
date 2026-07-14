@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { SHAPE } from "../lib/tokens";
 
 const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 const SMART_COLORS = { blue:"#2F6FED", teal:"#accfae", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -26,6 +27,7 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, T }) {
         padding:"10px 20px",
         width:"100%", border:"none",
         background: isActive ? T.accentSurface : "transparent",
+        borderRadius: SHAPE.radiusSm,
         cursor:"pointer", fontFamily:"inherit", textAlign:"left",
         WebkitTapHighlightColor:"transparent",
         transition:"background .1s",
@@ -67,7 +69,7 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
 
   return (
     <div style={{ marginBottom:1 }}>
-      <div style={{ display:"flex", alignItems:"center", background: isActive ? T.accentSurface : "transparent", transition:"background .1s" }}>
+      <div style={{ display:"flex", alignItems:"center", background: isActive ? T.accentSurface : "transparent", borderRadius: SHAPE.radiusSm, transition:"background .1s" }}>
         <button
           onClick={() => onNavigate(`folder:${folder.id}`)}
           aria-label={folder.name}
@@ -191,8 +193,9 @@ export default function MobileFeedDrawer({
           height:"78vh",
           background:T.card,
           display:"flex", flexDirection:"column",
-          borderRadius:"20px 20px 0 0",
-          boxShadow:"0 -8px 48px rgba(0,0,0,.25)",
+          borderTopLeftRadius: SHAPE.radiusCard,
+          borderTopRightRadius: SHAPE.radiusCard,
+          boxShadow: SHAPE.shadowFloatUp,
           animation:"slideInUp .25s cubic-bezier(.22,.68,0,1.12)",
           transform: dragY > 0 ? `translateY(${dragY}px)` : "none",
           transition: dragY > 0 ? "none" : "transform .22s cubic-bezier(.22,.68,0,1)",
@@ -213,7 +216,7 @@ export default function MobileFeedDrawer({
             touchAction: "pan-x",
           }}
         >
-          <div style={{ width:40, height:4, borderRadius:2, background:T.textTertiary, opacity:.35 }} />
+          <div style={{ width:40, height:4, borderRadius: SHAPE.radiusPill, background:T.surface2 }} />
         </div>
 
         {/* Header */}
@@ -251,6 +254,7 @@ export default function MobileFeedDrawer({
               padding:"10px 20px",
               width:"100%", border:"none",
               background: active === "all" ? T.accentSurface : "transparent",
+              borderRadius: SHAPE.radiusSm,
               cursor:"pointer", fontFamily:"inherit", textAlign:"left",
               WebkitTapHighlightColor:"transparent",
               transition:"background .1s",
@@ -274,6 +278,7 @@ export default function MobileFeedDrawer({
             padding:"10px 20px",
             width:"100%", border:"none",
             background: active === "readlater" ? T.accentSurface : "transparent",
+            borderRadius: SHAPE.radiusSm,
             cursor:"pointer", fontFamily:"inherit", textAlign:"left",
             WebkitTapHighlightColor:"transparent",
             transition:"background .1s",
@@ -300,7 +305,7 @@ export default function MobileFeedDrawer({
               <button key={id} onClick={() => navigate(id)}
                 aria-current={isActive ? "page" : undefined}
                 style={{
-                flex:1, padding:"9px 0", borderRadius:10,
+                flex:1, padding:"9px 0", borderRadius: SHAPE.radiusSm,
                 background: isActive ? T.accentSurface : T.surface,
                 border:`1px solid ${isActive ? T.accent+"44" : T.border}`,
                 color: isActive ? T.accent : T.textSecondary,
@@ -351,6 +356,7 @@ export default function MobileFeedDrawer({
                   padding:"12px 20px",
                   width:"100%", border:"none",
                   background: active === "catch-up" ? T.accentSurface : "transparent",
+                  borderRadius: SHAPE.radiusSm,
                   cursor:"pointer", fontFamily:"inherit", textAlign:"left",
                   WebkitTapHighlightColor:"transparent",
                 }}
@@ -372,6 +378,7 @@ export default function MobileFeedDrawer({
                       padding:"12px 20px",
                       width:"100%", border:"none",
                       background: isActive ? T.accentSurface : "transparent",
+                      borderRadius: SHAPE.radiusSm,
                       cursor:"pointer", fontFamily:"inherit", textAlign:"left",
                       WebkitTapHighlightColor:"transparent",
                     }}

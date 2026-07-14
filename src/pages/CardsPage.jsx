@@ -10,6 +10,7 @@ import TagsInput from "../components/TagsInput";
 import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags, deleteHighlight, getHighlightReviews } from "../lib/supabase";
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 import { askQuestion } from "../lib/fetchers";
+import { SHAPE } from "../lib/tokens";
 
 const AVATAR_COLORS = ["#2F6FED","#AA8439","#65D5C4","#8B5CF6","#EF4444","#22C55E","#F97316","#EC4899"];
 function themeAvatar(name) {
@@ -288,7 +289,7 @@ export default function CardsPage() {
                 aria-label="Search passages and notes"
                 style={{
                   width: "100%", boxSizing: "border-box",
-                  background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10,
+                  background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm,
                   padding: "9px 12px 9px 32px", fontSize: 13, color: T.text, fontFamily: "inherit",
                   outline: "none", transition: "border-color .12s",
                 }}
@@ -334,7 +335,7 @@ export default function CardsPage() {
           {/* Chat with highlights */}
           {allCards.length > 0 && (
             <div style={{ marginTop: 32, borderTop: `1px solid ${T.border}`, paddingTop: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 12 }}>
                 Ask about these {allCards.length} highlights
               </div>
               <form onSubmit={handleChat} style={{ display: "flex", gap: 8 }}>
@@ -345,7 +346,7 @@ export default function CardsPage() {
                   aria-label="Ask a question about your highlights"
                   disabled={chatLoading}
                   style={{
-                    flex: 1, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10,
+                    flex: 1, background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm,
                     padding: "10px 14px", fontSize: 13, color: T.text, fontFamily: "inherit",
                     outline: "none", transition: "border-color .12s",
                     opacity: chatLoading ? 0.6 : 1,
@@ -358,7 +359,7 @@ export default function CardsPage() {
                   disabled={!chatInput.trim() || chatLoading}
                   style={{
                     background: T.accent, color: T.accentText, border: "none",
-                    borderRadius: 10, padding: "10px 16px", cursor: chatInput.trim() && !chatLoading ? "pointer" : "default",
+                    borderRadius: SHAPE.radiusSm, padding: "10px 16px", cursor: chatInput.trim() && !chatLoading ? "pointer" : "default",
                     fontSize: 13, fontWeight: 600, fontFamily: "inherit", flexShrink: 0,
                     opacity: !chatInput.trim() || chatLoading ? 0.5 : 1, transition: "opacity .1s",
                   }}
@@ -368,7 +369,7 @@ export default function CardsPage() {
               {chatAnswer && (
                 <div style={{
                   marginTop: 14, padding: "14px 16px", background: T.surface,
-                  border: `1px solid ${T.border}`, borderRadius: 12,
+                  border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusMd,
                   fontSize: 13, color: T.text, lineHeight: 1.65,
                 }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: T.accent, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 8 }}>Answer</div>
@@ -401,7 +402,7 @@ export default function CardsPage() {
                 onClick={handleExport}
                 title="Export highlights as Markdown"
                 aria-label="Export highlights as Markdown"
-                style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", color:T.textTertiary, border:`1px solid ${T.border}`, borderRadius:10, padding:"7px 12px", cursor:"pointer", fontSize:13, fontFamily:"inherit", transition:"color .12s, border-color .12s" }}
+                style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", color:T.textTertiary, border:`1px solid ${T.border}`, borderRadius:SHAPE.radiusSm, padding:"7px 12px", cursor:"pointer", fontSize:13, fontFamily:"inherit", transition:"color .12s, border-color .12s" }}
                 onMouseEnter={e => { e.currentTarget.style.color=T.text; e.currentTarget.style.borderColor=T.borderStrong; }}
                 onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.borderColor=T.border; }}
               >
@@ -414,7 +415,7 @@ export default function CardsPage() {
             style={{
               display: "flex", alignItems: "center", gap: 6,
               background: T.accent, color: T.accentText, border: "none",
-              borderRadius: 10, padding: "8px 14px", cursor: "pointer",
+              borderRadius: SHAPE.radiusSm, padding: "8px 14px", cursor: "pointer",
               fontSize: 13, fontWeight: 600, fontFamily: "inherit", flexShrink: 0,
               transition: "opacity .12s",
             }}
@@ -440,7 +441,7 @@ export default function CardsPage() {
             aria-label="Search all highlights and notes"
             style={{
               width: "100%", boxSizing: "border-box",
-              background: T.surface, border: `1px solid ${globalSearch ? T.accent : T.border}`, borderRadius: 10,
+              background: T.surface, border: `1px solid ${globalSearch ? T.accent : T.border}`, borderRadius: SHAPE.radiusSm,
               padding: "9px 12px 9px 32px", fontSize: 13, color: T.text, fontFamily: "inherit",
               outline: "none", transition: "border-color .12s",
             }}
@@ -466,14 +467,14 @@ export default function CardsPage() {
           >
             <div role="dialog" aria-modal="true" aria-label="New card" style={{
               background: T.card, borderRadius: 18, padding: "24px",
-              width: "100%", maxWidth: 500, boxShadow: "0 24px 64px rgba(0,0,0,.3)",
+              width: "100%", maxWidth: 500, boxShadow: SHAPE.shadowFloat,
               display: "flex", flexDirection: "column", gap: 16,
             }}>
               <div style={{ fontSize: 17, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>New card</div>
 
               {/* Passage */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 7 }}>Passage</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 7 }}>Passage</div>
                 <textarea
                   autoFocus
                   value={newCard.passage}
@@ -482,7 +483,7 @@ export default function CardsPage() {
                   aria-label="Passage"
                   style={{
                     width: "100%", boxSizing: "border-box", minHeight: 96, resize: "vertical",
-                    background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10,
+                    background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm,
                     padding: "10px 13px", fontSize: 15, color: T.text, lineHeight: 1.65,
                     fontFamily: "var(--reader-font-family)", fontStyle: "italic",
                     outline: "none", transition: "border-color .12s",
@@ -494,7 +495,7 @@ export default function CardsPage() {
 
               {/* Annotation */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 7 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 7 }}>
                   Annotation <span style={{ fontWeight: 400, textTransform: "none", opacity: .7 }}>— optional</span>
                 </div>
                 <textarea
@@ -504,7 +505,7 @@ export default function CardsPage() {
                   aria-label="Annotation"
                   style={{
                     width: "100%", boxSizing: "border-box", minHeight: 72, resize: "vertical",
-                    background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10,
+                    background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm,
                     padding: "10px 13px", fontSize: 13, color: T.text, lineHeight: 1.6,
                     fontFamily: "inherit", outline: "none", transition: "border-color .12s",
                   }}
@@ -515,7 +516,7 @@ export default function CardsPage() {
 
               {/* Tags */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 7 }}>Tags</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 7 }}>Tags</div>
                 <TagsInput
                   tags={newCard.tags}
                   onAdd={tag => setNewCard(p => ({ ...p, tags: [...new Set([...p.tags, tag])] }))}
@@ -526,7 +527,7 @@ export default function CardsPage() {
 
               {/* Color */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 7 }}>Highlight color</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 7 }}>Highlight color</div>
                 <div style={{ display: "flex", gap: 8 }}>
                   {HIGHLIGHT_COLORS.map(c => (
                     <button key={c.id} onClick={() => setNewCard(p => ({ ...p, color: c.id }))}
@@ -545,7 +546,7 @@ export default function CardsPage() {
               {/* Actions */}
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", paddingTop: 4 }}>
                 <button onClick={() => setShowNewCard(false)} style={{
-                  background: T.surface2, border: "none", borderRadius: 9, padding: "9px 18px",
+                  background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm, padding: "9px 18px",
                   cursor: "pointer", color: T.textSecondary, fontSize: 13, fontFamily: "inherit",
                 }}>Cancel</button>
                 <button
@@ -554,7 +555,7 @@ export default function CardsPage() {
                   style={{
                     background: newCard.passage.trim() ? T.accent : T.surface2,
                     color: newCard.passage.trim() ? T.accentText : T.textTertiary,
-                    border: "none", borderRadius: 9, padding: "9px 22px",
+                    border: "none", borderRadius: SHAPE.radiusSm, padding: "9px 22px",
                     cursor: newCard.passage.trim() ? "pointer" : "default",
                     fontSize: 13, fontWeight: 600, fontFamily: "inherit", transition: "background .15s, color .15s",
                   }}
@@ -616,7 +617,7 @@ export default function CardsPage() {
                 placeholder="Filter themes…"
                 style={{
                   width: "100%", boxSizing: "border-box",
-                  background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10,
+                  background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm,
                   padding: "9px 12px 9px 30px", fontSize: 13, color: T.text, fontFamily: "inherit",
                   outline: "none", transition: "border-color .12s",
                 }}
@@ -631,7 +632,7 @@ export default function CardsPage() {
               aria-pressed={sortAZ}
               style={{
                 background: sortAZ ? T.accentSurface : T.surface, border: `1px solid ${sortAZ ? T.accent : T.border}`,
-                borderRadius: 10, padding: "9px 14px", cursor: "pointer", color: sortAZ ? T.accent : T.textSecondary,
+                borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", color: sortAZ ? T.accent : T.textSecondary,
                 fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s, border-color .12s",
                 whiteSpace: "nowrap",
               }}
@@ -649,7 +650,7 @@ export default function CardsPage() {
             </div>
             <button onClick={() => setShowNewCard(true)} style={{
               background: T.accentSurface, color: T.accent, border: `1px solid ${T.accent}44`,
-              borderRadius: 10, padding: "9px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600,
+              borderRadius: SHAPE.radiusSm, padding: "9px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600,
               fontFamily: "inherit",
             }}>+ Create your first card</button>
           </div>
@@ -665,12 +666,12 @@ export default function CardsPage() {
                 return (
                   <button key={theme} onClick={() => setSelectedTheme(theme)} style={{
                     background: T.card, border: `1px solid ${T.border}`,
-                    borderRadius: 16, padding: 0, overflow: "hidden",
+                    borderRadius: SHAPE.radiusCard, padding: 0, overflow: "hidden",
                     cursor: "pointer", textAlign: "left", fontFamily: "inherit",
-                    transition: "border-color .15s, box-shadow .15s", display: "flex", flexDirection: "column",
+                    transition: "border-color .15s, background .15s", display: "flex", flexDirection: "column",
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = av.color; e.currentTarget.style.boxShadow = `0 4px 20px ${av.color}1a`; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = av.color; e.currentTarget.style.background = T.accentSurface; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.card; }}
                   >
                     <div style={{ height: 4, background: av.color + "88", flexShrink: 0 }} />
                     <div style={{ padding: isMobile ? "16px" : "18px", flex: 1, display: "flex", flexDirection: "column" }}>
@@ -712,7 +713,7 @@ export default function CardsPage() {
               {untagged.length > 0 && (
                 <button onClick={() => setSelectedTheme("__untagged__")} style={{
                   background: T.card, border: `1px solid ${T.border}`,
-                  borderRadius: 16, padding: 0, overflow: "hidden",
+                  borderRadius: SHAPE.radiusCard, padding: 0, overflow: "hidden",
                   cursor: "pointer", textAlign: "left", fontFamily: "inherit",
                   transition: "border-color .15s", display: "flex", flexDirection: "column", opacity: 0.55,
                 }}
@@ -758,7 +759,7 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: T.card, borderRadius: 16,
+        background: T.card, borderRadius: SHAPE.radiusMd,
         border: `1px solid ${isEditing ? T.accent : hovered ? T.borderStrong || col.border + "55" : T.border}`,
         overflow: "hidden", transition: "border-color .15s",
         position: "relative",
@@ -821,7 +822,7 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
             placeholder="Your annotation in your own words…"
             style={{
               width: "100%", boxSizing: "border-box", fontSize: 13, color: T.text,
-              background: T.surface, border: `1px solid ${T.accent}`, borderRadius: 9,
+              background: T.surface, border: `1px solid ${T.accent}`, borderRadius: SHAPE.radiusSm,
               padding: "9px 11px", marginBottom: 12, lineHeight: 1.6, resize: "vertical",
               fontFamily: "inherit", outline: "none", minHeight: 72,
             }}
@@ -835,7 +836,7 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
             onKeyDown={e => { if (e.key === "Enter" || e.key === "F2") { e.preventDefault(); onEditStart(); } }}
             title="Click to annotate"
             style={{
-              fontSize: 13, borderRadius: 9, padding: h.note ? "9px 11px" : "8px 11px",
+              fontSize: 13, borderRadius: SHAPE.radiusSm, padding: h.note ? "9px 11px" : "8px 11px",
               marginBottom: 12, lineHeight: 1.6, cursor: "text", minHeight: 38,
               color: h.note ? T.textSecondary : T.textTertiary,
               background: h.note ? T.surface : "transparent",

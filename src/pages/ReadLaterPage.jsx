@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { getReadLater, addReadLater, removeReadLater } from "../lib/supabase";
 import { Spinner } from "../components/UI";
+import { SHAPE } from "../lib/tokens";
 
 const ContentViewer = lazy(() => import("../components/ContentViewer"));
 
@@ -147,7 +148,7 @@ export default function ReadLaterPage() {
           aria-label="Save article URL"
           aria-expanded={showAdd}
           style={{
-            width: 32, height: 32, borderRadius: 9, border: "none",
+            width: 32, height: 32, borderRadius: SHAPE.radiusSm, border: "none",
             background: showAdd ? T.accent : T.surface2,
             color: showAdd ? T.accentText : T.textSecondary,
             cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
@@ -174,18 +175,18 @@ export default function ReadLaterPage() {
               aria-label="Article URL"
               style={{
                 flex: 1, background: T.bg, border: `1.5px solid ${T.accent}`,
-                borderRadius: 10, padding: "9px 14px", fontSize: 13,
+                borderRadius: SHAPE.radiusSm, padding: "9px 14px", fontSize: 13,
                 color: T.text, fontFamily: "inherit", outline: "none",
               }}
             />
             <button onClick={handleAddUrl} disabled={!addUrl.trim() || addLoading} style={{
-              background: T.accent, border: "none", borderRadius: 10,
+              background: T.accent, border: "none", borderRadius: SHAPE.radiusSm,
               padding: "9px 18px", cursor: "pointer", fontSize: 13,
               fontWeight: 600, color: T.accentText, fontFamily: "inherit",
               opacity: (!addUrl.trim() || addLoading) ? 0.5 : 1, flexShrink: 0,
             }}>{addLoading ? "Saving…" : "Save"}</button>
             <button onClick={() => { setShowAdd(false); setAddUrl(""); setAddError(""); }} style={{
-              background: T.surface2, border: "none", borderRadius: 10,
+              background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm,
               padding: "9px 14px", cursor: "pointer", fontSize: 13,
               color: T.textSecondary, fontFamily: "inherit", flexShrink: 0,
             }}>Cancel</button>
@@ -224,7 +225,7 @@ export default function ReadLaterPage() {
                       background: active ? T.accent : T.surface,
                       color: active ? T.accentText : T.textSecondary,
                       border: `1px solid ${active ? T.accent : T.border}`,
-                      borderRadius: 100, padding: "5px 12px",
+                      borderRadius: SHAPE.radiusPill, padding: "5px 12px",
                       fontSize: 12, fontWeight: active ? 700 : 500,
                       cursor: "pointer", flexShrink: 0, fontFamily: "inherit",
                       whiteSpace: "nowrap", transition: "background .1s",
@@ -328,11 +329,9 @@ function Card({ item, T, onOpen, onRemove }) {
       onMouseLeave={() => setHov(false)}
       aria-label={item.title || item.url}
       style={{
-        borderRadius: 14, overflow: "hidden", cursor: "pointer",
-        background: T.card, border: `1px solid ${T.border}`,
-        transition: "transform .15s, box-shadow .15s",
-        transform: hov ? "translateY(-3px)" : "none",
-        boxShadow: hov ? "0 10px 28px rgba(0,0,0,.13)" : "none",
+        borderRadius: SHAPE.radiusCard, overflow: "hidden", cursor: "pointer",
+        background: hov ? T.accentSurface : T.card, border: `1px solid ${T.border}`,
+        transition: "background .15s",
       }}
     >
       {/* Image */}
@@ -400,7 +399,7 @@ function Card({ item, T, onOpen, onRemove }) {
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           {fav && (
             <img src={fav} alt="" width={12} height={12}
-              style={{ borderRadius: 2, opacity: 0.7, flexShrink: 0 }}
+              style={{ borderRadius: SHAPE.radiusXs, opacity: 0.7, flexShrink: 0 }}
               onError={e => { e.target.style.display = "none"; }}
             />
           )}
@@ -442,13 +441,13 @@ function ListRow({ item, T, onOpen, onRemove }) {
         borderBottom: `1px solid ${T.border}`,
         cursor: "pointer",
         background: hov ? T.surface : "transparent",
-        borderRadius: 6,
+        borderRadius: SHAPE.radiusSm,
         margin: "0 -4px",
         transition: "background .1s",
       }}
     >
       {/* Thumb */}
-      <div style={{ width: 68, height: 52, flexShrink: 0, borderRadius: 8, overflow: "hidden", background: T.surface2 }}>
+      <div style={{ width: 68, height: 52, flexShrink: 0, borderRadius: SHAPE.radiusMd, overflow: "hidden", background: T.surface2 }}>
         {item.image
           ? <img src={item.image} alt="" loading="lazy" decoding="async"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
@@ -474,7 +473,7 @@ function ListRow({ item, T, onOpen, onRemove }) {
           {item.title || item.url}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          {fav && <img src={fav} alt="" width={12} height={12} loading="lazy" decoding="async" style={{ borderRadius: 2, opacity: 0.7, flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />}
+          {fav && <img src={fav} alt="" width={12} height={12} loading="lazy" decoding="async" style={{ borderRadius: SHAPE.radiusXs, opacity: 0.7, flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />}
           <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{srcOf(item)}</span>
           <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>· {relTime(item.saved_at)}</span>
         </div>
@@ -486,7 +485,7 @@ function ListRow({ item, T, onOpen, onRemove }) {
         aria-label="Remove"
         style={{
           background: "none", border: "none", cursor: "pointer", flexShrink: 0,
-          color: T.textTertiary, padding: "6px 8px", borderRadius: 7,
+          color: T.textTertiary, padding: "6px 8px", borderRadius: SHAPE.radiusSm,
           opacity: hov ? 1 : 0, transition: "opacity .15s, color .1s",
         }}
         onMouseEnter={e => { e.currentTarget.style.color = T.danger; }}
@@ -509,7 +508,7 @@ function EmptyState({ T }) {
       </svg>
       <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 8 }}>Nothing saved yet</div>
       <div style={{ fontSize: 13, lineHeight: 1.7, maxWidth: 280, margin: "0 auto" }}>
-        Press <kbd style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>L</kbd> while reading to save for later, or paste a URL with the + button above.
+        Press <kbd style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusXs, padding: "1px 6px", fontSize: 11 }}>L</kbd> while reading to save for later, or paste a URL with the + button above.
       </div>
     </div>
   );

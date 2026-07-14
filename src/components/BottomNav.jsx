@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { SHAPE } from "../lib/tokens";
 
 // ── Icons ──────────────────────────────────────────────────────
 const ListIcon   = ({ size, sw }) => (
@@ -79,7 +80,7 @@ export default function BottomNav({
   unreadCount = 0,
   dueCount = 0,
 }) {
-  const { T, isDark } = useTheme();
+  const { T } = useTheme();
   const [visible, setVisible] = useState(true);
 
   // Always show nav when switching pages
@@ -93,21 +94,22 @@ export default function BottomNav({
 
   const pillBase = {
     position: "fixed",
-    bottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
+    bottom: `calc(${SHAPE.barInset}px + env(safe-area-inset-bottom, 0px))`,
     left: "50%",
     zIndex: 600,
-    background: T.card,
+    background: hexToRgba(T.card, 0.72),
+    backdropFilter: SHAPE.blur,
+    WebkitBackdropFilter: SHAPE.blur,
     transform: `translateX(-50%) translateY(${visible ? "0" : "120px"})`,
     transition: "transform .3s cubic-bezier(.4,0,.2,1)",
     willChange: "transform",
     display: "flex",
     alignItems: "center",
-    borderRadius: 999,
-    border: `1px solid ${hexToRgba(T.border, 0.6)}`,
-    boxShadow: isDark
-      ? "0 2px 12px rgba(0,0,0,.18)"
-      : "0 1px 6px rgba(0,0,0,.05)",
+    borderRadius: SHAPE.radiusPill,
+    border: `1px solid ${T.border}`,
+    boxShadow: SHAPE.shadowFloat,
     padding: "0 4px",
+    width: "fit-content",
     maxWidth: "calc(100vw - 32px)",
   };
 

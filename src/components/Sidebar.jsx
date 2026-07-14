@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
+import { SHAPE } from "../lib/tokens";
 
 const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 const SMART_COLORS = { blue:"#2F6FED", teal:"#accfae", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -58,16 +59,16 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
         gap: collapsed ? 0 : 9,
         padding: collapsed ? "7px 0" : "6px 10px",
         justifyContent: collapsed ? "center" : "flex-start",
-        borderRadius: 8, border:"none", cursor:"pointer",
+        borderRadius: SHAPE.radiusSm, border:"none", cursor:"pointer",
         width:"100%", textAlign:"left",
-        background: "transparent",
+        background: isActive ? T.accentSurface : "transparent",
         fontFamily:"inherit", transition:"background .12s",
         position: "relative",
       }}
-      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
+      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface2; }}
       onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
     >
-      <span style={{ display:"flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: collapsed ? "4px" : "4px 8px", transition: "background .12s", color: isActive ? T.accent : T.textTertiary, flexShrink:0, position:"relative" }}>
+      <span style={{ display:"flex", background: "transparent", borderRadius: SHAPE.radiusSm, padding: collapsed ? "4px" : "4px 8px", transition: "background .12s", color: isActive ? T.accent : T.textTertiary, flexShrink:0, position:"relative" }}>
         <Icon />
         {badge > 0 && collapsed && (
           <span style={{
@@ -84,7 +85,7 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
       </span>
       {!collapsed && (
         <>
-          <span style={{ flex:1, fontSize:12.5, fontWeight: isActive ? 500 : 400, color: isActive ? T.accent : T.textSecondary, letterSpacing:"-.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+          <span style={{ flex:1, fontSize:12.5, fontWeight: isActive ? 500 : 400, color: isActive ? T.text : T.textSecondary, letterSpacing:"-.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
             {label}
           </span>
           {badge > 0 && (
@@ -197,9 +198,9 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onCtxM
         width:"100%", border:"none",
         background: isActive ? T.accentSurface : "transparent",
         cursor:"pointer", fontFamily:"inherit", textAlign:"left",
-        borderRadius: 7, transition:"background .1s",
+        borderRadius: SHAPE.radiusSm, transition:"background .1s",
       }}
-      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
+      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface2; }}
       onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
     >
       {/* Favicon or dot */}
@@ -214,7 +215,7 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onCtxM
         flex:1, fontSize:12.5,
         overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
         letterSpacing:"-.01em",
-        color: isActive ? T.accent : unread > 0 ? T.text : T.textSecondary,
+        color: isActive ? T.text : unread > 0 ? T.text : T.textSecondary,
         fontWeight: unread > 0 ? 500 : 400,
       }}>
         {name}
@@ -256,7 +257,7 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
           display:"flex", alignItems:"center", justifyContent:"center",
           width:"100%", padding:"7px 0", border:"none",
           background: isActive ? T.accentSurface : dragOver ? T.accentSurface : "transparent",
-          cursor:"pointer", position:"relative", borderRadius:8, transition:"background .1s",
+          cursor:"pointer", position:"relative", borderRadius:SHAPE.radiusSm, transition:"background .1s",
           outline: dragOver ? `2px solid ${T.accent}` : "none",
         }}
       >
@@ -275,8 +276,8 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          display:"flex", alignItems:"center", borderRadius:8,
-          background: isActive ? T.accentSurface : dragOver ? T.surface2 : hovered ? T.surface : "transparent",
+          display:"flex", alignItems:"center", borderRadius:SHAPE.radiusSm,
+          background: isActive ? T.accentSurface : dragOver ? T.surface2 : hovered ? T.surface2 : "transparent",
           outline: dragOver ? `1.5px dashed ${T.accent}` : "none",
           transition:"background .1s",
         }}
@@ -293,7 +294,7 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
             flex:1, fontSize:13,
             overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
             letterSpacing:"-.01em",
-            color: isActive ? T.accent : T.text,
+            color: T.text,
             fontWeight: folderUnread > 0 ? 600 : 500,
           }}>
             {folder.name}
@@ -348,8 +349,8 @@ function SmartRow({ sf, active, onNavigate, onEdit, collapsed, T }) {
   const isActive = active === `smart:${sf.id}`;
   const color = SMART_COLORS[sf.color] || T.accent;
   return (
-    <div style={{ display:"flex", alignItems:"center", borderRadius:8, background: isActive?T.surface:"transparent", transition:"background .15s", marginBottom:1 }}
-      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface; }}
+    <div style={{ display:"flex", alignItems:"center", borderRadius:SHAPE.radiusSm, background: isActive?T.accentSurface:"transparent", transition:"background .15s", marginBottom:1 }}
+      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background=T.surface2; }}
       onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}
     >
       <button
@@ -361,7 +362,7 @@ function SmartRow({ sf, active, onNavigate, onEdit, collapsed, T }) {
       >
         <span style={{ width:7, height:7, borderRadius:"50%", background:color, flexShrink:0 }} />
         {!collapsed && (
-          <span style={{ flex:1, fontSize:12.5, fontWeight:isActive?500:400, color:isActive?T.accent:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
+          <span style={{ flex:1, fontSize:12.5, fontWeight:isActive?500:400, color:isActive?T.text:T.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
             {sf.name}
           </span>
         )}
@@ -382,7 +383,7 @@ function SmartRow({ sf, active, onNavigate, onEdit, collapsed, T }) {
 function SectionLabel({ label, action, actionTitle, T }) {
   return (
     <div style={{ display:"flex", alignItems:"center", padding:"8px 10px 4px", flexShrink:0 }}>
-      <span style={{ flex:1, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>{label}</span>
+      <span style={{ flex:1, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:".05em", color:T.textTertiary }}>{label}</span>
       {action && (
         <button onClick={action} title={actionTitle} aria-label={actionTitle}
           style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 3px", borderRadius:4, transition:"color .1s" }}
@@ -605,8 +606,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
             aria-label="Settings"
             aria-current={active==="settings" ? "page" : undefined}
             title={collapsed ? "Settings" : undefined}
-            style={{ display:"flex", alignItems:"center", gap: collapsed?0:8, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"7px 10px", borderRadius:8, border:"none", background:active==="settings"?T.surface:"transparent", cursor:"pointer", flex:1, fontFamily:"inherit", transition:"background .15s", minWidth:0 }}
-            onMouseEnter={e => { if (active!=="settings") e.currentTarget.style.background=T.surface; }}
+            style={{ display:"flex", alignItems:"center", gap: collapsed?0:8, justifyContent: collapsed?"center":"flex-start", padding: collapsed?"6px 0":"7px 10px", borderRadius:SHAPE.radiusSm, border:"none", background:active==="settings"?T.accentSurface:"transparent", cursor:"pointer", flex:1, fontFamily:"inherit", transition:"background .15s", minWidth:0 }}
+            onMouseEnter={e => { if (active!=="settings") e.currentTarget.style.background=T.surface2; }}
             onMouseLeave={e => { if (active!=="settings") e.currentTarget.style.background="transparent"; }}
           >
             {user?.user_metadata?.avatar_url

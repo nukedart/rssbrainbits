@@ -166,5 +166,23 @@ export const SEPIA = {
   readerFont: "'Cormorant Garamond', Georgia, ui-serif, serif",
 };
 
+// ── Shared shape & spacing scale (Reeder-style) ──────────────
+// Consumed by components for consistent radii/spacing across themes.
+export const SHAPE = {
+  radiusXs:   6,    // favicons, small chips
+  radiusSm:   10,   // buttons, inputs
+  radiusMd:   14,   // thumbnails, menus
+  radiusCard: 16,   // list cards, panels
+  radiusPill: 999,  // floating bars, pills, dots
+  rowPadY:    14,   // list row vertical padding
+  rowPadX:    16,   // list row horizontal padding
+  rowGap:     12,   // gap between row text block and thumbnail
+  barInset:   14,   // floating bottom bar inset from screen edges
+  blur:       "saturate(180%) blur(20px)", // backdrop-filter for floating chrome
+  shadowFloat: "0 8px 28px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.10)",
+  shadowFloatUp:   "0 -8px 28px rgba(0,0,0,0.18), 0 -1px 2px rgba(0,0,0,0.10)",   // bottom sheets
+  shadowFloatLeft: "-8px 0 28px rgba(0,0,0,0.18), -1px 0 2px rgba(0,0,0,0.10)",   // right-side drawers
+};
+
 // backwards-compat alias
 export const DARK = NOCTURNE;

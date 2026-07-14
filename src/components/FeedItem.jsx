@@ -2,6 +2,7 @@ import { useState, useRef, useMemo, useEffect, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { parseYouTubeUrl } from "../lib/fetchers";
+import { SHAPE } from "../lib/tokens";
 
 const haptic = (ms = 8) => { try { navigator.vibrate?.(ms); } catch {} };
 
@@ -281,7 +282,7 @@ function MobileThumb({ item, T, size = 72 }) {
     <div
       className={shimmer ? "skeleton" : undefined}
       style={{
-        width: size, height: size, borderRadius: Math.round(size * 0.14), flexShrink: 0,
+        width: size, height: size, borderRadius: SHAPE.radiusMd, flexShrink: 0,
         overflow: "hidden", position: "relative",
         background: shimmer ? undefined : (showImg ? T.surface2 : ph.bg),
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -350,8 +351,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             onTouchEnd={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.bg; }}
             onTouchCancel={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.bg; }}
             style={{
-              display: "flex", alignItems: "flex-start", gap: 12,
-              padding: "12px 16px",
+              display: "flex", alignItems: "flex-start", gap: SHAPE.rowGap,
+              padding: `${SHAPE.rowPadY}px ${SHAPE.rowPadX}px`,
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
               opacity: isRead ? 0.48 : 1,
@@ -391,7 +392,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {/* Preview text */}
               {preview && (
                 <div style={{
-                  fontSize: titleSize - 3, color: T.textSecondary, lineHeight: 1.4,
+                  fontSize: titleSize - 3, color: T.textTertiary, lineHeight: 1.4,
                   overflow: "hidden", display: "-webkit-box",
                   WebkitLineClamp: previewN, WebkitBoxOrient: "vertical",
                 }}>
@@ -406,7 +407,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {/* Source · time */}
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
                 {!isRead && (
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", flexShrink: 0, background: feedColor || T.accent }} />
+                  <span style={{ width: 8, height: 8, borderRadius: SHAPE.radiusPill, flexShrink: 0, background: T.accent }} />
                 )}
                 <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                   {item.source}
@@ -441,7 +442,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           onMouseLeave={() => setHovered(false)}
           style={{
             position: "relative",
-            display: "flex", alignItems: "center", gap: 12,
+            display: "flex", alignItems: "center", gap: SHAPE.rowGap,
             padding: vPad,
             margin: "0 6px",
             borderRadius: 12,

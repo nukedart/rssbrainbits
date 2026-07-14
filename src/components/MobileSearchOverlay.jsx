@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { SHAPE } from "../lib/tokens";
 import { useAuth } from "../hooks/useAuth";
 import { searchItems } from "../lib/supabase";
 import { track } from "../lib/analytics";
@@ -133,7 +134,7 @@ export default function MobileSearchOverlay({ onClose, onSelectResult, onLiveSea
         {/* Input pill */}
         <div style={{
           flex: 1, display: "flex", alignItems: "center", gap: 10,
-          background: T.surface2, borderRadius: 14,
+          background: T.surface2, borderRadius: SHAPE.radiusMd,
           padding: "11px 14px",
         }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
@@ -232,11 +233,12 @@ export default function MobileSearchOverlay({ onClose, onSelectResult, onLiveSea
                 display: "flex", alignItems: "flex-start", gap: 12,
                 padding: "14px 16px",
                 borderBottom: `1px solid ${T.border}`,
+                borderRadius: SHAPE.radiusSm,
                 cursor: "pointer",
                 WebkitTapHighlightColor: "transparent",
                 transition: "background .08s",
               }}
-              onTouchStart={e =>  { e.currentTarget.style.background = T.surface; }}
+              onTouchStart={e =>  { e.currentTarget.style.background = T.accentSurface; }}
               onTouchEnd={e =>    { e.currentTarget.style.background = "transparent"; }}
               onTouchCancel={e => { e.currentTarget.style.background = "transparent"; }}
             >

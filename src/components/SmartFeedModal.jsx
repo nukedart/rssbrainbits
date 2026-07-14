@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { SHAPE } from "../lib/tokens";
 import { Button } from "./UI";
 
 const COLORS = [
@@ -50,10 +51,10 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
       display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
     }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div role="dialog" aria-modal="true" aria-labelledby="smart-feed-modal-title" style={{
-        background: T.card, borderRadius: 18, padding: "26px 26px 22px",
+        background: T.card, borderRadius: SHAPE.radiusCard, padding: "26px 26px 22px",
         width: "100%", maxWidth: "min(460px, 95vw)",
         border: `1px solid ${T.border}`,
-        boxShadow: "0 24px 80px rgba(0,0,0,.22)",
+        boxShadow: SHAPE.shadowFloat,
         animation: "fadeInScale .18s ease",
       }}>
         {/* Header */}
@@ -69,17 +70,17 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
               Articles matching any keyword appear here automatically
             </p>
           </div>
-          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm, width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
 
         {/* Name */}
         <div style={{ marginBottom: 16 }}>
-          <label htmlFor="sf-name" style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", display: "block", marginBottom: 7 }}>Name</label>
+          <label htmlFor="sf-name" style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", display: "block", marginBottom: 7 }}>Name</label>
           <input
             id="sf-name"
             value={name} onChange={e => { setName(e.target.value); setError(""); }}
             placeholder="e.g. AI Research, Climate, My Startup…"
-            style={{ width: "100%", boxSizing: "border-box", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 9, padding: "9px 13px", fontSize: 14, color: T.text, fontFamily: "inherit", outline: "none" }}
+            style={{ width: "100%", boxSizing: "border-box", background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 13px", fontSize: 14, color: T.text, fontFamily: "inherit", outline: "none" }}
             onFocus={e => { e.target.style.borderColor = T.accent; }}
             onBlur={e => { e.target.style.borderColor = T.border; }}
             onKeyDown={e => { if (e.key === "Enter") handleSave(); }}
@@ -89,7 +90,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
 
         {/* Keywords */}
         <div style={{ marginBottom: 16 }}>
-          <label htmlFor="sf-keywords" style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", display: "block", marginBottom: 7 }}>Keywords</label>
+          <label htmlFor="sf-keywords" style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", display: "block", marginBottom: 7 }}>Keywords</label>
           {/* Existing chips */}
           {keywords.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
@@ -109,11 +110,11 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
               onChange={e => setKwInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addKeyword(); } }}
               placeholder="Type keyword, press Enter to add…"
-              style={{ flex: 1, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 9, padding: "8px 12px", fontSize: 13, color: T.text, fontFamily: "inherit", outline: "none" }}
+              style={{ flex: 1, background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "8px 12px", fontSize: 13, color: T.text, fontFamily: "inherit", outline: "none" }}
               onFocus={e => { e.target.style.borderColor = T.accent; }}
               onBlur={e => { e.target.style.borderColor = T.border; }}
             />
-            <button onClick={addKeyword} style={{ background: T.accent, border: "none", borderRadius: 9, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: T.accentText, fontFamily: "inherit" }}>
+            <button onClick={addKeyword} style={{ background: T.accent, border: "none", borderRadius: SHAPE.radiusSm, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: T.accentText, fontFamily: "inherit" }}>
               Add
             </button>
           </div>
@@ -151,7 +152,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
           {/* ── Feed scope picker ── */}
           <div style={{ marginBottom: 18 }}>
             <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
-              <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", flex: 1 }}>Search scope</label>
+              <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", flex: 1 }}>Search scope</label>
               <button onClick={() => { setFeedIds(null); setShowFeedPicker(false); }} style={{ fontSize: 11, fontWeight: 600, color: !feedIds ? T.accentText : T.textTertiary, background: !feedIds ? T.accentSurface : "transparent", border: `1px solid ${!feedIds ? T.accent : T.border}`, borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontFamily: "inherit", marginRight: 5 }}>All feeds</button>
               <button onClick={() => setShowFeedPicker(v => !v)} aria-expanded={showFeedPicker} style={{ fontSize: 11, fontWeight: 600, color: feedIds ? T.accentText : T.textSecondary, background: feedIds ? T.accentSurface : T.surface2, border: `1px solid ${feedIds ? T.accent : T.border}`, borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontFamily: "inherit" }}>
                 {feedIds ? `${feedIds.length} feed${feedIds.length !== 1 ? "s" : ""}` : "Pick feeds"}
@@ -185,7 +186,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
             )}
           </div>
 
-          <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".06em", display: "block", marginBottom: 8 }}>Color</label>
+          <label style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", display: "block", marginBottom: 8 }}>Color</label>
           <div style={{ display: "flex", gap: 8 }}>
             {COLORS.map(c => (
               <button key={c.id} onClick={() => setColor(c.id)} style={{
@@ -209,7 +210,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
         {/* Actions */}
         <div style={{ display: "flex", gap: 8 }}>
           {isEdit && (
-            <button onClick={() => { onDelete(feed.id); onClose(); }} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 9, padding: "9px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
+            <button onClick={() => { onDelete(feed.id); onClose(); }} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
               Delete
             </button>
           )}

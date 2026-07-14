@@ -15,6 +15,7 @@ import { feedsToOPML, downloadFile } from "../lib/exportUtils";
 import { getCachedFeed, cacheAge, invalidateCachedFeed } from "../lib/feedCache";
 import { getPlan, getPlanName, PLANS } from "../lib/plan";
 import { track } from "../lib/analytics";
+import { SHAPE } from "../lib/tokens";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -167,7 +168,7 @@ export function StatsPage() {
               { label:"All time",   value:stats.allTime,     unit:"total",    color:T.text },
               { label:"Day streak", value:`${stats.streak > 0 ? "🔥 " : ""}${stats.streak}`, unit:"days", color: stats.streak > 0 ? T.warning : T.textTertiary },
             ].map(({ label, value, unit, color }) => (
-              <div key={label} style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:"16px 14px", textAlign:"center" }}>
+              <div key={label} style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:SHAPE.radiusCard, padding:"16px 14px", textAlign:"center" }}>
                 <div style={{ fontSize:30, fontWeight:800, color, lineHeight:1.1, letterSpacing:"-.02em" }}>{value}</div>
                 <div style={{ fontSize:10, fontWeight:700, color:T.textTertiary, marginTop:4, textTransform:"uppercase", letterSpacing:".06em" }}>{unit}</div>
                 <div style={{ fontSize:11, color:T.textSecondary, marginTop:2 }}>{label}</div>
@@ -176,7 +177,7 @@ export function StatsPage() {
           </div>
 
           {/* Daily avg */}
-          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:"12px 16px", display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:SHAPE.radiusCard, padding:"12px 16px", display:"flex", alignItems:"center", gap:12 }}>
             <span style={{ fontSize:22 }}>📈</span>
             <div>
               <div style={{ fontSize:13, fontWeight:600, color:T.text }}>{dailyAvg} articles/day average this week</div>
@@ -185,7 +186,7 @@ export function StatsPage() {
           </div>
 
           {/* 30-day bar chart */}
-          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:"16px" }}>
+          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:SHAPE.radiusCard, padding:"16px" }}>
             <div style={{ fontSize:12, fontWeight:700, color:T.textSecondary, marginBottom:12, textTransform:"uppercase", letterSpacing:".06em" }}>Last 30 days</div>
             <div style={{ display:"flex", alignItems:"flex-end", gap:2, height:64 }}>
               {days30.map((day, i) => {
@@ -214,7 +215,7 @@ export function StatsPage() {
 
           {/* 12-week activity heatmap */}
           {heatmapCols.length > 0 && (
-            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: "16px" }}>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, padding: "16px" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: T.textSecondary, marginBottom: 12, textTransform: "uppercase", letterSpacing: ".06em" }}>12-week activity</div>
               <div style={{ display: "flex", gap: 3, alignItems: "flex-start" }}>
                 {/* Day-of-week labels */}
@@ -259,7 +260,7 @@ export function StatsPage() {
 
           {/* Streak motivation */}
           {stats.streak === 0 && (
-            <div style={{ background:`${T.warning}15`, border:`1px solid ${T.warning}40`, borderRadius:14, padding:"14px 16px", display:"flex", gap:10, alignItems:"center" }}>
+            <div style={{ background:`${T.warning}15`, border:`1px solid ${T.warning}40`, borderRadius:SHAPE.radiusCard, padding:"14px 16px", display:"flex", gap:10, alignItems:"center" }}>
               <span style={{ fontSize:20 }}>💪</span>
               <div>
                 <div style={{ fontSize:13, fontWeight:600, color:T.text }}>Start your streak today</div>
@@ -268,7 +269,7 @@ export function StatsPage() {
             </div>
           )}
           {stats.streak >= 7 && (
-            <div style={{ background:`${T.accent}15`, border:`1px solid ${T.accent}40`, borderRadius:14, padding:"14px 16px", display:"flex", gap:10, alignItems:"center" }}>
+            <div style={{ background:`${T.accent}15`, border:`1px solid ${T.accent}40`, borderRadius:SHAPE.radiusCard, padding:"14px 16px", display:"flex", gap:10, alignItems:"center" }}>
               <span style={{ fontSize:20 }}>🏆</span>
               <div>
                 <div style={{ fontSize:13, fontWeight:600, color:T.accentText }}>{stats.streak}-day streak!</div>
@@ -325,19 +326,19 @@ function PlanCard({ T, user, feedCount, planName }) {
   return (
     <Card title="Plan & Billing" T={T}>
       {upgradeStatus === "success" && (
-        <div style={{ background: T.accentSurface, border:`1px solid ${T.accent}`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:13, color:T.accentText, fontWeight:600 }}>
+        <div style={{ background: T.accentSurface, border:`1px solid ${T.accent}`, borderRadius:SHAPE.radiusSm, padding:"10px 14px", marginBottom:14, fontSize:13, color:T.accentText, fontWeight:600 }}>
           🎉 Welcome to Pro! Your account has been upgraded.
         </div>
       )}
       {upgradeStatus === "cancelled" && (
-        <div style={{ background:`${T.warning}18`, border:`1px solid ${T.warning}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:13, color:T.warning }}>
+        <div style={{ background:`${T.warning}18`, border:`1px solid ${T.warning}40`, borderRadius:SHAPE.radiusSm, padding:"10px 14px", marginBottom:14, fontSize:13, color:T.warning }}>
           Checkout cancelled — no charge made. You're still on the Free plan.
         </div>
       )}
 
       {/* Current plan */}
-      <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:T.surface, borderRadius:10, marginBottom:14 }}>
-        <div style={{ width:36, height:36, borderRadius:9, background: isPro ? T.accent : T.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:T.surface, borderRadius:SHAPE.radiusSm, marginBottom:14 }}>
+        <div style={{ width:36, height:36, borderRadius:SHAPE.radiusSm, background: isPro ? T.accent : T.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>
           {isPro ? "⚡" : "🆓"}
         </div>
         <div style={{ flex:1 }}>
@@ -375,11 +376,11 @@ function PlanCard({ T, user, feedCount, planName }) {
         </div>
       )}
 
-      {error && <div style={{ fontSize:12, color:T.danger, marginBottom:10, padding:"7px 12px", background:`${T.danger}15`, borderRadius:8 }}>{error}</div>}
+      {error && <div style={{ fontSize:12, color:T.danger, marginBottom:10, padding:"7px 12px", background:`${T.danger}15`, borderRadius:SHAPE.radiusSm }}>{error}</div>}
 
       {!isPro && (
         <button onClick={handleUpgrade} disabled={loading} style={{
-          width:"100%", padding:"12px 0", borderRadius:12, border:"none",
+          width:"100%", padding:"12px 0", borderRadius:SHAPE.radiusSm, border:"none",
           background: loading ? T.surface2 : T.accent,
           color: loading ? T.textTertiary : T.accentText,
           fontSize:14, fontWeight:700, cursor: loading ? "wait" : "pointer",
@@ -421,7 +422,7 @@ function PlanCard({ T, user, feedCount, planName }) {
             setLoading(false);
           }
         }} disabled={loading} style={{
-          width:"100%", padding:"11px 0", borderRadius:10, border:`1px solid ${T.border}`,
+          width:"100%", padding:"11px 0", borderRadius:SHAPE.radiusSm, border:`1px solid ${T.border}`,
           background:"transparent", color:T.textSecondary, fontSize:13, fontWeight:600,
           cursor: loading ? "wait" : "pointer", fontFamily:"inherit", transition:"border-color .2s, color .2s",
         }}
@@ -510,10 +511,10 @@ function NotificationsCard({ T }) {
           <div style={{ fontSize: 12, color: s.color, marginTop: 2 }}>{s.text}</div>
         </div>
         {permission === "default" && (
-          <button onClick={handleEnable} style={{ background: T.accent, color: T.accentText, border: "none", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>Enable</button>
+          <button onClick={handleEnable} style={{ background: T.accent, color: T.accentText, border: "none", borderRadius: SHAPE.radiusSm, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>Enable</button>
         )}
         {permission === "granted" && (
-          <button onClick={handleTest} style={{ background: T.surface2, color: T.textSecondary, border: `1px solid ${T.border}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>Test</button>
+          <button onClick={handleTest} style={{ background: T.surface2, color: T.textSecondary, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>Test</button>
         )}
       </div>
       <div style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.7 }}>
@@ -522,7 +523,7 @@ function NotificationsCard({ T }) {
 
       {/* Digest reminder scheduler */}
       {permission === "granted" && (
-        <div style={{ marginTop: 14, padding: "12px 14px", background: T.surface, borderRadius: 10 }}>
+        <div style={{ marginTop: 14, padding: "12px 14px", background: T.surface, borderRadius: SHAPE.radiusSm }}>
           <div style={{ fontSize: 13, fontWeight: 500, color: T.text, marginBottom: 8 }}>Daily digest reminder</div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <input
@@ -531,7 +532,7 @@ function NotificationsCard({ T }) {
               value={digestTime}
               onChange={e => { setDigestTime(e.target.value); localStorage.setItem("fb-digest-time", e.target.value); }}
               style={{
-                background: T.card, border: `1px solid ${T.border}`, borderRadius: 7,
+                background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm,
                 padding: "5px 10px", fontSize: 13, color: T.text, fontFamily: "inherit",
                 outline: "none", cursor: "pointer", flexShrink: 0,
               }}
@@ -620,7 +621,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
             <button onClick={async () => {
               await supabase.auth.refreshSession();
               window.location.reload();
-            }} style={{ fontSize: 11, color: T.textTertiary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "3px 6px", borderRadius: 6, transition: "color .12s" }}
+            }} style={{ fontSize: 11, color: T.textTertiary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "3px 6px", borderRadius: SHAPE.radiusSm, transition: "color .12s" }}
               onMouseEnter={e => e.currentTarget.style.color = T.text}
               onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
               title="Refresh your account session — use this if your Pro status isn't showing"
@@ -646,7 +647,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
                   display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
                   background: active ? T.accentSurface : "transparent",
                   border: `1px solid ${active ? T.accent : "transparent"}`,
-                  borderRadius: 10, padding: "10px 12px", cursor: "pointer",
+                  borderRadius: SHAPE.radiusSm, padding: "10px 12px", cursor: "pointer",
                   transition: "background .15s, border-color .15s", minWidth: 68,
                 }}>
                   <div style={{
@@ -687,7 +688,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               onChange={e => localStorage.setItem("fb-feed-limit", e.target.value)}
               aria-label="Articles per feed"
               style={{
-                fontSize: 13, padding: "5px 10px", borderRadius: 8,
+                fontSize: 13, padding: "5px 10px", borderRadius: SHAPE.radiusSm,
                 border: `1px solid ${T.border}`, background: T.surface,
                 color: T.text, fontFamily: "inherit", cursor: "pointer",
               }}
@@ -710,7 +711,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               placeholder="e.g. crypto, sponsored"
               aria-label="New muted keyword"
               style={{
-                flex: 1, fontSize: 13, padding: "6px 10px", borderRadius: 8,
+                flex: 1, fontSize: 13, padding: "6px 10px", borderRadius: SHAPE.radiusSm,
                 border: `1px solid ${T.border}`, background: T.surface,
                 color: T.text, fontFamily: "inherit", outline: "none",
               }}
@@ -719,7 +720,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               onClick={addKeyword}
               aria-label="Add muted keyword"
               style={{
-                padding: "6px 14px", borderRadius: 8, border: "none",
+                padding: "6px 14px", borderRadius: SHAPE.radiusSm, border: "none",
                 background: T.accent, color: T.accentText, fontFamily: "inherit",
                 fontSize: 13, fontWeight: 600, cursor: "pointer",
               }}
@@ -773,7 +774,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               <div key={key} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <kbd style={{
                   background: T.surface2, border: `1px solid ${T.border}`,
-                  borderRadius: 6, padding: "2px 8px", fontSize: 11,
+                  borderRadius: SHAPE.radiusSm, padding: "2px 8px", fontSize: 11,
                   fontFamily: "monospace", color: T.text, flexShrink: 0, minWidth: 80,
                   textAlign: "center",
                 }}>{key}</kbd>
@@ -788,7 +789,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <button onClick={() => onNavigate("manage-feeds")} style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "14px 18px", background: T.card, border: `1px solid ${T.border}`,
-            borderRadius: 14, cursor: "pointer", fontFamily: "inherit", transition: "border-color .15s",
+            borderRadius: SHAPE.radiusCard, cursor: "pointer", fontFamily: "inherit", transition: "border-color .15s",
             textAlign: "left", width: "100%",
           }}
             onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; }}
@@ -834,7 +835,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               }}
             />
             <button onClick={() => { setOpmlState(null); opmlInputRef.current?.click(); }} style={{
-              background: T.surface, border: `1px solid ${T.border}`, borderRadius: 9, padding: "8px 16px",
+              background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "8px 16px",
               cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "inherit", transition: "border-color .12s",
             }}
               onMouseEnter={e => e.currentTarget.style.borderColor = T.accent}
@@ -845,7 +846,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               const xml = feedsToOPML(feeds);
               downloadFile(xml, "feedbox-subscriptions.opml", "text/x-opml");
             }} style={{
-              background: T.accent, border: "none", borderRadius: 9, padding: "9px 18px",
+              background: T.accent, border: "none", borderRadius: SHAPE.radiusSm, padding: "9px 18px",
               cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.accentText, fontFamily: "inherit",
             }}>↓ Export OPML</button>
           </div>
@@ -869,7 +870,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <button onClick={() => onNavigate("analytics")} style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "14px 18px", background: T.card, border: `1px solid ${T.border}`,
-            borderRadius: 14, cursor: "pointer", fontFamily: "inherit", transition: "border-color .15s",
+            borderRadius: SHAPE.radiusCard, cursor: "pointer", fontFamily: "inherit", transition: "border-color .15s",
             textAlign: "left", width: "100%",
           }}
             onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; }}
@@ -935,7 +936,7 @@ function Toggle({ checked, onChange, T }) {
       tabIndex={0}
       onClick={() => onChange(!checked)}
       onKeyDown={e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); onChange(!checked); } }}
-      style={{ width: 34, height: 19, borderRadius: 10, background: checked ? T.accent : T.surface2, cursor: "pointer", position: "relative", transition: "background .2s", flexShrink: 0 }}
+      style={{ width: 34, height: 19, borderRadius: SHAPE.radiusSm, background: checked ? T.accent : T.surface2, cursor: "pointer", position: "relative", transition: "background .2s", flexShrink: 0 }}
     >
       <div style={{ position: "absolute", top: 2, left: checked ? 17 : 2, width: 15, height: 15, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.3)" }} />
     </div>
@@ -958,7 +959,7 @@ function InlineNameEditor({ name, T, onSave, placeholder }) {
       <input ref={inputRef} value={val} onChange={e => setVal(e.target.value)}
         onBlur={commit}
         onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setVal(name || ""); setEditing(false); } }}
-        style={{ flex: 1, background: T.surface2, border: `1.5px solid ${T.accent}`, borderRadius: 6, padding: "3px 8px", fontSize: 16, color: T.text, fontFamily: "inherit", outline: "none", minWidth: 0 }}
+        style={{ flex: 1, background: T.surface2, border: `1.5px solid ${T.accent}`, borderRadius: SHAPE.radiusSm, padding: "3px 8px", fontSize: 16, color: T.text, fontFamily: "inherit", outline: "none", minWidth: 0 }}
         onClick={e => e.stopPropagation()}
       />
     );
@@ -1048,7 +1049,7 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
       onMouseLeave={e => e.currentTarget.style.background = "transparent"}
     >
       {/* Favicon */}
-      <div style={{ width: 28, height: 28, borderRadius: 8, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ width: 28, height: 28, borderRadius: SHAPE.radiusSm, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <img src={`https://www.google.com/s2/favicons?domain=${host}&sz=32`} alt="" width={16} height={16}
           onError={e => { e.target.style.display = "none"; }} />
       </div>
@@ -1091,7 +1092,7 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
             style={{
               background: folderOpen ? T.surface2 : "none", border: "none", cursor: "pointer",
               color: currentFolder ? T.accent : T.textTertiary,
-              padding: "4px 6px", borderRadius: 6, display: "flex", alignItems: "center",
+              padding: "4px 6px", borderRadius: SHAPE.radiusSm, display: "flex", alignItems: "center",
               transition: "color .12s, background .12s",
             }}
             onMouseEnter={e => { if (!folderOpen) { e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.surface; } }}
@@ -1105,8 +1106,8 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
             <div
               style={{
                 position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 200,
-                background: T.card, border: `1px solid ${T.border}`, borderRadius: 10,
-                boxShadow: "0 8px 24px rgba(0,0,0,.16)", minWidth: 160, overflow: "hidden",
+                background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm,
+                boxShadow: SHAPE.shadowFloat, minWidth: 160, overflow: "hidden",
               }}
               onClick={e => e.stopPropagation()}
             >
@@ -1160,7 +1161,7 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
       {/* Delete */}
       <button onClick={handleDelete} disabled={deleting}
         title="Remove feed"
-        style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, padding: "4px 6px", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "color .12s, background .12s", fontSize: 13 }}
+        style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, padding: "4px 6px", borderRadius: SHAPE.radiusSm, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "color .12s, background .12s", fontSize: 13 }}
         onMouseEnter={e => { e.currentTarget.style.color = T.danger; e.currentTarget.style.background = `${T.danger}15`; }}
         onMouseLeave={e => { e.currentTarget.style.color = T.textTertiary; e.currentTarget.style.background = "none"; }}
       >
@@ -1260,7 +1261,7 @@ function FolderRow({ folder, feedCount, T, onUpdate, onDelete, onMoveUp, onMoveD
           style={{ width: 20, height: 20, borderRadius: "50%", background: dot, border: `2px solid ${showColors ? T.text : "transparent"}`, cursor: "pointer", flexShrink: 0, transition: "border .12s" }}
         />
         {showColors && (
-          <div style={{ position: "absolute", top: 26, left: 0, display: "flex", gap: 5, background: T.card, border: `1px solid ${T.borderStrong}`, borderRadius: 10, padding: "7px 9px", boxShadow: "0 4px 16px rgba(0,0,0,.15)", zIndex: 20 }}>
+          <div style={{ position: "absolute", top: 26, left: 0, display: "flex", gap: 5, background: T.card, border: `1px solid ${T.borderStrong}`, borderRadius: SHAPE.radiusSm, padding: "7px 9px", boxShadow: SHAPE.shadowFloat, zIndex: 20 }}>
             {Object.entries(FOLDER_COLORS).map(([key, hex]) => (
               <button key={key} onClick={() => handleColorChange(key)} title={key} aria-label={`Set folder color to ${key}`} aria-pressed={folder.color === key}
                 style={{ width: 18, height: 18, borderRadius: "50%", background: hex, border: folder.color === key ? `2px solid ${T.text}` : "2px solid transparent", cursor: "pointer", transition: "border .1s" }}
@@ -1282,7 +1283,7 @@ function FolderRow({ folder, feedCount, T, onUpdate, onDelete, onMoveUp, onMoveD
 
       {/* Delete */}
       <button onClick={handleDelete} disabled={deleting} title="Delete collection" aria-label="Delete collection"
-        style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, padding: "4px 6px", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "color .12s, background .12s" }}
+        style={{ background: "none", border: "none", cursor: "pointer", color: T.textTertiary, padding: "4px 6px", borderRadius: SHAPE.radiusSm, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "color .12s, background .12s" }}
         onMouseEnter={e => { e.currentTarget.style.color = T.danger; e.currentTarget.style.background = `${T.danger}15`; }}
         onMouseLeave={e => { e.currentTarget.style.color = T.textTertiary; e.currentTarget.style.background = "none"; }}
       >
@@ -1406,7 +1407,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
                 { label: "Sync Health", value: `${syncHealth}%`, badge: healthLabel, color: healthColor },
                 { label: "Fresh Feeds", value: freshCount, color: T.success },
               ].map(({ label, value, badge, color }) => (
-                <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px" }}>
+                <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "14px 16px" }}>
                   <div style={{ fontSize: 22, fontWeight: 700, color, lineHeight: 1, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
                     {value}
                     {badge && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, background: `${color}20`, color, letterSpacing: ".08em" }}>{badge}</span>}
@@ -1418,14 +1419,14 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
 
             {/* Stale alert */}
             {staleFeedsCount > 0 && (
-              <div style={{ margin: "16px 24px 0", padding: "12px 16px", background: `${T.warning}18`, border: `1px solid ${T.warning}40`, borderRadius: 10, display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ margin: "16px 24px 0", padding: "12px 16px", background: `${T.warning}18`, border: `1px solid ${T.warning}40`, borderRadius: SHAPE.radiusSm, display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 14 }}>⚠️</span>
                 <div style={{ flex: 1, fontSize: 13, color: T.text }}>
                   <span style={{ fontWeight: 600 }}>Stale Feeds — </span>
                   <span style={{ color: T.textSecondary }}>{staleFeedsCount} feed{staleFeedsCount !== 1 ? "s have" : " has"} not synced in over 2 hours.</span>
                 </div>
                 <button onClick={handleSyncAll} disabled={syncingAll}
-                  style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 7, border: `1px solid ${T.warning}`, background: "transparent", color: T.warning, cursor: "pointer", fontFamily: "inherit" }}>
+                  style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: SHAPE.radiusSm, border: `1px solid ${T.warning}`, background: "transparent", color: T.warning, cursor: "pointer", fontFamily: "inherit" }}>
                   {syncingAll ? "Syncing…" : "Sync All"}
                 </button>
               </div>
@@ -1443,7 +1444,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
               </div>
               <div style={{ flex: 1 }} />
               <button onClick={handleSyncAll} disabled={syncingAll}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 8, border: `1px solid ${T.border}`, background: syncingAll ? T.accentSurface : T.surface, color: syncingAll ? T.accent : T.textSecondary, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "background .15s, color .15s, border-color .15s" }}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: SHAPE.radiusSm, border: `1px solid ${T.border}`, background: syncingAll ? T.accentSurface : T.surface, color: syncingAll ? T.accent : T.textSecondary, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "background .15s, color .15s, border-color .15s" }}
                 onMouseEnter={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; } }}
                 onMouseLeave={e => { if (!syncingAll) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textSecondary; } }}
               >
@@ -1468,7 +1469,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
                 No {filterType} sources found.
               </div>
             ) : (
-              <div style={{ margin: "0 24px 40px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+              <div style={{ margin: "0 24px 40px", background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, overflow: "hidden" }}>
                 <FeedGroup title="YouTube Channels" icon="▶" feeds={ytFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} folders={folders} onMoveToFolder={(feedId, folderId) => { handleUpdate(feedId, { folder_id: folderId }); }} />
                 <FeedGroup title="Podcasts" icon="🎙" feeds={podFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} folders={folders} onMoveToFolder={(feedId, folderId) => { handleUpdate(feedId, { folder_id: folderId }); }} />
                 <FeedGroup title="Article Feeds" icon="📰" feeds={artFeeds} T={T} onUpdate={handleUpdate} onDelete={handleDelete} folders={folders} onMoveToFolder={(feedId, folderId) => { handleUpdate(feedId, { folder_id: folderId }); }} />
@@ -1494,7 +1495,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
             </div>
 
             {folders.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "48px 20px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, color: T.textTertiary }}>
+              <div style={{ textAlign: "center", padding: "48px 20px", background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, color: T.textTertiary }}>
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45, marginBottom: 10 }}><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 6 }}>No collections yet</div>
                 <div style={{ fontSize: 13, marginBottom: 18 }}>Organize your feeds into collections to keep things tidy.</div>
@@ -1504,7 +1505,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
                 </button>
               </div>
             ) : (
-              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, overflow: "hidden" }}>
                 {/* Column headers */}
                 <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 16px", borderBottom: `1px solid ${T.border}`, background: T.surface }}>
                   <div style={{ width: 28, flexShrink: 0 }} />
@@ -1634,7 +1635,7 @@ function FeedHealthCard({ T, user, feeds = [] }) {
           { label: "Uncached", value: uncachedCount, color: T.textTertiary },
           { label: "Articles", value: totalItems, color: T.accent },
         ].map(({ label, value, color }) => (
-          <div key={label} style={{ flex: 1, background: T.surface, borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
+          <div key={label} style={{ flex: 1, background: T.surface, borderRadius: SHAPE.radiusSm, padding: "8px 10px", textAlign: "center" }}>
             <div style={{ fontSize: 16, fontWeight: 700, color }}>{value}</div>
             <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 2 }}>{label}</div>
           </div>
@@ -1653,7 +1654,7 @@ function FeedHealthCard({ T, user, feeds = [] }) {
           const statusColor = isFresh ? T.success : isStale ? T.warning : T.textTertiary;
           const statusLabel = age === null ? "Not loaded" : age < 1 ? "Just now" : age < 60 ? `${age}m ago` : `${Math.round(age/60)}h ago`;
           return (
-            <div key={feed.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, background: T.surface }}
+            <div key={feed.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: SHAPE.radiusSm, background: T.surface }}
               onMouseEnter={e => e.currentTarget.style.background = T.surface2}
               onMouseLeave={e => e.currentTarget.style.background = T.surface}
             >
@@ -1662,7 +1663,7 @@ function FeedHealthCard({ T, user, feeds = [] }) {
                 {feed.name || host}
               </span>
               {feed.fetch_full_content && (
-                <span style={{ fontSize: 9, background: T.accentSurface, color: T.accentText, padding: "1px 5px", borderRadius: 4, fontWeight: 600, flexShrink: 0 }}>Full</span>
+                <span style={{ fontSize: 9, background: T.accentSurface, color: T.accentText, padding: "1px 5px", borderRadius: SHAPE.radiusXs, fontWeight: 600, flexShrink: 0 }}>Full</span>
               )}
               {itemCount > 0 && (
                 <span style={{ fontSize: 10, color: T.textTertiary, flexShrink: 0 }}>{itemCount} items</span>
@@ -1672,7 +1673,7 @@ function FeedHealthCard({ T, user, feeds = [] }) {
                 onClick={() => handleRefreshFeed(feed)}
                 disabled={refreshing[feed.id]}
                 title="Force refresh"
-                style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 5, width: 22, height: 22, cursor: "pointer", color: T.textTertiary, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border-color .12s, color .12s" }}
+                style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusXs, width: 22, height: 22, cursor: "pointer", color: T.textTertiary, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border-color .12s, color .12s" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textTertiary; }}
               >
@@ -1743,12 +1744,12 @@ function DataPrivacyCard({ T, user }) {
       <div style={{ marginBottom:16 }}>
         <div style={{ fontSize:11, fontWeight:700, color:T.textTertiary, textTransform:"uppercase", letterSpacing:".06em", marginBottom:8 }}>Export your data</div>
         <p style={{ fontSize:12, color:T.textSecondary, margin:"0 0 10px", lineHeight:1.5 }}>Downloads a JSON file with all your history, saved articles, highlights, tags, and feed list.</p>
-        <button onClick={handleExportAll} disabled={exporting} style={{ background:T.accent, border:"none", borderRadius:9, padding:"9px 18px", cursor:"pointer", fontSize:13, fontWeight:600, color:T.accentText, fontFamily:"inherit", opacity:exporting?0.6:1 }}>
+        <button onClick={handleExportAll} disabled={exporting} style={{ background:T.accent, border:"none", borderRadius:SHAPE.radiusSm, padding:"9px 18px", cursor:"pointer", fontSize:13, fontWeight:600, color:T.accentText, fontFamily:"inherit", opacity:exporting?0.6:1 }}>
           {exporting ? "Exporting…" : "⬇ Download all data"}
         </button>
       </div>
 
-      {msg && <div style={{ fontSize:12, color:msg.startsWith("✓") ? T.success : T.danger, marginBottom:12, padding:"7px 12px", background:msg.startsWith("✓")?`${T.success}15`:`${T.danger}15`, borderRadius:8 }}>{msg}</div>}
+      {msg && <div style={{ fontSize:12, color:msg.startsWith("✓") ? T.success : T.danger, marginBottom:12, padding:"7px 12px", background:msg.startsWith("✓")?`${T.success}15`:`${T.danger}15`, borderRadius:SHAPE.radiusSm }}>{msg}</div>}
 
       {/* Delete account */}
       <div style={{ borderTop:`1px solid ${T.border}`, paddingTop:14 }}>
@@ -1756,12 +1757,12 @@ function DataPrivacyCard({ T, user }) {
         <p style={{ fontSize:12, color:T.textSecondary, margin:"0 0 10px", lineHeight:1.5 }}>This permanently deletes all your data and cannot be undone. Type <strong style={{color:T.text}}>delete my account</strong> to confirm.</p>
         <div style={{ display:"flex", gap:8 }}>
           <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder="delete my account" aria-label="Type 'delete my account' to confirm"
-            style={{ flex:1, background:T.surface, border:`1.5px solid ${T.border}`, borderRadius:9, padding:"8px 12px", fontSize:13, color:T.text, fontFamily:"inherit", outline:"none" }}
+            style={{ flex:1, background:T.surface, border:`1.5px solid ${T.border}`, borderRadius:SHAPE.radiusSm, padding:"8px 12px", fontSize:13, color:T.text, fontFamily:"inherit", outline:"none" }}
             onFocus={e => e.target.style.borderColor=T.danger}
             onBlur={e => e.target.style.borderColor=T.border}
           />
           <button onClick={handleDeleteAccount} disabled={deleteConfirm.toLowerCase() !== "delete my account" || deleting}
-            style={{ background: deleteConfirm.toLowerCase()==="delete my account" ? T.danger : T.surface2, border:"none", borderRadius:9, padding:"8px 16px", cursor:"pointer", fontSize:13, fontWeight:600, color: deleteConfirm.toLowerCase()==="delete my account" ? T.dangerText : T.textTertiary, fontFamily:"inherit", transition:"background .2s, color .2s", flexShrink:0 }}>
+            style={{ background: deleteConfirm.toLowerCase()==="delete my account" ? T.danger : T.surface2, border:"none", borderRadius:SHAPE.radiusSm, padding:"8px 16px", cursor:"pointer", fontSize:13, fontWeight:600, color: deleteConfirm.toLowerCase()==="delete my account" ? T.dangerText : T.textTertiary, fontFamily:"inherit", transition:"background .2s, color .2s", flexShrink:0 }}>
             {deleting ? "Deleting…" : "Delete"}
           </button>
         </div>
@@ -1772,8 +1773,8 @@ function DataPrivacyCard({ T, user }) {
 
 function Card({ title, children, T }) {
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: "16px 18px" }}>
-      <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".09em", color: T.textTertiary, marginBottom: 14 }}>{title}</div>
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, padding: "16px 18px" }}>
+      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: T.textTertiary, marginBottom: 14 }}>{title}</div>
       {children}
     </div>
   );
