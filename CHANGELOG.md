@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.487] — 2026-07-15 15:06
+
+- [UX] Theme map polish — your last-visited theme's node is highlighted on the map, and edges are now tappable (keyboard-accessible): tap the connection between two themes to preview the cards they share, then tap a card to open it in the spotlight browser.
+
+- [Feature] Theme map — the Zettelkasten "map of ideas". New Map/Grid toggle on the Cards page renders your themes as a connection graph: nodes sized by card count, edges weighted by how often themes co-occur on the same card, tap a node to open that theme. Powered by a zero-dependency deterministic force layout (`src/lib/graphLayout.js`, unit-tested incl. multi-word tags and layout determinism) — no d3, no bundle growth. Keyboard-accessible nodes.
+
 ## [1.46.486] — 2026-07-14 12:08
 
 - [Feature] Zettelkasten backlinks in theme lists — expanding a card now shows its Connected cards inline (up to 3, same connection engine), and tapping one opens the spotlight browser on that card for onward traversal. Computed only for the one expanded card, so long theme lists pay zero cost.

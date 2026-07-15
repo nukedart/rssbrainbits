@@ -7,6 +7,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { Spinner } from "../components/UI";
 import TagsInput from "../components/TagsInput";
+import ThemeGraph from "../components/ThemeGraph";
 import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags, deleteHighlight, getHighlightReviews } from "../lib/supabase";
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 import { askQuestion } from "../lib/fetchers";
@@ -52,6 +53,7 @@ export default function CardsPage() {
   const [editNote, setEditNote] = useState("");
   const [showNewCard, setShowNewCard] = useState(false);
   const [sortAZ, setSortAZ] = useState(false);
+  const [mapView, setMapView] = useState(false);
   const [filterQuery, setFilterQuery] = useState("");
   const [cardSearch, setCardSearch] = useState("");
   const [globalSearch, setGlobalSearch] = useState("");
@@ -60,6 +62,8 @@ export default function CardsPage() {
   const [chatAnswer, setChatAnswer] = useState(null);
   const [chatLoading, setChatLoading] = useState(false);
   const [shuffleHighlight, setShuffleHighlight] = useState(null);
+  const [lastTheme, setLastTheme] = useState(null);
+  const [edgePair, setEdgePair] = useState(null);
 
   const allExistingTags = useMemo(() =>
     [...new Set(highlights.flatMap(h => h.tags || []))].sort(),
@@ -78,6 +82,10 @@ export default function CardsPage() {
   const connectedCards = useMemo(() =>
     shuffleHighlight ? relatedHighlights(shuffleHighlight, highlights, 4) : [],
   [shuffleHighlight, highlights]);
+
+  const edgeCards = useMemo(() =>
+    edgePair ? highlights.filter(h => (h.tags || []).includes(edgePair.a) && (h.tags || []).includes(edgePair.b)) : [],
+  [edgePair, highlights]);
 
   const relatedThemes = useMemo(() =>
     (selectedTheme && selectedTheme !== "__untagged__") ? coOccurringTags(selectedTheme, highlights, 6) : [],
@@ -300,7 +308,7 @@ export default function CardsPage() {
                 {relatedThemes.map(({ tag, count }) => (
                   <button
                     key={tag}
-                    onClick={() => { setSelectedTheme(tag); setCardSearch(""); }}
+                    onClick={() => { setLastTheme(tag); setSelectedTheme(tag); setCardSearch(""); }}
                     style={{
                       display: "inline-flex", alignItems: "center",
                       padding: "3px 8px", borderRadius: 20,
@@ -358,7 +366,7 @@ export default function CardsPage() {
                   onEditSave={() => saveNote(h)}
                   onEditCancel={() => setEditingId(null)}
                   onUpdateTags={(tags) => updateTags(h, tags)}
-                  onTagClick={t => { setSelectedTheme(t); setCardSearch(""); }}
+                  onTagClick={t => { setLastTheme(t); setSelectedTheme(t); setCardSearch(""); }}
                   onDelete={() => handleDeleteCard(h.id)}
                   allHighlights={highlights}
                   onOpenCard={setShuffleHighlight}
@@ -719,6 +727,70 @@ export default function CardsPage() {
           </div>
         )}
 
+        {/* Shared-cards preview modal — theme graph edge click */}
+        {edgePair && (
+          <div
+            tabIndex={-1}
+            ref={el => el?.focus()}
+            onClick={e => { if (e.target === e.currentTarget) setEdgePair(null); }}
+            onKeyDown={e => { if (e.key === "Escape") setEdgePair(null); }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 800,
+              background: T.overlay,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 20, animation: "fadeIn .15s ease", outline: "none",
+            }}
+          >
+            <div role="dialog" aria-modal="true" aria-label={`Cards in ${edgePair.a} and ${edgePair.b}`} style={{
+              position: "relative", background: T.card, borderRadius: SHAPE.radiusCard,
+              border: `1px solid ${T.border}`, boxShadow: SHAPE.shadowFloat,
+              width: "100%", maxWidth: 480, padding: "24px",
+              display: "flex", flexDirection: "column", gap: 16,
+            }}>
+              <button
+                onClick={() => setEdgePair(null)}
+                aria-label="Close"
+                style={{
+                  position: "absolute", top: 16, right: 16,
+                  background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm,
+                  width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16,
+                  display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit",
+                }}
+              >×</button>
+
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", paddingRight: 24 }}>
+                cards in {edgePair.a} + {edgePair.b}
+              </div>
+
+              {edgeCards.length === 0 ? (
+                <div style={{ fontSize: 13, color: T.textTertiary }}>No shared cards.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {edgeCards.map(c => (
+                    <button
+                      key={c.id}
+                      onClick={() => { setEdgePair(null); setShuffleHighlight(c); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        background: "none", border: "none", cursor: "pointer",
+                        padding: "6px 8px", borderRadius: SHAPE.radiusSm,
+                        fontFamily: "inherit", textAlign: "left", width: "100%",
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+                      onMouseLeave={e => e.currentTarget.style.background = "none"}
+                    >
+                      <span style={{
+                        flex: 1, minWidth: 0, fontSize: 13, color: T.textSecondary,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      }}>{c.passage}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Global search results */}
         {globalResults && (
           <div>
@@ -747,7 +819,7 @@ export default function CardsPage() {
                       onEditSave={() => saveNote(h)}
                       onEditCancel={() => setEditingId(null)}
                       onUpdateTags={(tags) => updateTags(h, tags)}
-                      onTagClick={t => { setGlobalSearch(""); setSelectedTheme(t); setCardSearch(""); }}
+                      onTagClick={t => { setGlobalSearch(""); setLastTheme(t); setSelectedTheme(t); setCardSearch(""); }}
                       onDelete={() => handleDeleteCard(h.id)}
                     />
                   );
@@ -791,6 +863,18 @@ export default function CardsPage() {
                 whiteSpace: "nowrap",
               }}
             >{sortAZ ? "A→Z" : "By count"}</button>
+            <button
+              onClick={() => setMapView(v => !v)}
+              title={mapView ? "Switch to grid view" : "Switch to map view"}
+              aria-label={mapView ? "Switch to grid view" : "Switch to map view"}
+              aria-pressed={mapView}
+              style={{
+                background: mapView ? T.accentSurface : T.surface, border: `1px solid ${mapView ? T.accent : T.border}`,
+                borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", color: mapView ? T.accent : T.textSecondary,
+                fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s, border-color .12s",
+                whiteSpace: "nowrap",
+              }}
+            >{mapView ? "Grid" : "Map"}</button>
             {highlights.length > 0 && (
               <button
                 onClick={shuffleSpotlight}
@@ -823,7 +907,14 @@ export default function CardsPage() {
           </div>
         ) : !globalResults ? (
           <>
-            {/* Theme grid */}
+            {mapView ? (
+              <ThemeGraph
+                highlights={highlights}
+                activeTag={lastTheme}
+                onSelectTheme={tag => { setLastTheme(tag); setSelectedTheme(tag); setCardSearch(""); }}
+                onSelectEdge={(a, b) => setEdgePair({ a, b })}
+              />
+            ) : (
             <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? 160 : 200}px, 1fr))`, gap: isMobile ? 10 : 12 }}>
               {buckets.map(([theme, cards]) => {
                 const av = themeAvatar(theme);
@@ -831,7 +922,7 @@ export default function CardsPage() {
                 const sources = new Set(cards.map(c => c.article_url).filter(Boolean)).size;
                 const dueCount = cards.filter(c => dueSet.has(c.id)).length;
                 return (
-                  <button key={theme} onClick={() => setSelectedTheme(theme)} style={{
+                  <button key={theme} onClick={() => { setLastTheme(theme); setSelectedTheme(theme); }} style={{
                     background: T.card, border: `1px solid ${T.border}`,
                     borderRadius: SHAPE.radiusCard, padding: 0, overflow: "hidden",
                     cursor: "pointer", textAlign: "left", fontFamily: "inherit",
@@ -878,7 +969,7 @@ export default function CardsPage() {
 
               {/* Untagged tile */}
               {untagged.length > 0 && (
-                <button onClick={() => setSelectedTheme("__untagged__")} style={{
+                <button onClick={() => { setLastTheme("__untagged__"); setSelectedTheme("__untagged__"); }} style={{
                   background: T.card, border: `1px solid ${T.border}`,
                   borderRadius: SHAPE.radiusCard, padding: 0, overflow: "hidden",
                   cursor: "pointer", textAlign: "left", fontFamily: "inherit",
@@ -897,6 +988,7 @@ export default function CardsPage() {
                 </button>
               )}
             </div>
+            )}
           </>
         ) : null}
       </div>

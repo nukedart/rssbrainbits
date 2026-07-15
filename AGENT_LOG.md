@@ -532,3 +532,7 @@ User reported podcasts take a long time to start playing, confirmed the delay is
 | 2026-07-14 | v1.46.485 | Feature | Virtual Zettelkasten: zettel.js connection engine + 8 unit tests (Haiku-built), Connected cards traversal in spotlight, Related themes trail, synthesis nudge on Review | `src/lib/zettel.js`, `src/test/zettel.test.js`, `CardsPage.jsx:78,293,670`, `ReviewPage.jsx:496` | — |
 
 | 2026-07-14 | v1.46.486 | Feature | Backlinks: expanded cards in theme lists show Connected cards inline, tap-to-traverse via spotlight; computation gated to the single expanded card | `CardsPage.jsx:918-925,1030-1063,363` | — |
+
+| 2026-07-15 | v1.46.487 | Feature | Theme map: Map/Grid toggle on Cards, SVG graph of themes (nodes=card count, edges=co-occurrence), zero-dep seeded force layout + 8 tests; judge escalation fixed weak spring force + multi-word-tag separator in own spec | `src/lib/graphLayout.js`, `src/test/graphLayout.test.js`, `src/components/ThemeGraph.jsx`, `CardsPage.jsx:10,56,798,840` | — |
+
+| 2026-07-15 | v1.46.487 | UX | Theme map polish: activeTag node highlight, tappable edges with shared-cards preview modal (Escape pattern reused); judge extended lastTheme tracking to all navigation paths | `ThemeGraph.jsx:9,72`, `CardsPage.jsx:65,731,913` | — |
