@@ -536,3 +536,5 @@ User reported podcasts take a long time to start playing, confirmed the delay is
 | 2026-07-15 | v1.46.487 | Feature | Theme map: Map/Grid toggle on Cards, SVG graph of themes (nodes=card count, edges=co-occurrence), zero-dep seeded force layout + 8 tests; judge escalation fixed weak spring force + multi-word-tag separator in own spec | `src/lib/graphLayout.js`, `src/test/graphLayout.test.js`, `src/components/ThemeGraph.jsx`, `CardsPage.jsx:10,56,798,840` | — |
 
 | 2026-07-15 | v1.46.487 | UX | Theme map polish: activeTag node highlight, tappable edges with shared-cards preview modal (Escape pattern reused); judge extended lastTheme tracking to all navigation paths | `ThemeGraph.jsx:9,72`, `CardsPage.jsx:65,731,913` | — |
+
+| 2026-07-16 | v1.46.488 | Feature | Connected cards on Review: reuses zettel.js relatedHighlights() to show up to 3 related cards beneath tags on the revealed flashcard, read-only (no navigation, linear queue); orchestrator run — Sonnet worker built the diff, QA (Haiku) caught missing deps/changelog before deploy | `ReviewPage.jsx:8,198-201,524-554` | — |

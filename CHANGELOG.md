@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [Feature] Connected cards on Review — revealing a flashcard now surfaces up to 3 related cards (same connection engine as Cards/Theme Map: shared tags + shared source) as a read-only trail beneath the tags, extending the notecard traversal to the spaced-repetition flow. Rows are intentionally non-interactive — Review is a linear queue, so no navigation away mid-session.
+
 ## [1.46.487] — 2026-07-15 15:06
 
 - [UX] Theme map polish — your last-visited theme's node is highlighted on the map, and edges are now tappable (keyboard-accessible): tap the connection between two themes to preview the cards they share, then tap a card to open it in the spotlight browser.

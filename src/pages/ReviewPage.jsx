@@ -5,6 +5,7 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { getAllHighlights, getHighlightReviews, upsertHighlightReview, updateHighlightNote } from "../lib/supabase";
 import { Spinner } from "../components/UI";
 import { SHAPE } from "../lib/tokens";
+import { relatedHighlights } from "../lib/zettel";
 
 const MIN_EASE = 1.3;
 const MAX_EASE = 3.0;
@@ -194,6 +195,10 @@ export default function ReviewPage({ onDueCount }) {
     return allDue.slice(0, Math.min(sessionQuota, sessionSize));
   }, [allDue, sessionQuota, sessionSize]);
   const current = queue[queueIdx];
+  const connectedCards = useMemo(
+    () => current ? relatedHighlights(current, highlights, 3) : [],
+    [current?.id, highlights]
+  );
   const done    = !loading && sessionQuota !== null && queueIdx >= queue.length;
   const total   = queue.length;
   const progress = total > 0 ? queueIdx / total : (done ? 1 : 0);
@@ -514,6 +519,37 @@ export default function ReviewPage({ onDueCount }) {
                           fontWeight: 600, letterSpacing: ".03em",
                         }}>{t}</span>
                       ))}
+                    </div>
+                  )}
+                  {connectedCards.length > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>
+                        Connected cards
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        {connectedCards.map(c => (
+                          <div
+                            key={c.id}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 8,
+                              padding: "6px 8px", borderRadius: SHAPE.radiusSm,
+                            }}
+                          >
+                            <span style={{
+                              flex: 1, minWidth: 0, fontSize: 13, color: T.textSecondary,
+                              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                            }}>{c.passage}</span>
+                            {c.tags?.[0] && (
+                              <span style={{
+                                flexShrink: 0, display: "inline-flex", alignItems: "center",
+                                padding: "2px 7px", borderRadius: 20,
+                                background: T.accentSurface, color: T.accent,
+                                fontSize: 11, fontWeight: 500,
+                              }}>#{c.tags[0]}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
