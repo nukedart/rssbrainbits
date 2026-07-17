@@ -7,6 +7,8 @@ Format: `## [version] — YYYY-MM-DD`
 
 - [Feature] Connected cards on Review — revealing a flashcard now surfaces up to 3 related cards (same connection engine as Cards/Theme Map: shared tags + shared source) as a read-only trail beneath the tags, extending the notecard traversal to the spaced-repetition flow. Rows are intentionally non-interactive — Review is a linear queue, so no navigation away mid-session.
 
+- [UX] Reeder-style mobile menus, round 1. Article "···" menu now opens as a full-width bottom sheet on mobile instead of a small anchored dropdown (desktop unchanged). New "More" tab on the bottom nav pill opens a dedicated sheet for History/Stats/Settings, replacing the inline quick-nav row that used to live inside the Feeds drawer. Individual feed rows in the Feeds drawer now support swipe-left to reveal a "Mark read" action, reusing the existing mark-all-read handler already wired to desktop Sidebar.
+
 ## [1.46.487] — 2026-07-15 15:06
 
 - [UX] Theme map polish — your last-visited theme's node is highlighted on the map, and edges are now tappable (keyboard-accessible): tap the connection between two themes to preview the cards they share, then tap a card to open it in the spotlight browser.

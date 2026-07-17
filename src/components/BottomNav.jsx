@@ -34,6 +34,11 @@ const SavedIcon = ({ size, sw, filled }) => (
     <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
   </svg>
 );
+const MoreIcon = ({ size, sw }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="3.5" cy="8" r="1"/><circle cx="8" cy="8" r="1"/><circle cx="12.5" cy="8" r="1"/>
+  </svg>
+);
 
 function hexToRgba(hex, alpha) {
   const h = hex.replace("#", "");
@@ -50,6 +55,7 @@ const NAV_ITEMS = [
   { id: "readlater", Icon: SavedIcon,  label: "Saved"  },
   { id: "cards",     Icon: CardIcon,   label: "Cards"  },
   { id: "review",    Icon: ReviewIcon, label: "Review" },
+  { id: "more",      Icon: MoreIcon,   label: "More",   special: "more" },
 ];
 
 function CountBadge({ count, T }) {
@@ -77,6 +83,7 @@ export default function BottomNav({
   active,
   onNavigate,
   onOpenFeeds,
+  onOpenMore,
   unreadCount = 0,
   dueCount = 0,
 }) {
@@ -115,7 +122,7 @@ export default function BottomNav({
 
   const btnStyle = (isActive, isDisabled) => ({
     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-    padding: "8px 2px",
+    padding: "8px 1px",
     border: "none",
     background: "transparent",
     borderRadius: 8,
@@ -139,6 +146,26 @@ export default function BottomNav({
               key="feeds"
               onClick={onOpenFeeds}
               aria-label="Open feeds"
+              aria-current={isActive ? "page" : undefined}
+              style={btnStyle(isActive, false)}
+              onTouchStart={e => { e.currentTarget.style.opacity = "0.5"; }}
+              onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
+              onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
+            >
+              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 8px", transition: "background .14s" }}>
+                <Icon size={22} sw={isActive ? 1.7 : 1.3} />
+              </span>
+            </button>
+          );
+        }
+
+        if (special === "more") {
+          const isActive = active === "history" || active === "analytics" || active === "settings";
+          return (
+            <button
+              key="more"
+              onClick={onOpenMore}
+              aria-label="More"
               aria-current={isActive ? "page" : undefined}
               style={btnStyle(isActive, false)}
               onTouchStart={e => { e.currentTarget.style.opacity = "0.5"; }}

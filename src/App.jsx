@@ -35,6 +35,7 @@ const FolderModal    = lazy(() => import("./components/FolderModal"));
 const PodcastPlayer      = lazy(() => import("./components/PodcastPlayer"));
 const Onboarding         = lazy(() => import("./components/Onboarding"));
 const MobileFeedDrawer   = lazy(() => import("./components/MobileFeedDrawer"));
+const MoreMenuSheet      = lazy(() => import("./components/MoreMenuSheet"));
 
 // Fallback shown while a page chunk is downloading
 function PageSpinner({ T }) {
@@ -72,12 +73,14 @@ function AppShell() {
   const [feedErrorCount, setFeedErrorCount] = useState(0);
   const [feedUnreadCounts, setFeedUnreadCounts] = useState({});
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [edgeDx, setEdgeDx] = useState(0);
   const edgeTouchRef = useRef(null);
   useEffect(() => { identify(user); }, [user]);
 
   // ── Back button closes overlays instead of exiting the app ─────
   useBackButtonClose(mobileDrawerOpen, () => setMobileDrawerOpen(false));
+  useBackButtonClose(moreMenuOpen, () => setMoreMenuOpen(false));
   useBackButtonClose(!!editingSF, () => setEditingSF(null));
   useBackButtonClose(!!editingFolder, () => setEditingFolder(null));
   useBackButtonClose(!!podcastItem, () => setPodcastItem(null));
@@ -324,7 +327,7 @@ function AppShell() {
             </Suspense>
           </ErrorBoundary>
         </div>
-        {isMobile && <BottomNav active={page} onNavigate={navigateTo} unreadCount={unreadCount} dueCount={dueCount} onOpenFeeds={() => setMobileDrawerOpen(true)} />}
+        {isMobile && <BottomNav active={page} onNavigate={navigateTo} unreadCount={unreadCount} dueCount={dueCount} onOpenFeeds={() => setMobileDrawerOpen(true)} onOpenMore={() => setMoreMenuOpen(true)} />}
         {!isMobile && (
           <button onClick={handleGlobalAdd} title="Add source" aria-label="Add source" style={{
             position:"fixed", right:20, bottom:20, width:44, height:44, borderRadius:"50%",
@@ -382,7 +385,14 @@ function AppShell() {
             onAddFolder={() => { setEditingFolder("new"); setMobileDrawerOpen(false); }}
             onMoveFeedToFolder={handleMoveFeedToFolder}
             onAddSource={() => { handleGlobalAdd(); }}
+            onMarkAllRead={handleMarkFeedAllRead}
           />
+        </Suspense>
+      )}
+
+      {moreMenuOpen && (
+        <Suspense fallback={null}>
+          <MoreMenuSheet active={page} onNavigate={navigateTo} onClose={() => setMoreMenuOpen(false)} />
         </Suspense>
       )}
 

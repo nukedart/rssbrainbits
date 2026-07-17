@@ -624,6 +624,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             translating={translating}
             hasTranslation={!!translatedText}
             showTranslation={showTranslation}
+            isMobile={isMobile}
           />
         </div>
       </div>
@@ -1128,15 +1129,22 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
 
 
 // ── Overflow menu — secondary article actions ─────────────────
-function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setShowTags, showDrawer, setShowDrawer, handleShare, shareFeedback, handleExportHighlights, handleExportObsidian, exportFeedback, onTranslate, translating, hasTranslation, showTranslation }) {
+function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setShowTags, showDrawer, setShowDrawer, handleShare, shareFeedback, handleExportHighlights, handleExportObsidian, exportFeedback, onTranslate, translating, hasTranslation, showTranslation, isMobile }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || isMobile) return;
     const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
+  }, [open, isMobile]);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = e => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", h);
+    return () => document.removeEventListener("keydown", h);
   }, [open]);
 
   const menuItem = (label, action, accent = false) => (
@@ -1144,10 +1152,28 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
       key={label}
       role="menuitem"
       onClick={() => { action(); setOpen(false); }}
-      style={{ display:"flex", alignItems:"center", width:"100%", padding:"8px 16px", background:"none", border:"none", cursor:"pointer", fontSize:13, color: accent ? T.accent : T.text, fontFamily:"inherit", textAlign:"left", gap:8, transition:"background .1s" }}
+      style={{ display:"flex", alignItems:"center", width:"100%", padding: isMobile ? "12px 20px" : "8px 16px", minHeight: isMobile ? 44 : undefined, background:"none", border:"none", cursor:"pointer", fontSize:13, color: accent ? T.accent : T.text, fontFamily:"inherit", textAlign:"left", gap:8, transition:"background .1s" }}
       onMouseEnter={e => e.currentTarget.style.background=T.surface2}
       onMouseLeave={e => e.currentTarget.style.background="transparent"}
     >{label}</button>
+  );
+
+  const menuItems = (
+    <>
+      {item?.url && menuItem("Open in browser ↗", () => window.open(item.url, "_blank"))}
+      <div style={{ height:1, background:T.border, margin:"4px 0" }} />
+      {menuItem(showTags ? "Hide tags" : `Tags${tags.length > 0 ? ` (${tags.length})` : ""}`, () => setShowTags(v => !v))}
+      {!yt?.isYouTube && menuItem(`Highlights${highlights.length > 0 ? ` (${highlights.length})` : ""}`, () => setShowDrawer(true))}
+      {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback || "Copy highlights as MD", () => handleExportHighlights(false), true)}
+      {!yt?.isYouTube && highlights.length > 0 && menuItem("Download highlights .md", () => handleExportHighlights(true))}
+      {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback === "✓ Copied for Obsidian" ? exportFeedback : "Copy for Obsidian ⟦ ⟧", () => handleExportObsidian())}
+      {!yt?.isYouTube && content && (
+        <>
+          <div style={{ height:1, background:T.border, margin:"4px 0" }} />
+          {menuItem(translating ? "Translating…" : hasTranslation ? (showTranslation ? "Show original" : "Show translation") : "Translate to English", onTranslate)}
+        </>
+      )}
+    </>
   );
 
   return (
@@ -1160,22 +1186,39 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
         onMouseEnter={e => { if (!open) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
         onMouseLeave={e => { if (!open) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
       >···</button>
-      {open && (
+      {open && !isMobile && (
         <div role="menu" aria-label="Article options" style={{ position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:200, background:T.card, border:`1px solid ${T.border}`, borderRadius:SHAPE.radiusMd, boxShadow:SHAPE.shadowFloat, backdropFilter:SHAPE.blur, WebkitBackdropFilter:SHAPE.blur, minWidth:180, padding:"4px 0", animation:"fadeInScale .12s ease" }}>
-          {item?.url && menuItem("Open in browser ↗", () => window.open(item.url, "_blank"))}
-          <div style={{ height:1, background:T.border, margin:"4px 0" }} />
-          {menuItem(showTags ? "Hide tags" : `Tags${tags.length > 0 ? ` (${tags.length})` : ""}`, () => setShowTags(v => !v))}
-          {!yt?.isYouTube && menuItem(`Highlights${highlights.length > 0 ? ` (${highlights.length})` : ""}`, () => setShowDrawer(true))}
-          {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback || "Copy highlights as MD", () => handleExportHighlights(false), true)}
-          {!yt?.isYouTube && highlights.length > 0 && menuItem("Download highlights .md", () => handleExportHighlights(true))}
-          {!yt?.isYouTube && highlights.length > 0 && menuItem(exportFeedback === "✓ Copied for Obsidian" ? exportFeedback : "Copy for Obsidian ⟦ ⟧", () => handleExportObsidian())}
-          {!yt?.isYouTube && content && (
-            <>
-              <div style={{ height:1, background:T.border, margin:"4px 0" }} />
-              {menuItem(translating ? "Translating…" : hasTranslation ? (showTranslation ? "Show original" : "Show translation") : "Translate to English", onTranslate)}
-            </>
-          )}
+          {menuItems}
         </div>
+      )}
+      {open && isMobile && (
+        <>
+          <div
+            onClick={() => setOpen(false)}
+            style={{
+              position:"fixed", inset:0, zIndex:900,
+              background:"rgba(0,0,0,.45)",
+              backdropFilter:"blur(3px)",
+              WebkitBackdropFilter:"blur(3px)",
+              animation:"fadeIn .18s ease",
+            }}
+          />
+          <div role="menu" aria-label="Article options" style={{
+            position:"fixed", bottom:0, left:0, right:0, zIndex:901,
+            background:T.card,
+            borderTopLeftRadius: SHAPE.radiusCard,
+            borderTopRightRadius: SHAPE.radiusCard,
+            boxShadow: SHAPE.shadowFloatUp,
+            animation:"slideInUp .25s cubic-bezier(.22,.68,0,1.12)",
+            padding:"4px 0",
+            paddingBottom:"env(safe-area-inset-bottom, 4px)",
+          }}>
+            <div style={{ padding:"12px 0 8px", display:"flex", justifyContent:"center" }}>
+              <div style={{ width:40, height:4, borderRadius: SHAPE.radiusPill, background:T.surface2 }} />
+            </div>
+            {menuItems}
+          </div>
+        </>
       )}
     </div>
   );

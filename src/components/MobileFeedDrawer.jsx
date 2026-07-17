@@ -13,56 +13,111 @@ function feedDisplayName(feed) {
   return feed.name || (() => { try { return new URL(feed.url).hostname; } catch { return feed.url; } })();
 }
 
-const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, T }) {
+const FEED_SWIPE_THRESHOLD = 76;
+
+const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onMarkAllRead, T }) {
   const favicon = feedFavicon(feed.url);
   const isActive = active === `feed:${feed.id}`;
   const name = feedDisplayName(feed);
+  const rowRef = useRef(null);
+  const hintRef = useRef(null);
+  const touch = useRef(null);
+
+  function onTouchStart(e) {
+    touch.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, locked: false, dx: 0 };
+  }
+  function onTouchMove(e) {
+    const tc = touch.current;
+    if (!tc) return;
+    const dx = e.touches[0].clientX - tc.startX;
+    const dy = e.touches[0].clientY - tc.startY;
+    if (!tc.locked) {
+      if (Math.abs(dy) > Math.abs(dx) + 6) { touch.current = null; return; }
+      if (Math.abs(dx) > 6) tc.locked = true;
+    }
+    if (!tc.locked) return;
+    const clamped = Math.max(-FEED_SWIPE_THRESHOLD * 1.4, Math.min(0, dx));
+    tc.dx = clamped;
+    if (rowRef.current) rowRef.current.style.transform = `translateX(${clamped}px)`;
+    if (hintRef.current) {
+      const prog = Math.min(Math.abs(clamped) / FEED_SWIPE_THRESHOLD, 1);
+      hintRef.current.style.opacity = prog;
+      hintRef.current.style.display = Math.abs(clamped) > 8 ? "flex" : "none";
+    }
+  }
+  function onTouchEnd() {
+    const tc = touch.current;
+    touch.current = null;
+    if (tc && tc.locked && tc.dx < -FEED_SWIPE_THRESHOLD) onMarkAllRead?.(feed);
+    if (rowRef.current) {
+      rowRef.current.style.transition = "transform .18s ease";
+      rowRef.current.style.transform = "translateX(0)";
+      setTimeout(() => { if (rowRef.current) rowRef.current.style.transition = ""; }, 200);
+    }
+    if (hintRef.current) hintRef.current.style.display = "none";
+  }
+
   return (
-    <button
-      onClick={() => onNavigate(`feed:${feed.id}`)}
-      aria-label={name}
-      aria-current={isActive ? "page" : undefined}
-      style={{
-        display:"flex", alignItems:"center", gap:12,
-        padding:"10px 20px",
-        width:"100%", border:"none",
-        background: isActive ? T.accentSurface : "transparent",
-        borderRadius: SHAPE.radiusSm,
-        cursor:"pointer", fontFamily:"inherit", textAlign:"left",
-        WebkitTapHighlightColor:"transparent",
-        transition:"background .1s",
-      }}
-    >
-      {/* Large favicon — 36px rounded rect */}
-      <span style={{
-        width:36, height:36, flexShrink:0, borderRadius:8,
-        overflow:"hidden", background: T.surface2,
-        display:"flex", alignItems:"center", justifyContent:"center",
+    <div style={{ position:"relative", overflow:"hidden", borderRadius: SHAPE.radiusSm }}>
+      <div ref={hintRef} style={{
+        position:"absolute", inset:0, display:"none", alignItems:"center", justifyContent:"flex-end",
+        padding:"0 20px", pointerEvents:"none",
+        background:`${T.success}33`, borderRadius: SHAPE.radiusSm,
       }}>
-        {favicon
-          ? <img src={favicon} alt="" width={36} height={36} loading="lazy" decoding="async" style={{ borderRadius:8, display:"block" }} onError={e => { e.target.style.display="none"; }} />
-          : <span style={{ fontSize:15, fontWeight:700, color:T.textTertiary }}>{name[0]?.toUpperCase()}</span>
-        }
-      </span>
-      <span style={{
-        flex:1, fontSize:16,
-        overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
-        color: isActive ? T.accent : unread > 0 ? T.text : T.textSecondary,
-        fontWeight: unread > 0 ? 600 : 400, letterSpacing:"-.015em",
-      }}>{name}</span>
-      {unread > 0 && (
-        <span style={{ fontSize:13, fontWeight:600, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
-          {unread > 999 ? "999+" : unread}
+        <span style={{ fontSize:12, fontWeight:700, color:T.success }}>Mark read</span>
+      </div>
+      <button
+        ref={rowRef}
+        onClick={() => onNavigate(`feed:${feed.id}`)}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchEnd}
+        aria-label={name}
+        aria-current={isActive ? "page" : undefined}
+        style={{
+          display:"flex", alignItems:"center", gap:12,
+          padding:"10px 20px",
+          width:"100%", border:"none",
+          background: isActive ? T.accentSurface : "transparent",
+          borderRadius: SHAPE.radiusSm,
+          cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+          WebkitTapHighlightColor:"transparent",
+          transition:"background .1s",
+          touchAction:"pan-y",
+        }}
+      >
+        {/* Large favicon — 36px rounded rect */}
+        <span style={{
+          width:36, height:36, flexShrink:0, borderRadius:8,
+          overflow:"hidden", background: T.surface2,
+          display:"flex", alignItems:"center", justifyContent:"center",
+        }}>
+          {favicon
+            ? <img src={favicon} alt="" width={36} height={36} loading="lazy" decoding="async" style={{ borderRadius:8, display:"block" }} onError={e => { e.target.style.display="none"; }} />
+            : <span style={{ fontSize:15, fontWeight:700, color:T.textTertiary }}>{name[0]?.toUpperCase()}</span>
+          }
         </span>
-      )}
-    </button>
+        <span style={{
+          flex:1, fontSize:16,
+          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+          color: isActive ? T.accent : unread > 0 ? T.text : T.textSecondary,
+          fontWeight: unread > 0 ? 600 : 400, letterSpacing:"-.015em",
+        }}>{name}</span>
+        {unread > 0 && (
+          <span style={{ fontSize:13, fontWeight:600, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
+            {unread > 999 ? "999+" : unread}
+          </span>
+        )}
+      </button>
+    </div>
   );
 }, (prev, next) =>
   (prev.active === `feed:${prev.feed.id}`) === (next.active === `feed:${next.feed.id}`) &&
   prev.unread === next.unread && prev.feed === next.feed && prev.T === next.T
 );
 
-function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, expanded, onToggle, T }) {
+function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, onMarkAllRead, expanded, onToggle, T }) {
   const dot = FCOLS[folder.color] || "#8A9099";
   const folderUnread = folderFeeds.reduce((sum, f) => sum + (feedUnreadCounts[f.id] || 0), 0);
   const isActive = active === `folder:${folder.id}`;
@@ -104,7 +159,7 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
       </div>
       {expanded && folderFeeds.map(feed => (
         <div key={feed.id} style={{ paddingLeft: 16 }}>
-          <FeedRow feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} T={T} />
+          <FeedRow feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} onMarkAllRead={onMarkAllRead} T={T} />
         </div>
       ))}
     </div>
@@ -132,7 +187,7 @@ export default function MobileFeedDrawer({
   smartFeeds = [], onAddSmartFeed, onEditSmartFeed,
   folders = [], feeds = [],
   onAddFolder, onMoveFeedToFolder,
-  onAddSource,
+  onAddSource, onMarkAllRead,
 }) {
   const { T } = useTheme();
   const [expandedFolders, setExpandedFolders] = useState(() => new Set());
@@ -293,32 +348,6 @@ export default function MobileFeedDrawer({
           </svg>
         </button>
 
-        {/* Quick-nav: pages not in the bottom pill */}
-        <div style={{ display:"flex", gap:8, padding:"0 16px 12px", flexShrink:0 }}>
-          {[
-            { id:"history",   label:"History"  },
-            { id:"analytics", label:"Stats"    },
-            { id:"settings",  label:"Settings" },
-          ].map(({ id, label }) => {
-            const isActive = active === id;
-            return (
-              <button key={id} onClick={() => navigate(id)}
-                aria-current={isActive ? "page" : undefined}
-                style={{
-                flex:1, padding:"9px 0", borderRadius: SHAPE.radiusSm,
-                background: isActive ? T.accentSurface : T.surface,
-                border:`1px solid ${isActive ? T.accent+"44" : T.border}`,
-                color: isActive ? T.accent : T.textSecondary,
-                fontSize:13, fontWeight: isActive ? 700 : 500,
-                cursor:"pointer", fontFamily:"inherit",
-                WebkitTapHighlightColor:"transparent",
-              }}>
-                {label}
-              </button>
-            );
-          })}
-        </div>
-
         {/* Feed tree — scrollable */}
         <div style={{ flex:1, overflowY:"auto", minHeight:0, borderTop:`1px solid ${T.border}` }}>
           {(folders.length > 0 || feeds.length > 0) && (
@@ -335,6 +364,7 @@ export default function MobileFeedDrawer({
                 feedUnreadCounts={feedUnreadCounts}
                 active={active}
                 onNavigate={navigate}
+                onMarkAllRead={onMarkAllRead}
                 expanded={expandedFolders.has(folder.id)}
                 onToggle={toggleFolder}
                 T={T}
@@ -343,7 +373,7 @@ export default function MobileFeedDrawer({
           })}
 
           {uncategorized.map(feed => (
-            <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={navigate} T={T} />
+            <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={navigate} onMarkAllRead={onMarkAllRead} T={T} />
           ))}
 
           <>
