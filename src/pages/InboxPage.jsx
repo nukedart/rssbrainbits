@@ -395,7 +395,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     let items = activeSource === "all" ? allItems : allItems.filter((i) => i.feedId === activeSource);
     if (filterMode === "today") {
       const yesterday = Date.now() - 86400000;
-      items = items.filter((i) => i.date && new Date(i.date) > yesterday);
+      items = items.filter((i) => i._ts > yesterday);
     }
     if (filterMode === "unread") {
       items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
@@ -419,7 +419,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     if (filterMode === "catch-up") {
       const sevenDaysAgo = Date.now() - 7 * 86400000;
-      items = items.filter((i) => i.date && new Date(i.date).getTime() < sevenDaysAgo && !sessionFilterUrlsRef.current.has(i.url));
+      items = items.filter((i) => i._ts < sevenDaysAgo && !sessionFilterUrlsRef.current.has(i.url));
     }
     if (filterMode !== "unread" && readFilter === "unread") items = items.filter((i) => !sessionFilterUrlsRef.current.has(i.url));
     if (filterMode !== "unread" && readFilter === "read")   items = items.filter((i) =>  sessionFilterUrlsRef.current.has(i.url));
@@ -447,10 +447,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       return items.sort((a, b) => {
         const sd = scoreItem(b) - scoreItem(a);
         if (sd !== 0) return sd;
-        return (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0);
+        return (b._ts || 0) - (a._ts || 0);
       });
     }
-    return items.sort((a, b) => (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0));
+    return items.sort((a, b) => (b._ts || 0) - (a._ts || 0));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allItems, savedItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, liveSearch, readFilter, mutedKeywords, smartSort, interestKeywords]);
 
@@ -652,10 +652,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       const data = await fetchRSSFeed(feed.url, { forceRefresh: true });
       const items = data.items.map(item => ({
         ...item, feedId: feed.id, source: feed.name || data.title, type: "rss",
+        _ts: new Date(item.date || 0).getTime(),
       }));
       setAllItems(prev => {
         const filtered = prev.filter(i => i.feedId !== feed.id);
-        return [...filtered, ...items].sort((a,b) => new Date(b.date)-new Date(a.date));
+        return [...filtered, ...items].sort((a,b) => b._ts - a._ts);
       });
     } catch (err) {
       setFeedErrors(prev => ({ ...prev, [feed.id]: err.message || "Failed to load" }));

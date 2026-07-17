@@ -9,6 +9,10 @@ Format: `## [version] — YYYY-MM-DD`
 
 - [UX] Reeder-style mobile menus, round 1. Article "···" menu now opens as a full-width bottom sheet on mobile instead of a small anchored dropdown (desktop unchanged). New "More" tab on the bottom nav pill opens a dedicated sheet for History/Stats/Settings, replacing the inline quick-nav row that used to live inside the Feeds drawer. Individual feed rows in the Feeds drawer now support swipe-left to reveal a "Mark read" action, reusing the existing mark-all-read handler already wired to desktop Sidebar.
 
+- [Fix] Crash screen now respects your actual theme. `ErrorBoundary`'s fallback palette compared against capitalized theme names ("Light", "Distilled") that never matched the real lowercase values in storage, so every crash rendered dark regardless of theme — Light/Cream/Sepia readers saw a jarring dark error screen. Now correctly maps all 6 themes (Nocturne, Distilled, Light, Cream, Ink, Sepia) from the real token values.
+
+- [Perf] Inbox filtering/sorting no longer re-parses article dates on every keystroke. The "today"/"catch-up" filters and both sort comparators in `InboxPage`'s item list were calling `new Date(...)` per item on every recompute even though a precomputed timestamp (`_ts`) already existed on each item — switched to reading `_ts` directly. Also fixed a related gap where retrying a single failed feed built new items without `_ts`, which would have sunk those items to the bottom of the list and hidden them from date-filtered views.
+
 ## [1.46.487] — 2026-07-15 15:06
 
 - [UX] Theme map polish — your last-visited theme's node is highlighted on the map, and edges are now tappable (keyboard-accessible): tap the connection between two themes to preview the cards they share, then tap a card to open it in the spotlight browser.

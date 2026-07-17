@@ -1,6 +1,6 @@
 import { Component } from "react";
 import { useTheme } from "../hooks/useTheme";
-import { SHAPE } from "../lib/tokens";
+import { SHAPE, NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA } from "../lib/tokens";
 
 export function Card({ children, style = {}, onClick }) {
   const { T } = useTheme();
@@ -112,12 +112,16 @@ export class ErrorBoundary extends Component {
   render() {
     if (!this.state.hasError) return this.props.children;
     const reload = () => { this.setState({ hasError: false, error: null }); window.location.reload(); };
-    const t = localStorage.getItem("fb-theme") || "Nocturne";
-    const EB = t === "Light"
-      ? { bg: "#f4f2ee", text: "#1a1a1a", muted: "#6b7280", accent: "#4f6f52", accentText: "#ffffff" }
-      : t === "Distilled"
-      ? { bg: "#131315", text: "#e4e2e4", muted: "#8a8a9a", accent: "#aac7ff", accentText: "#003064" }
-      : { bg: "#121416", text: "#f1f1f1", muted: "#c2c8bf", accent: "#accfae", accentText: "#03210b" };
+    const t = localStorage.getItem("fb-theme") || "nocturne";
+    const themeMap = {
+      nocturne: { bg: NOCTURNE.bg, text: NOCTURNE.text, muted: NOCTURNE.textSecondary, accent: NOCTURNE.accent, accentText: NOCTURNE.accentText },
+      distilled: { bg: DISTILLED.bg, text: DISTILLED.text, muted: DISTILLED.textSecondary, accent: DISTILLED.accent, accentText: DISTILLED.accentText },
+      light: { bg: LIGHT.bg, text: LIGHT.text, muted: LIGHT.textSecondary, accent: LIGHT.accent, accentText: LIGHT.accentText },
+      cream: { bg: CREAM.bg, text: CREAM.text, muted: CREAM.textSecondary, accent: CREAM.accent, accentText: CREAM.accentText },
+      ink: { bg: INK.bg, text: INK.text, muted: INK.textSecondary, accent: INK.accent, accentText: INK.accentText },
+      sepia: { bg: SEPIA.bg, text: SEPIA.text, muted: SEPIA.textSecondary, accent: SEPIA.accent, accentText: SEPIA.accentText },
+    };
+    const EB = themeMap[t] || themeMap.nocturne;
     return (
       <div style={{
         flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
