@@ -3,7 +3,7 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
-## [Unreleased]
+## [1.46.488] — 2026-07-17 12:12
 
 - [Feature] Connected cards on Review — revealing a flashcard now surfaces up to 3 related cards (same connection engine as Cards/Theme Map: shared tags + shared source) as a read-only trail beneath the tags, extending the notecard traversal to the spaced-repetition flow. Rows are intentionally non-interactive — Review is a linear queue, so no navigation away mid-session.
 
