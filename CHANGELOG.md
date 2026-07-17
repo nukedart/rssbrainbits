@@ -5,6 +5,10 @@ Format: `## [version] — YYYY-MM-DD`
 
 ## [Unreleased]
 
+- [Fix] Article reader's "Aa" font-preferences panel and the desktop "···" menu were sometimes invisible — both were absolutely-positioned inside the header's auto-hide wrapper, which clips anything taller than the collapsed header via `overflow:hidden`. Both now position themselves against the viewport directly, so they always render fully regardless of header state.
+- [UX] Reading line-width now scales in `ch` (character) units instead of fixed pixels, so line length stays in the ~60-85 character comfort range regardless of font size — previously, larger font sizes silently narrowed the effective line length.
+- [UX] Article body now renders real paragraphs (with proper spacing) instead of one flat text block, matching the paragraph rhythm already used in the translated-text view — makes longer articles noticeably easier to scan, across plain, bionic-reading, and highlighted text.
+
 - [Feature] Connected cards on Review — revealing a flashcard now surfaces up to 3 related cards (same connection engine as Cards/Theme Map: shared tags + shared source) as a read-only trail beneath the tags, extending the notecard traversal to the spaced-repetition flow. Rows are intentionally non-interactive — Review is a linear queue, so no navigation away mid-session.
 
 - [UX] Reeder-style mobile menus, round 1. Article "···" menu now opens as a full-width bottom sheet on mobile instead of a small anchored dropdown (desktop unchanged). New "More" tab on the bottom nav pill opens a dedicated sheet for History/Stats/Settings, replacing the inline quick-nav row that used to live inside the Feeds drawer. Individual feed rows in the Feeds drawer now support swipe-left to reveal a "Mark read" action, reusing the existing mark-all-read handler already wired to desktop Sidebar.

@@ -78,6 +78,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   // Reader preferences
   const [readerPrefs, setReaderPrefsState] = useState(() => getReaderPrefs());
   const [showReaderControls, setShowReaderControls] = useState(false);
+  const aaAnchorRef = useRef(null);
+  const [aaMenuPos, setAaMenuPos] = useState(null);
   const [retryKey, setRetryKey] = useState(0);
   const [exportFeedback, setExportFeedback]   = useState(null);
   const [imgFeedback, setImgFeedback]         = useState(null);
@@ -511,14 +513,21 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           {/* Aa — font controls (compact dropdown) */}
           {!yt.isYouTube && content && (
             <div style={{ position: "relative" }}>
-              <button onClick={() => setShowReaderControls(v => !v)} title="Reading preferences" aria-label="Reading preferences" aria-expanded={showReaderControls}
+              <button ref={aaAnchorRef} onClick={() => setShowReaderControls(v => {
+                  const next = !v;
+                  if (next && aaAnchorRef.current) {
+                    const rect = aaAnchorRef.current.getBoundingClientRect();
+                    setAaMenuPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+                  }
+                  return next;
+                })} title="Reading preferences" aria-label="Reading preferences" aria-expanded={showReaderControls}
                 style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s" }}
                 onMouseEnter={e => { if (!showReaderControls) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
                 onMouseLeave={e => { if (!showReaderControls) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
               >Aa</button>
               {showReaderControls && (
                 <div style={{
-                  position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 300,
+                  position: "fixed", right: aaMenuPos?.right ?? 0, top: aaMenuPos?.top ?? 0, zIndex: 300,
                   background: T.card, border: `1px solid ${T.border}`,
                   borderRadius: SHAPE.radiusMd, boxShadow: SHAPE.shadowFloat, backdropFilter: SHAPE.blur, WebkitBackdropFilter: SHAPE.blur,
                   padding: "14px 16px", minWidth: 220,
@@ -895,10 +904,15 @@ function classifyArticleError(msg = "") {
 function HighlightedText({ text, highlights, onClickHighlight, bionic = false }) {
   const hasHighlights = highlights && highlights.length > 0;
 
-  const tokens = useMemo(() => {
-    if (!text || !bionic || hasHighlights) return null;
-    return text.split(/(\s+)/);
-  }, [text, bionic, hasHighlights]);
+  const paragraphs = useMemo(() => {
+    if (!text || hasHighlights) return null;
+    return text.split(/\n\n+/).filter(Boolean);
+  }, [text, hasHighlights]);
+
+  const bionicParagraphs = useMemo(() => {
+    if (!paragraphs || !bionic) return null;
+    return paragraphs.map((para) => para.split(/(\s+)/));
+  }, [paragraphs, bionic]);
 
   const segments = useMemo(() => {
     if (!text || !hasHighlights) return null;
@@ -920,6 +934,22 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
     return segs;
   }, [text, highlights, hasHighlights]);
 
+  // Group segments into paragraphs, splitting any segment whose content
+  // straddles a "\n\n" boundary so the break lands in the right place while
+  // keeping highlight attribution on both resulting pieces.
+  const paragraphGroups = useMemo(() => {
+    if (!segments) return null;
+    const groups = [[]];
+    segments.forEach((seg) => {
+      const parts = seg.content.split(/\n\n+/);
+      parts.forEach((part, idx) => {
+        if (idx > 0) groups.push([]);
+        if (part) groups[groups.length - 1].push({ ...seg, content: part });
+      });
+    });
+    return groups.filter((g) => g.length > 0);
+  }, [segments]);
+
   if (!text) return null;
 
   function BionicSpan({ word }) {
@@ -928,17 +958,21 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
   }
 
   if (!hasHighlights) {
-    if (!bionic) return <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>;
-    return (
-      <span style={{ whiteSpace: "pre-wrap" }}>
+    if (!bionic) {
+      return paragraphs.map((para, pi) => (
+        <p key={pi} style={{ margin: "0 0 1.4em", whiteSpace: "pre-wrap" }}>{para}</p>
+      ));
+    }
+    return bionicParagraphs.map((tokens, pi) => (
+      <p key={pi} style={{ margin: "0 0 1.4em", whiteSpace: "pre-wrap" }}>
         {tokens.map((t, i) => /\S/.test(t) ? <BionicSpan key={i} word={t} /> : t)}
-      </span>
-    );
+      </p>
+    ));
   }
 
-  return (
-    <span style={{ whiteSpace: "pre-wrap" }}>
-      {(segments || []).map((seg, i) => {
+  return (paragraphGroups || []).map((group, pi) => (
+    <p key={pi} style={{ margin: "0 0 1.4em", whiteSpace: "pre-wrap" }}>
+      {group.map((seg, i) => {
         if (seg.type === "text") return <span key={i}>{seg.content}</span>;
         const colorDef = HIGHLIGHT_COLORS.find((c) => c.id === seg.highlight.color) || HIGHLIGHT_COLORS[0];
         return (
@@ -957,8 +991,8 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
           >{seg.content}</mark>
         );
       })}
-    </span>
-  );
+    </p>
+  ));
 }
 
 // ── SummaryBlock ──────────────────────────────────────────────
@@ -1132,6 +1166,8 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
 function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setShowTags, showDrawer, setShowDrawer, handleShare, shareFeedback, handleExportHighlights, handleExportObsidian, exportFeedback, onTranslate, translating, hasTranslation, showTranslation, isMobile }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const btnRef = useRef(null);
+  const [menuPos, setMenuPos] = useState(null);
 
   useEffect(() => {
     if (!open || isMobile) return;
@@ -1178,7 +1214,14 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
 
   return (
     <div ref={ref} style={{ position:"relative", flexShrink:0 }}>
-      <button onClick={() => setOpen(v => !v)}
+      <button ref={btnRef} onClick={() => setOpen(v => {
+          const next = !v;
+          if (next && btnRef.current) {
+            const rect = btnRef.current.getBoundingClientRect();
+            setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+          }
+          return next;
+        })}
         aria-label="More options"
         aria-expanded={open}
         aria-haspopup="menu"
@@ -1187,7 +1230,7 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
         onMouseLeave={e => { if (!open) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
       >···</button>
       {open && !isMobile && (
-        <div role="menu" aria-label="Article options" style={{ position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:200, background:T.card, border:`1px solid ${T.border}`, borderRadius:SHAPE.radiusMd, boxShadow:SHAPE.shadowFloat, backdropFilter:SHAPE.blur, WebkitBackdropFilter:SHAPE.blur, minWidth:180, padding:"4px 0", animation:"fadeInScale .12s ease" }}>
+        <div role="menu" aria-label="Article options" style={{ position:"fixed", right: menuPos?.right ?? 0, top: menuPos?.top ?? 0, zIndex:200, background:T.card, border:`1px solid ${T.border}`, borderRadius:SHAPE.radiusMd, boxShadow:SHAPE.shadowFloat, backdropFilter:SHAPE.blur, WebkitBackdropFilter:SHAPE.blur, minWidth:180, padding:"4px 0", animation:"fadeInScale .12s ease" }}>
           {menuItems}
         </div>
       )}
