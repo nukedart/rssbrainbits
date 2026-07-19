@@ -27,6 +27,7 @@ const ReadLaterPage  = lazy(() => import("./pages/ReadLaterPage"));
 const SettingsPage   = lazy(() => lazySecondary().then(m => ({ default: m.SettingsPage })));
 const StatsPage      = lazy(() => lazySecondary().then(m => ({ default: m.StatsPage })));
 const ManageFeedsPage = lazy(() => lazySecondary().then(m => ({ default: m.ManageFeedsPage })));
+const HistoryPage = lazy(() => lazySecondary().then(m => ({ default: m.HistoryPage })));
 
 // ── Lazy modals/overlays — only load when first opened ────────
 const PWAInstallBanner = lazy(() => import("./components/PWAInstallBanner"));
@@ -249,6 +250,7 @@ function AppShell() {
       case "today":        return <TodayPage feeds={feeds} onNavigate={navigateTo} feedUnreadCounts={feedUnreadCounts} unreadCount={unreadCount} />;
       case "readlater":    return <ReadLaterPage />;
       case "stats":        return <StatsPage />;
+      case "history":      return <HistoryPage />;
       case "notes":        return <CardsPage />; // redirect legacy notes links to Cards
       case "review":       return <ReviewPage onDueCount={setDueCount} />;
       case "cards":        return <CardsPage />;

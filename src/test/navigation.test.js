@@ -8,14 +8,16 @@ import { describe, it, expect } from "vitest";
 // All valid page identifiers the app can route to.
 // Update this list if you add or rename a page.
 export const VALID_PAGES = [
-  "home",
   "inbox",
-  "saved",
+  "readlater",
   "history",
   "settings",
   "analytics",
   "notes",
   "today",
+  "cards",
+  "review",
+  "stats",
   "manage-feeds",
 ];
 
@@ -24,8 +26,7 @@ describe("navigation page registry", () => {
 
   it("contains core reading pages", () => {
     expect(VALID_PAGES).toContain("inbox");
-    expect(VALID_PAGES).toContain("saved");
-    expect(VALID_PAGES).toContain("home");
+    expect(VALID_PAGES).toContain("readlater");
   });
 
   it("contains utility pages", () => {

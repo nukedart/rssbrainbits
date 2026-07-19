@@ -586,6 +586,13 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
           active={active} onNavigate={onNavigate} collapsed={collapsed} T={T}
         />
 
+        {/* History */}
+        <NavItem
+          id="history" Icon={Icons.History} label="History"
+          badge={0}
+          active={active} onNavigate={onNavigate} collapsed={collapsed} T={T}
+        />
+
         {/* Light / Dark quick toggle — collapsed sidebar */}
         {collapsed && (
           <div style={{ display:"flex", gap:3, marginTop:6, justifyContent:"center" }}>

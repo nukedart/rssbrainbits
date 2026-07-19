@@ -6,6 +6,8 @@ Format: `## [version] — YYYY-MM-DD`
 ## [Unreleased]
 
 - [UX] Reeder-style swipe polish. Article-row swipes (mark read / save) now give a light haptic tap the instant the swipe crosses its action threshold, not just on a button press. Feed rows in the Feeds drawer now support swipe-right to unsubscribe (with a confirm guard), alongside the existing swipe-left to mark all read — both directions now give the same threshold haptic.
+- [Fix] History is now reachable — a fully-built History page existed but had no route; "History" in the mobile More menu silently showed the Inbox instead, and desktop had no way to reach it at all. Both are now wired up.
+- [Fix] Removed a stray duplicate lockfile and three orphaned files with zero references anywhere in the app: two leftovers from the article-level-notes feature removed in an earlier release, and a legacy Home page superseded by Today.
 
 ## [1.46.490] — 2026-07-19 18:15
 
