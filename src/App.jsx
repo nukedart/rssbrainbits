@@ -386,6 +386,7 @@ function AppShell() {
             onMoveFeedToFolder={handleMoveFeedToFolder}
             onAddSource={() => { handleGlobalAdd(); }}
             onMarkAllRead={handleMarkFeedAllRead}
+            onUnsubscribeFeed={async (feedId) => { await deleteFeed(feedId); handleFeedDeleted(feedId); }}
           />
         </Suspense>
       )}

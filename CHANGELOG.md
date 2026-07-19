@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [UX] Reeder-style swipe polish. Article-row swipes (mark read / save) now give a light haptic tap the instant the swipe crosses its action threshold, not just on a button press. Feed rows in the Feeds drawer now support swipe-right to unsubscribe (with a confirm guard), alongside the existing swipe-left to mark all read — both directions now give the same threshold haptic.
+
 ## [1.46.490] — 2026-07-19 18:15
 
 - [Feature] "Add a source" now finds feeds from a bare website name, not just a full URL — typing `nytimes.com` (no `https://`) now triggers the same feed auto-discovery as pasting the full address, instead of silently failing. Also added an inline hint when discovery genuinely finds no feed, instead of leaving the input with no feedback at all.

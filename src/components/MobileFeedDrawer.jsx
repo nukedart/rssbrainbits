@@ -14,17 +14,19 @@ function feedDisplayName(feed) {
 }
 
 const FEED_SWIPE_THRESHOLD = 76;
+const haptic = (ms = 8) => { try { navigator.vibrate?.(ms); } catch {} };
 
-const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onMarkAllRead, T }) {
+const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onMarkAllRead, onUnsubscribeFeed, T }) {
   const favicon = feedFavicon(feed.url);
   const isActive = active === `feed:${feed.id}`;
   const name = feedDisplayName(feed);
   const rowRef = useRef(null);
   const hintRef = useRef(null);
+  const hintLabelRef = useRef(null);
   const touch = useRef(null);
 
   function onTouchStart(e) {
-    touch.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, locked: false, dx: 0 };
+    touch.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, locked: false, dx: 0, committed: false };
   }
   function onTouchMove(e) {
     const tc = touch.current;
@@ -36,19 +38,30 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onMark
       if (Math.abs(dx) > 6) tc.locked = true;
     }
     if (!tc.locked) return;
-    const clamped = Math.max(-FEED_SWIPE_THRESHOLD * 1.4, Math.min(0, dx));
+    const clamped = Math.max(-FEED_SWIPE_THRESHOLD * 1.4, Math.min(FEED_SWIPE_THRESHOLD * 1.4, dx));
     tc.dx = clamped;
+    if (Math.abs(clamped) > FEED_SWIPE_THRESHOLD && !tc.committed) { tc.committed = true; haptic(); }
+    else if (Math.abs(clamped) <= FEED_SWIPE_THRESHOLD) { tc.committed = false; }
     if (rowRef.current) rowRef.current.style.transform = `translateX(${clamped}px)`;
     if (hintRef.current) {
       const prog = Math.min(Math.abs(clamped) / FEED_SWIPE_THRESHOLD, 1);
       hintRef.current.style.opacity = prog;
       hintRef.current.style.display = Math.abs(clamped) > 8 ? "flex" : "none";
+      hintRef.current.style.justifyContent = clamped < 0 ? "flex-end" : "flex-start";
+      hintRef.current.style.background = clamped < 0 ? `${T.success}33` : `${T.danger}33`;
+      if (hintLabelRef.current) {
+        hintLabelRef.current.textContent = clamped < 0 ? "Mark read" : "Unsubscribe";
+        hintLabelRef.current.style.color = clamped < 0 ? T.success : T.danger;
+      }
     }
   }
   function onTouchEnd() {
     const tc = touch.current;
     touch.current = null;
     if (tc && tc.locked && tc.dx < -FEED_SWIPE_THRESHOLD) onMarkAllRead?.(feed);
+    if (tc && tc.locked && tc.dx > FEED_SWIPE_THRESHOLD) {
+      if (window.confirm(`Unsubscribe from "${name}"?`)) onUnsubscribeFeed?.(feed.id);
+    }
     if (rowRef.current) {
       rowRef.current.style.transition = "transform .18s ease";
       rowRef.current.style.transform = "translateX(0)";
@@ -64,7 +77,7 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onMark
         padding:"0 20px", pointerEvents:"none",
         background:`${T.success}33`, borderRadius: SHAPE.radiusSm,
       }}>
-        <span style={{ fontSize:12, fontWeight:700, color:T.success }}>Mark read</span>
+        <span ref={hintLabelRef} style={{ fontSize:12, fontWeight:700, color:T.success }}>Mark read</span>
       </div>
       <button
         ref={rowRef}
@@ -117,7 +130,7 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onMark
   prev.unread === next.unread && prev.feed === next.feed && prev.T === next.T
 );
 
-function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, onMarkAllRead, expanded, onToggle, T }) {
+function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, onMarkAllRead, onUnsubscribeFeed, expanded, onToggle, T }) {
   const dot = FCOLS[folder.color] || "#8A9099";
   const folderUnread = folderFeeds.reduce((sum, f) => sum + (feedUnreadCounts[f.id] || 0), 0);
   const isActive = active === `folder:${folder.id}`;
@@ -159,7 +172,7 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
       </div>
       {expanded && folderFeeds.map(feed => (
         <div key={feed.id} style={{ paddingLeft: 16 }}>
-          <FeedRow feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} onMarkAllRead={onMarkAllRead} T={T} />
+          <FeedRow feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} onMarkAllRead={onMarkAllRead} onUnsubscribeFeed={onUnsubscribeFeed} T={T} />
         </div>
       ))}
     </div>
@@ -187,7 +200,7 @@ export default function MobileFeedDrawer({
   smartFeeds = [], onAddSmartFeed, onEditSmartFeed,
   folders = [], feeds = [],
   onAddFolder, onMoveFeedToFolder,
-  onAddSource, onMarkAllRead,
+  onAddSource, onMarkAllRead, onUnsubscribeFeed,
 }) {
   const { T } = useTheme();
   const [expandedFolders, setExpandedFolders] = useState(() => new Set());
@@ -365,6 +378,7 @@ export default function MobileFeedDrawer({
                 active={active}
                 onNavigate={navigate}
                 onMarkAllRead={onMarkAllRead}
+                onUnsubscribeFeed={onUnsubscribeFeed}
                 expanded={expandedFolders.has(folder.id)}
                 onToggle={toggleFolder}
                 T={T}
@@ -373,7 +387,7 @@ export default function MobileFeedDrawer({
           })}
 
           {uncategorized.map(feed => (
-            <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={navigate} onMarkAllRead={onMarkAllRead} T={T} />
+            <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={navigate} onMarkAllRead={onMarkAllRead} onUnsubscribeFeed={onUnsubscribeFeed} T={T} />
           ))}
 
           <>

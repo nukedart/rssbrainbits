@@ -165,6 +165,7 @@ function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile, dism
     touch.current = null;
     if (!tc || !tc.locked) return;
     if (tc.dx > THRESHOLD) {
+      haptic();
       if (dismissOnRead && rowRef.current) {
         // Fly off to the right, then call onMarkRead after animation
         rowRef.current.style.transition = "transform .22s ease-in, opacity .22s ease-in";
@@ -176,6 +177,7 @@ function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile, dism
       }
       onMarkRead?.();
     } else if (tc.dx < -THRESHOLD) {
+      haptic();
       onReadLater?.();
     }
     if (rowRef.current) { rowRef.current.style.transform = "translateX(0)"; rowRef.current.style.transition = "transform .18s ease"; setTimeout(() => { if (rowRef.current) rowRef.current.style.transition = ""; }, 200); }
