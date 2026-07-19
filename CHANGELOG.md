@@ -3,6 +3,15 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.489] — 2026-07-19 02:47
+
+### Changes since v1.46.488
+- Add bulk operations to Cards (select, bulk delete, bulk tag)
+- Debounce Inbox search and stop unrelated save/unsave refilters
+- Fix hidden reader menus and rework article formatting for readability
+
+---
+
 ## [1.46.488] — 2026-07-17 12:12
 
 - [Fix] Article reader's "Aa" font-preferences panel and the desktop "···" menu were sometimes invisible — both were absolutely-positioned inside the header's auto-hide wrapper, which clips anything taller than the collapsed header via `overflow:hidden`. Both now position themselves against the viewport directly, so they always render fully regardless of header state.
