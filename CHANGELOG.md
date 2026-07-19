@@ -3,7 +3,7 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
-## [Unreleased]
+## [1.46.491] — 2026-07-19 19:04
 
 - [UX] Reeder-style swipe polish. Article-row swipes (mark read / save) now give a light haptic tap the instant the swipe crosses its action threshold, not just on a button press. Feed rows in the Feeds drawer now support swipe-right to unsubscribe (with a confirm guard), alongside the existing swipe-left to mark all read — both directions now give the same threshold haptic.
 - [Fix] History is now reachable — a fully-built History page existed but had no route; "History" in the mobile More menu silently showed the Inbox instead, and desktop had no way to reach it at all. Both are now wired up.
