@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [Feature] "Add a source" now finds feeds from a bare website name, not just a full URL — typing `nytimes.com` (no `https://`) now triggers the same feed auto-discovery as pasting the full address, instead of silently failing. Also added an inline hint when discovery genuinely finds no feed, instead of leaving the input with no feedback at all.
+
 ## [1.46.489] — 2026-07-19 02:47
 
 ### Changes since v1.46.488

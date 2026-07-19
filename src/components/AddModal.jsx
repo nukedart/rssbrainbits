@@ -13,6 +13,11 @@ const TYPE_INFO = {
   twitter: { label: "X / Twitter Feed"  },
 };
 
+function normalizeUrlInput(v) {
+  if (/^https?:\/\//i.test(v)) return v;
+  return `https://${v}`;
+}
+
 const DISCOVER_FEEDS = {
   "Tech": [
     { name: "Hacker News",       url: "https://news.ycombinator.com/rss",               desc: "Tech & startup discussions" },
@@ -58,6 +63,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
   const [discovered, setDiscovered]   = useState(null);
   const [error, setError]             = useState("");
   const [showDiscover, setShowDiscover] = useState(false);
+  const [discoverFailed, setDiscoverFailed] = useState(false);
   const discoverTimerRef = useRef(null);
 
   // Podcast search tab state
@@ -98,7 +104,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
   }
 
   function handleUrlChange(val) {
-    setUrl(val); setError(""); setDiscovered(null);
+    setUrl(val); setError(""); setDiscovered(null); setDiscoverFailed(false);
     clearTimeout(discoverTimerRef.current);
 
     const trimmed = val.trim();
@@ -109,22 +115,24 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
       setDetected("twitter"); return;
     }
 
+    const normalized = normalizeUrlInput(trimmed);
     try {
-      new URL(trimmed);
-      const type = detectInputType(trimmed);
-      const displayType = (type === "podcast" && isSpotifyPodcastUrl(trimmed)) ? "spotify" : type;
+      new URL(normalized);
+      const type = detectInputType(normalized);
+      const displayType = (type === "podcast" && isSpotifyPodcastUrl(normalized)) ? "spotify" : type;
       setDetected(displayType);
       if (type === "article" || type === "podcast") {
-        if (type === "podcast" && isRSSUrl(trimmed)) {
+        if (type === "podcast" && isRSSUrl(normalized)) {
           setDetected("rss"); return;
         }
         setDiscovering(true);
         discoverTimerRef.current = setTimeout(() => {
-          const resolver = type === "podcast" ? resolvePodcastFeedUrl(trimmed) : discoverFeed(trimmed);
+          const resolver = type === "podcast" ? resolvePodcastFeedUrl(normalized) : discoverFeed(normalized);
           resolver.then(result => {
             setDiscovered(result);
             if (result) setDetected("rss");
-          }).catch(() => {}).finally(() => setDiscovering(false));
+            else setDiscoverFailed(true);
+          }).catch(() => setDiscoverFailed(true)).finally(() => setDiscovering(false));
         }, 600);
       }
     } catch { setDetected(null); }
@@ -137,7 +145,8 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
     try {
       const xParsed = parseXUrl(trimmed);
       const isX = xParsed.isX || trimmed.startsWith("@");
-      let finalUrl = discovered?.feedUrl || trimmed;
+      const normalizedTrimmed = normalizeUrlInput(trimmed);
+      let finalUrl = discovered?.feedUrl || normalizedTrimmed;
       let finalName = feedName.trim() || discovered?.title || null;
 
       if (isX) {
@@ -146,8 +155,8 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
         finalName = finalName || `@${username}`;
       }
 
-      if ((detected === "podcast" || detected === "spotify") && finalUrl === trimmed && !isRSSUrl(trimmed)) {
-        const resolved = await resolvePodcastFeedUrl(trimmed).catch(() => null);
+      if ((detected === "podcast" || detected === "spotify") && finalUrl === normalizedTrimmed && !isRSSUrl(normalizedTrimmed)) {
+        const resolved = await resolvePodcastFeedUrl(normalizedTrimmed).catch(() => null);
         if (resolved?.feedUrl) {
           finalUrl = resolved.feedUrl;
           finalName = finalName || resolved.title || null;
@@ -384,6 +393,13 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
             </div>
           )}
 
+          {/* Discovery failed hint */}
+          {!discovering && discoverFailed && (
+            <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 8, lineHeight: 1.5 }}>
+              No feed found automatically — you can still paste the direct feed URL below
+            </div>
+          )}
+
           {/* Nickname */}
           {(detected === "rss" || detected === "podcast" || detected === "twitter" || detected === "youtube") && (
             <div style={{ marginTop: 10 }}>
@@ -417,7 +433,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
             {detected === "article" && onSaveForLater && (
               <Button variant="secondary" onClick={async () => {
                 setLoading(true); setError("");
-                try { await onSaveForLater({ url: url.trim(), type: "article" }); onClose(); }
+                try { await onSaveForLater({ url: normalizeUrlInput(url.trim()), type: "article" }); onClose(); }
                 catch (err) { setError(err.message || "Failed to save."); }
                 finally { setLoading(false); }
               }} disabled={!url.trim() || loading} style={{ flex: 1, justifyContent: "center" }}>
