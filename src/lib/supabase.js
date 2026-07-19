@@ -157,6 +157,11 @@ export async function deleteHighlight(highlightId) {
   if (error) throw error;
 }
 
+export async function deleteHighlights(ids) {
+  const { error } = await supabase.from("highlights").delete().in("id", ids);
+  if (error) throw error;
+}
+
 // ── Article Tags ──────────────────────────────────────────────
 export async function getArticleTags(userId, articleUrl) {
   const { data, error } = await supabase

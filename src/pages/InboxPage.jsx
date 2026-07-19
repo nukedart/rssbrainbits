@@ -372,26 +372,37 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     return () => clearInterval(timer);
   }, [feeds]);
 
+  // Debounced search term — avoids re-running the full filter/sort pipeline on every keystroke.
+  // liveSearch itself still updates instantly (for the input binding and other UI bits below).
+  const [debouncedSearch, setDebouncedSearch] = useState(liveSearch);
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(liveSearch), 150);
+    return () => clearTimeout(t);
+  }, [liveSearch]);
+
   // ── Filtered + sorted item list ───────────────────────────────
-  const baseItems = useMemo(() => {
-    // Saved filter: use Supabase data directly — no waiting for RSS feeds
-    if (readFilter === "saved") {
-      const rssMap = new Map(allItems.map(i => [i.url, i]));
-      let items = savedItems.map(s => rssMap.get(s.url) || {
-        url: s.url, title: s.title, source: s.source,
-        description: s.summary, image: s.image || null,
-        date: s.saved_at, feedId: null,
-      });
-      if (liveSearch.trim().length > 1) {
-        const q = liveSearch.toLowerCase();
-        items = items.filter(i =>
-          (i.title||"").toLowerCase().includes(q) ||
-          (i.description||"").toLowerCase().includes(q) ||
-          (i.source||"").toLowerCase().includes(q)
-        );
-      }
-      return items;
+  // Saved filter: use Supabase data directly — no waiting for RSS feeds.
+  // Split into its own memo so saving/unsaving (savedItems changes) never
+  // forces the (unrelated) main filter/sort pipeline below to recompute.
+  const savedBaseItems = useMemo(() => {
+    const rssMap = new Map(allItems.map(i => [i.url, i]));
+    let items = savedItems.map(s => rssMap.get(s.url) || {
+      url: s.url, title: s.title, source: s.source,
+      description: s.summary, image: s.image || null,
+      date: s.saved_at, feedId: null,
+    });
+    if (debouncedSearch.trim().length > 1) {
+      const q = debouncedSearch.toLowerCase();
+      items = items.filter(i =>
+        (i.title||"").toLowerCase().includes(q) ||
+        (i.description||"").toLowerCase().includes(q) ||
+        (i.source||"").toLowerCase().includes(q)
+      );
     }
+    return items;
+  }, [allItems, savedItems, debouncedSearch]);
+
+  const mainBaseItems = useMemo(() => {
     let items = activeSource === "all" ? allItems : allItems.filter((i) => i.feedId === activeSource);
     if (filterMode === "today") {
       const yesterday = Date.now() - 86400000;
@@ -430,8 +441,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         return !muteTerms.some(term => haystack.includes(term));
       });
     }
-    if (liveSearch.trim().length > 1) {
-      const q = liveSearch.toLowerCase();
+    if (debouncedSearch.trim().length > 1) {
+      const q = debouncedSearch.toLowerCase();
       items = items.filter(i =>
         (i.title||"").toLowerCase().includes(q) ||
         (i.description||"").toLowerCase().includes(q) ||
@@ -452,7 +463,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
     return items.sort((a, b) => (b._ts || 0) - (a._ts || 0));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allItems, savedItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, liveSearch, readFilter, mutedKeywords, smartSort, interestKeywords]);
+  }, [allItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, debouncedSearch, readFilter, mutedKeywords, smartSort, interestKeywords]);
+
+  // Single downstream item list: route to whichever memo actually applies for the
+  // current view, so every existing baseItems call site below is unaffected.
+  const baseItems = readFilter === "saved" ? savedBaseItems : mainBaseItems;
 
   // ── Feed → folder color map (for per-feed colored dots in list rows) ────────
   const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };

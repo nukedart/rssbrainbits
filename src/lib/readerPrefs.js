@@ -30,7 +30,7 @@ export function applyReaderPrefs(prefs) {
   const root = document.documentElement;
   root.style.setProperty("--reader-font-size",   p.fontSize + "px");
   root.style.setProperty("--reader-line-width",
-    p.lineWidth === "narrow" ? "540px" : p.lineWidth === "wide" ? "800px" : "690px"
+    p.lineWidth === "narrow" ? "60ch" : p.lineWidth === "wide" ? "85ch" : "70ch"
   );
   root.style.setProperty("--reader-font-family",
     p.fontFamily === "sans"

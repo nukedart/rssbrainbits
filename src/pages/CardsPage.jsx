@@ -8,7 +8,7 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { Spinner } from "../components/UI";
 import TagsInput from "../components/TagsInput";
 import ThemeGraph from "../components/ThemeGraph";
-import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags, deleteHighlight, getHighlightReviews } from "../lib/supabase";
+import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags, deleteHighlight, deleteHighlights, getHighlightReviews } from "../lib/supabase";
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 import { askQuestion } from "../lib/fetchers";
 import { SHAPE } from "../lib/tokens";
@@ -64,6 +64,8 @@ export default function CardsPage() {
   const [shuffleHighlight, setShuffleHighlight] = useState(null);
   const [lastTheme, setLastTheme] = useState(null);
   const [edgePair, setEdgePair] = useState(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const allExistingTags = useMemo(() =>
     [...new Set(highlights.flatMap(h => h.tags || []))].sort(),
@@ -106,6 +108,43 @@ export default function CardsPage() {
   async function handleDeleteCard(id) {
     setHighlights(prev => prev.filter(x => x.id !== id));
     try { await deleteHighlight(id); } catch {}
+  }
+
+  function toggleSelectCard(id) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }
+
+  async function handleBulkDelete() {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Delete ${selectedIds.size} card${selectedIds.size !== 1 ? "s" : ""}?`)) return;
+    const ids = [...selectedIds];
+    setHighlights(prev => prev.filter(x => !selectedIds.has(x.id)));
+    exitSelectMode();
+    try { await deleteHighlights(ids); } catch {}
+  }
+
+  async function handleBulkAddTag() {
+    if (selectedIds.size === 0) return;
+    const tag = window.prompt("Tag name")?.trim();
+    if (!tag) return;
+    const updates = highlights
+      .filter(h => selectedIds.has(h.id))
+      .map(h => ({ id: h.id, tags: [...new Set([...(h.tags || []), tag])] }));
+    setHighlights(prev => prev.map(x => {
+      const u = updates.find(u => u.id === x.id);
+      return u ? { ...x, tags: u.tags } : x;
+    }));
+    exitSelectMode();
+    try { await Promise.all(updates.map(u => updateHighlightTags(u.id, u.tags))); } catch {}
   }
 
   function shuffleSpotlight() {
@@ -275,26 +314,40 @@ export default function CardsPage() {
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg>
               Cards
             </button>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {av && (
-                <div style={{
-                  width: 38, height: 38, borderRadius: 11, flexShrink: 0,
-                  background: av.color + "18", border: `1.5px solid ${av.color}44`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 16, fontWeight: 700, color: av.color,
-                }}>
-                  {av.letter}
-                </div>
-              )}
-              <div>
-                <div style={{ fontSize: isMobile ? 20 : 22, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>
-                  {themeLabel}
-                </div>
-                <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 1 }}>
-                  {allCards.length} card{allCards.length !== 1 ? "s" : ""}
-                  {cardSearch && cards.length !== allCards.length ? ` · ${cards.length} matching` : ""}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                {av && (
+                  <div style={{
+                    width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+                    background: av.color + "18", border: `1.5px solid ${av.color}44`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 16, fontWeight: 700, color: av.color,
+                  }}>
+                    {av.letter}
+                  </div>
+                )}
+                <div>
+                  <div style={{ fontSize: isMobile ? 20 : 22, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>
+                    {themeLabel}
+                  </div>
+                  <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 1 }}>
+                    {allCards.length} card{allCards.length !== 1 ? "s" : ""}
+                    {cardSearch && cards.length !== allCards.length ? ` · ${cards.length} matching` : ""}
+                  </div>
                 </div>
               </div>
+              {allCards.length > 0 && (
+                <button
+                  onClick={() => { if (selectMode) exitSelectMode(); else { setEditingId(null); setSelectMode(true); } }}
+                  style={{
+                    flexShrink: 0, background: selectMode ? T.accentSurface : "transparent",
+                    color: selectMode ? T.accent : T.textTertiary,
+                    border: `1px solid ${selectMode ? T.accent : T.border}`,
+                    borderRadius: SHAPE.radiusSm, padding: "6px 12px", cursor: "pointer",
+                    fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+                  }}
+                >{selectMode ? "Done" : "Select"}</button>
+              )}
             </div>
           </div>
 
@@ -370,6 +423,9 @@ export default function CardsPage() {
                   onDelete={() => handleDeleteCard(h.id)}
                   allHighlights={highlights}
                   onOpenCard={setShuffleHighlight}
+                  selectMode={selectMode}
+                  isSelected={selectedIds.has(h.id)}
+                  onToggleSelect={() => toggleSelectCard(h.id)}
                 />
               );
             })}
@@ -428,6 +484,42 @@ export default function CardsPage() {
             </div>
           )}
         </div>
+
+        {/* Bulk select action bar */}
+        {selectMode && (
+          <div style={{
+            position: "fixed", bottom: isMobile ? 56 : 0, left: 0, right: 0, zIndex: 500,
+            background: T.card, borderTop: `1px solid ${T.border}`,
+            boxShadow: "0 -2px 16px rgba(0,0,0,.12)",
+            display: "flex", alignItems: "center", gap: 8,
+            padding: `12px 16px calc(12px + env(safe-area-inset-bottom, 0px))`,
+          }}>
+            <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: T.text }}>
+              {selectedIds.size} selected
+            </span>
+            <button onClick={handleBulkAddTag} disabled={selectedIds.size === 0} style={{
+              background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
+              padding: "7px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+              color: T.text, fontFamily: "inherit", transition: "background .1s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = T.surface2; }}
+              onMouseLeave={e => { e.currentTarget.style.background = T.surface; }}
+            >Add tag</button>
+            <button onClick={handleBulkDelete} disabled={selectedIds.size === 0} style={{
+              background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
+              padding: "7px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+              color: T.danger, fontFamily: "inherit", transition: "background .1s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = T.surface2; }}
+              onMouseLeave={e => { e.currentTarget.style.background = T.surface; }}
+            >Delete</button>
+            <button onClick={exitSelectMode} style={{
+              background: T.accentSurface, border: `1px solid ${T.accent}`, borderRadius: 8,
+              padding: "7px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+              color: T.accent, fontFamily: "inherit",
+            }}>Cancel</button>
+          </div>
+        )}
       </div>
     );
   }
@@ -1007,7 +1099,7 @@ function reviewChip(entry, T) {
 }
 
 // ── Card item component ───────────────────────────────────────
-function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T, onEditStart, onEditChange, onEditSave, onEditCancel, onUpdateTags, onTagClick, onDelete, allHighlights, onOpenCard }) {
+function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T, onEditStart, onEditChange, onEditSave, onEditCancel, onUpdateTags, onTagClick, onDelete, allHighlights, onOpenCard, selectMode = false, isSelected = false, onToggleSelect }) {
   const [hovered, setHovered] = useState(false);
   const chip = reviewChip(reviewEntry, T);
   const isImg = (h.passage || "").startsWith("[IMAGE]: ");
@@ -1021,20 +1113,38 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClickCapture={selectMode ? (e) => { e.preventDefault(); e.stopPropagation(); onToggleSelect && onToggleSelect(); } : undefined}
       style={{
         background: T.card, borderRadius: SHAPE.radiusMd,
         border: `1px solid ${isEditing ? T.accent : hovered ? T.borderStrong || col.border + "55" : T.border}`,
         overflow: "hidden", transition: "border-color .15s",
-        position: "relative",
+        position: "relative", cursor: selectMode ? "pointer" : "default",
       }}
     >
       {/* Passage — tinted with highlight color, left accent border */}
       <div style={{
         padding: "18px 20px 16px",
+        paddingLeft: selectMode ? 46 : 20,
         background: col.bg + "55",
         borderLeft: `3px solid ${col.border}`,
         position: "relative",
       }}>
+        {selectMode && (
+          <div aria-hidden="true" style={{
+            position: "absolute", top: 14, left: 14, zIndex: 2,
+            width: 20, height: 20, borderRadius: 6,
+            border: `1.5px solid ${isSelected ? T.accent : T.border}`,
+            background: isSelected ? T.accent : T.surface,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "background .12s, border-color .12s",
+          }}>
+            {isSelected && (
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke={T.accentText} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 8.5l3.5 3.5L13 4"/>
+              </svg>
+            )}
+          </div>
+        )}
         {isImg ? (
           <img src={imgUrl} alt="Saved image" loading="lazy"
             style={{ width: "100%", borderRadius: 8, maxHeight: 220, objectFit: "cover", display: "block", marginBottom: 4 }}
@@ -1112,14 +1222,17 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
           </div>
         )}
 
-        {/* Tags */}
-        <TagsInput
-          tags={h.tags || []}
-          onAdd={tag => onUpdateTags([...new Set([...(h.tags || []), tag])])}
-          onRemove={tag => onUpdateTags((h.tags || []).filter(t => t !== tag))}
-          allTags={allExistingTags}
-          onTagClick={onTagClick}
-        />
+        {/* Tags — hidden in select mode: bulk tagging goes through the bottom bar instead,
+            and TagsInput's own keydown/focus handling isn't blocked by onClickCapture. */}
+        {!selectMode && (
+          <TagsInput
+            tags={h.tags || []}
+            onAdd={tag => onUpdateTags([...new Set([...(h.tags || []), tag])])}
+            onRemove={tag => onUpdateTags((h.tags || []).filter(t => t !== tag))}
+            allTags={allExistingTags}
+            onTagClick={onTagClick}
+          />
+        )}
 
         {/* Connected cards — only when expanded */}
         {isEditing && connectedCards.length > 0 && (

@@ -2,7 +2,7 @@
 /* ── Reader preference CSS variables ────────────────────────── */
 :root {
   --reader-font-size:   19px;
-  --reader-line-width:  680px;
+  --reader-line-width:  70ch;
   --reader-font-family: ui-serif, Georgia, 'Times New Roman', serif;
 }
 
