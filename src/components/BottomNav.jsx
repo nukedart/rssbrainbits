@@ -155,6 +155,7 @@ export default function BottomNav({
               <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 8px", transition: "background .14s" }}>
                 <Icon size={22} sw={isActive ? 1.7 : 1.3} />
               </span>
+              <span style={{ fontSize: 9, fontWeight: 600, marginTop: 2, whiteSpace: "nowrap" }}>{label}</span>
             </button>
           );
         }
@@ -175,6 +176,7 @@ export default function BottomNav({
               <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 8px", transition: "background .14s" }}>
                 <Icon size={22} sw={isActive ? 1.7 : 1.3} />
               </span>
+              <span style={{ fontSize: 9, fontWeight: 600, marginTop: 2, whiteSpace: "nowrap" }}>{label}</span>
             </button>
           );
         }
@@ -202,6 +204,7 @@ export default function BottomNav({
                 <CountBadge count={dueCount} T={T} />
               )}
             </span>
+            <span style={{ fontSize: 9, fontWeight: 600, marginTop: 2, whiteSpace: "nowrap" }}>{label}</span>
           </button>
         );
       })}

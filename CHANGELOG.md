@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [UX] Mobile bottom nav now shows a small text label under each icon (Feeds, Inbox, Today, Saved, Cards, Review, More), matching the standard native tab bar convention — previously icon-only. Kept the existing floating blurred-pill treatment; verified at a 320px viewport that all 7 labels fit without clipping or wrapping.
+
 ## [1.46.491] — 2026-07-19 19:04
 
 - [UX] Reeder-style swipe polish. Article-row swipes (mark read / save) now give a light haptic tap the instant the swipe crosses its action threshold, not just on a button press. Feed rows in the Feeds drawer now support swipe-right to unsubscribe (with a confirm guard), alongside the existing swipe-left to mark all read — both directions now give the same threshold haptic.
