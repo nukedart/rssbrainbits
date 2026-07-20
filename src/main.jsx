@@ -20,7 +20,17 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 // ── Register Service Worker ───────────────────────────────────
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch((err) => {
+    navigator.serviceWorker.register("/sw.js").then(async (reg) => {
+      // Periodic background sync — Chromium-only, installed-PWA-only; silently unavailable elsewhere
+      try {
+        if ("periodicSync" in reg) {
+          const status = await navigator.permissions.query({ name: "periodic-background-sync" });
+          if (status.state === "granted") {
+            await reg.periodicSync.register("feedbox-periodic", { minInterval: 6 * 60 * 60 * 1000 });
+          }
+        }
+      } catch {}
+    }).catch((err) => {
       console.warn("SW registration failed:", err);
     });
   });
