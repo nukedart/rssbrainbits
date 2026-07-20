@@ -714,6 +714,48 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               {["5", "10", "20", "50"].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: T.text }}>Swipe right</div>
+              <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Action when swiping an article right</div>
+            </div>
+            <select
+              defaultValue={localStorage.getItem("fb-swipe-right") || "markread"}
+              onChange={e => localStorage.setItem("fb-swipe-right", e.target.value)}
+              aria-label="Swipe right action"
+              style={{
+                fontSize: 13, padding: "5px 10px", borderRadius: SHAPE.radiusSm,
+                border: `1px solid ${T.border}`, background: T.surface,
+                color: T.text, fontFamily: "inherit", cursor: "pointer",
+              }}
+            >
+              <option value="markread">Mark read</option>
+              <option value="readlater">Save for later</option>
+              <option value="save">Bookmark</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: T.text }}>Swipe left</div>
+              <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Action when swiping an article left</div>
+            </div>
+            <select
+              defaultValue={localStorage.getItem("fb-swipe-left") || "readlater"}
+              onChange={e => localStorage.setItem("fb-swipe-left", e.target.value)}
+              aria-label="Swipe left action"
+              style={{
+                fontSize: 13, padding: "5px 10px", borderRadius: SHAPE.radiusSm,
+                border: `1px solid ${T.border}`, background: T.surface,
+                color: T.text, fontFamily: "inherit", cursor: "pointer",
+              }}
+            >
+              <option value="markread">Mark read</option>
+              <option value="readlater">Save for later</option>
+              <option value="save">Bookmark</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
         </Card>
 
         {/* Muted Keywords */}

@@ -118,14 +118,34 @@ function ActionBtn({ icon, title, onClick, T, color }) {
 }
 
 // ── Swipe wrapper — right = mark read/unread, left = save for later ──────────
-function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile, dismissOnRead }) {
+function getSwipeAction(direction, fallback) {
+  const v = localStorage.getItem(`fb-swipe-${direction}`);
+  return v === "markread" || v === "readlater" || v === "save" || v === "off" ? v : fallback;
+}
+
+function SwipeRow({ children, onMarkRead, onReadLater, onSave, isRead, T, isMobile, dismissOnRead }) {
   const rowRef  = useRef(null);
   const hintRef = useRef(null);
   const touch   = useRef(null);
   const THRESHOLD = 72;
+  const [rightAction] = useState(() => getSwipeAction("right", "markread"));
+  const [leftAction]  = useState(() => getSwipeAction("left", "readlater"));
 
   if (!isMobile) {
     return typeof children === "function" ? children({ swiped: false, close: () => {} }) : children;
+  }
+
+  function fire(action) {
+    if (action === "markread") onMarkRead?.();
+    else if (action === "readlater") onReadLater?.();
+    else if (action === "save") onSave?.();
+  }
+
+  function hintFor(action) {
+    if (action === "markread") return { label: isRead ? "Unread" : "Read", color: T.success };
+    if (action === "readlater") return { label: "Save", color: T.amber?.text || "#F59E0B" };
+    if (action === "save") return { label: "Bookmark", color: T.accent };
+    return null;
   }
 
   function onTouchStart(e) {
@@ -142,20 +162,27 @@ function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile, dism
       if (Math.abs(dx) > 6) tc.locked = true;
     }
     if (!tc.locked) return;
-    const clamped = Math.max(-THRESHOLD * 1.4, Math.min(THRESHOLD * 1.4, dx));
+    let clamped = Math.max(-THRESHOLD * 1.4, Math.min(THRESHOLD * 1.4, dx));
+    if (clamped > 0 && rightAction === "off") clamped = 0;
+    if (clamped < 0 && leftAction === "off") clamped = 0;
     tc.dx = clamped;
     if (rowRef.current) rowRef.current.style.transform = `translateX(${clamped * 0.6}px)`;
     const prog = Math.min(Math.abs(clamped) / THRESHOLD, 1);
     if (hintRef.current) {
       const hint = hintRef.current;
-      hint.style.opacity = prog;
-      hint.style.display = Math.abs(clamped) > 8 ? "flex" : "none";
-      hint.style.background = clamped > 0 ? `${T.success}33` : `${T.amber?.text || "#F59E0B"}33`;
-      hint.style.justifyContent = clamped > 0 ? "flex-start" : "flex-end";
-      const lbl = hint.querySelector("span");
-      if (lbl) {
-        lbl.textContent = clamped > 0 ? (isRead ? "Unread" : "Read") : "Save";
-        lbl.style.color = clamped > 0 ? T.success : (T.amber?.text || "#F59E0B");
+      const hintInfo = clamped > 0 ? hintFor(rightAction) : clamped < 0 ? hintFor(leftAction) : null;
+      if (!hintInfo) {
+        hint.style.display = "none";
+      } else {
+        hint.style.opacity = prog;
+        hint.style.display = Math.abs(clamped) > 8 ? "flex" : "none";
+        hint.style.background = `${hintInfo.color}33`;
+        hint.style.justifyContent = clamped > 0 ? "flex-start" : "flex-end";
+        const lbl = hint.querySelector("span");
+        if (lbl) {
+          lbl.textContent = hintInfo.label;
+          lbl.style.color = hintInfo.color;
+        }
       }
     }
   }
@@ -165,20 +192,21 @@ function SwipeRow({ children, onMarkRead, onReadLater, isRead, T, isMobile, dism
     touch.current = null;
     if (!tc || !tc.locked) return;
     if (tc.dx > THRESHOLD) {
+      const action = rightAction;
       haptic();
-      if (dismissOnRead && rowRef.current) {
-        // Fly off to the right, then call onMarkRead after animation
+      if (dismissOnRead && action === "markread" && rowRef.current) {
+        // Fly off to the right, then fire the action after animation
         rowRef.current.style.transition = "transform .22s ease-in, opacity .22s ease-in";
         rowRef.current.style.transform = "translateX(110vw)";
         rowRef.current.style.opacity = "0";
         if (hintRef.current) hintRef.current.style.display = "none";
-        setTimeout(() => onMarkRead?.(), 220);
+        setTimeout(() => fire(action), 220);
         return;
       }
-      onMarkRead?.();
+      fire(action);
     } else if (tc.dx < -THRESHOLD) {
       haptic();
-      onReadLater?.();
+      fire(leftAction);
     }
     if (rowRef.current) { rowRef.current.style.transform = "translateX(0)"; rowRef.current.style.transition = "transform .18s ease"; setTimeout(() => { if (rowRef.current) rowRef.current.style.transition = ""; }, 200); }
     if (hintRef.current) hintRef.current.style.display = "none";

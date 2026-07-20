@@ -7,6 +7,9 @@ Format: `## [version] — YYYY-MM-DD`
 
 - [Polish] Smoother sheets and drawers — scrollable areas inside the Feeds drawer, highlights drawer, mobile search overlay, article reader, and transcript panel now contain their overscroll, so hitting the end of a list no longer rubber-bands or scroll-chains the page behind the overlay.
 - [Polish] Bottom nav pill no longer overshoots its intended margins on 320px-wide screens (a flexbox min-content edge case introduced with the new labels) — trimmed icon-chip padding by 1px per side; verified by headless-browser measurement (280px rendered vs. 288px cap).
+- [Feature] Customizable swipe actions — Settings → Reading now lets you choose what swiping an article row left or right does: Mark read, Save for later, Bookmark, or Off. Defaults match the previous fixed behavior; swipe hints and animations follow whichever action you pick. (Reeder's signature swipe feature, previously hardcoded.)
+- [Perf] Installed-app background refresh — the service worker has long had a periodic-sync handler that nothing ever activated; the app now registers it at boot (6-hour interval, Chromium installed-PWA only, silently unavailable elsewhere), a first step toward feeds arriving without the app open.
+- [Perf] Long Inbox lists now skip rendering work for off-screen rows via CSS content-visibility — the zero-dependency version of list virtualization.
 
 ## [1.46.492] — 2026-07-20 01:01
 

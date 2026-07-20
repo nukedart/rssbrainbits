@@ -64,6 +64,7 @@ const FeedItemRow = memo(function FeedItemRow({
 
   return (
     <div {...(withDataUrl ? { "data-url": item.url } : {})}
+      style={{ contentVisibility: "auto", containIntrinsicSize: "auto 110px" }}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerEnd}
       onPointerMove={handlePointerEnd}
