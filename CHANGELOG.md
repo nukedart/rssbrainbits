@@ -3,7 +3,7 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
-## [Unreleased]
+## [1.46.493] — 2026-07-20 02:34
 
 - [Polish] Smoother sheets and drawers — scrollable areas inside the Feeds drawer, highlights drawer, mobile search overlay, article reader, and transcript panel now contain their overscroll, so hitting the end of a list no longer rubber-bands or scroll-chains the page behind the overlay.
 - [Polish] Bottom nav pill no longer overshoots its intended margins on 320px-wide screens (a flexbox min-content edge case introduced with the new labels) — trimmed icon-chip padding by 1px per side; verified by headless-browser measurement (280px rendered vs. 288px cap).
