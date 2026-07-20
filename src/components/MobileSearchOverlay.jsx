@@ -190,7 +190,7 @@ export default function MobileSearchOverlay({ onClose, onSelectResult, onLiveSea
       </div>
 
       {/* ── Results area ── */}
-      <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
+      <div style={{ flex: 1, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
 
         {/* Empty / prompt state */}
         {!hasQuery && (

@@ -678,7 +678,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        style={{ flex: 1, overflowY: "auto", position: "relative" }}
+        style={{ flex: 1, overflowY: "auto", overscrollBehavior: "contain", position: "relative" }}
       >
 
         {/* ── YouTube ── */}
@@ -1418,7 +1418,7 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighl
               ref={transcriptRef}
               onMouseUp={handleTranscriptMouseUp}
               style={{
-                flex: 1, overflowY: "auto",
+                flex: 1, overflowY: "auto", overscrollBehavior: "contain",
                 maxHeight: isMobile ? 320 : 520,
                 background: T.surface,
                 borderRadius: 10,

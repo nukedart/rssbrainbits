@@ -362,7 +362,7 @@ export default function MobileFeedDrawer({
         </button>
 
         {/* Feed tree — scrollable */}
-        <div style={{ flex:1, overflowY:"auto", minHeight:0, borderTop:`1px solid ${T.border}` }}>
+        <div style={{ flex:1, overflowY:"auto", minHeight:0, overscrollBehavior:"contain", borderTop:`1px solid ${T.border}` }}>
           {(folders.length > 0 || feeds.length > 0) && (
             <SectionLabel label="Sources" action={onAddFolder} actionTitle="New folder" T={T} />
           )}

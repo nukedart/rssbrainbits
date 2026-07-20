@@ -41,7 +41,7 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div role="dialog" aria-modal="true" aria-labelledby="highlights-drawer-title" style={{
         width: "min(380px, 100vw)", background: T.card, height: "100%",
-        overflowY: "auto", boxShadow: SHAPE.shadowFloatLeft, borderLeft: `1px solid ${T.border}`,
+        overflowY: "auto", overscrollBehavior: "contain", boxShadow: SHAPE.shadowFloatLeft, borderLeft: `1px solid ${T.border}`,
         borderRadius: `${SHAPE.radiusCard}px 0 0 ${SHAPE.radiusCard}px`,
         display: "flex", flexDirection: "column", animation: "slideInRight .2s ease",
       }}>
