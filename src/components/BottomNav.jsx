@@ -152,10 +152,9 @@ export default function BottomNav({
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 7px", transition: "background .14s" }}>
+              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 8px", transition: "background .14s" }}>
                 <Icon size={22} sw={isActive ? 1.7 : 1.3} />
               </span>
-              <span style={{ fontSize: 9, fontWeight: 600, marginTop: 2, whiteSpace: "nowrap" }}>{label}</span>
             </button>
           );
         }
@@ -173,10 +172,9 @@ export default function BottomNav({
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 7px", transition: "background .14s" }}>
+              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 8px", transition: "background .14s" }}>
                 <Icon size={22} sw={isActive ? 1.7 : 1.3} />
               </span>
-              <span style={{ fontSize: 9, fontWeight: 600, marginTop: 2, whiteSpace: "nowrap" }}>{label}</span>
             </button>
           );
         }
@@ -194,7 +192,7 @@ export default function BottomNav({
             onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >
             <span style={{ position: "relative", display: "flex" }}>
-              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 7px", transition: "background .14s" }}>
+              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 8px", transition: "background .14s" }}>
                 <Icon size={22} sw={isActive ? 1.7 : 1.3} filled={isActive} />
               </span>
               {id === "inbox" && unreadCount > 0 && !isActive && (
@@ -204,7 +202,6 @@ export default function BottomNav({
                 <CountBadge count={dueCount} T={T} />
               )}
             </span>
-            <span style={{ fontSize: 9, fontWeight: 600, marginTop: 2, whiteSpace: "nowrap" }}>{label}</span>
           </button>
         );
       })}
