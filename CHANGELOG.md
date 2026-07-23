@@ -3,7 +3,7 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
-## [Unreleased]
+## [1.46.495] — 2026-07-23 15:11
 
 - [Perf] Article reading is smoother on long pieces — the reading-progress bar is now painted directly instead of re-rendering the whole reader on every scroll frame (it previously fired a state update ~100 times over a long article). Only the scroll-to-top button, which appears once past 8%, still uses React state. Verified in a headless browser: the bar tracks scroll and survives re-renders without resetting.
 - [Perf] Removed ~120 lines of dead, unreferenced code from the data layer and utilities — 10 exported functions with zero call sites anywhere (leftover Notes-feature queries, an unused export-all helper, and a few orphaned helpers). Smaller, leaner backend surface with no behavior change.
