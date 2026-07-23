@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
@@ -83,7 +83,19 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const [retryKey, setRetryKey] = useState(0);
   const [exportFeedback, setExportFeedback]   = useState(null);
   const [imgFeedback, setImgFeedback]         = useState(null);
-  const [readProgress, setReadProgress]         = useState(0);
+  const [showTopBtn, setShowTopBtn]             = useState(false);
+  // Reading progress is painted imperatively (see paintProgress) so scrolling
+  // never re-renders this large subtree; only the scroll-to-top button, which
+  // toggles once at 8%, uses React state.
+  const progressBarRef = useRef(null);
+  const progressPctRef = useRef(0);
+  function paintProgress(pct) {
+    progressPctRef.current = pct;
+    if (progressBarRef.current) progressBarRef.current.style.transform = `scaleX(${pct / 100})`;
+  }
+  // Re-sync the bar before every browser paint so a rare React re-render can't
+  // snap it back (React never manages the bar's transform).
+  useLayoutEffect(() => { paintProgress(progressPctRef.current); });
   const [shareFeedback, setShareFeedback]       = useState(null);
   const scrollContainerRef = useRef(null);
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -192,8 +204,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
     getHighlights(user.id, item.url).then(setHighlights).catch(console.error);
     // Load saved reading progress
+    paintProgress(0);
+    setShowTopBtn(false);
     getReadingProgress(user.id, item.url).then(prog => {
-      setReadProgress(prog);
+      paintProgress(prog);
+      setShowTopBtn(prog > 8);
       // Restore scroll position after content loads
       if (prog > 0) {
         setTimeout(() => {
@@ -286,7 +301,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     const max = el.scrollHeight - el.clientHeight;
     if (max <= 0) return;
     const pct = Math.round((el.scrollTop / max) * 100);
-    setReadProgress(pct);
+    paintProgress(pct);
+    setShowTopBtn(pct > 8);
     // Auto-hide header: accumulate 60px of net movement before toggling
     const delta = el.scrollTop - lastScrollYRef.current;
     lastScrollYRef.current = el.scrollTop;
@@ -424,13 +440,12 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
       {/* ── Reading progress bar — always visible track ── */}
       <div style={{ height: 3, background: T.surface2, flexShrink: 0, position: "relative", overflow: "hidden" }}>
-        <div style={{
+        <div ref={progressBarRef} style={{
           position: "absolute", inset: 0,
           background: `linear-gradient(90deg, ${T.accent}, ${T.teal || T.accent})`,
-          transform: `scaleX(${readProgress / 100})`,
           transformOrigin: "left",
           transition: "transform .25s ease",
-          opacity: readProgress > 0 ? 1 : 0,
+          willChange: "transform",
         }} />
       </div>
 
@@ -839,7 +854,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         )}
 
         {/* ── Scroll to top FAB ── */}
-        {readProgress > 8 && (
+        {showTopBtn && (
           <button
             onClick={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
             title="Back to top"
