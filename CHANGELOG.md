@@ -3,7 +3,7 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
-## [Unreleased]
+## [1.46.494] — 2026-07-23 02:44
 
 - [UX] Reverted the text labels under the bottom-nav icons (added in 1.46.492) — back to the cleaner icon-only pill, restoring the original icon spacing.
 
