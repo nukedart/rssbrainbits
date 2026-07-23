@@ -44,14 +44,4 @@ export function initReaderPrefs() {
   applyReaderPrefs(getReaderPrefs());
 }
 
-// ── Bionic reading text transform ────────────────────────────
-// Bolds the first ~40-50% of each word to guide the eye.
-export function applyBionicToText(text) {
-  if (!text) return text;
-  return text.replace(/\b([a-zA-Z]+)\b/g, (word) => {
-    const bold = Math.ceil(word.length * 0.45);
-    return `**${word.slice(0, bold)}**${word.slice(bold)}`;
-  });
-}
-
 // Note: BionicWord React component lives in ContentViewer.jsx (JSX file)

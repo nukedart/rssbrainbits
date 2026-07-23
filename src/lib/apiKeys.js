@@ -5,7 +5,3 @@ const LS_KEY = "fb-apikey-provider";
 export function getAiProvider() {
   return localStorage.getItem(LS_KEY) || "anthropic";
 }
-
-export function setAiProvider(provider) {
-  localStorage.setItem(LS_KEY, provider);
-}

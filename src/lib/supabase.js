@@ -61,13 +61,6 @@ export async function addFeed(userId, feed) {
   return data;
 }
 
-export async function updateFeedName(feedId, name) {
-  const { data, error } = await supabase
-    .from("feeds").update({ name }).eq("id", feedId).select().single();
-  if (error) throw error;
-  return data;
-}
-
 export async function updateFeedSettings(feedId, settings) {
   // settings: { name, fetch_full_content }
   const { data, error } = await supabase
@@ -191,62 +184,7 @@ export async function getAllTags(userId) {
   return [...new Set(data.map((r) => r.tag))].sort();
 }
 
-export async function getAllArticleTags(userId) {
-  const { data, error } = await supabase
-    .from("article_tags").select("*").eq("user_id", userId)
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
-}
-
 // ── User Notes ─────────────────────────────────────────────────
-export async function getNotes(userId) {
-  const { data, error } = await supabase
-    .from("notes").select("*").eq("user_id", userId)
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
-}
-
-export async function createNote(userId, { title = "Untitled Note", body = "", tags = [], color = "teal", article_url = null, article_title = null } = {}) {
-  const record = { user_id: userId, title, body, tags, color };
-  if (article_url) { record.article_url = article_url; record.article_title = article_title; }
-  let { data, error } = await supabase
-    .from("notes").insert(record)
-    .select().single();
-  // Column may not exist for users who haven't run the migration — retry without it
-  if (error?.message?.includes("article_url")) {
-    ({ data, error } = await supabase
-      .from("notes").insert({ user_id: userId, title, body, tags, color })
-      .select().single());
-  }
-  if (error) throw error;
-  return data;
-}
-
-export async function getNotesByArticle(userId, articleUrl) {
-  const { data, error } = await supabase
-    .from("notes").select("*")
-    .eq("user_id", userId).eq("article_url", articleUrl)
-    .order("updated_at", { ascending: false });
-  if (error) return []; // column may not exist yet
-  return data || [];
-}
-
-export async function updateNote(noteId, updates) {
-  const { data, error } = await supabase
-    .from("notes")
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", noteId).select().single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteNote(noteId) {
-  const { error } = await supabase.from("notes").delete().eq("id", noteId);
-  if (error) throw error;
-}
-
 // ── Read Later ────────────────────────────────────────────────
 export async function getReadLater(userId) {
   const { data, error } = await supabase

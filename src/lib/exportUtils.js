@@ -25,47 +25,6 @@ export function highlightsToMarkdown(highlights, articleTitle, articleUrl) {
   return lines.join("\n");
 }
 
-// Export ALL highlights grouped by article
-export function allHighlightsToMarkdown(highlights) {
-  if (!highlights?.length) return "";
-
-  // Group by article
-  const byArticle = new Map();
-  highlights.forEach(h => {
-    const key = h.article_url || "unknown";
-    if (!byArticle.has(key)) {
-      byArticle.set(key, { title: h.article_title || h.article_url || "Article", url: h.article_url, highlights: [] });
-    }
-    byArticle.get(key).highlights.push(h);
-  });
-
-  const lines = [];
-  lines.push("# My Reading Highlights");
-  lines.push("");
-  lines.push(`*Exported from Feedbox · ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}*`);
-  lines.push("");
-  lines.push("---");
-  lines.push("");
-
-  byArticle.forEach(({ title, url, highlights: hs }) => {
-    lines.push(`## ${title}`);
-    if (url) lines.push(`> ${url}`);
-    lines.push("");
-    hs.forEach(h => {
-      lines.push(`> ${h.passage}`);
-      lines.push("");
-      if (h.note) {
-        lines.push(`**Note:** ${h.note}`);
-        lines.push("");
-      }
-    });
-    lines.push("---");
-    lines.push("");
-  });
-
-  return lines.join("\n");
-}
-
 // Export highlights for one article formatted for Obsidian
 // Produces YAML frontmatter + blockquote highlights with [[wikilink]] tags
 export function highlightsToObsidian(highlights, articleTitle, articleUrl) {

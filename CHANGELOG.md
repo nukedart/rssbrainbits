@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [Perf] Removed ~120 lines of dead, unreferenced code from the data layer and utilities — 10 exported functions with zero call sites anywhere (leftover Notes-feature queries, an unused export-all helper, and a few orphaned helpers). Smaller, leaner backend surface with no behavior change.
+
 ## [1.46.494] — 2026-07-23 02:44
 
 - [UX] Reverted the text labels under the bottom-nav icons (added in 1.46.492) — back to the cleaner icon-only pill, restoring the original icon spacing.
