@@ -250,6 +250,27 @@ function VolumeSlider({ volume, onChange, T, light }) {
   );
 }
 
+// ── Next-episode button ──────────────────────────────────────────────
+function NextBtn({ onClick, disabled, light, T }) {
+  const col = light ? "rgba(255,255,255,.8)" : T.textSecondary;
+  return (
+    <button onClick={onClick} disabled={disabled} aria-label="Next episode"
+      style={{
+        background: "none", border: "none", padding: 8,
+        cursor: disabled ? "default" : "pointer",
+        color: disabled ? (light ? "rgba(255,255,255,.25)" : T.textTertiary) : col,
+        opacity: disabled ? 0.35 : 1,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        borderRadius: "50%", transition: "opacity .1s",
+      }}
+      onMouseEnter={e => { if (!disabled) e.currentTarget.style.opacity=".65"; }}
+      onMouseLeave={e => { if (!disabled) e.currentTarget.style.opacity="1"; }}
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l10 8-10 8V4z"/><rect x="17" y="4" width="3" height="16"/></svg>
+    </button>
+  );
+}
+
 // ── Artwork placeholder ───────────────────────────────────────────────
 function ArtworkPlaceholder({ size, radius, T }) {
   return (
@@ -263,7 +284,7 @@ function ArtworkPlaceholder({ size, radius, T }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────
-export default function PodcastPlayer({ item, onClose }) {
+export default function PodcastPlayer({ item, queue = [], onNext, onClose }) {
   const { T }        = useTheme();
   const { isMobile } = useBreakpoint();
   const audioRef       = useRef(null);
@@ -279,6 +300,13 @@ export default function PodcastPlayer({ item, onClose }) {
 
   const posKey = item?.audioUrl ? `fb-pod-pos-${btoa(item.audioUrl).slice(0,32)}` : null;
 
+  // Ref-tracked so the "ended" listener (attached once per episode) always
+  // sees the current queue/onNext without needing to re-subscribe.
+  const queueRef  = useRef(queue);
+  const onNextRef = useRef(onNext);
+  useEffect(() => { queueRef.current = queue; }, [queue]);
+  useEffect(() => { onNextRef.current = onNext; }, [onNext]);
+
   // Audio event listeners — authoritative source of truth for playing/loading state
   useEffect(() => {
     const audio = audioRef.current;
@@ -293,7 +321,10 @@ export default function PodcastPlayer({ item, onClose }) {
     };
     const onPlaying = () => { setLoading(false); setPlaying(true); };
     const onPause   = () => { setLoading(false); setPlaying(false); };
-    const onEnded   = () => { setLoading(false); setPlaying(false); };
+    const onEnded   = () => {
+      setLoading(false); setPlaying(false);
+      if (queueRef.current?.length > 0 && onNextRef.current) onNextRef.current();
+    };
     const onWaiting = () => setLoading(true);
     const onCanPlay = () => setLoading(false);
     const onError   = () => setLoading(false);
@@ -483,6 +514,11 @@ export default function PodcastPlayer({ item, onClose }) {
                     {item.title}
                   </div>
                   <div style={{ fontSize: 14, color: "rgba(255,255,255,.5)", fontWeight: 500 }}>{item.source}</div>
+                  {queue.length > 0 && (
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      Up next: {queue[0].title}
+                    </div>
+                  )}
                 </div>
 
                 {/* Seekbar */}
@@ -495,6 +531,7 @@ export default function PodcastPlayer({ item, onClose }) {
                   <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light />
                   <PlayBtn size={72} playing={playing} loading={loading} onClick={togglePlay} T={T} light />
                   <SkipBtn secs={SKIP_FWD}  onClick={() => skip(SKIP_FWD)}  T={T} light />
+                  <NextBtn onClick={onNext} disabled={queue.length === 0} T={T} light />
                 </div>
 
                 {/* Secondary: volume + sleep */}
@@ -611,12 +648,18 @@ export default function PodcastPlayer({ item, onClose }) {
                 {item.title}
               </div>
               <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</div>
+              {queue.length > 0 && (
+                <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  Up next: {queue[0].title}
+                </div>
+              )}
             </div>
             <div style={{ marginBottom: 14 }}><SeekBar audioRef={audioRef} T={T} light={false} /></div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 14 }}>
               <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light={false} />
               <PlayBtn size={56} playing={playing} loading={loading} onClick={togglePlay} T={T} light={false} />
               <SkipBtn secs={SKIP_FWD}  onClick={() => skip(SKIP_FWD)}  T={T} light={false} />
+              <NextBtn onClick={onNext} disabled={queue.length === 0} T={T} light={false} />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <button onClick={cycleRate} style={{
