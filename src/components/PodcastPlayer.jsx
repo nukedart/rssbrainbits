@@ -271,6 +271,62 @@ function NextBtn({ onClick, disabled, light, T }) {
   );
 }
 
+// ── Queue panel — full "Up Next" list, reorder + jump + remove ────────
+function QueuePanel({ queue, onPlay, onRemove, onReorder, T, light }) {
+  const textCol    = light ? "#fff" : T.text;
+  const subCol     = light ? "rgba(255,255,255,.5)" : T.textTertiary;
+  const borderCol  = light ? "rgba(255,255,255,.1)" : T.border;
+  const btnCol     = light ? "rgba(255,255,255,.6)" : T.textSecondary;
+
+  if (queue.length === 0) {
+    return (
+      <div style={{ padding: "40px 20px", textAlign: "center", color: subCol, fontSize: 13 }}>
+        Queue is empty — episodes you play from this show will appear here.
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ overflowY: "auto", flex: 1 }}>
+      {queue.map((ep, i) => (
+        <div key={ep.audioUrl || ep.link || i}
+          onClick={() => onPlay(ep)}
+          style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "10px 20px", cursor: "pointer",
+            borderBottom: i < queue.length - 1 ? `1px solid ${borderCol}` : "none",
+          }}
+        >
+          {ep.image
+            ? <img src={ep.image} alt="" loading="lazy" decoding="async" style={{ width: 40, height: 40, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} />
+            : <ArtworkPlaceholder size={40} radius={7} T={T} />
+          }
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: textCol, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {ep.title}
+            </div>
+            <div style={{ fontSize: 11, color: subCol, marginTop: 1 }}>{ep.source}</div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", flexShrink: 0 }}>
+            <button onClick={e => { e.stopPropagation(); onReorder(i, i - 1); }} disabled={i === 0} aria-label="Move up"
+              style={{ background: "none", border: "none", padding: 3, cursor: i === 0 ? "default" : "pointer", color: btnCol, opacity: i === 0 ? .3 : 1, display: "flex" }}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10l4-4 4 4"/></svg>
+            </button>
+            <button onClick={e => { e.stopPropagation(); onReorder(i, i + 1); }} disabled={i === queue.length - 1} aria-label="Move down"
+              style={{ background: "none", border: "none", padding: 3, cursor: i === queue.length - 1 ? "default" : "pointer", color: btnCol, opacity: i === queue.length - 1 ? .3 : 1, display: "flex" }}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+          </div>
+          <button onClick={e => { e.stopPropagation(); onRemove(ep); }} aria-label={`Remove ${ep.title} from queue`}
+            style={{ background: "none", border: "none", padding: 6, cursor: "pointer", color: btnCol, flexShrink: 0, display: "flex" }}>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Artwork placeholder ───────────────────────────────────────────────
 function ArtworkPlaceholder({ size, radius, T }) {
   return (
@@ -284,13 +340,14 @@ function ArtworkPlaceholder({ size, radius, T }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────
-export default function PodcastPlayer({ item, queue = [], onNext, onClose }) {
+export default function PodcastPlayer({ item, queue = [], onNext, onPlayFromQueue, onRemoveFromQueue, onReorderQueue, onClose }) {
   const { T }        = useTheme();
   const { isMobile } = useBreakpoint();
   const audioRef       = useRef(null);
   const miniBarFillRef = useRef(null);
 
   const [expanded,   setExpanded]  = useState(false);
+  const [view,       setView]      = useState("player"); // "player" | "queue"
   const [playing,    setPlaying]   = useState(false);
   const [loading,    setLoading]   = useState(true);  // true until canplay — shows spinner immediately
   const [rate,       setRate]      = useState(1);
@@ -378,6 +435,7 @@ export default function PodcastPlayer({ item, queue = [], onNext, onClose }) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+    setView("player");
     if (audio.readyState < 3) setLoading(true); // show spinner immediately if not buffered
     audio.play().catch(() => { setLoading(false); });
   }, [item?.audioUrl]);
@@ -438,6 +496,11 @@ export default function PodcastPlayer({ item, queue = [], onNext, onClose }) {
     }, 30000);
   }
 
+  function playFromQueue(ep) {
+    setView("player");
+    onPlayFromQueue(ep);
+  }
+
   if (!item?.audioUrl) return null;
 
   // ── MOBILE ────────────────────────────────────────────────────────
@@ -472,80 +535,95 @@ export default function PodcastPlayer({ item, queue = [], onNext, onClose }) {
             }}>
               {/* Top bar */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px 0" }}>
-                <button onClick={() => setExpanded(false)} aria-label="Minimize player" style={{
+                <button onClick={() => view === "queue" ? setView("player") : setExpanded(false)} aria-label={view === "queue" ? "Back to player" : "Minimize player"} style={{
                   background: "rgba(255,255,255,.12)", border: "none", borderRadius: "50%",
                   width: 38, height: 38, cursor: "pointer", color: "#fff",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M4 6l4 4 4-4"/>
-                  </svg>
+                  {view === "queue"
+                    ? <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M10 4l-4 4 4 4"/></svg>
+                    : <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 6l4 4 4-4"/></svg>
+                  }
                 </button>
                 <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,.45)", letterSpacing: ".1em", textTransform: "uppercase" }}>
-                  Now Playing
+                  {view === "queue" ? "Up Next" : "Now Playing"}
                 </span>
-                <button onClick={cycleRate} style={{
-                  background: rate !== 1 ? "rgba(255,255,255,.22)" : "rgba(255,255,255,.1)",
-                  border: "none", borderRadius: 8, padding: "6px 11px",
-                  cursor: "pointer", fontSize: 13, fontWeight: 700,
-                  color: rate !== 1 ? "#fff" : "rgba(255,255,255,.55)", fontFamily: "inherit",
-                }}>{rate}×</button>
-              </div>
-
-              {/* Artwork */}
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 44px" }}>
-                {item.image
-                  ? <img src={item.image} alt={item.title} style={{
-                      width: "100%", maxWidth: 290, aspectRatio: "1/1",
-                      borderRadius: 22, objectFit: "cover",
-                      boxShadow: "0 28px 72px rgba(0,0,0,.7)",
-                      transition: "transform .3s ease",
-                      transform: playing ? "scale(1)" : "scale(0.93)",
-                    }} />
-                  : <ArtworkPlaceholder size={250} radius={22} T={T} />
+                {view === "player"
+                  ? <button onClick={cycleRate} style={{
+                      background: rate !== 1 ? "rgba(255,255,255,.22)" : "rgba(255,255,255,.1)",
+                      border: "none", borderRadius: 8, padding: "6px 11px",
+                      cursor: "pointer", fontSize: 13, fontWeight: 700,
+                      color: rate !== 1 ? "#fff" : "rgba(255,255,255,.55)", fontFamily: "inherit",
+                    }}>{rate}×</button>
+                  : <div style={{ width: 38 }} />
                 }
               </div>
 
-              {/* Info + controls */}
-              <div style={{ padding: "0 28px 10px" }}>
-                {/* Title + source */}
-                <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                    {item.title}
+              {view === "queue" ? (
+                <QueuePanel queue={queue} onPlay={playFromQueue} onRemove={onRemoveFromQueue} onReorder={onReorderQueue} T={T} light />
+              ) : (
+                <>
+                  {/* Artwork */}
+                  <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 44px" }}>
+                    {item.image
+                      ? <img src={item.image} alt={item.title} style={{
+                          width: "100%", maxWidth: 290, aspectRatio: "1/1",
+                          borderRadius: 22, objectFit: "cover",
+                          boxShadow: "0 28px 72px rgba(0,0,0,.7)",
+                          transition: "transform .3s ease",
+                          transform: playing ? "scale(1)" : "scale(0.93)",
+                        }} />
+                      : <ArtworkPlaceholder size={250} radius={22} T={T} />
+                    }
                   </div>
-                  <div style={{ fontSize: 14, color: "rgba(255,255,255,.5)", fontWeight: 500 }}>{item.source}</div>
-                  {queue.length > 0 && (
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      Up next: {queue[0].title}
+
+                  {/* Info + controls */}
+                  <div style={{ padding: "0 28px 10px" }}>
+                    {/* Title + source */}
+                    <div style={{ marginBottom: 20 }}>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                        {item.title}
+                      </div>
+                      <div style={{ fontSize: 14, color: "rgba(255,255,255,.5)", fontWeight: 500 }}>{item.source}</div>
+                      {queue.length > 0 && (
+                        <button onClick={() => setView("queue")} style={{
+                          background: "none", border: "none", padding: 0, marginTop: 6,
+                          font: "inherit", fontSize: 12, color: "rgba(255,255,255,.4)", cursor: "pointer",
+                          display: "flex", alignItems: "center", gap: 4, maxWidth: "100%",
+                        }}>
+                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Up next: {queue[0].title}</span>
+                          <span style={{ flexShrink: 0, opacity: .7 }}>({queue.length}) ›</span>
+                        </button>
+                      )}
                     </div>
-                  )}
-                </div>
 
-                {/* Seekbar */}
-                <div style={{ marginBottom: 16 }}>
-                  <SeekBar audioRef={audioRef} T={T} light />
-                </div>
+                    {/* Seekbar */}
+                    <div style={{ marginBottom: 16 }}>
+                      <SeekBar audioRef={audioRef} T={T} light />
+                    </div>
 
-                {/* Main controls */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginBottom: 20 }}>
-                  <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light />
-                  <PlayBtn size={72} playing={playing} loading={loading} onClick={togglePlay} T={T} light />
-                  <SkipBtn secs={SKIP_FWD}  onClick={() => skip(SKIP_FWD)}  T={T} light />
-                  <NextBtn onClick={onNext} disabled={queue.length === 0} T={T} light />
-                </div>
+                    {/* Main controls */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginBottom: 20 }}>
+                      <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light />
+                      <PlayBtn size={72} playing={playing} loading={loading} onClick={togglePlay} T={T} light />
+                      <SkipBtn secs={SKIP_FWD}  onClick={() => skip(SKIP_FWD)}  T={T} light />
+                      <NextBtn onClick={onNext} disabled={queue.length === 0} T={T} light />
+                    </div>
 
-                {/* Secondary: volume + sleep */}
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <VolumeSlider volume={volume} onChange={changeVolume} T={T} light />
-                  <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer"} aria-label={sleepTimer ? `Sleep in ${sleepTimer} minutes` : "Sleep timer"} style={{
-                    background: sleepTimer ? "rgba(255,255,255,.22)" : "rgba(255,255,255,.1)",
-                    border: "none", borderRadius: 8, padding: "6px 10px",
-                    cursor: "pointer", fontSize: sleepTimer ? 12 : 15, fontWeight: 700,
-                    color: sleepTimer ? "#fff" : "rgba(255,255,255,.55)",
-                    fontFamily: "inherit", minWidth: 44, textAlign: "center",
-                  }}>{sleepTimer ? `${sleepTimer}m` : "💤"}</button>
-                </div>
-              </div>
+                    {/* Secondary: volume + sleep */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                      <VolumeSlider volume={volume} onChange={changeVolume} T={T} light />
+                      <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer"} aria-label={sleepTimer ? `Sleep in ${sleepTimer} minutes` : "Sleep timer"} style={{
+                        background: sleepTimer ? "rgba(255,255,255,.22)" : "rgba(255,255,255,.1)",
+                        border: "none", borderRadius: 8, padding: "6px 10px",
+                        cursor: "pointer", fontSize: sleepTimer ? 12 : 15, fontWeight: 700,
+                        color: sleepTimer ? "#fff" : "rgba(255,255,255,.55)",
+                        fontFamily: "inherit", minWidth: 44, textAlign: "center",
+                      }}>{sleepTimer ? `${sleepTimer}m` : "💤"}</button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -631,54 +709,77 @@ export default function PodcastPlayer({ item, queue = [], onNext, onClose }) {
           boxShadow: "0 24px 80px rgba(0,0,0,.45), 0 0 0 .5px rgba(255,255,255,.06)",
           animation: "slideUp .2s cubic-bezier(.22,.8,.36,1)",
         }}>
-          {/* Artwork */}
-          <div style={{ position: "relative", height: 190, background: T.surface2, overflow: "hidden" }}>
-            {item.image
-              ? <img src={item.image} alt={item.title} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
-              : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${T.accent}22, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <ArtworkPlaceholder size={90} radius={12} T={T} />
-                </div>
-            }
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 70, background: `linear-gradient(to bottom, transparent, ${T.card})` }} />
-          </div>
-          {/* Controls */}
-          <div style={{ padding: "12px 22px 20px" }}>
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1.3, marginBottom: 2, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                {item.title}
+          {view === "queue" ? (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px 16px", borderBottom: `1px solid ${T.border}` }}>
+                <button onClick={() => setView("player")} aria-label="Back to player" style={{
+                  background: "none", border: "none", padding: 4, cursor: "pointer", color: T.textSecondary, display: "flex",
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M10 4l-4 4 4 4"/></svg>
+                </button>
+                <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Up Next</span>
               </div>
-              <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</div>
-              {queue.length > 0 && (
-                <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  Up next: {queue[0].title}
+              <div style={{ maxHeight: 320, display: "flex", flexDirection: "column" }}>
+                <QueuePanel queue={queue} onPlay={playFromQueue} onRemove={onRemoveFromQueue} onReorder={onReorderQueue} T={T} light={false} />
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Artwork */}
+              <div style={{ position: "relative", height: 190, background: T.surface2, overflow: "hidden" }}>
+                {item.image
+                  ? <img src={item.image} alt={item.title} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
+                  : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${T.accent}22, ${T.surface2})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <ArtworkPlaceholder size={90} radius={12} T={T} />
+                    </div>
+                }
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 70, background: `linear-gradient(to bottom, transparent, ${T.card})` }} />
+              </div>
+              {/* Controls */}
+              <div style={{ padding: "12px 22px 20px" }}>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: T.text, lineHeight: 1.3, marginBottom: 2, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                    {item.title}
+                  </div>
+                  <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 500 }}>{item.source}</div>
+                  {queue.length > 0 && (
+                    <button onClick={() => setView("queue")} style={{
+                      background: "none", border: "none", padding: 0, marginTop: 4,
+                      font: "inherit", fontSize: 11, color: T.textTertiary, cursor: "pointer",
+                      display: "flex", alignItems: "center", gap: 4, maxWidth: "100%",
+                    }}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Up next: {queue[0].title}</span>
+                      <span style={{ flexShrink: 0, opacity: .7 }}>({queue.length}) ›</span>
+                    </button>
+                  )}
                 </div>
-              )}
-            </div>
-            <div style={{ marginBottom: 14 }}><SeekBar audioRef={audioRef} T={T} light={false} /></div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 14 }}>
-              <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light={false} />
-              <PlayBtn size={56} playing={playing} loading={loading} onClick={togglePlay} T={T} light={false} />
-              <SkipBtn secs={SKIP_FWD}  onClick={() => skip(SKIP_FWD)}  T={T} light={false} />
-              <NextBtn onClick={onNext} disabled={queue.length === 0} T={T} light={false} />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <button onClick={cycleRate} style={{
-                background: rate !== 1 ? T.accentSurface : T.surface2,
-                border: "none", borderRadius: 7, padding: "5px 10px",
-                cursor: "pointer", fontSize: 12, fontWeight: 700,
-                color: rate !== 1 ? T.accent : T.textSecondary,
-                fontFamily: "inherit", minWidth: 40, textAlign: "center",
-              }}>{rate}×</button>
-              <VolumeSlider volume={volume} onChange={changeVolume} T={T} light={false} />
-              <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer (30 min)"} aria-label={sleepTimer ? `Sleep in ${sleepTimer} minutes` : "Sleep timer (30 min)"} style={{
-                background: sleepTimer ? T.accentSurface : T.surface2,
-                border: "none", borderRadius: 7, padding: "5px 9px",
-                cursor: "pointer", fontSize: sleepTimer ? 12 : 15, fontWeight: 700,
-                color: sleepTimer ? T.accent : T.textTertiary,
-                fontFamily: "inherit", minWidth: 40, textAlign: "center",
-              }}>{sleepTimer ? `${sleepTimer}m` : "💤"}</button>
-            </div>
-          </div>
+                <div style={{ marginBottom: 14 }}><SeekBar audioRef={audioRef} T={T} light={false} /></div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 14 }}>
+                  <SkipBtn secs={-SKIP_BCK} onClick={() => skip(-SKIP_BCK)} T={T} light={false} />
+                  <PlayBtn size={56} playing={playing} loading={loading} onClick={togglePlay} T={T} light={false} />
+                  <SkipBtn secs={SKIP_FWD}  onClick={() => skip(SKIP_FWD)}  T={T} light={false} />
+                  <NextBtn onClick={onNext} disabled={queue.length === 0} T={T} light={false} />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button onClick={cycleRate} style={{
+                    background: rate !== 1 ? T.accentSurface : T.surface2,
+                    border: "none", borderRadius: 7, padding: "5px 10px",
+                    cursor: "pointer", fontSize: 12, fontWeight: 700,
+                    color: rate !== 1 ? T.accent : T.textSecondary,
+                    fontFamily: "inherit", minWidth: 40, textAlign: "center",
+                  }}>{rate}×</button>
+                  <VolumeSlider volume={volume} onChange={changeVolume} T={T} light={false} />
+                  <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer (30 min)"} aria-label={sleepTimer ? `Sleep in ${sleepTimer} minutes` : "Sleep timer (30 min)"} style={{
+                    background: sleepTimer ? T.accentSurface : T.surface2,
+                    border: "none", borderRadius: 7, padding: "5px 9px",
+                    cursor: "pointer", fontSize: sleepTimer ? 12 : 15, fontWeight: 700,
+                    color: sleepTimer ? T.accent : T.textTertiary,
+                    fontFamily: "inherit", minWidth: 40, textAlign: "center",
+                  }}>{sleepTimer ? `${sleepTimer}m` : "💤"}</button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 

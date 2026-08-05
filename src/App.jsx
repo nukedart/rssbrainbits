@@ -99,6 +99,27 @@ function AppShell() {
     setPodcastQueue(rest);
   }
 
+  function handlePlayFromQueue(item) {
+    const idx = podcastQueue.indexOf(item);
+    if (idx === -1) return;
+    setPodcastItem(item);
+    setPodcastQueue(podcastQueue.slice(idx + 1));
+  }
+
+  function handleRemoveFromQueue(item) {
+    setPodcastQueue(q => q.filter(i => i !== item));
+  }
+
+  function handleReorderQueue(fromIndex, toIndex) {
+    setPodcastQueue(q => {
+      if (toIndex < 0 || toIndex >= q.length) return q;
+      const next = q.slice();
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+  }
+
   useEffect(() => {
     const PAGE_TITLES = { inbox: "Inbox", today: "Today", cards: "Cards", review: "Review", readlater: "Saved", stats: "Stats", settings: "Settings", analytics: "Analytics" };
     const base = page.startsWith("feed:") ? "Feed" : page.startsWith("folder:") ? "Folder" : page.startsWith("smart:") ? "Smart Feed" : PAGE_TITLES[page];
@@ -371,7 +392,7 @@ function AppShell() {
 
       {podcastItem && (
         <Suspense fallback={null}>
-          <PodcastPlayer item={podcastItem} queue={podcastQueue} onNext={handleNextEpisode} onClose={() => { setPodcastItem(null); setPodcastQueue([]); }} />
+          <PodcastPlayer item={podcastItem} queue={podcastQueue} onNext={handleNextEpisode} onPlayFromQueue={handlePlayFromQueue} onRemoveFromQueue={handleRemoveFromQueue} onReorderQueue={handleReorderQueue} onClose={() => { setPodcastItem(null); setPodcastQueue([]); }} />
         </Suspense>
       )}
 
