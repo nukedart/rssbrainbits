@@ -253,6 +253,16 @@ function parseRSSItem(item, isAtom) {
     const contentEl  = item.querySelector("content");
     const summaryEl  = item.querySelector("summary");
     const bodyRaw    = contentEl?.textContent || summaryEl?.textContent || "";
+
+    // Atom podcast audio: expressed as <link rel="enclosure" type="audio/..."> rather
+    // than a dedicated <enclosure> element (which is RSS 2.0-only).
+    const audioLink = item.querySelector('link[rel=enclosure]');
+    const audioUrl = audioLink?.getAttribute("type")?.startsWith("audio")
+      ? audioLink.getAttribute("href") : null;
+    const allEls = Array.from(item.querySelectorAll("*"));
+    const durationEl = allEls.find(el => el.localName === "duration");
+    const audioDuration = durationEl?.textContent?.trim() || null;
+
     return {
       title:       item.querySelector("title")?.textContent?.trim() || "Untitled",
       url:         item.querySelector("link[rel=alternate]")?.getAttribute("href")
@@ -263,6 +273,10 @@ function parseRSSItem(item, isAtom) {
       date:        normaliseDate(item.querySelector("updated, published")?.textContent),
       author:      item.querySelector("author name")?.textContent?.trim() || "",
       image,
+      // Podcast fields — null for regular articles
+      audioUrl,
+      audioDuration,
+      isPodcast: !!audioUrl,
     };
   }
 

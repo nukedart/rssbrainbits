@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [Unreleased]
+
+- [Fix] Podcast feeds published as Atom (not RSS 2.0) now show up as podcasts — audio enclosures, iTunes duration, and the play button were previously only detected on RSS 2.0 items, so any Atom-based podcast feed rendered as a regular article with no play affordance.
+- [Feature] Continuous podcast playback — playing an episode now queues the rest of that show's episodes already loaded in your feed. The player shows "Up next" and a Next button, and auto-advances to the next episode when one finishes, instead of stopping.
+
 ## [1.46.495] — 2026-07-23 15:11
 
 - [Perf] Article reading is smoother on long pieces — the reading-progress bar is now painted directly instead of re-rendering the whole reader on every scroll frame (it previously fired a state update ~100 times over a long article). Only the scroll-to-top button, which appears once past 8%, still uses React state. Verified in a headless browser: the bar tracks scroll and survives re-renders without resetting.

@@ -44,7 +44,7 @@ function dateBucket(dateStr, todayTs) {
 // click, only how often FeedItem has to re-render to find that out.
 const FeedItemRow = memo(function FeedItemRow({
   item, idx, viewMode, cardSize, isSelected, isRead, isSaved, feedColor,
-  displayPrefs, dismissOnRead, multiSelectMode, isChecked, onPlayPodcast,
+  displayPrefs, dismissOnRead, multiSelectMode, isChecked,
   withDataUrl, alsoSetCursor, handlersRef,
 }) {
   const handleClick = useCallback(() => {
@@ -61,6 +61,7 @@ const FeedItemRow = memo(function FeedItemRow({
   }, [isRead, item.url, handlersRef]);
   const handlePointerDown = useCallback(() => handlersRef.current.startLongPress(item.url), [item.url, handlersRef]);
   const handlePointerEnd = useCallback(() => handlersRef.current.cancelLongPress(), [handlersRef]);
+  const handlePlayPodcast = useCallback(() => handlersRef.current.handlePlayPodcast(item), [item, handlersRef]);
 
   return (
     <div {...(withDataUrl ? { "data-url": item.url } : {})}
@@ -75,7 +76,7 @@ const FeedItemRow = memo(function FeedItemRow({
         feedColor={feedColor} displayPrefs={displayPrefs} dismissOnRead={dismissOnRead}
         inMultiSelect={multiSelectMode} isChecked={isChecked}
         onClick={handleClick} onSave={handleSave} onReadLater={handleReadLater}
-        onMarkRead={handleMarkReadToggle} onPlayPodcast={onPlayPodcast}
+        onMarkRead={handleMarkReadToggle} onPlayPodcast={handlePlayPodcast}
       />
     </div>
   );
@@ -793,6 +794,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
   }
 
+  // Builds the "up next" queue from other episodes of the same show already
+  // loaded in allItems, in the order they appear below this one in the list.
+  function handlePlayPodcast(item) {
+    if (!onPlayPodcast) return;
+    const showEpisodes = allItems.filter(i => i.isPodcast && i.feedId === item.feedId);
+    const idx = showEpisodes.findIndex(i => i.url === item.url);
+    onPlayPodcast(item, idx >= 0 ? showEpisodes.slice(idx + 1) : []);
+  }
+
   // Used by ContentViewer's onSave/onUnsave — keeps savedUrls AND savedItems in sync
   function handleViewerSave(item) {
     saveItem(user.id, item).catch(() => {});
@@ -994,6 +1004,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   handlersRef.current.startLongPress   = startLongPress;
   handlersRef.current.cancelLongPress  = cancelLongPress;
   handlersRef.current.setCursorIdx     = setCursorIdx;
+  handlersRef.current.handlePlayPodcast = handlePlayPodcast;
 
   return (
     <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
@@ -1469,7 +1480,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   feedColor={feedColorMap[item.feedId]}
                   multiSelectMode={multiSelectMode}
                   isChecked={multiSelectMode && selectedUrls.has(item.url)}
-                  onPlayPodcast={onPlayPodcast}
                   withDataUrl={false}
                   alsoSetCursor={false}
                   handlersRef={handlersRef}
@@ -1504,7 +1514,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   dismissOnRead={isMobile && filterMode === "catch-up"}
                   multiSelectMode={multiSelectMode}
                   isChecked={multiSelectMode && selectedUrls.has(item.url)}
-                  onPlayPodcast={onPlayPodcast}
                   withDataUrl={true}
                   alsoSetCursor={true}
                   handlersRef={handlersRef}
