@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.497] — 2026-08-06 11:56
+
+- [UX] Login regains a passwordless email magic-link option alongside the existing GitHub/Google buttons. This supersedes the 2026-06-23 OAuth-only simplification (v1.46.443) — magic link returns as an additive option, not the exclusive path. The new native app shares this same sign-in flow (see `native/CHANGELOG.md`).
+- [Polish] Real Feedbox brand mark everywhere — favicon, PWA/app icons (192/512/apple-touch), and the sidebar's collapsed-state glyph now use the actual logo (traced from the official artwork) instead of a generic RSS-arc icon. Added `BRAND` tokens (`src/lib/tokens.js`) for the mark's fixed teal/ink colors, decoupled from the six theme accent palettes.
+- [Fix] Login screen showed stale "BrainBits" branding (wrong app name, purple gradient "BB" mark) instead of Feedbox — replaced with the real logo mark and correct name.
+- [Perf] Cheaper floating chrome and safer graph layout. The backdrop blur on fixed surfaces (bottom nav, podcast mini-players, reader popovers) drops from 20px to a visually near-identical 14px, roughly halving the per-frame GPU filter cost while scrolling on low-end devices. The theme map's force layout now adapts its iteration count to graph size (full quality under ~60 themes, capped work above), preventing O(n²) jank for large tag vocabularies. Audit note: list windowing, lazy pages/fonts, and preconnects were verified already in place from earlier perf rounds — no other wins met the evidence bar.
+- [UX] Review is no longer a quiz — Readwise-style daily review process (concept only, our own design). The reveal-answer step is gone: each card shows its passage, your annotation, and tags immediately; you move through with "Next →" or "↻ Show again soon" (the SM-2 scheduling underneath is unchanged — Next grows the interval, Show-again resets it). Mastered and the "In your own words" nudge are always visible. Keyboard (Space/Enter/→ = next, ←/J = again) and swipe work immediately, with guards so typing a note or pressing Enter on a focused button never accidentally advances the card.
+
 ## [1.46.496] — 2026-08-05 15:19
 
 - [Fix] Podcast feeds published as Atom (not RSS 2.0) now show up as podcasts — audio enclosures, iTunes duration, and the play button were previously only detected on RSS 2.0 items, so any Atom-based podcast feed rendered as a regular article with no play affordance.

@@ -1038,9 +1038,82 @@ function InlineNameEditor({ name, T, onSave, placeholder }) {
   );
 }
 
+const DAY_MS = 86400000;
+
+function computeFeedStats(url) {
+  const items = getCachedFeed(url)?.data?.items;
+  if (!items?.length) return null;
+  const times = items.map(i => (i.date ? new Date(i.date).getTime() : NaN)).filter(t => Number.isFinite(t)).sort((a, b) => a - b);
+  const stats = { total: items.length, oldest: null, newest: null, perWeek: null, buckets: [], byDay: false };
+  if (!times.length) return stats;
+  stats.oldest = times[0];
+  stats.newest = times[times.length - 1];
+  const spanDays = (stats.newest - stats.oldest) / DAY_MS;
+  if (spanDays >= 1) stats.perWeek = (times.length / spanDays) * 7;
+  stats.byDay = spanDays < 14;
+  const bucketMs = stats.byDay ? DAY_MS : 7 * DAY_MS;
+  const count = Math.min(24, Math.floor(spanDays / (bucketMs / DAY_MS)) + 1);
+  const start = stats.newest - (count - 1) * bucketMs;
+  const buckets = new Array(count).fill(0);
+  for (const t of times) {
+    if (t < start) continue;
+    const idx = Math.min(count - 1, Math.floor((t - start) / bucketMs));
+    buckets[idx] += 1;
+  }
+  stats.buckets = buckets;
+  return stats;
+}
+
+function FeedStatsPanel({ feed, T, saving, onSaveUrl, urlError }) {
+  const stats = useMemo(() => computeFeedStats(feed.url), [feed.url]);
+  const peak = stats?.buckets.length ? Math.max(...stats.buckets) : 0;
+  const labelStyle = { fontSize: 10, color: T.textTertiary, letterSpacing: ".04em", textTransform: "uppercase" };
+  const valueStyle = { fontSize: 13, fontWeight: 600, color: T.text };
+
+  return (
+    <div style={{ padding: "12px 16px 14px 56px", background: T.surface, borderTop: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <span style={labelStyle}>Feed URL</span>
+        <InlineNameEditor name={feed.url} T={T} onSave={onSaveUrl} placeholder="https://example.com/feed.xml" />
+        {urlError && <span style={{ fontSize: 11, color: T.danger }}>{urlError}</span>}
+        {saving && <span style={{ fontSize: 11, color: T.textTertiary }}>Saving…</span>}
+      </div>
+
+      {!stats ? (
+        <span style={{ fontSize: 12, color: T.textTertiary }}>No cached articles yet — sync to see stats.</span>
+      ) : (
+        <>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+            <div><div style={labelStyle}>Cached</div><div style={valueStyle}>{stats.total}</div></div>
+            <div><div style={labelStyle}>Oldest</div><div style={valueStyle}>{stats.oldest ? new Date(stats.oldest).toLocaleDateString() : "—"}</div></div>
+            <div><div style={labelStyle}>Newest</div><div style={valueStyle}>{stats.newest ? new Date(stats.newest).toLocaleDateString() : "—"}</div></div>
+            <div><div style={labelStyle}>Posts / week</div><div style={valueStyle}>{stats.perWeek === null ? "—" : stats.perWeek.toFixed(1)}</div></div>
+          </div>
+
+          {peak > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <span style={labelStyle}>Cadence — last {stats.buckets.length} {stats.byDay ? "days" : "weeks"}</span>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 36 }}>
+                {stats.buckets.map((n, i) => (
+                  <div key={i}
+                    title={`${n} post${n === 1 ? "" : "s"}`}
+                    style={{ flex: 1, minWidth: 3, height: `${Math.max(8, (n / peak) * 100)}%`, background: n ? T.accent : T.border, borderRadius: 2, opacity: n ? 1 : 0.5 }} />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }) {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [urlError, setUrlError] = useState("");
+  const [urlSaving, setUrlSaving] = useState(false);
   const [folderOpen, setFolderOpen] = useState(false);
   const folderRef = useRef(null);
   useEffect(() => {
@@ -1103,8 +1176,29 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
     } finally { setSaving(false); }
   }
 
+  async function handleUrlSave(nextUrl) {
+    const trimmed = nextUrl.trim();
+    let parsed;
+    try { parsed = new URL(trimmed); } catch { setUrlError("Enter a valid URL"); return; }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      setUrlError("URL must start with http:// or https://");
+      return;
+    }
+    setUrlError("");
+    setUrlSaving(true);
+    try {
+      await updateFeedSettings(feed.id, { url: trimmed });
+      invalidateCachedFeed(feed.url);
+      onUpdate(feed.id, { url: trimmed });
+    } catch (err) {
+      console.error(err);
+      setUrlError("Could not save — try again");
+    } finally { setUrlSaving(false); }
+  }
+
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 16px", borderBottom: `1px solid ${T.border}`, transition: "background .12s", opacity: deleting ? 0.4 : 1 }}
+    <div style={{ borderBottom: `1px solid ${T.border}`, opacity: deleting ? 0.4 : 1 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 16px", transition: "background .12s" }}
       onMouseEnter={e => e.currentTarget.style.background = T.surface}
       onMouseLeave={e => e.currentTarget.style.background = "transparent"}
     >
@@ -1218,6 +1312,19 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
         <span style={{ fontSize: 9, color: T.textTertiary, textAlign: "center" }}>Full</span>
       </div>
 
+      {/* Stats */}
+      <button onClick={() => setStatsOpen(v => !v)}
+        title={statsOpen ? "Hide feed stats" : "Show feed stats"}
+        aria-expanded={statsOpen}
+        style={{ background: statsOpen ? T.surface2 : "none", border: "none", cursor: "pointer", color: statsOpen ? T.accent : T.textTertiary, padding: "4px 6px", borderRadius: SHAPE.radiusSm, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "color .12s, background .12s" }}
+        onMouseEnter={e => { if (!statsOpen) { e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.surface; } }}
+        onMouseLeave={e => { if (!statsOpen) { e.currentTarget.style.color = T.textTertiary; e.currentTarget.style.background = "none"; } }}
+      >
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M3 13V8M8 13V3M13 13v-6"/>
+        </svg>
+      </button>
+
       {/* Delete */}
       <button onClick={handleDelete} disabled={deleting}
         title="Remove feed"
@@ -1231,6 +1338,11 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
           </svg>
         )}
       </button>
+    </div>
+
+    {statsOpen && (
+      <FeedStatsPanel feed={feed} T={T} saving={urlSaving} urlError={urlError} onSaveUrl={handleUrlSave} />
+    )}
     </div>
   );
 }

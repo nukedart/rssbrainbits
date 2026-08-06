@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase, signInWithGitHub, signInWithGoogle, signOut, onAuthChange } from "../lib/supabase";
+import { supabase, signInWithGitHub, signInWithGoogle, signInWithMagicLink, signOut, onAuthChange } from "../lib/supabase";
 
 const AuthContext = createContext(null);
 
@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, signIn: signInWithGitHub, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, signIn: signInWithGitHub, signInWithGoogle, signInWithMagicLink, signOut }}>
       {children}
     </AuthContext.Provider>
   );

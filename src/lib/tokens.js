@@ -1,6 +1,16 @@
 // ── Feedbox Design Tokens ──
 // Six themes: NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA
 
+// ── Brand (fixed, theme-independent) ────────────────────────
+// The Feedbox mark's own colors — used for the logo/favicon/app-icon glyph
+// and other brand-identity moments. Not a theme accent; themes keep their
+// own muted, editorial palettes (see below).
+export const BRAND = {
+  mint:     "#65D5C4",
+  mintDeep: "#47AD9E",
+  ink:      "#2F373B",
+};
+
 // ── Theme 1: Editorial Nocturne ─────────────────────────────
 // "The Midnight Editor" — Noto Serif + Inter, sage-emerald on deep slate
 export const NOCTURNE = {
@@ -178,7 +188,7 @@ export const SHAPE = {
   rowPadX:    16,   // list row horizontal padding
   rowGap:     12,   // gap between row text block and thumbnail
   barInset:   14,   // floating bottom bar inset from screen edges
-  blur:       "saturate(180%) blur(20px)", // backdrop-filter for floating chrome
+  blur:       "saturate(160%) blur(14px)", // backdrop-filter for floating chrome (14px ≈ same look, cheaper on GPU than 20px)
   shadowFloat: "0 8px 28px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.10)",
   shadowFloatUp:   "0 -8px 28px rgba(0,0,0,0.18), 0 -1px 2px rgba(0,0,0,0.10)",   // bottom sheets
   shadowFloatLeft: "-8px 0 28px rgba(0,0,0,0.18), -1px 0 2px rgba(0,0,0,0.10)",   // right-side drawers

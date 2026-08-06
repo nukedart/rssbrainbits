@@ -38,9 +38,12 @@ function mulberry32(seed) {
 
 // Position nodes with a tiny force simulation. Pure & deterministic
 // for a given seed. Returns new array [{tag, count, x, y}].
-export function layoutGraph(nodes, edges, { width = 600, height = 400, iterations = 150, seed = 42 } = {}) {
+export function layoutGraph(nodes, edges, { width = 600, height = 400, iterations = null, seed = 42 } = {}) {
   const n = nodes.length;
   if (n === 0) return [];
+  // Adaptive iteration count: full quality for small graphs, capped work
+  // for large tag vocabularies (layout cost is O(n² · iterations)).
+  const iters = iterations ?? Math.max(40, Math.min(150, Math.round(9000 / n)));
   const rand = mulberry32(seed);
   const pts = nodes.map(node => ({
     ...node,
@@ -50,8 +53,8 @@ export function layoutGraph(nodes, edges, { width = 600, height = 400, iteration
   if (n === 1) return [{ ...pts[0], x: width / 2, y: height / 2 }];
   const idx = new Map(pts.map((p, i) => [p.tag, i]));
   const k = Math.sqrt((width * height) / n);
-  for (let iter = 0; iter < iterations; iter++) {
-    const cool = 1 - iter / iterations;
+  for (let iter = 0; iter < iters; iter++) {
+    const cool = 1 - iter / iters;
     const fx = new Array(n).fill(0), fy = new Array(n).fill(0);
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {

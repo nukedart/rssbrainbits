@@ -698,7 +698,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
         {/* ── YouTube ── */}
         {yt.isYouTube && (
-          <div style={{ maxWidth: "min(1100px, 96vw)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "32px 40px 120px", width: "100%" }}>
+          <div style={{ maxWidth: "min(1440px, 96vw)", margin: "0 auto", padding: isMobile ? "20px 18px 140px" : "32px 40px 120px", width: "100%" }}>
             <YouTubeView item={item} videoId={yt.videoId} summary={summary} summarizing={summarizing} onSummarize={handleSummarize} onHighlight={handleHighlight} T={T} isMobile={isMobile} />
           </div>
         )}
@@ -1308,6 +1308,7 @@ function fmtSecs(s) {
 
 function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighlight, T, isMobile }) {
   const [showDesc, setShowDesc] = useState(false);
+  const [theaterMode, setTheaterMode] = useState(false);
   const [iframeSrc, setIframeSrc] = useState(`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`);
   const [transcript, setTranscript] = useState(null); // null = loading, [] = unavailable, [...] = lines
   const [transcriptLoading, setTranscriptLoading] = useState(true);
@@ -1353,7 +1354,7 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighl
       <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexDirection: isMobile ? "column" : "row" }}>
 
         {/* Video column */}
-        <div style={{ flex: isMobile ? "1" : "0 0 62%", minWidth: 0 }}>
+        <div style={{ flex: isMobile ? "1" : (theaterMode ? "1" : "0 0 68%"), minWidth: 0, width: "100%" }}>
           <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 16, aspectRatio: "16/9", background: "#000" }}>
             <iframe src={iframeSrc} title="YouTube video"
               style={{ width: "100%", height: "100%", border: "none", display: "block" }}
@@ -1367,8 +1368,18 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighl
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
             {item.source && <span style={{ fontSize: 12, fontWeight: 600, color: T.accent }}>{item.source}</span>}
             {item.date && <span style={{ fontSize: 12, color: T.textTertiary }}>{new Date(item.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>}
+            {!isMobile && (
+              <button onClick={() => setTheaterMode(v => !v)} style={{
+                fontSize: 11, fontWeight: 600, color: theaterMode ? T.accent : T.textSecondary,
+                background: theaterMode ? T.accentSurface : T.surface, border: "none", borderRadius: 8,
+                padding: "5px 10px", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5,
+                marginLeft: "auto",
+              }}>
+                {theaterMode ? "▣ Show transcript" : "▭ Theater mode"}
+              </button>
+            )}
             <a href={item.url} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 11, color: T.textTertiary, marginLeft: "auto", textDecoration: "none" }}>
+              style={{ fontSize: 11, color: T.textTertiary, marginLeft: isMobile ? "auto" : 0, textDecoration: "none" }}>
               ↗ YouTube
             </a>
           </div>
@@ -1418,7 +1429,8 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighl
         </div>
 
         {/* Transcript panel */}
-        <div style={{ flex: isMobile ? "1" : "0 0 36%", minWidth: 0, display: "flex", flexDirection: "column" }}>
+        {(isMobile || !theaterMode) && (
+        <div style={{ flex: isMobile ? "1" : "0 0 30%", minWidth: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
             <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".06em", color: T.textTertiary, textTransform: "uppercase" }}>
               Transcript
@@ -1493,6 +1505,7 @@ function YouTubeView({ item, videoId, summary, summarizing, onSummarize, onHighl
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   );

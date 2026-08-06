@@ -21,8 +21,8 @@ It does **not** make sense yet if you're still validating paying users. Ship to 
 | Current (Web) | Native Swift equivalent |
 |---|---|
 | React + Vite | SwiftUI (universal — one codebase for iOS + macOS) |
-| Supabase auth | Supabase Swift SDK (`supabase-swift`) |
-| Supabase DB | Supabase Swift SDK + SwiftData for local cache |
+| Supabase auth | Supabase Auth REST endpoint via `URLSession` (JWT stored in Keychain) |
+| Supabase DB | **SwiftData + CloudKit** (private DB) as the primary store, with a PostgREST dual-write bridge for web parity |
 | Stripe payments | **StoreKit 2** (App Store) or Stripe (macOS direct) |
 | Cloudflare Worker proxy | URLSession direct — no CORS in native apps |
 | `@mozilla/readability` | `SwiftSoup` + custom extraction or headless WKWebView |
@@ -88,7 +88,8 @@ Feedbox/
 │   │   ├── Folder.swift
 │   │   └── SmartFeed.swift
 │   ├── Services/
-│   │   ├── SupabaseService.swift    # auth + DB
+│   │   ├── SyncService.swift        # SwiftData + CloudKit local store
+│   │   ├── SupabaseBridge.swift     # auth + PostgREST dual-write (URLSession)
 │   │   ├── RSSService.swift         # feed fetching + parsing
 │   │   ├── AIService.swift          # Claude summarization
 │   │   ├── ArticleService.swift     # full-text extraction
@@ -115,11 +116,8 @@ All available via Swift Package Manager — no CocoaPods needed.
 ```swift
 // Package.swift dependencies
 
-// Supabase — auth + database (official Swift SDK)
-.package(url: "https://github.com/supabase/supabase-swift", from: "2.0.0"),
-
 // RSS/Atom/JSON Feed parsing
-.package(url: "https://github.com/nmdias/FeedKit", from: "9.0.0"),
+.package(url: "https://github.com/nmdias/FeedKit", from: "10.0.0"),
 
 // HTML parsing (replaces @mozilla/readability)
 .package(url: "https://github.com/scinfu/SwiftSoup", from: "2.6.0"),
@@ -128,7 +126,9 @@ All available via Swift Package Manager — no CocoaPods needed.
 .package(url: "https://github.com/evgenyneu/keychain-swift", from: "20.0.0"),
 ```
 
-StoreKit 2 and URLSession are built into the OS — no packages needed.
+StoreKit 2, SwiftData, CloudKit, and URLSession are built into the OS — no packages needed.
+
+**No Supabase SDK.** Supabase is reached only through plain `URLSession` calls to its auto-generated REST endpoint (PostgREST) at `https://<project>.supabase.co/rest/v1/...`, with the user's JWT in an `Authorization: Bearer` header. Dropping `supabase-swift` keeps the dependency surface small and makes the bridge easy to reason about — it's just HTTP.
 
 ---
 
@@ -267,25 +267,68 @@ class StoreService: ObservableObject {
 
 ### 5. Syncing read state across web + native
 
-If you run web and native simultaneously, Supabase real-time keeps them in sync:
+The native app owns its data locally in **SwiftData backed by CloudKit**, using the user's **private** CloudKit database. That gives multi-device sync across the user's own iPhone, iPad, and Mac for free, with no backend code and no server costs:
 
 ```swift
-// Subscribe to read state changes
-let channel = supabase.channel("read_state")
-    .on(
-        .insert,
-        table: "read_urls",
-        filter: .eq("user_id", userId)
-    ) { payload in
-        // Mark article as read locally
-        await MainActor.run {
-            self.markRead(url: payload.new["url"] as? String ?? "")
-        }
-    }
-    .subscribe()
+let config = ModelConfiguration(cloudKitDatabase: .private("iCloud.com.feedbox"))
+let container = try ModelContainer(
+    for: Feed.self, FeedItem.self, Highlight.self,
+    configurations: config
+)
 ```
 
-Your existing DB schema (`read_urls`, `highlights`, `notes`) works unchanged — the Swift app reads from and writes to the same Supabase tables as the web app.
+CloudKit is the source of truth for the native app. The web app still reads from Supabase Postgres, so to keep the two in parity a `SupabaseBridgeService` **dual-writes**: every local change is applied to SwiftData first, then — if the device is online — pushed to Supabase's auto-generated PostgREST endpoint over plain `URLSession`. No SDK involved.
+
+```swift
+struct SupabaseBridgeService {
+    let baseURL = URL(string: "https://<project>.supabase.co/rest/v1")!
+    let anonKey: String
+    var jwt: String   // from Keychain, set at sign-in
+
+    // Upsert a read-state row. PATCH for updates, POST + Prefer: resolution for upserts.
+    func pushRead(url: String, userId: String) async throws {
+        var req = URLRequest(url: baseURL.appendingPathComponent("read_urls"))
+        req.httpMethod = "POST"
+        req.setValue(anonKey, forHTTPHeaderField: "apikey")
+        req.setValue("Bearer \(jwt)", forHTTPHeaderField: "Authorization")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
+        req.httpBody = try JSONEncoder().encode(["user_id": userId, "url": url])
+
+        let (_, response) = try await URLSession.shared.data(for: req)
+        guard (response as? HTTPURLResponse)?.statusCode ?? 500 < 300 else {
+            throw BridgeError.pushFailed   // queue locally, retry on next foreground
+        }
+    }
+
+    // Pull anything the web app changed since our last successful sync.
+    func pullChanges(since: Date) async throws -> [RemoteRow] {
+        let iso = ISO8601DateFormatter().string(from: since)
+        var comps = URLComponents(
+            url: baseURL.appendingPathComponent("read_urls"),
+            resolvingAgainstBaseURL: false
+        )!
+        comps.queryItems = [
+            .init(name: "select", value: "*"),
+            .init(name: "updated_at", value: "gt.\(iso)")
+        ]
+        var req = URLRequest(url: comps.url!)
+        req.setValue(anonKey, forHTTPHeaderField: "apikey")
+        req.setValue("Bearer \(jwt)", forHTTPHeaderField: "Authorization")
+
+        let (data, _) = try await URLSession.shared.data(for: req)
+        return try JSONDecoder().decode([RemoteRow].self, from: data)
+    }
+}
+```
+
+Pulls run **on app foreground and on manual refresh** — not via a realtime subscription. A long-lived socket isn't worth the battery and complexity for a reader app where "fresh within a few seconds of opening" is plenty. Rows that come back get merged into the SwiftData store (last-write-wins on `updated_at`), and failed pushes are queued locally and retried on the next foreground.
+
+Your existing DB schema (`read_urls`, `highlights`, `notes`) works unchanged; RLS still scopes every request to the signed-in user because the bridge sends their real JWT.
+
+**Why not a server-side CloudKit ↔ Postgres bridge?** Reading a user's *private* CloudKit database from a server requires CloudKit Web Services and a per-user, OAuth-style consent flow — there is no admin or service-role key equivalent to Supabase's. That's a large amount of infrastructure for a single-developer, personal-use app.
+
+**Accepted tradeoff:** because the dual-write happens on the client, the web app is only as fresh as the last time the native app was opened. If you spend a week reading only on your phone with the app closed, the web view lags. That's a known and accepted limitation of this design, not a bug to file.
 
 ---
 
@@ -406,11 +449,11 @@ Things that catch people off guard:
 
 **Month 2–3:** Start the iOS app. Use TestFlight — your existing web users become beta testers. They already know the product.
 
-**Month 4:** Submit to App Store. Run web and native in parallel — same Supabase backend, data syncs automatically.
+**Month 4:** Submit to App Store. Run web and native in parallel — native syncs its own devices over CloudKit and dual-writes to Supabase so the web app stays current.
 
 **Month 6+:** Once App Store revenue covers costs, decide whether to build native macOS or keep Mac Catalyst.
 
-The web app and native app are complementary, not competing — they share the same Supabase backend. A user can sign up on web and continue on iOS with full sync. That's a selling point.
+The web app and native app are complementary, not competing — the native app mirrors its data to the same Supabase backend the web app reads. A user can sign up on web and continue on iOS with their highlights and read state intact. That's a selling point.
 
 ---
 
@@ -419,7 +462,8 @@ The web app and native app are complementary, not competing — they share the s
 | Topic | Resource |
 |---|---|
 | SwiftUI fundamentals | developer.apple.com/tutorials/swiftui |
-| Supabase Swift SDK | github.com/supabase/supabase-swift |
+| Supabase REST API (PostgREST) | supabase.com/docs/guides/api |
+| SwiftData + CloudKit sync | developer.apple.com/documentation/swiftdata |
 | FeedKit (RSS parsing) | github.com/nmdias/FeedKit |
 | SwiftSoup (HTML parsing) | github.com/scinfu/SwiftSoup |
 | StoreKit 2 guide | developer.apple.com/in-app-purchase |

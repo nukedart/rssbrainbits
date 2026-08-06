@@ -3,7 +3,8 @@ import { createPortal } from "react-dom";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
-import { SHAPE } from "../lib/tokens";
+import { SHAPE, BRAND } from "../lib/tokens";
+import FeedboxMark from "./FeedboxMark";
 
 const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 const SMART_COLORS = { blue:"#2F6FED", teal:"#accfae", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -469,7 +470,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
           </div>
         ) : (
           <div style={{ width:26, height:26, borderRadius:7, background:T.surface, display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <span style={{ fontSize:13, color:T.accent, fontWeight:700 }}>F</span>
+            <FeedboxMark size={14} fill={BRAND.mint} />
           </div>
         )}
         {!isTablet && !collapsed && (

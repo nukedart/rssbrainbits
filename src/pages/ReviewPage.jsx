@@ -100,7 +100,6 @@ export default function ReviewPage({ onDueCount }) {
   const [reviews, setReviews]       = useState({});
   const [loading, setLoading]       = useState(true);
   const [queueIdx, setQueueIdx]     = useState(0);
-  const [revealed, setRevealed]     = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
   const [sessionGot, setSessionGot]     = useState(0);
   const [sessionAgain, setSessionAgain] = useState(0);
@@ -114,14 +113,12 @@ export default function ReviewPage({ onDueCount }) {
   const [sessionSize] = useState(() => parseInt(localStorage.getItem("fb-review-count") || "10", 10));
 
   // Stable refs so keyboard/touch handlers never capture stale closures
-  const revealedRef   = useRef(false);
   const exitAnimRef   = useRef(null);
   const touchStartRef = useRef(null);
   const touchDirRef   = useRef(null);
   const handleRatingRef = useRef(null);
   const streakSavedRef  = useRef(false);
 
-  revealedRef.current = revealed;
   exitAnimRef.current = exitAnim;
 
   useEffect(() => {
@@ -214,7 +211,6 @@ export default function ReviewPage({ onDueCount }) {
     setExitAnim(knew ? "left" : "right");
     setTimeout(() => {
       setExitAnim(null);
-      setRevealed(false);
       setAddingNote(false);
       setNoteText("");
       setQueueIdx(i => i + 1);
@@ -235,7 +231,6 @@ export default function ReviewPage({ onDueCount }) {
     setExitAnim("left");
     setTimeout(() => {
       setExitAnim(null);
-      setRevealed(false);
       setAddingNote(false);
       setNoteText("");
       setQueueIdx(i => i + 1);
@@ -244,17 +239,17 @@ export default function ReviewPage({ onDueCount }) {
     }, 270);
   }
 
-  // Keyboard: Space/Enter = reveal, ←/J = Again, →/K = Got it
+  // Keyboard: Space/Enter/→/K = Next, ←/J = Show again soon
   useEffect(() => {
     function onKey(e) {
       const tag = document.activeElement?.tagName;
-      if (tag === "TEXTAREA" || tag === "INPUT") return;
-      if (e.key === " " || e.key === "Enter") {
+      // BUTTON: let focused buttons (Mastered, note nudge) activate via Enter/Space
+      if (tag === "TEXTAREA" || tag === "INPUT" || tag === "BUTTON") return;
+      if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight" || e.key === "k") {
         e.preventDefault();
-        if (!revealedRef.current) setRevealed(true);
+        handleRatingRef.current(true);
       }
-      if ((e.key === "ArrowRight" || e.key === "k") && revealedRef.current) handleRatingRef.current(true);
-      if ((e.key === "ArrowLeft"  || e.key === "j") && revealedRef.current) handleRatingRef.current(false);
+      if (e.key === "ArrowLeft" || e.key === "j") handleRatingRef.current(false);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -266,7 +261,7 @@ export default function ReviewPage({ onDueCount }) {
     touchDirRef.current = null;
   }
   function onTouchMove(e) {
-    if (!touchStartRef.current || !revealedRef.current) return;
+    if (!touchStartRef.current) return;
     const dx = e.touches[0].clientX - touchStartRef.current.x;
     const dy = e.touches[0].clientY - touchStartRef.current.y;
     if (Math.abs(dx) > Math.abs(dy) + 10 && Math.abs(dx) > 44) {
@@ -435,157 +430,124 @@ export default function ReviewPage({ onDueCount }) {
 
             {/* Passage */}
             <div
-              role={revealed ? undefined : "button"}
-              tabIndex={revealed ? undefined : 0}
-              aria-label={revealed ? undefined : "Click or press Enter to reveal your note"}
-              onClick={() => !revealed && setRevealed(true)}
-              onKeyDown={e => { if (!revealed && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setRevealed(true); } }}
               style={{
                 padding: (current.article_title || current.article_url) ? "12px 24px 24px" : "28px 24px 24px",
                 fontSize: 20, lineHeight: 1.72,
                 fontStyle: "italic",
                 fontFamily: "var(--font-serif, Georgia, serif)",
                 color: T.text,
-                cursor: revealed ? "default" : "pointer",
                 WebkitFontSmoothing: "antialiased",
               }}
             >
               "{current.passage}"
             </div>
 
-            {/* Revealed answer — fades in */}
-            {revealed && (
-              <div style={{ animation: "rv-reveal .22s ease" }}>
-                <div style={{ padding: "20px 24px 20px" }}>
-                  {current.note && !addingNote ? (
-                    <div style={{
-                      fontSize: 15, color: T.textSecondary, lineHeight: 1.68,
-                      borderLeft: `3px solid ${T.accent}`,
-                      paddingLeft: 16,
-                      marginBottom: current.tags?.length ? 16 : 0,
-                      WebkitFontSmoothing: "antialiased",
-                    }}>
-                      {current.note}
-                    </div>
-                  ) : addingNote ? (
-                    <div style={{ marginBottom: current.tags?.length ? 16 : 0 }}>
-                      <textarea
-                        autoFocus
-                        value={noteText}
-                        onChange={e => setNoteText(e.target.value)}
-                        placeholder="Write your annotation…"
-                        aria-label="Write your annotation"
-                        rows={3}
-                        style={{
-                          width: "100%", boxSizing: "border-box", resize: "none",
-                          fontSize: 14, lineHeight: 1.6, fontFamily: "inherit",
-                          padding: "10px 12px", borderRadius: SHAPE.radiusSm,
-                          border: `1px solid ${T.accent}`,
-                          background: T.bg, color: T.text, outline: "none",
-                        }}
-                      />
-                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                        <button onClick={handleSaveNote} style={{
-                          flex: 1, padding: "9px", borderRadius: SHAPE.radiusSm, border: "none",
-                          background: T.accent, color: T.accentText,
-                          fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
-                        }}>Save</button>
-                        <button onClick={() => { setAddingNote(false); setNoteText(""); }} style={{
-                          padding: "9px 16px", borderRadius: SHAPE.radiusSm,
-                          border: `1px solid ${T.border}`, background: "transparent",
-                          color: T.textSecondary, fontSize: 13, fontFamily: "inherit", cursor: "pointer",
-                        }}>Cancel</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => { setAddingNote(true); setNoteText(""); }}
-                      style={{
-                        width: "100%", padding: "10px 14px", borderRadius: SHAPE.radiusSm, cursor: "pointer",
-                        border: `1px dashed ${T.border}`, background: "transparent",
-                        color: T.textSecondary, fontSize: 13, fontFamily: "inherit",
-                        textAlign: "center",
-                        marginBottom: current.tags?.length ? 16 : 0,
-                      }}
-                    >✍ In your own words — what does this mean to you?</button>
-                  )}
-                  {current.tags?.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {current.tags.map(t => (
-                        <span key={t} style={{
-                          fontSize: 11, padding: "3px 10px", borderRadius: 20,
-                          background: T.accentSurface, color: T.accent,
-                          border: `1px solid ${T.accent}33`,
-                          fontWeight: 600, letterSpacing: ".03em",
-                        }}>{t}</span>
-                      ))}
-                    </div>
-                  )}
-                  {connectedCards.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>
-                        Connected cards
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        {connectedCards.map(c => (
-                          <div
-                            key={c.id}
-                            style={{
-                              display: "flex", alignItems: "center", gap: 8,
-                              padding: "6px 8px", borderRadius: SHAPE.radiusSm,
-                            }}
-                          >
-                            <span style={{
-                              flex: 1, minWidth: 0, fontSize: 13, color: T.textSecondary,
-                              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                            }}>{c.passage}</span>
-                            {c.tags?.[0] && (
-                              <span style={{
-                                flexShrink: 0, display: "inline-flex", alignItems: "center",
-                                padding: "2px 7px", borderRadius: 20,
-                                background: T.accentSurface, color: T.accent,
-                                fontSize: 11, fontWeight: 500,
-                              }}>#{c.tags[0]}</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+            {/* Note, synthesis nudge, and tags — always visible with the card */}
+            <div style={{ padding: "20px 24px 20px" }}>
+              {current.note && !addingNote ? (
+                <div style={{
+                  fontSize: 15, color: T.textSecondary, lineHeight: 1.68,
+                  borderLeft: `3px solid ${T.accent}`,
+                  paddingLeft: 16,
+                  marginBottom: current.tags?.length ? 16 : 0,
+                  WebkitFontSmoothing: "antialiased",
+                }}>
+                  {current.note}
                 </div>
-              </div>
-            )}
-
-            {/* Show Answer — full-width, primary */}
-            {!revealed && (
-              <div style={{ padding: "0 24px 24px" }}>
+              ) : addingNote ? (
+                <div style={{ marginBottom: current.tags?.length ? 16 : 0 }}>
+                  <textarea
+                    autoFocus
+                    value={noteText}
+                    onChange={e => setNoteText(e.target.value)}
+                    placeholder="Write your annotation…"
+                    aria-label="Write your annotation"
+                    rows={3}
+                    style={{
+                      width: "100%", boxSizing: "border-box", resize: "none",
+                      fontSize: 14, lineHeight: 1.6, fontFamily: "inherit",
+                      padding: "10px 12px", borderRadius: SHAPE.radiusSm,
+                      border: `1px solid ${T.accent}`,
+                      background: T.bg, color: T.text, outline: "none",
+                    }}
+                  />
+                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                    <button onClick={handleSaveNote} style={{
+                      flex: 1, padding: "9px", borderRadius: SHAPE.radiusSm, border: "none",
+                      background: T.accent, color: T.accentText,
+                      fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+                    }}>Save</button>
+                    <button onClick={() => { setAddingNote(false); setNoteText(""); }} style={{
+                      padding: "9px 16px", borderRadius: SHAPE.radiusSm,
+                      border: `1px solid ${T.border}`, background: "transparent",
+                      color: T.textSecondary, fontSize: 13, fontFamily: "inherit", cursor: "pointer",
+                    }}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
                 <button
-                  onClick={() => setRevealed(true)}
+                  onClick={() => { setAddingNote(true); setNoteText(""); }}
                   style={{
-                    width: "100%", border: "none", cursor: "pointer", fontFamily: "inherit",
-                    background: T.accent, color: T.accentText,
-                    borderRadius: SHAPE.radiusSm, padding: "15px",
-                    fontSize: 16, fontWeight: 700, letterSpacing: "-.01em",
-                    transition: "opacity .12s",
+                    width: "100%", padding: "10px 14px", borderRadius: SHAPE.radiusSm, cursor: "pointer",
+                    border: `1px dashed ${T.border}`, background: "transparent",
+                    color: T.textSecondary, fontSize: 13, fontFamily: "inherit",
+                    textAlign: "center",
+                    marginBottom: current.tags?.length ? 16 : 0,
                   }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = ".85"}
-                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-                >
-                  Show Answer
-                </button>
-              </div>
-            )}
+                >✍ In your own words — what does this mean to you?</button>
+              )}
+              {current.tags?.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {current.tags.map(t => (
+                    <span key={t} style={{
+                      fontSize: 11, padding: "3px 10px", borderRadius: 20,
+                      background: T.accentSurface, color: T.accent,
+                      border: `1px solid ${T.accent}33`,
+                      fontWeight: 600, letterSpacing: ".03em",
+                    }}>{t}</span>
+                  ))}
+                </div>
+              )}
+              {connectedCards.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>
+                    Connected cards
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {connectedCards.map(c => (
+                      <div
+                        key={c.id}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 8,
+                          padding: "6px 8px", borderRadius: SHAPE.radiusSm,
+                        }}
+                      >
+                        <span style={{
+                          flex: 1, minWidth: 0, fontSize: 13, color: T.textSecondary,
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        }}>{c.passage}</span>
+                        {c.tags?.[0] && (
+                          <span style={{
+                            flexShrink: 0, display: "inline-flex", alignItems: "center",
+                            padding: "2px 7px", borderRadius: 20,
+                            background: T.accentSurface, color: T.accent,
+                            fontSize: 11, fontWeight: 500,
+                          }}>#{c.tags[0]}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Rating buttons — fade in after reveal, always in same position */}
+      {/* Rating buttons — always visible */}
       <div style={{
         padding: `10px 16px calc(env(safe-area-inset-bottom, 0px) + 80px)`,
         display: "flex", gap: 12, flexShrink: 0,
-        opacity: revealed ? 1 : 0,
-        pointerEvents: revealed ? "auto" : "none",
-        transition: "opacity .2s",
       }}>
         {/* Again */}
         <button
@@ -603,7 +565,7 @@ export default function ReviewPage({ onDueCount }) {
           onTouchEnd={e => e.currentTarget.style.opacity = "1"}
           onTouchCancel={e => e.currentTarget.style.opacity = "1"}
         >
-          <span style={{ fontSize: 16, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Again</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>↻ Show again soon</span>
           <span style={{ fontSize: 11, color: T.textTertiary }}>
             {intervalLabel(rate(reviews[current?.id], false).interval)}
           </span>
@@ -625,7 +587,7 @@ export default function ReviewPage({ onDueCount }) {
           onTouchEnd={e => e.currentTarget.style.opacity = "1"}
           onTouchCancel={e => e.currentTarget.style.opacity = "1"}
         >
-          <span style={{ fontSize: 16, fontWeight: 700, color: T.accentText, letterSpacing: "-.01em" }}>Got it</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: T.accentText, letterSpacing: "-.01em" }}>Next →</span>
           <span style={{ fontSize: 11, color: T.accentText, opacity: .75 }}>
             {intervalLabel(rate(reviews[current?.id], true).interval)}
           </span>
@@ -633,33 +595,31 @@ export default function ReviewPage({ onDueCount }) {
       </div>
 
       {/* Mastered — retire card from rotation */}
-      {revealed && (
-        <div style={{ padding: "0 16px", flexShrink: 0, textAlign: "center" }}>
-          <button
-            onClick={handleMaster}
-            style={{
-              border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
-              color: T.textTertiary, fontSize: 12, borderRadius: SHAPE.radiusSm,
-              padding: "8px 12px", transition: "color .12s",
-            }}
-            onMouseEnter={e => e.currentTarget.style.color = T.text}
-            onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
-          >
-            ✓ Mastered — retire this card
-          </button>
-        </div>
-      )}
+      <div style={{ padding: "0 16px", flexShrink: 0, textAlign: "center" }}>
+        <button
+          onClick={handleMaster}
+          style={{
+            border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
+            color: T.textTertiary, fontSize: 12, borderRadius: SHAPE.radiusSm,
+            padding: "8px 12px", transition: "color .12s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = T.text}
+          onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
+        >
+          ✓ Mastered — retire this card
+        </button>
+      </div>
 
       {/* Hint row — swipe on mobile, keyboard on desktop */}
       {isMobile ? (
-        !swipeHintDone && revealed && (
+        !swipeHintDone && (
           <div style={{ textAlign: "center", fontSize: 11, color: T.textTertiary, paddingBottom: 8, opacity: .5, letterSpacing: ".01em", transition: "opacity .3s" }}>
             ← swipe to rate →
           </div>
         )
       ) : (
         <div style={{ textAlign: "center", fontSize: 11, color: T.textTertiary, paddingBottom: 8, opacity: .4, letterSpacing: ".01em" }}>
-          space · show answer &nbsp;·&nbsp; ← again &nbsp;·&nbsp; got it →
+          space · next &nbsp;·&nbsp; ← again &nbsp;·&nbsp; next →
         </div>
       )}
     </div>
