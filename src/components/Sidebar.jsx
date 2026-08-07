@@ -465,8 +465,13 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
       {/* ── Header ── */}
       <div style={{ padding: collapsed ? "14px 8px 8px" : "16px 12px 8px", display:"flex", alignItems:"center", justifyContent: collapsed?"center":"space-between", flexShrink:0 }}>
         {!collapsed ? (
-          <div style={{ fontSize:16, fontWeight:700, color:T.text, letterSpacing:"-.02em", lineHeight:1.2, flex:1 }}>
-            Feedbox
+          <div style={{ display:"flex", alignItems:"center", gap:8, flex:1 }}>
+            <div style={{ width:26, height:26, borderRadius:7, background:T.surface, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <FeedboxMark size={14} fill={BRAND.mint} />
+            </div>
+            <div style={{ fontSize:16, fontWeight:700, color:T.text, letterSpacing:"-.02em", lineHeight:1.2 }}>
+              Feedbox
+            </div>
           </div>
         ) : (
           <div style={{ width:26, height:26, borderRadius:7, background:T.surface, display:"flex", alignItems:"center", justifyContent:"center" }}>

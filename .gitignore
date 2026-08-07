@@ -17,6 +17,12 @@ dist/assets/
 # ── Supabase CLI temp files ────────────────────────────────────
 supabase/.temp/
 
+# ── Native (Swift/iOS rewrite, local-only for now) ─────────────
+native/
+
+# ── Test coverage reports (regenerated via `npm run test:coverage`) ─
+coverage/
+
 # ── Editor & OS ───────────────────────────────────────────────
 .DS_Store
 .DS_Store?

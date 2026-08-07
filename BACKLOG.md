@@ -17,12 +17,12 @@ Full-app audit (UX, perf, backend/security, competitive gap, test coverage). All
 
 ### Quick wins
 
-- [ ] **Fix duplicate/mismatched folder color maps** — `src/components/Sidebar.jsx:8-9` vs `src/pages/SecondaryPages.jsx:925,1146-1147` define the same color keys with different hex values (e.g. "teal" is `#accfae` in one place and `#2DA66E` in another; "amber" similarly differs) — verified by grep. Same folder can show a different dot color depending on which page you're on. Fix: single shared map in `src/lib/tokens.js`.
-- [ ] **BottomNav overflow risk on narrow phones** — `src/components/BottomNav.jsx:95-114,116-129` — 6 fixed-shrink buttons inside a capped-width pill with no overflow handling can bleed past the rounded edge on 320px screens; tap width is also borderline (~42px, under the 44px guideline).
-- [ ] **Modal close buttons under 44px tap target** — `FolderModal.jsx:51`, `SmartFeedModal.jsx:73`, `PWAInstallBanner.jsx:91` (28×28), `HighlightsDrawer.jsx:63` (32×32).
-- [ ] **ErrorBoundary ignores theme** — `src/components/ErrorBoundary.jsx:36-92` hardcodes ~10 hex values, so a crash always renders a dark UI even for Light/Distilled theme users. Fix: fall back to `tokens.js` defaults.
-- [ ] **Refresh stale Lighthouse baseline** — `scripts/perf-history.json` has one datapoint from 2026-03-30 (~4 months old); any regression since is invisible. Run `npm run perf` to add a current entry. (Bundle/render-perf otherwise already in good shape — lazy-loading and memoization are already correctly applied app-wide, verified.)
-- [ ] **Delete 2 verified-dead exports** — `src/lib/apiKeys.js:9` (`setAiProvider`, never called outside its own file) and `src/lib/readerPrefs.js:49` (`applyBionicToText`, no callers found anywhere).
+- [x] **Fix duplicate/mismatched folder color maps** — `src/components/Sidebar.jsx:8-9` vs `src/pages/SecondaryPages.jsx:925,1146-1147` define the same color keys with different hex values (e.g. "teal" is `#accfae` in one place and `#2DA66E` in another; "amber" similarly differs) — verified by grep. Same folder can show a different dot color depending on which page you're on. Fix: single shared map in `src/lib/tokens.js`.
+- [x] **BottomNav overflow risk on narrow phones** — `src/components/BottomNav.jsx:95-114,116-129` — 6 fixed-shrink buttons inside a capped-width pill with no overflow handling can bleed past the rounded edge on 320px screens; tap width is also borderline (~42px, under the 44px guideline).
+- [x] **Modal close buttons under 44px tap target** — `FolderModal.jsx:51`, `SmartFeedModal.jsx:73`, `PWAInstallBanner.jsx:91` (28×28), `HighlightsDrawer.jsx:63` (32×32).
+- [x] **ErrorBoundary ignores theme** — `src/components/ErrorBoundary.jsx:36-92` hardcodes ~10 hex values, so a crash always renders a dark UI even for Light/Distilled theme users. Fix: fall back to `tokens.js` defaults.
+- [x] **Refresh stale Lighthouse baseline** — `scripts/perf-history.json` has one datapoint from 2026-03-30 (~4 months old); any regression since is invisible. Run `npm run perf` to add a current entry. (Bundle/render-perf otherwise already in good shape — lazy-loading and memoization are already correctly applied app-wide, verified.)
+- [x] **Delete 2 verified-dead exports** — `src/lib/apiKeys.js:9` (`setAiProvider`, never called outside its own file) and `src/lib/readerPrefs.js:49` (`applyBionicToText`, no callers found anywhere).
 
 ### Medium effort
 

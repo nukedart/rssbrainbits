@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.499] — 2026-08-07 13:03
+
+- [Polish] The Feedbox brand mark now appears in the sidebar's expanded header too, next to the "Feedbox" wordmark — previously it only showed up when the sidebar was collapsed, so the top-left corner of the app went bare in the default (expanded) state.
+
 ## [1.46.498] — 2026-08-06 22:04
 
 - [Polish] Folder/tag colors are now consistent everywhere — three separate hardcoded color maps (Sidebar, Manage Feeds, and an inline duplicate) had drifted so the same folder could show a different teal/amber depending on which page you were on. Centralized into one `FOLDER_COLORS` export in `tokens.js`.
