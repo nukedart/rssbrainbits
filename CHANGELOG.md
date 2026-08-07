@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.498] — 2026-08-06 22:04
+
+- [Polish] Folder/tag colors are now consistent everywhere — three separate hardcoded color maps (Sidebar, Manage Feeds, and an inline duplicate) had drifted so the same folder could show a different teal/amber depending on which page you were on. Centralized into one `FOLDER_COLORS` export in `tokens.js`.
+- [Polish] Bottom nav bar no longer risks spilling past its rounded pill edge on narrow phones (320px, e.g. iPhone SE) — trimmed 1px/side of icon padding to keep all 7 tabs within the pill's max width.
+- [UX] Modal/drawer close buttons (Folder, Smart Feed, Highlights drawer, PWA install banner) bumped from 28–32px to a full 44×44px tap target, meeting iOS/WCAG minimum touch-target guidance.
+- [Fix] Crash-recovery screen now respects your actual theme instead of always rendering dark — previously hardcoded to the Nocturne palette regardless of Light/Cream/Sepia/etc. selection.
+
 ## [1.46.497] — 2026-08-06 11:56
 
 - [UX] Login regains a passwordless email magic-link option alongside the existing GitHub/Google buttons. This supersedes the 2026-06-23 OAuth-only simplification (v1.46.443) — magic link returns as an additive option, not the exclusive path. The new native app shares this same sign-in flow (see `native/CHANGELOG.md`).

@@ -6,5 +6,13 @@
     "accessibility": 1,
     "bestPractices": 1,
     "seo": 0.91
+  },
+  {
+    "date": "2026-08-07",
+    "url": "http://localhost:56768",
+    "performance": 0.99,
+    "accessibility": 1,
+    "bestPractices": 1,
+    "seo": 0.92
   }
 ]

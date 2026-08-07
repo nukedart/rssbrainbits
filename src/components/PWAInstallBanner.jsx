@@ -88,7 +88,7 @@ export default function PWAInstallBanner() {
             <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 4 }}>Calm reading</span>
           </div>
         </div>
-        <button onClick={dismiss} style={{ background: T.surface2, border: "none", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", color: T.textTertiary, fontSize: 16, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, WebkitTapHighlightColor: "transparent" }}>×</button>
+        <button onClick={dismiss} style={{ background: T.surface2, border: "none", borderRadius: "50%", width: 44, height: 44, cursor: "pointer", color: T.textTertiary, fontSize: 16, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, WebkitTapHighlightColor: "transparent" }}>×</button>
       </div>
       {isIOS ? (
         <div style={{ background: T.surface2, borderRadius: 12, padding: "10px 14px", fontSize: 12, color: T.textSecondary, lineHeight: 1.6 }}>

@@ -70,7 +70,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
               Articles matching any keyword appear here automatically
             </p>
           </div>
-          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm, width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm, width: 44, height: 44, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
 
         {/* Name */}

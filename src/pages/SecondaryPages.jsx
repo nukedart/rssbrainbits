@@ -15,7 +15,7 @@ import { feedsToOPML, downloadFile } from "../lib/exportUtils";
 import { getCachedFeed, cacheAge, invalidateCachedFeed } from "../lib/feedCache";
 import { getPlan, getPlanName, PLANS } from "../lib/plan";
 import { track } from "../lib/analytics";
-import { SHAPE } from "../lib/tokens";
+import { SHAPE, FOLDER_COLORS } from "../lib/tokens";
 
 // ── Shared page shell ─────────────────────────────────────────
 function PageShell({ title, subtitle, action, children }) {
@@ -964,8 +964,6 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
 
 // ── Source Dashboard (Manage Feeds) ───────────────────────────
 
-const FOLDER_COLORS = { gray:"#8A9099", teal:"#2DA66E", blue:"#2F6FED", amber:"#D4820A", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
-
 function feedType(feed) {
   try {
     if (feed.type === "youtube" || feed.url?.includes("youtube.com/feeds/videos.xml") || parseYouTubeUrl(feed.url).isYouTube) return "youtube";
@@ -1279,8 +1277,7 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
                 <span style={{ fontSize: 10, color: T.textTertiary }}>No folder</span>
               </button>
               {folders.map(f => {
-                const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
-                const dot = FCOLS[f.color] || "#8A9099";
+                const dot = FOLDER_COLORS[f.color] || "#8A9099";
                 const isCurrent = feed.folder_id === f.id;
                 return (
                   <button

@@ -1,4 +1,23 @@
 import { Component } from "react";
+import { NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA } from "../lib/tokens";
+
+const THEMES = {
+  nocturne: NOCTURNE,
+  distilled: DISTILLED,
+  light: LIGHT,
+  cream: CREAM,
+  ink: INK,
+  sepia: SEPIA,
+};
+
+function getResolvedTheme() {
+  try {
+    const stored = localStorage.getItem("fb-theme");
+    return THEMES[stored] || NOCTURNE;
+  } catch {
+    return NOCTURNE;
+  }
+}
 
 /**
  * App-level error boundary — catches render crashes and shows
@@ -26,6 +45,8 @@ export default class ErrorBoundary extends Component {
   render() {
     if (!this.state.hasError) return this.props.children;
 
+    const t = getResolvedTheme();
+
     // Inline styles so this works even if CSS fails to load
     return (
       <div style={{
@@ -33,21 +54,21 @@ export default class ErrorBoundary extends Component {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#121416",
+        background: t.bg,
         padding: 24,
         fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif",
       }}>
         <div style={{
           maxWidth: 400,
           width: "100%",
-          background: "#1a1c1e",
+          background: t.surface,
           borderRadius: 16,
           padding: "36px 28px",
           textAlign: "center",
         }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c2c8bf" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={t.textSecondary} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           <h2 style={{
-            color: "#f1f1f1",
+            color: t.text,
             fontSize: 18,
             fontWeight: 700,
             margin: "0 0 10px",
@@ -55,7 +76,7 @@ export default class ErrorBoundary extends Component {
             Something went wrong
           </h2>
           <p style={{
-            color: "#c2c8bf",
+            color: t.textSecondary,
             fontSize: 13,
             lineHeight: 1.6,
             margin: "0 0 24px",
@@ -66,8 +87,8 @@ export default class ErrorBoundary extends Component {
           <button
             onClick={this.handleReload}
             style={{
-              background: "#accfae",
-              color: "#03210b",
+              background: t.accent,
+              color: t.accentText,
               border: "none",
               borderRadius: 6,
               padding: "12px 28px",
@@ -83,13 +104,13 @@ export default class ErrorBoundary extends Component {
 
           {this.state.error && (
             <details style={{ textAlign: "left", marginTop: 12 }}>
-              <summary style={{ color: "#737971", fontSize: 11, cursor: "pointer" }}>
+              <summary style={{ color: t.textTertiary, fontSize: 11, cursor: "pointer" }}>
                 Error details
               </summary>
               <pre style={{
-                color: "#c2c8bf",
+                color: t.textSecondary,
                 fontSize: 10,
-                background: "#121416",
+                background: t.bg,
                 borderRadius: 8,
                 padding: 10,
                 marginTop: 8,

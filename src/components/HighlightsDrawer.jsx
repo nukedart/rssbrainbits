@@ -60,7 +60,7 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
               </button>
             </div>
           )}
-          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: T.textSecondary, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: 8, width: 44, height: 44, cursor: "pointer", color: T.textSecondary, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
 
         <div style={{ flex: 1, padding: "12px 0" }}>

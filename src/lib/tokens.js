@@ -196,3 +196,5 @@ export const SHAPE = {
 
 // backwards-compat alias
 export const DARK = NOCTURNE;
+
+export const FOLDER_COLORS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };

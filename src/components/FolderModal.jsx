@@ -48,7 +48,7 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
           <div style={{ flex: 1 }}>
             <div id="folder-modal-title" style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{isNew ? "New collection" : "Edit collection"}</div>
           </div>
-          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm, width: 28, height: 28, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm, width: 44, height: 44, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
         </div>
 
         {/* Name */}
