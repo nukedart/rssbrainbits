@@ -121,7 +121,7 @@ function AppShell() {
   }
 
   useEffect(() => {
-    const PAGE_TITLES = { inbox: "Inbox", today: "Today", cards: "Cards", review: "Review", readlater: "Saved", stats: "Stats", settings: "Settings", analytics: "Analytics" };
+    const PAGE_TITLES = { inbox: "Inbox", today: "Today", cards: "Cards", notes: "Cards", review: "Review", readlater: "Saved", stats: "Stats", settings: "Settings", analytics: "Analytics", history: "History", "manage-feeds": "Manage Feeds" };
     const base = page.startsWith("feed:") ? "Feed" : page.startsWith("folder:") ? "Folder" : page.startsWith("smart:") ? "Smart Feed" : PAGE_TITLES[page];
     document.title = base ? `${base} — Feedbox` : "Feedbox";
   }, [page]);

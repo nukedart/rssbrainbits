@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.501] — 2026-08-13 11:38
+
+- [Nav] Browser tab title now updates correctly on Manage Feeds, History, and the legacy Notes→Cards redirect — these three reachable pages were missing from `PAGE_TITLES` and silently fell back to the generic "Feedbox" title instead of e.g. "Manage Feeds — Feedbox", losing tab/history clarity.
+
 ## [1.46.500] — 2026-08-13 06:48
 
 - [Fix] Article reading no longer randomly stalls mid-scroll. A tap-to-select-sentence gesture in the highlight toolbar only tracked touch distance at release, so a momentum-scroll flick that happened to land the finger within 15px of where it started (common with rubber-banding) was misread as a stationary tap — it force-selected the nearest sentence and popped a floating toolbar over the article, eating the next touch. Now any real finger movement during the touch (tracked via `touchmove`) cancels the tap-to-select path entirely.
