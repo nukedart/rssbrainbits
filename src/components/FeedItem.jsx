@@ -6,6 +6,8 @@ import { SHAPE } from "../lib/tokens";
 
 const haptic = (ms = 8) => { try { navigator.vibrate?.(ms); } catch {} };
 
+const LIST_SANS_FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+
 // Warm the DNS/TCP/TLS connection to a podcast host as soon as its episode
 // is visible in the feed, so playback (from either the mini-player or the
 // full reader) doesn't pay that handshake cost after the user taps play.
@@ -348,6 +350,10 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
   const imgSize  = displayPrefs.imgSize ?? 72;
   const rawFont  = displayPrefs.fontSize;
   const titleSize = typeof rawFont === "number" ? rawFont : rawFont === "large" ? 18 : 16;
+  const showFavicon = displayPrefs.showFavicons !== false && !!favicon;
+  const faviconStyle = { borderRadius: 2, opacity: 0.75, flexShrink: 0, filter: displayPrefs.faviconGrayscale ? "grayscale(100%)" : "none" };
+  const dimmed = isRead && displayPrefs.dimRead !== false;
+  const titleFont = displayPrefs.fontStyle === "sans" ? LIST_SANS_FONT : "var(--reader-font-family)";
   // readingTime() splits the full article text on every call — memoize so it
   // only recomputes when the underlying text actually changes. Computed here
   // (not inside the desktop branch below) since hooks can't be conditional.
@@ -385,7 +391,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               padding: `${SHAPE.rowPadY}px ${SHAPE.rowPadX}px`,
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
-              opacity: isRead ? 0.48 : 1,
+              opacity: dimmed ? 0.48 : 1,
               transition: "opacity .15s",
             }}
           >
@@ -406,7 +412,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
               {/* Title */}
               <div style={{
-                fontFamily: "var(--reader-font-family)",
+                fontFamily: titleFont,
                 fontSize: titleSize,
                 fontWeight: isRead ? 400 : 600,
                 color: T.text,
@@ -438,6 +444,11 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
                 {!isRead && (
                   <span style={{ width: 8, height: 8, borderRadius: SHAPE.radiusPill, flexShrink: 0, background: T.accent }} />
+                )}
+                {showFavicon && (
+                  <img src={favicon} alt="" width={12} height={12} loading="lazy" decoding="async"
+                    style={faviconStyle}
+                    onError={e => { e.target.style.display = "none"; }} />
                 )}
                 <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                   {item.source}
@@ -478,7 +489,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             borderRadius: 12,
             cursor: "pointer",
             background: isSelected ? T.accentSurface : hovered ? T.surface : "transparent",
-            opacity: isRead ? 0.48 : 1,
+            opacity: dimmed ? 0.48 : 1,
             transition: "background .15s, opacity .15s",
           }}
         >
@@ -502,7 +513,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           {/* Text block */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontFamily: cardSize !== "sm" ? "var(--reader-font-family)" : "inherit",
+              fontFamily: cardSize !== "sm" ? titleFont : "inherit",
               fontSize: cardSize === "lg" ? 22 : cardSize === "sm" ? 15 : 19,
               fontWeight: isRead ? 400 : 600,
               color: T.text,
@@ -525,9 +536,9 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {feedColor && (
                 <span style={{ width: 5, height: 5, borderRadius: "50%", background: feedColor, flexShrink: 0 }} />
               )}
-              {favicon && !feedColor && (
+              {showFavicon && !feedColor && (
                 <img src={favicon} alt="" width={12} height={12}
-                  style={{ borderRadius: 2, opacity: 0.75, flexShrink: 0 }}
+                  style={faviconStyle}
                   onError={e => { e.target.style.display = "none"; }} />
               )}
               <span style={{ fontSize: 11, color: T.textTertiary }}>{item.source}</span>

@@ -3,6 +3,11 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.500] — 2026-08-13 06:48
+
+- [Fix] Article reading no longer randomly stalls mid-scroll. A tap-to-select-sentence gesture in the highlight toolbar only tracked touch distance at release, so a momentum-scroll flick that happened to land the finger within 15px of where it started (common with rubber-banding) was misread as a stationary tap — it force-selected the nearest sentence and popped a floating toolbar over the article, eating the next touch. Now any real finger movement during the touch (tracked via `touchmove`) cancels the tap-to-select path entirely.
+- [Feature] Inbox view options, Reeder-style — six new list-display controls in the existing Display sheet (mobile) and View options popover (desktop): Display favicons, Grayscale favicons, Dim archived articles, Sort order (Newest/Oldest/Unread-first/Smart — replaces the old standalone Smart-sort toggle), Group by (None/Date/Feed), and list Font style (Serif/Sans-serif, matching the reader's own font choices). All persist across reloads alongside the existing Image/Preview/Text-size prefs.
+
 ## [1.46.499] — 2026-08-07 13:03
 
 - [Polish] The Feedbox brand mark now appears in the sidebar's expanded header too, next to the "Feedbox" wordmark — previously it only showed up when the sidebar was collapsed, so the top-left corner of the app went bare in the default (expanded) state.

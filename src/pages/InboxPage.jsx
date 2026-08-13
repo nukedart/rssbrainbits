@@ -18,6 +18,44 @@ import { useBackButtonClose } from "../hooks/useBackButtonClose.js";
 import SearchBar from "../components/SearchBar";
 const MobileSearchOverlay = lazy(() => import("../components/MobileSearchOverlay"));
 import { track } from "../lib/analytics";
+import { SHAPE } from "../lib/tokens";
+
+const DISPLAY_PREF_KEYS = {
+  imgPosition: "fb-img-pos", previewLines: "fb-preview-lines", imgSize: "fb-img-size", fontSize: "fb-list-font",
+  showFavicons: "fb-show-favicons", faviconGrayscale: "fb-favicon-grayscale", dimRead: "fb-dim-read", fontStyle: "fb-list-font-style",
+};
+
+const SORT_OPTIONS  = [["newest","Newest first"],["oldest","Oldest first"],["unread","Unread first"],["smart","Smart"]];
+const GROUP_OPTIONS = [["none","None"],["date","Date"],["feed","Feed"]];
+const FONT_OPTIONS  = [["serif","Serif"],["sans","Sans-serif"]];
+
+function Toggle({ checked, onChange, T, disabled }) {
+  return (
+    <div
+      role="switch"
+      aria-checked={checked}
+      aria-disabled={disabled || undefined}
+      tabIndex={disabled ? -1 : 0}
+      onClick={() => { if (!disabled) onChange(!checked); }}
+      onKeyDown={e => { if (!disabled && (e.key === " " || e.key === "Enter")) { e.preventDefault(); onChange(!checked); } }}
+      style={{ width: 34, height: 19, borderRadius: SHAPE.radiusSm, background: checked ? T.accent : T.surface2, cursor: disabled ? "default" : "pointer", position: "relative", transition: "background .2s", flexShrink: 0, opacity: disabled ? 0.4 : 1 }}
+    >
+      <div style={{ position: "absolute", top: 2, left: checked ? 17 : 2, width: 15, height: 15, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.3)" }} />
+    </div>
+  );
+}
+
+// Keeps the per-feed section headers contiguous, preserving each feed's
+// existing internal order.
+function clusterByFeed(items) {
+  const bySource = new Map();
+  items.forEach(i => {
+    const key = i.source || "Unknown feed";
+    if (!bySource.has(key)) bySource.set(key, []);
+    bySource.get(key).push(i);
+  });
+  return [...bySource.keys()].sort((a, b) => a.localeCompare(b)).flatMap(k => bySource.get(k));
+}
 
 function dateBucket(dateStr, todayTs) {
   if (!dateStr) return null;
@@ -114,6 +152,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       previewLines: parseInt(localStorage.getItem("fb-preview-lines") ?? "2", 10),
       fontSize,
       imgSize: rawImg ? parseInt(rawImg, 10) : (isMobile ? 96 : 72),
+      showFavicons:     localStorage.getItem("fb-show-favicons") !== "false",
+      faviconGrayscale: localStorage.getItem("fb-favicon-grayscale") === "true",
+      dimRead:          localStorage.getItem("fb-dim-read") !== "false",
+      fontStyle:        localStorage.getItem("fb-list-font-style") || "serif",
     };
   });
   const [showDisplaySheet, setShowDisplaySheet] = useState(false);
@@ -164,7 +206,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [interestKeywords, setInterestKeywords] = useState(() => {
     try { return JSON.parse(localStorage.getItem("fb-interest-kw") || "[]"); } catch { return []; }
   });
-  const [smartSort, setSmartSort] = useState(() => localStorage.getItem("fb-smart-sort") === "true");
+  const [sortOrder, setSortOrder] = useState(() => localStorage.getItem("fb-sort-order") || "newest");
+  const [groupBy, setGroupBy]     = useState(() => localStorage.getItem("fb-group-by") || "date");
   const pullStartY = useRef(null); // touch start Y for pull-to-refresh
   const fetchAllRef = useRef(null); // stable ref to fetchAll — accessible from PTR handlers
   const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
@@ -401,8 +444,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         (i.source||"").toLowerCase().includes(q)
       );
     }
-    return items;
-  }, [allItems, savedItems, debouncedSearch]);
+    return groupBy === "feed" ? clusterByFeed(items) : items;
+  }, [allItems, savedItems, debouncedSearch, groupBy]);
 
   const mainBaseItems = useMemo(() => {
     let items = activeSource === "all" ? allItems : allItems.filter((i) => i.feedId === activeSource);
@@ -452,20 +495,31 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         (i.author||"").toLowerCase().includes(q)
       );
     }
-    if (smartSort && interestKeywords.length > 0) {
+    if (sortOrder === "smart" && interestKeywords.length > 0) {
       const scoreItem = (item) => {
         const text = `${item.title||""} ${item.description||""}`.toLowerCase();
         return interestKeywords.reduce((s, kw) => s + (text.includes(kw) ? 1 : 0), 0);
       };
-      return items.sort((a, b) => {
+      items.sort((a, b) => {
         const sd = scoreItem(b) - scoreItem(a);
         if (sd !== 0) return sd;
         return (b._ts || 0) - (a._ts || 0);
       });
+    } else if (sortOrder === "oldest") {
+      items.sort((a, b) => (a._ts || 0) - (b._ts || 0));
+    } else if (sortOrder === "unread") {
+      items.sort((a, b) => {
+        const ra = sessionFilterUrlsRef.current.has(a.url) ? 1 : 0;
+        const rb = sessionFilterUrlsRef.current.has(b.url) ? 1 : 0;
+        if (ra !== rb) return ra - rb;
+        return (b._ts || 0) - (a._ts || 0);
+      });
+    } else {
+      items.sort((a, b) => (b._ts || 0) - (a._ts || 0));
     }
-    return items.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+    return groupBy === "feed" ? clusterByFeed(items) : items;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, debouncedSearch, readFilter, mutedKeywords, smartSort, interestKeywords]);
+  }, [allItems, activeSource, filterMode, smartFeedDef, feedDef, ytFeedIds, folderDef, feeds, debouncedSearch, readFilter, mutedKeywords, sortOrder, groupBy, interestKeywords]);
 
   // Single downstream item list: route to whichever memo actually applies for the
   // current view, so every existing baseItems call site below is unaffected.
@@ -848,8 +902,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
   function updateDisplayPref(key, val) {
     setDisplayPrefs(p => ({ ...p, [key]: val }));
-    const storageKey = key === "imgPosition" ? "fb-img-pos" : key === "previewLines" ? "fb-preview-lines" : key === "imgSize" ? "fb-img-size" : "fb-list-font";
-    localStorage.setItem(storageKey, val);
+    localStorage.setItem(DISPLAY_PREF_KEYS[key], val);
   }
 
   useEffect(() => {
@@ -1152,29 +1205,6 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Spacer — pushes controls right when title is visible */}
           {(!searchOpen || isMobile) && <div style={{ flex: 1 }} />}
 
-          {/* Smart sort toggle */}
-          {!searchOpen && interestKeywords.length > 0 && (
-            <button
-              onClick={() => { const v = !smartSort; setSmartSort(v); localStorage.setItem("fb-smart-sort", v); }}
-              title={smartSort ? "Smart sort: on — sorted by your interests" : "Smart sort: off — tap to sort by your interests"}
-              aria-pressed={smartSort}
-              style={{
-                background: smartSort ? T.accentSurface : "transparent",
-                border: `1px solid ${smartSort ? T.accent : T.border}`,
-                borderRadius: 20, padding: "3px 10px", cursor: "pointer",
-                fontSize: 11, fontWeight: 600, fontFamily: "inherit", flexShrink: 0,
-                color: smartSort ? T.accent : T.textTertiary,
-                transition: "background .12s, color .12s, border-color .12s",
-                display: "flex", alignItems: "center", gap: 4,
-              }}
-              onMouseEnter={e => { if (!smartSort) { e.currentTarget.style.borderColor = T.textTertiary; e.currentTarget.style.color = T.textSecondary; }}}
-              onMouseLeave={e => { if (!smartSort) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textTertiary; }}}
-            >
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6 1l1.2 2.5 2.8.4-2 2 .5 2.7L6 7.4l-2.5 1.2.5-2.7-2-2 2.8-.4z"/></svg>
-              Smart
-            </button>
-          )}
-
           {/* All / Unread toggle — desktop only; moved to bottom bar on mobile */}
           {filterMode !== "unread" && !searchOpen && !isMobile && (
             <div style={{ display: "flex", background: T.surface, borderRadius: 100, padding: 2, gap: 0, flexShrink: 0 }}>
@@ -1311,6 +1341,32 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                       }}>{label}</button>
                     ))}
                   </div>
+                </div>
+                <div style={{ padding: "6px 12px 10px", borderTop: `1px solid ${T.border}` }}>
+                  {[["Sort", sortOrder, v => { setSortOrder(v); localStorage.setItem("fb-sort-order", v); }, SORT_OPTIONS],
+                    ["Group by", groupBy, v => { setGroupBy(v); localStorage.setItem("fb-group-by", v); }, GROUP_OPTIONS],
+                    ["Font", displayPrefs.fontStyle, v => updateDisplayPref("fontStyle", v), FONT_OPTIONS],
+                  ].map(([label, value, onChange, options]) => (
+                    <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 8 }}>
+                      <span style={{ fontSize: 12, color: T.textSecondary }}>{label}</span>
+                      <select value={value} onChange={e => onChange(e.target.value)} aria-label={label} style={{
+                        fontSize: 12, padding: "4px 6px", borderRadius: 8,
+                        border: `1px solid ${T.border}`, background: T.surface,
+                        color: T.text, fontFamily: "inherit", cursor: "pointer",
+                      }}>
+                        {options.map(([val, name]) => <option key={val} value={val}>{name}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                  {[["Favicons", displayPrefs.showFavicons, v => updateDisplayPref("showFavicons", v), false],
+                    ["Grayscale favicons", displayPrefs.faviconGrayscale, v => updateDisplayPref("faviconGrayscale", v), !displayPrefs.showFavicons],
+                    ["Dim archived", displayPrefs.dimRead, v => updateDisplayPref("dimRead", v), false],
+                  ].map(([label, checked, onChange, disabled]) => (
+                    <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 10 }}>
+                      <span style={{ fontSize: 12, color: disabled ? T.textTertiary : T.textSecondary }}>{label}</span>
+                      <Toggle checked={checked} onChange={onChange} T={T} disabled={disabled} />
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -1491,7 +1547,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             let lastBucket = null;
             const n = new Date(); const todayTs = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
             baseItems.slice(0, displayedCount).forEach((item, i) => {
-              const bucket = dateBucket(item.date, todayTs);
+              const bucket = groupBy === "none" ? null
+                : groupBy === "feed" ? (item.source || "Unknown feed")
+                : dateBucket(item.date, todayTs);
               if (bucket && bucket !== lastBucket) {
                 lastBucket = bucket;
                 rows.push(
@@ -1510,7 +1568,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   isRead={readUrls.has(item.url)}
                   isSaved={savedUrls.has(item.url)}
                   feedColor={feedColorMap[item.feedId]}
-                  displayPrefs={isMobile ? displayPrefs : undefined}
+                  displayPrefs={displayPrefs}
                   dismissOnRead={isMobile && filterMode === "catch-up"}
                   multiSelectMode={multiSelectMode}
                   isChecked={multiSelectMode && selectedUrls.has(item.url)}
@@ -1542,6 +1600,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             position:"fixed", bottom:0, left:0, right:0, zIndex:1201,
             background: T.card, borderRadius:"20px 20px 0 0",
             padding:`20px 20px calc(20px + env(safe-area-inset-bottom, 16px))`,
+            maxHeight:"82vh", overflowY:"auto", WebkitOverflowScrolling:"touch",
             boxShadow:"0 -8px 40px rgba(0,0,0,.22)",
             animation:"slideInUp .2s cubic-bezier(.22,.68,0,1.12)",
           }}>
@@ -1623,6 +1682,34 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 <span style={{ fontSize:10, color:T.textTertiary }}>Small</span>
                 <span style={{ fontSize:10, color:T.textTertiary }}>Large</span>
               </div>
+            </div>
+
+            {/* Sort · Group · Font */}
+            <div style={{ marginTop:24 }}>
+              {[["Sort", sortOrder, v => { setSortOrder(v); localStorage.setItem("fb-sort-order", v); }, SORT_OPTIONS],
+                ["Group by", groupBy, v => { setGroupBy(v); localStorage.setItem("fb-group-by", v); }, GROUP_OPTIONS],
+                ["Font style", displayPrefs.fontStyle, v => updateDisplayPref("fontStyle", v), FONT_OPTIONS],
+              ].map(([label, value, onChange, options]) => (
+                <div key={label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:20 }}>
+                  <span style={{ fontSize:14, color:T.text }}>{label}</span>
+                  <select value={value} onChange={e => onChange(e.target.value)} aria-label={label} style={{
+                    fontSize:14, padding:"8px 10px", borderRadius:10,
+                    border:`1px solid ${T.border}`, background:T.surface,
+                    color:T.text, fontFamily:"inherit", cursor:"pointer",
+                  }}>
+                    {options.map(([val, name]) => <option key={val} value={val}>{name}</option>)}
+                  </select>
+                </div>
+              ))}
+              {[["Display favicons", displayPrefs.showFavicons, v => updateDisplayPref("showFavicons", v), false],
+                ["Grayscale favicons", displayPrefs.faviconGrayscale, v => updateDisplayPref("faviconGrayscale", v), !displayPrefs.showFavicons],
+                ["Dim archived articles", displayPrefs.dimRead, v => updateDisplayPref("dimRead", v), false],
+              ].map(([label, checked, onChange, disabled]) => (
+                <div key={label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:20 }}>
+                  <span style={{ fontSize:14, color: disabled ? T.textTertiary : T.text }}>{label}</span>
+                  <Toggle checked={checked} onChange={onChange} T={T} disabled={disabled} />
+                </div>
+              ))}
             </div>
           </div>
 

@@ -21,6 +21,7 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
   const [lookupResult, setLookupResult] = useState(null); // null | "loading" | string
   const toolbarRef = useRef(null);
   const tapStartRef = useRef(null);
+  const tapMovedRef = useRef(false);
 
   useEffect(() => {
     function handleSelectionEnd() {
@@ -43,12 +44,27 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
 
     function handleTouchStart(e) {
       tapStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      tapMovedRef.current = false;
+    }
+
+    function handleTouchMove(e) {
+      const start = tapStartRef.current;
+      if (!start) return;
+      const touch = e.touches[0];
+      if (Math.abs(touch.clientX - start.x) > 10 || Math.abs(touch.clientY - start.y) > 10) {
+        tapMovedRef.current = true;
+      }
     }
 
     function handleTouchEnd(e) {
       const start = tapStartRef.current;
+      const moved = tapMovedRef.current;
       tapStartRef.current = null;
-      if (!start) return;
+      tapMovedRef.current = false;
+      // A finger that moved during this touch was scrolling, not tapping to
+      // select — momentum scroll can still land within the old 15px release
+      // radius of the start point, so distance-at-release alone isn't enough.
+      if (!start || moved) return;
       const touch = e.changedTouches[0];
       if (Math.abs(touch.clientX - start.x) > 15 || Math.abs(touch.clientY - start.y) > 15) return;
       const sel = window.getSelection();
@@ -81,12 +97,14 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
     document.addEventListener("touchend", handleSelectionEnd);
     document.addEventListener("mousedown", handleMouseDown);
     document.addEventListener("touchstart", handleTouchStart, { passive: true });
+    document.addEventListener("touchmove", handleTouchMove, { passive: true });
     document.addEventListener("touchend", handleTouchEnd);
     return () => {
       document.removeEventListener("mouseup", handleSelectionEnd);
       document.removeEventListener("touchend", handleSelectionEnd);
       document.removeEventListener("mousedown", handleMouseDown);
       document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleTouchEnd);
     };
   }, [containerRef]);
