@@ -11,14 +11,18 @@ const AnalyticsIcon = () => (
 const SettingsIcon = () => (
   <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.6 3.6l1.3 1.3M11.1 11.1l1.3 1.3M3.6 12.4l1.3-1.3M11.1 4.9l1.3-1.3"/></svg>
 );
+const SourcesIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4h12"/><path d="M2 8h8"/><path d="M2 12h5"/><circle cx="13" cy="11" r="2.5"/><path d="M13 8.5v1M13 13.5v1"/></svg>
+);
 
 const ITEMS = [
-  { id: "history",   label: "History",  Icon: HistoryIcon   },
-  { id: "analytics", label: "Stats",    Icon: AnalyticsIcon },
-  { id: "settings",  label: "Settings", Icon: SettingsIcon  },
+  { id: "manage-feeds", label: "Manage Feeds", Icon: SourcesIcon   },
+  { id: "history",      label: "History",      Icon: HistoryIcon   },
+  { id: "analytics",    label: "Stats",         Icon: AnalyticsIcon },
+  { id: "settings",     label: "Settings",      Icon: SettingsIcon  },
 ];
 
-export default function MoreMenuSheet({ active, onNavigate, onClose }) {
+export default function MoreMenuSheet({ active, onNavigate, onClose, feedErrorCount = 0 }) {
   const { T } = useTheme();
 
   function navigate(page) {
@@ -105,6 +109,17 @@ export default function MoreMenuSheet({ active, onNavigate, onClose }) {
                 <span style={{ flex: 1, fontSize: 16, fontWeight: isActive ? 700 : 500, color: isActive ? T.accent : T.text, letterSpacing: "-.015em" }}>
                   {label}
                 </span>
+                {id === "manage-feeds" && feedErrorCount > 0 && (
+                  <span style={{
+                    fontSize: 12, fontWeight: 700, lineHeight: 1,
+                    minWidth: 22, height: 19, borderRadius: 10,
+                    background: T.danger + "22", color: T.danger,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: "0 6px", boxSizing: "border-box", flexShrink: 0,
+                  }}>
+                    {feedErrorCount > 99 ? "99+" : feedErrorCount}
+                  </span>
+                )}
               </button>
             );
           })}

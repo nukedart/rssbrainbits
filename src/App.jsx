@@ -429,7 +429,7 @@ function AppShell() {
 
       {moreMenuOpen && (
         <Suspense fallback={null}>
-          <MoreMenuSheet active={page} onNavigate={navigateTo} onClose={() => setMoreMenuOpen(false)} />
+          <MoreMenuSheet active={page} onNavigate={navigateTo} onClose={() => setMoreMenuOpen(false)} feedErrorCount={feedErrorCount} />
         </Suspense>
       )}
 

@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.502] — 2026-08-14 11:40
+
+- [Nav] Mobile now has a direct path to Manage Feeds — previously it was only reachable through a link buried in Settings that disappeared entirely once you had zero feeds, unlike desktop's always-visible "Sources" sidebar item. Added a "Manage Feeds" row to the mobile More sheet, carrying the same feed-error count badge desktop's Sources item shows.
+
 ## [1.46.501] — 2026-08-13 11:38
 
 - [Nav] Browser tab title now updates correctly on Manage Feeds, History, and the legacy Notes→Cards redirect — these three reachable pages were missing from `PAGE_TITLES` and silently fell back to the generic "Feedbox" title instead of e.g. "Manage Feeds — Feedbox", losing tab/history clarity.
