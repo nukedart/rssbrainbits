@@ -412,6 +412,7 @@ function AppShell() {
             onNavigate={navigateTo}
             onClose={() => setMobileDrawerOpen(false)}
             unreadCount={unreadCount}
+            user={user}
             feedUnreadCounts={feedUnreadCounts}
             smartFeeds={smartFeeds}
             onAddSmartFeed={() => { setEditingSF("new"); setMobileDrawerOpen(false); }}

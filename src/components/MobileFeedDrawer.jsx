@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useMemo, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { SHAPE } from "../lib/tokens";
+import { getCachedFeed } from "../lib/feedCache";
+import { getSaved } from "../lib/supabase";
 
 const FCOLS = { gray:"#8A9099", teal:"#accfae", blue:"#2F6FED", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
 const SMART_COLORS = { blue:"#2F6FED", teal:"#accfae", amber:"#AA8439", red:"#EF4444", purple:"#8B5CF6", green:"#22C55E" };
@@ -16,7 +18,7 @@ function feedDisplayName(feed) {
 const FEED_SWIPE_THRESHOLD = 76;
 const haptic = (ms = 8) => { try { navigator.vibrate?.(ms); } catch {} };
 
-const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onMarkAllRead, onUnsubscribeFeed, T }) {
+const FeedRow = memo(function FeedRow({ feed, count, active, onNavigate, onMarkAllRead, onUnsubscribeFeed, T }) {
   const favicon = feedFavicon(feed.url);
   const isActive = active === `feed:${feed.id}`;
   const name = feedDisplayName(feed);
@@ -100,26 +102,26 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onMark
           touchAction:"pan-y",
         }}
       >
-        {/* Large favicon — 36px rounded rect */}
+        {/* Favicon — 28px rounded rect */}
         <span style={{
-          width:36, height:36, flexShrink:0, borderRadius:8,
+          width:28, height:28, flexShrink:0, borderRadius:7,
           overflow:"hidden", background: T.surface2,
           display:"flex", alignItems:"center", justifyContent:"center",
         }}>
           {favicon
-            ? <img src={favicon} alt="" width={36} height={36} loading="lazy" decoding="async" style={{ borderRadius:8, display:"block" }} onError={e => { e.target.style.display="none"; }} />
-            : <span style={{ fontSize:15, fontWeight:700, color:T.textTertiary }}>{name[0]?.toUpperCase()}</span>
+            ? <img src={favicon} alt="" width={28} height={28} loading="lazy" decoding="async" style={{ borderRadius:7, display:"block" }} onError={e => { e.target.style.display="none"; }} />
+            : <span style={{ fontSize:13, fontWeight:700, color:T.textTertiary }}>{name[0]?.toUpperCase()}</span>
           }
         </span>
         <span style={{
           flex:1, fontSize:16,
           overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
-          color: isActive ? T.accent : unread > 0 ? T.text : T.textSecondary,
-          fontWeight: unread > 0 ? 600 : 400, letterSpacing:"-.015em",
+          color: isActive ? T.accent : T.text,
+          fontWeight: 500, letterSpacing:"-.015em",
         }}>{name}</span>
-        {unread > 0 && (
+        {count > 0 && (
           <span style={{ fontSize:13, fontWeight:600, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
-            {unread > 999 ? "999+" : unread}
+            {count > 999 ? "999+" : count}
           </span>
         )}
       </button>
@@ -127,63 +129,60 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onMark
   );
 }, (prev, next) =>
   (prev.active === `feed:${prev.feed.id}`) === (next.active === `feed:${next.feed.id}`) &&
-  prev.unread === next.unread && prev.feed === next.feed && prev.T === next.T
+  prev.count === next.count && prev.feed === next.feed && prev.T === next.T
 );
 
-function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNavigate, onMarkAllRead, onUnsubscribeFeed, expanded, onToggle, T }) {
-  const dot = FCOLS[folder.color] || "#8A9099";
-  const folderUnread = folderFeeds.reduce((sum, f) => sum + (feedUnreadCounts[f.id] || 0), 0);
+function FolderRow({ folder, count, active, onNavigate, T }) {
   const isActive = active === `folder:${folder.id}`;
-
   return (
-    <div style={{ marginBottom:1 }}>
-      <div style={{ display:"flex", alignItems:"center", background: isActive ? T.accentSurface : "transparent", borderRadius: SHAPE.radiusSm, transition:"background .1s" }}>
-        <button
-          onClick={() => onNavigate(`folder:${folder.id}`)}
-          aria-label={folder.name}
-          aria-current={isActive ? "page" : undefined}
-          style={{ display:"flex", alignItems:"center", gap:10, flex:1, padding:"11px 10px 11px 20px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", textAlign:"left", WebkitTapHighlightColor:"transparent" }}
-        >
-          <span style={{ width:10, height:10, borderRadius:3, background:dot, flexShrink:0 }} />
-          <span style={{
-            flex:1, fontSize:16,
-            overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
-            color: isActive ? T.accent : T.text,
-            fontWeight: folderUnread > 0 ? 700 : 600,
-            letterSpacing:"-.01em",
-          }}>{folder.name}</span>
-          {folderUnread > 0 && (
-            <span style={{ fontSize:12, fontWeight:700, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
-              {folderUnread > 99 ? "99+" : folderUnread}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => onToggle(folder.id)}
-          aria-label={expanded ? `Collapse ${folder.name}` : `Expand ${folder.name}`}
-          aria-expanded={expanded}
-          style={{ padding:"11px 16px", border:"none", background:"transparent", cursor:"pointer", color:T.textTertiary, display:"flex", alignItems:"center", WebkitTapHighlightColor:"transparent" }}
+    <button
+      onClick={() => onNavigate(`folder:${folder.id}`)}
+      aria-label={folder.name}
+      aria-current={isActive ? "page" : undefined}
+      style={{
+        display:"flex", alignItems:"center", gap:10,
+        padding:"11px 20px",
+        width:"100%", border:"none",
+        background: isActive ? T.accentSurface : "transparent",
+        borderRadius: SHAPE.radiusSm,
+        cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+        WebkitTapHighlightColor:"transparent",
+      }}
+    >
+      <svg width="11" height="11" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+        style={{ flexShrink:0, color: isActive ? T.accent : T.textTertiary }}>
+        <path d="M2 2l3 2.5L2 7"/>
+      </svg>
+      <span style={{
+        flex:1, fontSize:16,
+        overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+        color: isActive ? T.accent : T.text,
+        fontWeight: 600, letterSpacing:"-.01em",
+      }}>{folder.name}</span>
+      {count > 0 && (
+        <span style={{ fontSize:13, fontWeight:600, color: isActive ? T.accent : T.textTertiary, flexShrink:0 }}>
+          {count > 999 ? "999+" : count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function SectionLabel({ label, action, actionTitle, expanded, onToggleCollapse, T }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", padding:"14px 20px 6px", flexShrink:0 }}>
+      <span style={{ flex:1, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>{label}</span>
+      {onToggleCollapse && (
+        <button onClick={onToggleCollapse} aria-label={expanded ? `Collapse ${label}` : `Expand ${label}`} aria-expanded={expanded}
+          style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, padding:"2px 4px", display:"flex", alignItems:"center", WebkitTapHighlightColor:"transparent" }}
         >
           <svg width="11" height="11" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
             style={{ display:"inline-block", transition:"transform .18s", transform: expanded ? "rotate(90deg)" : "rotate(0deg)" }}>
             <path d="M2 2l3 2.5L2 7"/>
           </svg>
         </button>
-      </div>
-      {expanded && folderFeeds.map(feed => (
-        <div key={feed.id} style={{ paddingLeft: 16 }}>
-          <FeedRow feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={onNavigate} onMarkAllRead={onMarkAllRead} onUnsubscribeFeed={onUnsubscribeFeed} T={T} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SectionLabel({ label, action, actionTitle, T }) {
-  return (
-    <div style={{ display:"flex", alignItems:"center", padding:"14px 20px 6px", flexShrink:0 }}>
-      <span style={{ flex:1, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:T.textTertiary }}>{label}</span>
-      {action && (
+      )}
+      {!onToggleCollapse && action && (
         <button onClick={action} title={actionTitle} aria-label={actionTitle}
           style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, padding:"2px 4px", WebkitTapHighlightColor:"transparent" }}
         >
@@ -194,6 +193,26 @@ function SectionLabel({ label, action, actionTitle, T }) {
   );
 }
 
+const TABS = [
+  { key:"starred", label:"Starred" },
+  { key:"unread", label:"Unread" },
+  { key:"all", label:"All" },
+];
+
+function TabIcon({ tabKey, color }) {
+  if (tabKey === "starred") return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 2.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4-3.9-3.8 5.4-.8L10 2.5z"/>
+    </svg>
+  );
+  if (tabKey === "unread") return (
+    <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill={color} /></svg>
+  );
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><path d="M4 6h12M4 10h12M4 14h8"/></svg>
+  );
+}
+
 export default function MobileFeedDrawer({
   active, onNavigate, onClose,
   feedUnreadCounts = {},
@@ -201,16 +220,15 @@ export default function MobileFeedDrawer({
   folders = [], feeds = [],
   onAddFolder, onMoveFeedToFolder,
   onAddSource, onMarkAllRead, onUnsubscribeFeed,
+  user = null,
 }) {
   const { T } = useTheme();
-  const [expandedFolders, setExpandedFolders] = useState(() => new Set());
-  const sheetRef = useRef(null);
-  // Drag-to-dismiss state
-  const dragRef = useRef({ startY: 0, dragging: false });
-  const [dragY, setDragY] = useState(0);
+  const [activeTab, setActiveTab] = useState("unread");
+  const [expandedSection, setExpandedSection] = useState({ folders:true, feeds:true });
+  const [savedItems, setSavedItems] = useState([]);
 
-  function toggleFolder(id) {
-    setExpandedFolders(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  function toggleSection(key) {
+    setExpandedSection(prev => ({ ...prev, [key]: !prev[key] }));
   }
 
   function navigate(page) {
@@ -218,127 +236,135 @@ export default function MobileFeedDrawer({
     onClose();
   }
 
-  // Drag handle: pull down to dismiss
-  function onHandleTouchStart(e) {
-    dragRef.current = { startY: e.touches[0].clientY, dragging: true };
-  }
-  function onHandleTouchMove(e) {
-    if (!dragRef.current.dragging) return;
-    const dy = e.touches[0].clientY - dragRef.current.startY;
-    if (dy > 0) setDragY(dy);
-  }
-  function onHandleTouchEnd() {
-    dragRef.current.dragging = false;
-    if (dragY > 80) { onClose(); }
-    setDragY(0);
-  }
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    getSaved(user.id).then(rows => { if (!cancelled) setSavedItems(rows || []); }).catch(() => { if (!cancelled) setSavedItems([]); });
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
+  const timeLabel = useMemo(() => "Today at " + new Date().toLocaleTimeString([], { hour:"numeric", minute:"2-digit" }), []);
   const uncategorized = useMemo(() => feeds.filter(f => !f.folder_id), [feeds]);
   const totalUnread = useMemo(() => Object.values(feedUnreadCounts).reduce((s, n) => s + n, 0), [feedUnreadCounts]);
 
+  const allItemCounts = useMemo(() => {
+    const m = {};
+    feeds.forEach(f => { const cached = getCachedFeed(f.url); m[f.id] = cached?.data?.items?.length || 0; });
+    return m;
+  }, [feeds]);
+  const totalAllItems = useMemo(() => Object.values(allItemCounts).reduce((s, n) => s + n, 0), [allItemCounts]);
+
+  const savedCountsByFeed = useMemo(() => {
+    const m = {};
+    feeds.forEach(f => {
+      const name = feedDisplayName(f).trim().toLowerCase();
+      m[f.id] = savedItems.filter(s => (s.source || "").trim().toLowerCase() === name).length;
+    });
+    return m;
+  }, [feeds, savedItems]);
+
+  const feedCounts = activeTab === "unread" ? feedUnreadCounts : activeTab === "all" ? allItemCounts : savedCountsByFeed;
+
+  const folderCounts = useMemo(() => {
+    const m = {};
+    folders.forEach(folder => {
+      const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
+      m[folder.id] = folderFeeds.reduce((s, f) => s + (feedCounts[f.id] || 0), 0);
+    });
+    return m;
+  }, [folders, feeds, feedCounts]);
+
+  const summary = activeTab === "unread"
+    ? { label:"Unread", count: totalUnread, page:"all" }
+    : activeTab === "starred"
+    ? { label:"Starred", count: savedItems.length, page:"readlater" }
+    : { label:"All Items", count: totalAllItems, page:"all" };
+
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{
-          position:"fixed", inset:0, zIndex:900,
-          background:"rgba(0,0,0,.45)",
-          backdropFilter:"blur(3px)",
-          WebkitBackdropFilter:"blur(3px)",
-          animation:"fadeIn .18s ease",
-        }}
-      />
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Feeds"
+      style={{
+        position:"fixed", inset:0, zIndex:900,
+        background:T.bg,
+        display:"flex", flexDirection:"column",
+        animation:"fadeIn .18s ease",
+      }}
+    >
+      {/* Top bar */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 12px 0", flexShrink:0 }}>
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          style={{ background:"none", border:"none", padding:"6px", cursor:"pointer", color:T.text, display:"flex", alignItems:"center", WebkitTapHighlightColor:"transparent" }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button
+          onClick={onAddSource}
+          aria-label="Add source"
+          style={{ background:"none", border:"none", padding:"6px", cursor:"pointer", color:T.text, display:"flex", alignItems:"center", WebkitTapHighlightColor:"transparent" }}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M10 4v12M4 10h12"/></svg>
+        </button>
+      </div>
 
-      {/* Bottom sheet */}
-      <div
-        ref={sheetRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Feed list"
-        style={{
-          position:"fixed", bottom:0, left:0, right:0, zIndex:901,
-          height:"78vh",
-          background:T.card,
-          display:"flex", flexDirection:"column",
-          borderTopLeftRadius: SHAPE.radiusCard,
-          borderTopRightRadius: SHAPE.radiusCard,
-          boxShadow: SHAPE.shadowFloatUp,
-          animation:"slideInUp .25s cubic-bezier(.22,.68,0,1.12)",
-          transform: dragY > 0 ? `translateY(${dragY}px)` : "none",
-          transition: dragY > 0 ? "none" : "transform .22s cubic-bezier(.22,.68,0,1)",
-          paddingBottom:"env(safe-area-inset-bottom, 20px)",
-        }}
-      >
+      {/* Header block */}
+      <div style={{ textAlign:"center", padding:"4px 20px 14px", flexShrink:0 }}>
+        <div style={{ fontSize:28, fontWeight:800, color:T.text, letterSpacing:"-.02em" }}>Feeds</div>
+        <div style={{ fontSize:13, color:T.textTertiary, marginTop:4 }}>{timeLabel}</div>
+      </div>
 
-        {/* Drag handle */}
-        <div
-          onTouchStart={onHandleTouchStart}
-          onTouchMove={onHandleTouchMove}
-          onTouchEnd={onHandleTouchEnd}
+      {/* Summary row */}
+      {summary.count > 0 && (
+        <button
+          onClick={() => navigate(summary.page)}
           style={{
-            padding:"12px 0 8px",
-            display:"flex", justifyContent:"center",
-            cursor:"grab", flexShrink:0,
+            display:"flex", alignItems:"center",
+            padding:"10px 20px",
+            width:"100%", border:"none",
+            background: active === summary.page ? T.accentSurface : "transparent",
+            borderRadius: SHAPE.radiusSm,
+            cursor:"pointer", fontFamily:"inherit", textAlign:"left",
             WebkitTapHighlightColor:"transparent",
-            touchAction: "pan-x",
+            flexShrink:0,
           }}
         >
-          <div style={{ width:40, height:4, borderRadius: SHAPE.radiusPill, background:T.surface2 }} />
-        </div>
+          <span style={{ flex:1, fontSize:17, fontWeight:700, color: active === summary.page ? T.accent : T.text, letterSpacing:"-.02em" }}>
+            {summary.label}
+          </span>
+          <span style={{ fontSize:17, fontWeight:600, color: active === summary.page ? T.accent : T.textSecondary }}>
+            {summary.count > 9999 ? "9999+" : summary.count.toLocaleString()}
+          </span>
+        </button>
+      )}
 
-        {/* Header */}
-        <div style={{
-          display:"flex", alignItems:"center",
-          padding:"2px 20px 8px",
-          flexShrink:0,
-        }}>
-          <span style={{ fontSize:22, fontWeight:800, color:T.text, flex:1, letterSpacing:"-.03em" }}>Feeds</span>
-          <button
-            onClick={onAddSource}
-            style={{
-              background:"none", border:"none", padding:"4px",
-              cursor:"pointer", color:T.textTertiary,
-              display:"flex", alignItems:"center",
-              WebkitTapHighlightColor:"transparent",
-              transition:"color .12s",
-            }}
-            onTouchStart={e => { e.currentTarget.style.color = T.text; }}
-            onTouchEnd={e => { e.currentTarget.style.color = T.textTertiary; }}
-            onTouchCancel={e => { e.currentTarget.style.color = T.textTertiary; }}
-            onMouseEnter={e => { e.currentTarget.style.color = T.text; }}
-            onMouseLeave={e => { e.currentTarget.style.color = T.textTertiary; }}
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M10 4v12M4 10h12"/></svg>
-          </button>
-        </div>
-
-        {/* Total unread row */}
-        {totalUnread > 0 && (
-          <button
-            onClick={() => navigate("all")}
-            style={{
-              display:"flex", alignItems:"center",
-              padding:"10px 20px",
-              width:"100%", border:"none",
-              background: active === "all" ? T.accentSurface : "transparent",
-              borderRadius: SHAPE.radiusSm,
-              cursor:"pointer", fontFamily:"inherit", textAlign:"left",
-              WebkitTapHighlightColor:"transparent",
-              transition:"background .1s",
-              flexShrink:0,
-            }}
-          >
-            <span style={{ flex:1, fontSize:17, fontWeight:700, color: active === "all" ? T.accent : T.text, letterSpacing:"-.02em" }}>
-              All Unread
-            </span>
-            <span style={{ fontSize:17, fontWeight:600, color: active === "all" ? T.accent : T.textSecondary }}>
-              {totalUnread > 9999 ? "9999+" : totalUnread.toLocaleString()}
-            </span>
-          </button>
-        )}
-
-        {/* Saved row */}
+      {/* Archive / Saved row */}
+      {activeTab === "all" ? (
+        <button
+          onClick={() => navigate("history")}
+          style={{
+            display:"flex", alignItems:"center", gap:10,
+            padding:"10px 20px",
+            width:"100%", border:"none",
+            background: active === "history" ? T.accentSurface : "transparent",
+            borderRadius: SHAPE.radiusSm,
+            cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+            WebkitTapHighlightColor:"transparent",
+            flexShrink:0,
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ color: active === "history" ? T.accent : T.textTertiary, flexShrink:0 }}>
+            <rect x="2.5" y="4" width="15" height="3.5" rx="1"/>
+            <path d="M3.5 7.5v7a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-7"/>
+            <path d="M8 11h4"/>
+          </svg>
+          <span style={{ flex:1, fontSize:17, fontWeight: active === "history" ? 700 : 500, color: active === "history" ? T.accent : T.textSecondary, letterSpacing:"-.02em" }}>
+            Archive
+          </span>
+        </button>
+      ) : (
         <button
           onClick={() => navigate("readlater")}
           style={{
@@ -349,7 +375,6 @@ export default function MobileFeedDrawer({
             borderRadius: SHAPE.radiusSm,
             cursor:"pointer", fontFamily:"inherit", textAlign:"left",
             WebkitTapHighlightColor:"transparent",
-            transition:"background .1s",
             flexShrink:0,
           }}
         >
@@ -360,85 +385,103 @@ export default function MobileFeedDrawer({
             <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
           </svg>
         </button>
+      )}
 
-        {/* Feed tree — scrollable */}
-        <div style={{ flex:1, overflowY:"auto", minHeight:0, overscrollBehavior:"contain", borderTop:`1px solid ${T.border}` }}>
-          {(folders.length > 0 || feeds.length > 0) && (
-            <SectionLabel label="Sources" action={onAddFolder} actionTitle="New folder" T={T} />
-          )}
-
-          {folders.map(folder => {
-            const folderFeeds = feeds.filter(f => f.folder_id === folder.id);
-            return (
-              <FolderSection
-                key={folder.id}
-                folder={folder}
-                folderFeeds={folderFeeds}
-                feedUnreadCounts={feedUnreadCounts}
-                active={active}
-                onNavigate={navigate}
-                onMarkAllRead={onMarkAllRead}
-                onUnsubscribeFeed={onUnsubscribeFeed}
-                expanded={expandedFolders.has(folder.id)}
-                onToggle={toggleFolder}
-                T={T}
-              />
-            );
-          })}
-
-          {uncategorized.map(feed => (
-            <FeedRow key={feed.id} feed={feed} unread={feedUnreadCounts[feed.id] || 0} active={active} onNavigate={navigate} onMarkAllRead={onMarkAllRead} onUnsubscribeFeed={onUnsubscribeFeed} T={T} />
-          ))}
-
+      {/* Scrollable content */}
+      <div style={{ flex:1, overflowY:"auto", minHeight:0, overscrollBehavior:"contain", borderTop:`1px solid ${T.border}` }}>
+        {folders.length > 0 && (
           <>
-              <SectionLabel label="Smart Feeds" action={onAddSmartFeed} actionTitle="New smart feed" T={T} />
-              {/* Built-in: Catch up (old unread articles) */}
-              <button
-                onClick={() => navigate("catch-up")}
-                style={{
-                  display:"flex", alignItems:"center", gap:12,
-                  padding:"12px 20px",
-                  width:"100%", border:"none",
-                  background: active === "catch-up" ? T.accentSurface : "transparent",
-                  borderRadius: SHAPE.radiusSm,
-                  cursor:"pointer", fontFamily:"inherit", textAlign:"left",
-                  WebkitTapHighlightColor:"transparent",
-                }}
-              >
-                <span style={{ width:9, height:9, borderRadius:"50%", background: active === "catch-up" ? T.accent : T.textTertiary, flexShrink:0, opacity: active === "catch-up" ? 1 : 0.6 }} />
-                <span style={{ flex:1, fontSize:15, color: active === "catch-up" ? T.accent : T.textSecondary, fontWeight: active === "catch-up" ? 700 : 500, letterSpacing:"-.01em" }}>
-                  Catch up
-                </span>
-              </button>
-              {smartFeeds.map(sf => {
-                const color = SMART_COLORS[sf.color] || T.accent;
-                const isActive = active === `smart:${sf.id}`;
-                return (
-                  <button
-                    key={sf.id}
-                    onClick={() => navigate(`smart:${sf.id}`)}
-                    style={{
-                      display:"flex", alignItems:"center", gap:12,
-                      padding:"12px 20px",
-                      width:"100%", border:"none",
-                      background: isActive ? T.accentSurface : "transparent",
-                      borderRadius: SHAPE.radiusSm,
-                      cursor:"pointer", fontFamily:"inherit", textAlign:"left",
-                      WebkitTapHighlightColor:"transparent",
-                    }}
-                  >
-                    <span style={{ width:9, height:9, borderRadius:"50%", background:color, flexShrink:0 }} />
-                    <span style={{ flex:1, fontSize:15, color: isActive ? T.accent : T.textSecondary, fontWeight: isActive ? 700 : 500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
-                      {sf.name}
-                    </span>
-                  </button>
-                );
-              })}
+            <SectionLabel label="Folders" expanded={expandedSection.folders} onToggleCollapse={() => toggleSection("folders")} T={T} />
+            {expandedSection.folders && folders.map(folder => (
+              <FolderRow key={folder.id} folder={folder} count={folderCounts[folder.id] || 0} active={active} onNavigate={navigate} T={T} />
+            ))}
           </>
+        )}
 
-        </div>
+        {uncategorized.length > 0 && (
+          <>
+            <SectionLabel label="Feeds" expanded={expandedSection.feeds} onToggleCollapse={() => toggleSection("feeds")} T={T} />
+            {expandedSection.feeds && uncategorized.map(feed => (
+              <FeedRow key={feed.id} feed={feed} count={feedCounts[feed.id] || 0} active={active} onNavigate={navigate} onMarkAllRead={onMarkAllRead} onUnsubscribeFeed={onUnsubscribeFeed} T={T} />
+            ))}
+          </>
+        )}
+
+        <SectionLabel label="Smart Feeds" action={onAddSmartFeed} actionTitle="New smart feed" T={T} />
+        <button
+          onClick={() => navigate("catch-up")}
+          style={{
+            display:"flex", alignItems:"center", gap:12,
+            padding:"12px 20px",
+            width:"100%", border:"none",
+            background: active === "catch-up" ? T.accentSurface : "transparent",
+            borderRadius: SHAPE.radiusSm,
+            cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+            WebkitTapHighlightColor:"transparent",
+          }}
+        >
+          <span style={{ width:9, height:9, borderRadius:"50%", background: active === "catch-up" ? T.accent : T.textTertiary, flexShrink:0, opacity: active === "catch-up" ? 1 : 0.6 }} />
+          <span style={{ flex:1, fontSize:15, color: active === "catch-up" ? T.accent : T.textSecondary, fontWeight: active === "catch-up" ? 700 : 500, letterSpacing:"-.01em" }}>
+            Catch up
+          </span>
+        </button>
+        {smartFeeds.map(sf => {
+          const color = SMART_COLORS[sf.color] || T.accent;
+          const isActive = active === `smart:${sf.id}`;
+          return (
+            <button
+              key={sf.id}
+              onClick={() => navigate(`smart:${sf.id}`)}
+              style={{
+                display:"flex", alignItems:"center", gap:12,
+                padding:"12px 20px",
+                width:"100%", border:"none",
+                background: isActive ? T.accentSurface : "transparent",
+                borderRadius: SHAPE.radiusSm,
+                cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+                WebkitTapHighlightColor:"transparent",
+              }}
+            >
+              <span style={{ width:9, height:9, borderRadius:"50%", background:color, flexShrink:0 }} />
+              <span style={{ flex:1, fontSize:15, color: isActive ? T.accent : T.textSecondary, fontWeight: isActive ? 700 : 500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", letterSpacing:"-.01em" }}>
+                {sf.name}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-    </>
+      {/* Bottom segmented control */}
+      <div style={{
+        flexShrink:0, display:"flex", justifyContent:"center", gap:8,
+        padding:"10px 16px", paddingBottom:"env(safe-area-inset-bottom, 20px)",
+        borderTop:`1px solid ${T.border}`,
+      }}>
+        {TABS.map(tab => {
+          const isActive = activeTab === tab.key;
+          const color = isActive ? T.accent : T.textTertiary;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              aria-pressed={isActive}
+              style={{
+                display:"flex", alignItems:"center", gap:6,
+                padding: isActive ? "6px 14px" : "6px 10px",
+                borderRadius: SHAPE.radiusPill,
+                background: isActive ? T.accentSurface : "transparent",
+                border:"none", cursor:"pointer", color,
+                WebkitTapHighlightColor:"transparent",
+              }}
+            >
+              <TabIcon tabKey={tab.key} color={color} />
+              {isActive && (
+                <span style={{ fontSize:11, fontWeight:700, letterSpacing:".04em", textTransform:"uppercase" }}>{tab.label}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }

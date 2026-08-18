@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.504] — 2026-08-18 19:32
+
+- [UX] Rebuilt the mobile feed picker as a full-screen "Feeds" page instead of a bottom sheet — big title with a synced-at timestamp, a Starred/Unread/All segmented filter at the bottom that recomputes every count above it (unread from live counts, starred from your Saved items, all from cached article totals), and Folders/Feeds sections that collapse independently. Folders are now drill-down only (tap to open) rather than expanding inline. Swipe-to-mark-read and swipe-to-unsubscribe on feed rows are unchanged.
+
 ## [1.46.503] — 2026-08-17 21:24
 
 - [Fix] Manage Feeds page was completely crashed for every user — a "Fresh Feeds" stat tile referenced `freshCount`, which was computed internally but never returned from its `useMemo`, throwing a `ReferenceError` on every render. Fixed by returning it.
