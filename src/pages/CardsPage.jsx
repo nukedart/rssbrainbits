@@ -262,10 +262,6 @@ export default function CardsPage() {
     highlights.filter(h => !(h.tags || []).length),
   [highlights]);
 
-  const totalTagged = useMemo(() =>
-    new Set(highlights.filter(h => (h.tags || []).length > 0).map(h => h.id)).size,
-  [highlights]);
-
   const globalResults = useMemo(() => {
     const q = globalSearch.trim().toLowerCase();
     if (!q) return null;
@@ -534,7 +530,7 @@ export default function CardsPage() {
           <div>
             <div style={{ fontSize: isMobile ? 20 : 22, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>Cards</div>
             <div style={{ fontSize: 13, color: T.textTertiary, marginTop: 3 }}>
-              {totalTagged} highlight{totalTagged !== 1 ? "s" : ""} · {buckets.length} theme{buckets.length !== 1 ? "s" : ""}
+              {highlights.length} highlight{highlights.length !== 1 ? "s" : ""} · {buckets.length} theme{buckets.length !== 1 ? "s" : ""}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>

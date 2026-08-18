@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.503] — 2026-08-17 21:24
+
+- [Fix] Manage Feeds page was completely crashed for every user — a "Fresh Feeds" stat tile referenced `freshCount`, which was computed internally but never returned from its `useMemo`, throwing a `ReferenceError` on every render. Fixed by returning it.
+- [Fix] Cards header undercounted your highlights — it only counted highlights that had at least one theme tag, silently excluding "Untagged" ones, so "2 highlights · 2 themes" could be shown while 6 highlights actually existed. Now shows the true total.
+- [Fix] Article text and highlight quotes sometimes rendered literal HTML entities (e.g. `&#8217;`) instead of the actual character (’) — RSS/Atom feeds' full article text skipped the entity-decode step that the short preview text already had. Extracted a shared `decodeHtmlEntities` helper and applied it everywhere `fullText` is built.
+- [Feature] Read Aloud — the article reader can now speak articles aloud via the browser's native Web Speech API, with the currently-spoken word highlighted live as it plays. Play/Pause/Stop controls sit next to the existing Aa font menu; long articles are queued in sentence-sized chunks (Chrome silently drops single utterances past ~15s); word highlighting uses the theme's accent color, kept visually distinct from saved highlight colors; playback stops cleanly on article switch, unmount, or Stop. No new dependencies.
+
 ## [1.46.502] — 2026-08-14 11:40
 
 - [Nav] Mobile now has a direct path to Manage Feeds — previously it was only reachable through a link buried in Settings that disappeared entirely once you had zero feeds, unlike desktop's always-visible "Sources" sidebar item. Added a "Manage Feeds" row to the mobile More sheet, carrying the same feed-error count badge desktop's Sources item shows.

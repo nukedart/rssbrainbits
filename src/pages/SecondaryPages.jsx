@@ -1518,7 +1518,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
   }
 
   // Stats (memoized — getCachedFeed/cacheAge hit localStorage on every call)
-  const { totalItems, syncHealth, healthLabel, healthColor, staleFeedsCount } = useMemo(() => {
+  const { totalItems, syncHealth, healthLabel, healthColor, staleFeedsCount, freshCount } = useMemo(() => {
     const total = feeds.reduce((sum, f) => sum + (getCachedFeed(f.url)?.data?.items?.length || 0), 0);
     const fresh = feeds.filter(f => { const a = cacheAge(f.url); return a !== null && a < 30; }).length;
     const health = feeds.length > 0 ? Math.round((fresh / feeds.length) * 100) : 0;
@@ -1528,6 +1528,7 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
       healthLabel:     health >= 90 ? "OPTIMAL" : health >= 60 ? "GOOD" : health >= 30 ? "FAIR" : "POOR",
       healthColor:     health >= 90 ? T.success : health >= 60 ? T.accent : health >= 30 ? T.warning : T.danger,
       staleFeedsCount: feeds.filter(f => { const a = cacheAge(f.url); return a !== null && a > 120; }).length,
+      freshCount:      fresh,
     };
   }, [feeds, T]);
 

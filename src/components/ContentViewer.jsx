@@ -16,6 +16,7 @@ import {
 } from "../lib/supabase";
 import { getReaderPrefs, setReaderPrefs } from "../lib/readerPrefs.js";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
+import { useReadAloud } from "../hooks/useReadAloud.js";
 import { useBackButtonClose } from "../hooks/useBackButtonClose.js";
 import { highlightsToMarkdown, highlightsToObsidian, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
@@ -103,6 +104,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const headerAccRef = useRef(0);
 
   const articleRef = useRef(null);
+  const readAloud = useReadAloud(content?.bodyText || "", item?.url);
   const lastSavedProgressRef = useRef(0);
   const yt = useMemo(() => item?.url ? parseYouTubeUrl(item.url) : { isYouTube: false }, [item?.url]);
   const readingTimeMins = useMemo(() => {
@@ -585,6 +587,40 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             </div>
           )}
 
+          {/* Read aloud — play/pause + stop */}
+          {readAloud.supported && !yt.isYouTube && content?.bodyText && (
+            <>
+              <button onClick={() => readAloud.status === "speaking" ? readAloud.pause() : readAloud.play()}
+                title={readAloud.status === "speaking" ? "Pause read aloud" : "Read aloud"}
+                aria-label={readAloud.status === "speaking" ? "Pause read aloud" : "Read aloud"}
+                style={{ background: readAloud.status !== "idle" ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: readAloud.status !== "idle" ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+                onMouseEnter={e => { if (readAloud.status === "idle") { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
+                onMouseLeave={e => { if (readAloud.status === "idle") { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
+              >
+                {readAloud.status === "speaking" ? (
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
+                    <rect x="4" y="3" width="3" height="10" rx="1"/><rect x="9" y="3" width="3" height="10" rx="1"/>
+                  </svg>
+                ) : (
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4.5 2.8v10.4l8-5.2z"/>
+                  </svg>
+                )}
+              </button>
+              {readAloud.status !== "idle" && (
+                <button onClick={readAloud.stop} title="Stop read aloud" aria-label="Stop read aloud"
+                  style={{ background: "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
+                  onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
+                    <rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>
+                  </svg>
+                </button>
+              )}
+            </>
+          )}
+
           {/* Save — tap to save, tap again to unsave */}
           <button onClick={handleSave} title={saved ? "Remove from Saved" : "Save article"}
             aria-label={saved ? "Remove from Saved" : "Save article"}
@@ -843,6 +879,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                     highlights={highlights}
                     onClickHighlight={setActiveNote}
                     bionic={readerPrefs.bionic}
+                    readAloudCharIndex={readAloud.status !== "idle" ? readAloud.charIndex : null}
+                    T={T}
                   />
                 )}
               </div>
@@ -915,9 +953,10 @@ function classifyArticleError(msg = "") {
 // Simple regex approach — works for most articles; skips passages that
 // straddle tag boundaries (rare in practice).
 
-// ── HighlightedText — clean version without TTS word spans ───
-function HighlightedText({ text, highlights, onClickHighlight, bionic = false }) {
+// ── HighlightedText ───────────────────────────────────────────
+function HighlightedText({ text, highlights, onClickHighlight, bionic = false, readAloudCharIndex = null, T }) {
   const hasHighlights = highlights && highlights.length > 0;
+  const speaking = readAloudCharIndex !== null;
 
   const paragraphs = useMemo(() => {
     if (!text || hasHighlights) return null;
@@ -928,6 +967,30 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
     if (!paragraphs || !bionic) return null;
     return paragraphs.map((para) => para.split(/(\s+)/));
   }, [paragraphs, bionic]);
+
+  // Word/whitespace tokens carrying their character offset in `text`, built only
+  // while read-aloud is active so the idle render path is untouched.
+  const readAloudParagraphs = useMemo(() => {
+    if (!text || !speaking) return null;
+    const intervals = (highlights || []).map((h) => {
+      const idx = text.indexOf(h.passage);
+      return idx === -1 ? null : { start: idx, end: idx + h.passage.length, color: h.color };
+    }).filter(Boolean);
+    const bounds = [];
+    let start = 0;
+    const re = /\n\n+/g;
+    let m;
+    while ((m = re.exec(text))) { bounds.push([start, m.index]); start = m.index + m[0].length; }
+    bounds.push([start, text.length]);
+    return bounds.filter(([s, e]) => e > s).map(([s, e]) => {
+      let offset = s;
+      return text.slice(s, e).split(/(\s+)/).map((t) => {
+        const token = { t, offset, hl: intervals.find((iv) => offset >= iv.start && offset < iv.end) };
+        offset += t.length;
+        return token;
+      });
+    });
+  }, [text, highlights, speaking]);
 
   const segments = useMemo(() => {
     if (!text || !hasHighlights) return null;
@@ -966,6 +1029,25 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false })
   }, [segments]);
 
   if (!text) return null;
+
+  if (readAloudParagraphs) {
+    return readAloudParagraphs.map((tokens, pi) => (
+      <p key={pi} style={{ margin: "0 0 1.4em", whiteSpace: "pre-wrap" }}>
+        {tokens.map((token, i) => {
+          if (!/\S/.test(token.t)) return token.t;
+          const active = readAloudCharIndex >= token.offset && readAloudCharIndex < token.offset + token.t.length;
+          const colorDef = token.hl ? (HIGHLIGHT_COLORS.find((c) => c.id === token.hl.color) || HIGHLIGHT_COLORS[0]) : null;
+          return (
+            <span key={i} data-char={token.offset} style={{
+              background: active ? T.accent : (colorDef ? colorDef.bg : undefined),
+              color: active ? T.accentText : undefined,
+              borderRadius: 3,
+            }}>{token.t}</span>
+          );
+        })}
+      </p>
+    ));
+  }
 
   function BionicSpan({ word }) {
     const n = Math.max(1, Math.ceil(word.length * 0.45));

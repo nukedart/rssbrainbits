@@ -175,7 +175,7 @@ async function fetchViaRss2Json(feedUrl) {
         title:         item.title || "Untitled",
         url:           item.link || "",
         description:   stripHtml(descRaw).slice(0, 400),
-        fullText:      item.content || item.description || "",
+        fullText:      decodeHtmlEntities(item.content || item.description || ""),
         date:          normaliseDate(item.pubDate),
         author:        item.author || "",
         image,
@@ -269,7 +269,7 @@ function parseRSSItem(item, isAtom) {
                    || item.querySelector("link:not([rel])")?.getAttribute("href")
                    || item.querySelector("link")?.textContent?.trim() || "",
       description: stripHtml(bodyRaw).slice(0, 400),
-      fullText:    bodyRaw,
+      fullText:    decodeHtmlEntities(bodyRaw),
       date:        normaliseDate(item.querySelector("updated, published")?.textContent),
       author:      item.querySelector("author name")?.textContent?.trim() || "",
       image,
@@ -304,7 +304,7 @@ function parseRSSItem(item, isAtom) {
     title:       item.querySelector("title")?.textContent?.trim() || "Untitled",
     url:         item.querySelector("link")?.textContent?.trim() || "",
     description: (stripHtml(descRaw) || stripHtml(contentEncoded || "")).slice(0, 400),
-    fullText:    bodyRaw,
+    fullText:    decodeHtmlEntities(bodyRaw),
     date:        normaliseDate(item.querySelector("pubDate, date")?.textContent),
     author:      item.querySelector("author, creator")?.textContent?.trim()
                  || allEls.find(el => el.localName === "creator" || el.localName === "author")?.textContent?.trim() || "",
@@ -397,10 +397,15 @@ function extractItemImage(item) {
   return null;
 }
 
-function stripHtml(html) {
+// Decodes HTML entities (and drops tags) without altering whitespace or length.
+function decodeHtmlEntities(html) {
   const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent.replace(/\s+/g, " ").trim().slice(0, 280);
+  div.innerHTML = html || "";
+  return div.textContent || "";
+}
+
+function stripHtml(html) {
+  return decodeHtmlEntities(html).replace(/\s+/g, " ").trim().slice(0, 280);
 }
 
 // ── Article full-text fetcher ─────────────────────────────────
