@@ -180,6 +180,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [savedItems, setSavedItems]     = useState([]);
   const [readFilter, setReadFilter]     = useState("unread"); // "all" | "unread"
   const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
+  const [markingAllRead, setMarkingAllRead] = useState(false); // guards handleMarkAllRead against double-fire
   const [toast, setToast]               = useState(null);
   const [searchResult, setSearchResult]   = useState(null);
   const [liveSearch, setLiveSearch]       = useState(""); // client-side search across unread
@@ -737,12 +738,17 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
   }
 
-  async function handleDeleteFeed(feedId) {
-    await deleteFeed(feedId);
+  function handleDeleteFeed(feedId) {
+    const removedFeed = feeds.find((f) => f.id === feedId);
     if (onFeedDeleted) onFeedDeleted(feedId);
     else setFeeds((prev) => prev.filter((f) => f.id !== feedId));
     if (activeSource === feedId) setActiveSource("all");
     track("feed_deleted");
+    deleteFeed(feedId).catch(() => {
+      if (!onFeedDeleted && removedFeed) {
+        setFeeds((prev) => prev.some((f) => f.id === feedId) ? prev : [...prev, removedFeed]);
+      }
+    });
   }
 
   function handleMarkRead(url) {
@@ -813,10 +819,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     cancelMultiSelect();
   }
 
-  async function handleMarkAllRead() {
+  function handleMarkAllRead() {
+    if (markingAllRead) return; // ignore double-fire while previous call is in flight
     const urlsToMark = baseItems.map(i => i.url).filter(u => !readUrls.has(u));
     if (urlsToMark.length === 0) return;
-    await markAllRead(user.id, urlsToMark);
+    setMarkingAllRead(true);
     setReadUrls(prev => {
       const next = new Set([...prev, ...urlsToMark]);
       try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
@@ -824,6 +831,16 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     });
     showToast(`✓ Marked ${urlsToMark.length} as read`);
     track("mark_all_read", { count: urlsToMark.length });
+    markAllRead(user.id, urlsToMark)
+      .catch(() => {
+        setReadUrls(prev => {
+          const next = new Set(prev);
+          urlsToMark.forEach(u => next.delete(u));
+          try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
+          return next;
+        });
+      })
+      .finally(() => setMarkingAllRead(false));
   }
 
   async function handleQuickAddFeed(url, name) {
@@ -835,17 +852,24 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     }
   }
 
-  async function handleSaveItem(item) {
+  function handleSaveItem(item) {
     if (savedUrls.has(item.url)) {
-      await unsaveItem(user.id, item.url);
+      const removedItem = savedItems.find(i => i.url === item.url);
       setSavedUrls(prev => { const next = new Set(prev); next.delete(item.url); return next; });
       setSavedItems(prev => prev.filter(i => i.url !== item.url));
       showToast("Removed from Saved");
+      unsaveItem(user.id, item.url).catch(() => {
+        setSavedUrls(prev => { const next = new Set(prev); next.add(item.url); return next; });
+        setSavedItems(prev => prev.some(i => i.url === item.url) ? prev : [removedItem || item, ...prev]);
+      });
     } else {
-      await saveItem(user.id, { ...item });
       setSavedUrls(prev => { const next = new Set(prev); next.add(item.url); return next; });
       setSavedItems(prev => [{ url: item.url, title: item.title, source: item.source, summary: item.description || item.summary || null, image: item.image || null, saved_at: new Date().toISOString() }, ...prev]);
       showToast("Saved");
+      saveItem(user.id, { ...item }).catch(() => {
+        setSavedUrls(prev => { const next = new Set(prev); next.delete(item.url); return next; });
+        setSavedItems(prev => prev.filter(i => i.url !== item.url));
+      });
     }
   }
 
@@ -883,14 +907,18 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       const content = await fetchArticleContent(url);
       item = { url, type: "article", title: content.title || url, source: new URL(url).hostname, description: content.description, image: content.image };
     } catch { /* use fallback */ }
-    await addReadLater(user.id, item);
     showToast("🔖 Saved");
+    addReadLater(user.id, item).catch(() => {
+      showToast("Failed to save — try again");
+    });
   }
 
-  async function handleReadLater(item) {
-    await addReadLater(user.id, { ...item });
+  function handleReadLater(item) {
     showToast("🔖 Saved");
     track("article_saved_for_later", { source: item.source });
+    addReadLater(user.id, { ...item }).catch(() => {
+      showToast("Failed to save — try again");
+    });
   }
 
   function showToast(msg) {
@@ -1265,10 +1293,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
           {/* Mark all read — desktop only; moved to bottom bar on mobile */}
           {unreadCount > 0 && !searchOpen && !isMobile && (
-            <button onClick={handleMarkAllRead} title="Mark all as read" aria-label="Mark all as read"
+            <button onClick={handleMarkAllRead} disabled={markingAllRead} title="Mark all as read" aria-label="Mark all as read"
               style={{
                 background: "transparent", border: "none", borderRadius: 8,
-                width: isMobile ? 40 : 30, height: isMobile ? 40 : 30, cursor: "pointer", flexShrink: 0,
+                width: isMobile ? 40 : 30, height: isMobile ? 40 : 30, cursor: markingAllRead ? "default" : "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: T.textTertiary, transition: "background .15s, color .15s",
               }}

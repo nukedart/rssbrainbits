@@ -282,13 +282,19 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   async function handleSave() {
     try { navigator.vibrate?.(8); } catch {}
     if (saved) {
-      await unsaveItem(user.id, item.url);
       setSaved(false);
       onUnsave?.();
+      unsaveItem(user.id, item.url).catch((error) => {
+        console.error(error);
+        setSaved(true);
+      });
     } else {
-      await saveItem(user.id, { ...item, summary });
       setSaved(true);
       onSave?.();
+      saveItem(user.id, { ...item, summary }).catch((error) => {
+        console.error(error);
+        setSaved(false);
+      });
     }
   }
 

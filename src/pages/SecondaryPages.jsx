@@ -1139,11 +1139,13 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
 
   async function handleMoveToFolder(folderId) {
     setFolderOpen(false);
+    setSaving(true);
     try {
       await setFeedFolder(feed.id, folderId);
       onUpdate(feed.id, { folder_id: folderId });
       onMoveToFolder?.(feed.id, folderId);
     } catch (err) { console.error(err); }
+    finally { setSaving(false); }
   }
 
   async function handleToggleFull(val) {
@@ -1264,15 +1266,16 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
               onClick={e => e.stopPropagation()}
             >
               <button
+                disabled={saving}
                 onClick={() => handleMoveToFolder(null)}
                 style={{
                   display: "flex", alignItems: "center", gap: 8, width: "100%",
                   padding: "8px 12px", border: "none", background: !currentFolder ? T.accentSurface : "transparent",
-                  cursor: "pointer", fontFamily: "inherit", fontSize: 12, color: !currentFolder ? T.accent : T.textSecondary,
-                  transition: "background .1s",
+                  cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", fontSize: 12, color: !currentFolder ? T.accent : T.textSecondary,
+                  transition: "background .1s", opacity: saving ? 0.5 : 1,
                 }}
-                onMouseEnter={e => { if (currentFolder) e.currentTarget.style.background = T.surface; }}
-                onMouseLeave={e => { if (currentFolder) e.currentTarget.style.background = "transparent"; }}
+                onMouseEnter={e => { if (currentFolder && !saving) e.currentTarget.style.background = T.surface; }}
+                onMouseLeave={e => { if (currentFolder && !saving) e.currentTarget.style.background = "transparent"; }}
               >
                 <span style={{ fontSize: 10, color: T.textTertiary }}>No folder</span>
               </button>
@@ -1282,15 +1285,16 @@ function SourceRow({ feed, T, onUpdate, onDelete, folders = [], onMoveToFolder }
                 return (
                   <button
                     key={f.id}
+                    disabled={saving}
                     onClick={() => handleMoveToFolder(f.id)}
                     style={{
                       display: "flex", alignItems: "center", gap: 8, width: "100%",
                       padding: "8px 12px", border: "none", background: isCurrent ? T.accentSurface : "transparent",
-                      cursor: "pointer", fontFamily: "inherit", fontSize: 12, color: isCurrent ? T.accent : T.textSecondary,
-                      transition: "background .1s",
+                      cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", fontSize: 12, color: isCurrent ? T.accent : T.textSecondary,
+                      transition: "background .1s", opacity: saving ? 0.5 : 1,
                     }}
-                    onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = T.surface; }}
-                    onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.background = "transparent"; }}
+                    onMouseEnter={e => { if (!isCurrent && !saving) e.currentTarget.style.background = T.surface; }}
+                    onMouseLeave={e => { if (!isCurrent && !saving) e.currentTarget.style.background = "transparent"; }}
                   >
                     <span style={{ width: 8, height: 8, borderRadius: 2, background: dot, flexShrink: 0 }} />
                     {f.name}

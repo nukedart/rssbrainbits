@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.506] — 2026-08-22 10:35
+
+- [UX] Save/unsave, mark-all-read, delete-feed, and save-for-later/read-later now update instantly instead of waiting on the network round-trip — the icon, badge, or toast reacts the moment you tap, with the change quietly rolled back only if the request actually fails. Mark-all-read also can no longer be double-fired by a fast repeat click while the previous call is still in flight. Same treatment applied to the reader's save toggle and to Manage Feeds' move-to-folder action (which now also can't be double-fired mid-request).
+
 ## [1.46.505] — 2026-08-22 10:32
 
 - [UX] Plain Inbox now lands on a feed picker (pick a source, then see its items) instead of jumping straight to a merged "All Items" list — matches the "browse by feed" mental model rather than dumping everything at once. Shows each feed's favicon and live unread count; tapping one drills in, with a back chevron to return to the picker. Re-entering the Inbox tab always resets back to the picker.
