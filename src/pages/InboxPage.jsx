@@ -134,6 +134,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     : _setLocalFeeds;
   const [allItems, setAllItems]         = useState([]);
   const [activeSource, setActiveSource] = useState("all");
+  const [pickerDismissed, setPickerDismissed] = useState(false);
   const [loadingFeeds, setLoadingFeeds] = useState(true);
   const [loadingItems, setLoadingItems] = useState(true);
   const [showAdd, setShowAdd]           = useState(false);
@@ -929,6 +930,26 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     return () => { document.removeEventListener("mousedown", h); document.removeEventListener("touchstart", h); };
   }, [errorPopoverOpen]);
 
+  // activeSource only has meaning inside plain Inbox — reset it on every filterMode
+  // change so a feed picked there doesn't leak an intersection filter into Folder/
+  // Smart/Feed/YouTube views (InboxPage is reused across filterModes, never remounted)
+  useEffect(() => {
+    setPickerDismissed(false);
+    setActiveSource("all");
+  }, [filterMode]);
+
+  const feedPickerVisible = filterMode === "all" && activeSource === "all" && !pickerDismissed && !searchOpen && !searchResult;
+
+  const pickerUnreadCounts = useMemo(() => {
+    const counts = {};
+    allItems.forEach(item => {
+      if (!readUrls.has(item.url) && item.feedId) {
+        counts[item.feedId] = (counts[item.feedId] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [allItems, readUrls]);
+
   const activeFeedName = filterMode === "today"       ? "Today"
     : filterMode === "unread"     ? "Unread"
     : filterMode === "catch-up"   ? "Catch up"
@@ -936,8 +957,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     : filterMode === "feed"       ? (feedDef?.name || "Feed")
     : filterMode === "folder"     ? (folderDef?.name || "Folder")
     : filterMode === "youtube-all" ? "YouTube Channels"
+    : feedPickerVisible ? "Feeds"
     : activeSource === "all" ? "All Items"
     : feeds.find((f) => f.id === activeSource)?.name || "Feed";
+
+  const showPickerBack = filterMode === "all" && (activeSource !== "all" || pickerDismissed);
+  const showFeedPicker = feedPickerVisible && feeds.length > 0;
 
   const unreadCount = useMemo(() => allItems.filter(i => !readUrls.has(i.url)).length, [allItems, readUrls]);
 
@@ -1093,6 +1118,22 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Title + unread badge + error badge — hidden when desktop search open */}
           {(!searchOpen || isMobile) && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
+              {showPickerBack && (
+                <button
+                  onClick={() => { setActiveSource("all"); setPickerDismissed(false); }}
+                  aria-label="Back to feeds"
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 28, height: 28, marginLeft: -6, padding: 0, borderRadius: 8,
+                    border: "none", background: "none", cursor: "pointer",
+                    color: T.textTertiary, flexShrink: 0, transition: "color .12s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.color = T.text; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = T.textTertiary; }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg>
+                </button>
+              )}
               <div style={{ fontSize: isMobile ? 20 : 17, fontWeight: 700, color: T.text, letterSpacing: "-.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {activeFeedName}
               </div>
@@ -1184,7 +1225,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   padding: "4px 0", animation: "fadeIn .12s ease",
                 }}>
                   {[{ id: "all", name: "All sources" }, ...feeds].map(f => (
-                    <button key={f.id} role="option" aria-selected={activeSource === f.id} onClick={() => { setActiveSource(f.id); setSourceDropOpen(false); }} style={{
+                    <button key={f.id} role="option" aria-selected={activeSource === f.id} onClick={() => { setActiveSource(f.id); setPickerDismissed(true); setSourceDropOpen(false); }} style={{
                       display: "flex", alignItems: "center", gap: 8, width: "100%",
                       padding: "7px 14px", background: activeSource === f.id ? T.accentSurface : "none",
                       border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left",
@@ -1494,7 +1535,17 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             </button>
           )}
 
-          {loadingItems && (
+          {showFeedPicker && (
+            <FeedPickerList
+              feeds={feeds}
+              counts={pickerUnreadCounts}
+              onSelectFeed={(id) => { setActiveSource(id); setPickerDismissed(true); }}
+              T={T}
+              isMobile={isMobile}
+            />
+          )}
+
+          {!showFeedPicker && loadingItems && (
             viewMode === "card"
               ? <SkeletonList count={8} cardSize={cardSize} viewMode="card" />
               : <div style={{ padding: "8px 0" }}>
@@ -1512,7 +1563,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             />
           )}
 
-          {!loadingItems && baseItems.length === 0 && (readFilter === "saved" || feeds.length > 0) && (
+          {!showFeedPicker && !loadingItems && baseItems.length === 0 && (readFilter === "saved" || feeds.length > 0) && (
             <EmptyState
               icon={readFilter === "unread"
                 ? <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45 }}><circle cx="12" cy="12" r="10"/><path d="M7 12l3.5 3.5L17 9"/></svg>
@@ -1525,7 +1576,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             />
           )}
 
-          {viewMode === "card" ? (
+          {showFeedPicker ? null : viewMode === "card" ? (
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: isMobile ? 8 : (cardSize === "lg" ? 18 : 14) }}>
               {baseItems.slice(0, displayedCount).map((item, i) => (
                 <FeedItemRow key={item.url + i}
@@ -1582,7 +1633,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           })()}
 
           {/* Load-more indicator — shows while there are items beyond displayedCount */}
-          {!loadingItems && displayedCount < baseItems.length && (
+          {!showFeedPicker && !loadingItems && displayedCount < baseItems.length && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "18px 0", gap: 8, color: T.textTertiary, fontSize: 12 }}>
               <div style={{ width: 10, height: 10, border: `1.5px solid ${T.textTertiary}`, borderTopColor: T.accent, borderRadius: "50%", animation: "spin .7s linear infinite" }} />
               {baseItems.length - displayedCount} more
@@ -1990,6 +2041,51 @@ function SkeletonRow({ delay = 0, T }) {
 }
 
 // ── Skeleton loader — shown during initial feed fetch ─────────
+// ── Feed picker — landing view for the plain Inbox ────────────
+function FeedPickerRow({ feed, count, onSelect, T, isMobile }) {
+  const [hovered, setHovered] = useState(false);
+  let favicon = null;
+  try { favicon = feed.url ? `https://www.google.com/s2/favicons?domain=${new URL(feed.url).hostname}&sz=32` : null; } catch { favicon = null; }
+  return (
+    <button
+      onClick={() => onSelect(feed.id)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex", alignItems: "center", gap: 12, width: "100%",
+        padding: isMobile ? "13px 16px" : "11px 20px",
+        minHeight: 48, border: "none", borderBottom: `1px solid ${T.border}`,
+        background: hovered ? T.surface2 : "transparent",
+        cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+        transition: "background .12s",
+      }}
+    >
+      <div style={{ width: 20, height: 20, borderRadius: 5, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {favicon && <img src={favicon} alt="" width={16} height={16} loading="lazy" decoding="async" style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
+      </div>
+      <span style={{ flex: 1, minWidth: 0, fontSize: isMobile ? 15 : 14, fontWeight: 500, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        {feed.name || feed.url}
+      </span>
+      {count > 0 && (
+        <span style={{ flexShrink: 0, padding: "1px 7px", borderRadius: 10, background: T.accentSurface, color: T.accent, fontSize: 11, fontWeight: 700 }}>
+          {count}
+        </span>
+      )}
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke={T.textTertiary} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M6 3l5 5-5 5"/></svg>
+    </button>
+  );
+}
+
+function FeedPickerList({ feeds, counts, onSelectFeed, T, isMobile }) {
+  return (
+    <div style={{ background: T.card }}>
+      {feeds.map(f => (
+        <FeedPickerRow key={f.id} feed={f} count={counts[f.id] || 0} onSelect={onSelectFeed} T={T} isMobile={isMobile} />
+      ))}
+    </div>
+  );
+}
+
 function SkeletonList({ count = 8, cardSize = "md", viewMode = "list" }) {
   const { T } = useTheme();
   if (viewMode === "card") {

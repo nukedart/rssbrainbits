@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.505] — 2026-08-22 10:32
+
+- [UX] Plain Inbox now lands on a feed picker (pick a source, then see its items) instead of jumping straight to a merged "All Items" list — matches the "browse by feed" mental model rather than dumping everything at once. Shows each feed's favicon and live unread count; tapping one drills in, with a back chevron to return to the picker. Re-entering the Inbox tab always resets back to the picker.
+
 ## [1.46.504] — 2026-08-18 19:32
 
 - [UX] Rebuilt the mobile feed picker as a full-screen "Feeds" page instead of a bottom sheet — big title with a synced-at timestamp, a Starred/Unread/All segmented filter at the bottom that recomputes every count above it (unread from live counts, starred from your Saved items, all from cached article totals), and Folders/Feeds sections that collapse independently. Folders are now drill-down only (tap to open) rather than expanding inline. Swipe-to-mark-read and swipe-to-unsubscribe on feed rows are unchanged.
