@@ -19,10 +19,16 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
   const [name,  setName]  = useState(folder?.name  || "");
   const [color, setColor] = useState(folder?.color || "gray");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  function handleSave() {
-    if (!name.trim()) return;
-    onSave({ name: name.trim(), color });
+  async function handleSave() {
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    try {
+      await onSave({ name: name.trim(), color });
+    } finally {
+      setSaving(false);
+    }
   }
 
   const overlayStyle = {
@@ -104,8 +110,8 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
           <button onClick={onClose} style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.textSecondary, fontFamily: "inherit" }}>
             Cancel
           </button>
-          <button onClick={handleSave} disabled={!name.trim()} style={{ background: name.trim() ? T.accent : T.surface2, border: "none", borderRadius: SHAPE.radiusSm, padding: "9px 18px", cursor: name.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 600, color: name.trim() ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "background .15s, color .15s" }}>
-            {isNew ? "Create folder" : "Save"}
+          <button onClick={handleSave} disabled={!name.trim() || saving} style={{ background: name.trim() ? T.accent : T.surface2, border: "none", borderRadius: SHAPE.radiusSm, padding: "9px 18px", cursor: name.trim() && !saving ? "pointer" : "default", fontSize: 13, fontWeight: 600, color: name.trim() ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "background .15s, color .15s" }}>
+            {saving ? "Saving…" : (isNew ? "Create folder" : "Save")}
           </button>
         </div>
       </div>

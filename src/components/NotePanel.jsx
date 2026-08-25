@@ -11,6 +11,7 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
   const [tags, setTags] = useState(highlight?.tags || []);
   const [tagInput, setTagInput] = useState("");
   const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const color = HIGHLIGHT_COLORS.find((c) => c.id === highlight?.color) || HIGHLIGHT_COLORS[0];
 
   useEffect(() => {
@@ -18,6 +19,7 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
     setTags(highlight?.tags || []);
     setTagInput("");
     setAiSuggestions([]);
+    setConfirmDelete(false);
     if (highlight?.passage) {
       suggestTags(highlight.passage, "").then(setAiSuggestions).catch(() => {});
     }
@@ -123,7 +125,11 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
         )}
 
         <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-          <Button variant="danger" size="sm" onClick={() => { onDelete(highlight.id); onClose(); }}>Delete</Button>
+          {!confirmDelete ? (
+            <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)}>Delete</Button>
+          ) : (
+            <Button variant="danger" size="sm" onClick={() => { onDelete(highlight.id); onClose(); }}>Confirm delete</Button>
+          )}
           <div style={{ flex: 1 }} />
           <Button variant="secondary" size="sm" onClick={onClose}>Done</Button>
           <Button size="sm" onClick={() => { onSave(highlight.id, note.trim()); onClose(); }}>Save</Button>

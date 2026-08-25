@@ -24,6 +24,8 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
   const [matchMode, setMatchMode] = useState(feed?.match_mode || "any"); // "any" | "all"
   const [showFeedPicker, setShowFeedPicker] = useState(false);
   const [error,     setError]     = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   function addKeyword() {
     const kw = kwInput.trim().toLowerCase();
@@ -37,10 +39,16 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
     setKeywords(prev => prev.filter(k => k !== kw));
   }
 
-  function handleSave() {
+  async function handleSave() {
+    if (saving) return;
     if (!name.trim())       { setError("Give this bucket a name."); return; }
     if (!keywords.length)   { setError("Add at least one keyword."); return; }
-    onSave({ name: name.trim(), keywords, color, feed_ids: feedIds?.length ? feedIds : null, match_mode: matchMode });
+    setSaving(true);
+    try {
+      await onSave({ name: name.trim(), keywords, color, feed_ids: feedIds?.length ? feedIds : null, match_mode: matchMode });
+    } finally {
+      setSaving(false);
+    }
   }
 
   const selectedColor = COLORS.find(c => c.id === color) || COLORS[0];
@@ -209,15 +217,20 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
 
         {/* Actions */}
         <div style={{ display: "flex", gap: 8 }}>
-          {isEdit && (
-            <button onClick={() => { onDelete(feed.id); onClose(); }} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
+          {isEdit && !confirmDelete && (
+            <button onClick={() => setConfirmDelete(true)} style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
               Delete
+            </button>
+          )}
+          {isEdit && confirmDelete && (
+            <button onClick={() => { onDelete(feed.id); onClose(); }} style={{ background: `${T.danger}22`, border: `1px solid ${T.danger}`, borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
+              Confirm delete
             </button>
           )}
           <div style={{ flex: 1 }} />
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave}>
-            {isEdit ? "Save changes" : "Create bucket"}
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? "Saving…" : (isEdit ? "Save changes" : "Create bucket")}
           </Button>
         </div>
       </div>

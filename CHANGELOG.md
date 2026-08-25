@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.507] — 2026-08-25 10:40
+
+- [Fix] Highlight notes could be permanently deleted by a single misclick with zero confirmation — the reader's Delete button now requires a second "Confirm delete" tap before removing a highlight and its annotation, matching the two-step pattern already used elsewhere in the app.
+- [Fix] Smart Feed deletion had the same single-click, no-confirmation gap — now requires "Delete" → "Confirm delete", matching the pattern Folders already use.
+- [Fix] Saving a Folder or Smart Feed could create a duplicate record if the Save button was double-clicked (or Enter pressed then Save clicked) before the previous save finished — both modals now lock and show "Saving…" while a save is in flight.
+
 ## [1.46.506] — 2026-08-22 10:35
 
 - [UX] Save/unsave, mark-all-read, delete-feed, and save-for-later/read-later now update instantly instead of waiting on the network round-trip — the icon, badge, or toast reacts the moment you tap, with the change quietly rolled back only if the request actually fails. Mark-all-read also can no longer be double-fired by a fast repeat click while the previous call is still in flight. Same treatment applied to the reader's save toggle and to Manage Feeds' move-to-folder action (which now also can't be double-fired mid-request).
