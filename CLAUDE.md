@@ -137,6 +137,20 @@ Also append a row to `AGENT_LOG.md`:
 | YYYY-MM-DD | v[next] | [Area] | [One-line description] | `File.jsx:line` | — |
 ```
 
+## Native app automation (`native/` — MANDATORY, token-saving)
+
+The native Swift app has scripts that collapse the mechanical build/test/release loop into one command each. **Use them. Never run raw `xcodebuild` / `swift test` in `native/`, and never paste raw build logs into context.**
+
+| Command | Does | When |
+|---|---|---|
+| `native/verify.sh` | `xcodegen` → FeedboxCore `swift test` → iOS build → macOS build. Prints a 6-line PASS/FAIL block; on failure prints only `error:` lines + a log path. ~12s. Flags: `--quick` (iOS only), `--no-tests`, `--ios`, `--macos`. | After every native code change. Workers included. |
+| `native/ship.sh [patch\|minor\|major] --log "<one-liner>"` | `verify.sh` → bump `MARKETING_VERSION`/build in `project.yml` → promote `native/CHANGELOG.md` `## [Unreleased]` → append the AGENT_LOG row → `deploy-macos.sh` + `deploy.sh`. Aborts if `[Unreleased]` is empty or verify fails. Flags: `--dry-run`, `--no-deploy`, `--macos-only`. | Once, at the end of a native batch — after the `## [Unreleased]` body is written. |
+
+- **Worker briefs for `native/` code MUST end with:** *"Verify with `./verify.sh` (from `native/`). Report only its summary block — never raw xcodebuild output."*
+- **The orchestrator's integration check is one `native/verify.sh`**, not a re-run of individual builds.
+- **AGENT_LOG rows for `native/` are ONE line** — `ship.sh` writes them. Detail goes in `native/CHANGELOG.md`, never in AGENT_LOG. Do not hand-write multi-paragraph native entries.
+- `native/CHANGELOG.md` still needs its `## [Unreleased]` body written by hand (judgment); `ship.sh` only promotes it.
+
 ## Token efficiency rules (MANDATORY — applies to every agent and session)
 
 Minimize token usage at every step. This directly reduces Claude Pro consumption.
@@ -146,7 +160,9 @@ Minimize token usage at every step. This directly reduces Claude Pro consumption
 - **Prefer Edit over Write** — Edit sends only the diff; Write sends the full file
 - **Parallel tool calls** — when reads are independent, fire them in one message
 - **One issue per iteration** — no compound diffs; small changes are easier to verify and cheaper to reason about
-- **Always run `npm test` before deploying** — a failed deploy wastes tokens on a retry cycle
+- **Always run `npm test` (web) / `native/verify.sh` (native) before deploying** — a failed deploy wastes tokens on a retry cycle
+- **Never paste raw build/test logs into context** — pipe through the wrapper (`verify.sh`) or `grep` for `error:` / the result line only
+- **One `verify.sh` for integration** — don't re-run per-file builds the workers already ran
 - **Skip preamble in responses** — lead with action, not explanation; no restating what the user said
 - **Check `scripts/perf-history.json`** before perf work to avoid re-measuring baselines
 - After each session, note the `/cost` value in AGENT_LOG.md

@@ -194,7 +194,14 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     if (suggestedUrlRef.current === item.url) return; // already suggested
     suggestedUrlRef.current = item.url;
     setSuggestedTags([]); // clear stale suggestions from previous article
-    suggestTags(content.bodyText, content.title || item.title).then(setSuggestedTags).catch(() => {});
+    // Defer to idle time so tag suggestions don't compete with the article fetch for bandwidth.
+    const run = () => { suggestTags(content.bodyText, content.title || item.title).then(setSuggestedTags).catch(() => {}); };
+    if (typeof window !== "undefined" && window.requestIdleCallback) {
+      const id = window.requestIdleCallback(run);
+      return () => window.cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(run, 2000);
+    return () => clearTimeout(t);
   }, [content, item?.url, user]);
 
   // ── Load highlights + tags ─────────────────────────────────

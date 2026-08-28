@@ -3,6 +3,14 @@
 All notable changes documented here.
 Format: `## [version] — YYYY-MM-DD`
 
+## [1.46.508] — 2026-08-28 15:41
+
+- [Perf] Feed refresh no longer fires every feed at once — fetches now run through a 6-wide concurrency pool, so a 20–40 feed refresh stops overwhelming the shared CORS proxies (which were rate-limiting and cascading into slow `rss2json` fallbacks). Items still stream into the list as each feed resolves.
+- [Perf] The optional private Cloudflare proxy is now raced alongside the three public proxies instead of being awaited first with a 4s timeout — a slow or cold Worker no longer adds up to 4 seconds of dead wait before the fallbacks even start.
+- [Perf] The `rss2json` last-resort feed fetch now uses a 6s timeout instead of stacking a second full 10s wait on top of a failed proxy race — a dead or blocked feed fails in ~16s instead of ~20s.
+- [Perf] Tapping an article now shows a full-screen reader skeleton immediately instead of a blank screen while the reader chunk downloads, and that chunk is now prefetched during idle time after the inbox loads — the first article open of a session feels instant instead of like a dead tap.
+- [Perf] AI tag suggestions in the reader (Pro) are now deferred to idle time instead of firing the moment article content loads, so they no longer compete with the article fetch for bandwidth.
+
 ## [1.46.507] — 2026-08-25 10:40
 
 - [Fix] Highlight notes could be permanently deleted by a single misclick with zero confirmation — the reader's Delete button now requires a second "Confirm delete" tap before removing a highlight and its annotation, matching the two-step pattern already used elsewhere in the app.

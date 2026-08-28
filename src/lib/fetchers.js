@@ -16,6 +16,7 @@ const PROXY_FALLBACK = "https://api.allorigins.win/get?url=";
 const PROXY_THIRD    = "https://api.codetabs.com/v1/proxy?quest=";
 const RSS2JSON_API   = "https://api.rss2json.com/v1/api.json?rss_url=";
 const TIMEOUT_MS     = 10000; // 10s — some sites are slow
+const RSS2JSON_TIMEOUT_MS = 6000; // 6s — it's already a fallback, don't stack a second full 10s wait
 
 // Session-scoped article content cache — avoids re-fetching the same article
 // when the user closes/reopens it or swipes prev/next. Capped at 50 to stay
@@ -54,19 +55,20 @@ async function fetchWithTimeout(url, ms = TIMEOUT_MS) {
 async function proxiedFetch(targetUrl) {
   const enc = encodeURIComponent(targetUrl);
 
-  // ── Own Cloudflare Worker — try first if configured ──────
-  // Use a shorter 4s timeout so a downed Worker fails fast and the
-  // public-proxy race below starts without a 10s delay.
+  const contestants = [];
+
+  // ── Own Cloudflare Worker — race it alongside the public proxies ──
+  // Uses a shorter 4s timeout so a downed Worker drops out of the race
+  // fast instead of gating the fallbacks behind a sequential 4s wait.
   if (OWN_PROXY) {
-    try {
-      const res = await fetchWithTimeout(OWN_PROXY + enc, 4000);
-      if (res.ok) {
+    contestants.push(
+      fetchWithTimeout(OWN_PROXY + enc, 4000).then(async res => {
+        if (!res.ok) throw new Error(`own-proxy ${res.status}`);
         const text = await res.text();
-        if (text?.trim() && !looksLikeBlockPage(text)) return text;
-      }
-    } catch {
-      // Worker unreachable — fall through to public proxies
-    }
+        if (!text?.trim() || looksLikeBlockPage(text)) throw new Error("own-proxy blocked");
+        return text;
+      })
+    );
   }
 
   // ── Public proxies — race all three as fallback ───────────
@@ -94,7 +96,9 @@ async function proxiedFetch(targetUrl) {
       return text;
     });
 
-  const result = await Promise.any([p1, p2, p3]).catch(() => {
+  contestants.push(p1, p2, p3);
+
+  const result = await Promise.any(contestants).catch(() => {
     throw new Error("Could not reach this feed. The site may block external requests or the URL may have changed.");
   });
   return result;
@@ -153,7 +157,7 @@ export async function fetchRSSFeed(feedUrl, { forceRefresh = false } = {}) {
 }
 
 async function fetchViaRss2Json(feedUrl) {
-  const res = await fetchWithTimeout(RSS2JSON_API + encodeURIComponent(feedUrl), TIMEOUT_MS);
+  const res = await fetchWithTimeout(RSS2JSON_API + encodeURIComponent(feedUrl), RSS2JSON_TIMEOUT_MS);
   if (!res.ok) throw new Error(`rss2json HTTP ${res.status}`);
   const json = await res.json();
   if (json.status !== "ok") throw new Error(`rss2json: ${json.message || "error"}`);

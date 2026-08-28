@@ -20,6 +20,27 @@ const MobileSearchOverlay = lazy(() => import("../components/MobileSearchOverlay
 import { track } from "../lib/analytics";
 import { SHAPE } from "../lib/tokens";
 
+// Runs `fn` over items with at most `limit` in flight at once.
+async function pooledForEach(items, limit, fn) {
+  let idx = 0;
+  const run = async () => { while (idx < items.length) { const i = idx++; await fn(items[i], i); } };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, run));
+}
+
+// Full-screen reader-shaped placeholder shown while the ContentViewer chunk loads.
+function ReaderSkeleton() {
+  const { T } = useTheme();
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: T.bg, display: "flex", flexDirection: "column", gap: 12, padding: "72px 20px 0" }}>
+      <div className="skeleton" style={{ width: "72%", height: 30, marginBottom: 8 }} />
+      <div className="skeleton" style={{ width: "44%", height: 16, marginBottom: 28 }} />
+      {[100, 96, 92, 98, 60, 100, 94, 88].map((w, i) => (
+        <div key={i} className="skeleton" style={{ width: `${w}%`, height: 14 }} />
+      ))}
+    </div>
+  );
+}
+
 const DISPLAY_PREF_KEYS = {
   imgPosition: "fb-img-pos", previewLines: "fb-preview-lines", imgSize: "fb-img-size", fontSize: "fb-list-font",
   showFavicons: "fb-show-favicons", faviconGrayscale: "fb-favicon-grayscale", dimRead: "fb-dim-read", fontStyle: "fb-list-font-style",
@@ -273,6 +294,18 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   useBackButtonClose(isMobile && !!openItem, () => { invalidateProgressCache(openItem?.url); setOpenItem(null); setOpenIdx(-1); window.dispatchEvent(new CustomEvent("fb-nav-dir", { detail: "up" })); });
   useBackButtonClose(!!searchResult, () => setSearchResult(null));
 
+  // ── Idle-prefetch the ContentViewer chunk so the first article tap is instant ──
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const load = () => { import("../components/ContentViewer"); };
+    if (window.requestIdleCallback) {
+      const id = window.requestIdleCallback(load);
+      return () => window.cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(load, 1500);
+    return () => clearTimeout(t);
+  }, []);
+
 
   // ── Interest keyword profile — built once per session from highlight history ──
   useEffect(() => {
@@ -379,8 +412,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       // Only show global spinner if we have nothing to show yet
       if (itemMap.size === 0) setLoadingItems(true);
 
-      await Promise.allSettled(
-        rssFeeds.map(async (feed) => {
+      await pooledForEach(rssFeeds, 6, async (feed) => {
           try {
             const data = await fetchRSSFeed(feed.url, { forceRefresh });
             if (!data?.items?.length) throw new Error("No items in feed");
@@ -398,8 +430,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           } finally {
             setFeedLoading(prev => ({ ...prev, [feed.id]: false }));
           }
-        })
-      );
+        });
 
       setLoadingItems(false);
       setLastRefresh(new Date());
@@ -1817,7 +1848,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       {/* ── Right panel — shown on desktop when an article is open ── */}
       {!isMobile && openItem && !expandedView && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: `1px solid ${T.border}` }}>
-          <Suspense fallback={null}>
+          <Suspense fallback={<ReaderSkeleton />}>
             <ContentViewer
               inline={true}
               item={openItem}
@@ -1836,7 +1867,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       )}
       {/* ── Full-screen expanded view (desktop) ── */}
       {!isMobile && openItem && expandedView && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ReaderSkeleton />}>
           <ContentViewer
             item={openItem}
             isSaved={savedUrls.has(openItem?.url)}
@@ -1870,7 +1901,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       )}
       {/* Mobile: ContentViewer as full-screen overlay */}
       {openItem && isMobile && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ReaderSkeleton />}>
           <ContentViewer
             item={openItem}
             isSaved={savedUrls.has(openItem?.url)}
@@ -1885,7 +1916,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         </Suspense>
       )}
       {searchResult && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ReaderSkeleton />}>
           <ContentViewer item={searchResult} onClose={() => setSearchResult(null)} />
         </Suspense>
       )}
