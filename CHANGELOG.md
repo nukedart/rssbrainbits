@@ -7,7 +7,7 @@ Format: `## [Unreleased]
 - [UX] Large-title page headers on Inbox, Cards, Review and Today, with quiet text-tab filters, 44px stroke icon actions and a centered 720px column on desktop; lists sit on rounded cards.
 - [UX] Cards: theme cards with a colored dot, count and a representative quote; Review: one large flashcard with a progress bar and a pill rating row; Today: calm stat row and stacked cards.
 
-## [Unreleased]
+## [1.46.512] — 2026-10-12 18:49
 
 - [Polish] Desktop now follows the minimal redesign: the Feeds picker is a centered rounded list with larger favicons, 16px names and plain unread numbers instead of pills; the sidebar uses quieter sentence-case section labels, 14px items, lighter folder weights and plain-number badges.
 
