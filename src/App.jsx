@@ -64,7 +64,9 @@ function AppShell() {
   const [editingSF, setEditingSF]     = useState(null);
   const [folders, setFolders]         = useState([]);
   const [editingFolder, setEditingFolder] = useState(null);
-  const [sidebarOpen, setSidebarOpen]       = useState(true);
+  const [sidebarOpen, setSidebarOpen]       = useState(() => {
+    try { return localStorage.getItem("fb-sidebar-open") === "1"; } catch { return false; }
+  });
   const [podcastItem, setPodcastItem]       = useState(null);
   const [podcastQueue, setPodcastQueue]     = useState([]);
   const [feeds, setFeeds]             = useState([]);
@@ -341,7 +343,7 @@ function AppShell() {
         onEditFolder={(f) => setEditingFolder(f)}
         onMoveFeedToFolder={handleMoveFeedToFolder}
         isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(v => !v)}
+        onToggle={() => setSidebarOpen(v => { try { localStorage.setItem("fb-sidebar-open", v ? "0" : "1"); } catch {} return !v; })}
         onAddSource={handleGlobalAdd}
         onUnsubscribeFeed={async (feedId) => { await deleteFeed(feedId); handleFeedDeleted(feedId); }}
         onMarkFeedAllRead={handleMarkFeedAllRead}

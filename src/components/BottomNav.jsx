@@ -49,12 +49,10 @@ function hexToRgba(hex, alpha) {
 }
 
 const NAV_ITEMS = [
-  { id: "feeds",     Icon: ListIcon,   label: "Feeds",  special: "feeds" },
   { id: "inbox",     Icon: InboxIcon,  label: "Inbox"  },
-  { id: "today",     Icon: TodayIcon,  label: "Today"  },
-  { id: "readlater", Icon: SavedIcon,  label: "Saved"  },
   { id: "cards",     Icon: CardIcon,   label: "Cards"  },
   { id: "review",    Icon: ReviewIcon, label: "Review" },
+  { id: "today",     Icon: TodayIcon,  label: "Today"  },
   { id: "more",      Icon: MoreIcon,   label: "More",   special: "more" },
 ];
 
@@ -184,7 +182,7 @@ export default function BottomNav({
           );
         }
 
-        const isActive = active === id;
+        const isActive = active === id || (id === "inbox" && (active.startsWith("folder:") || active.startsWith("feed:") || active.startsWith("smart:")));
         return (
           <button
             key={id}

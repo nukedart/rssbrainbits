@@ -430,7 +430,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
   if (isMobile) return null;
 
   const collapsed = !isTablet && !isOpen;
-  const W = collapsed ? 52 : (isTablet ? 180 : 208);
+  const W = collapsed ? 68 : (isTablet ? 180 : 208);
 
   const uncategorized = useMemo(() => feeds.filter(f => !f.folder_id), [feeds]);
   const feedsByFolder = useMemo(() => {
@@ -474,9 +474,10 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
             </div>
           </div>
         ) : (
-          <div style={{ width:26, height:26, borderRadius:7, background:T.surface, display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <FeedboxMark size={14} fill={BRAND.mint} />
-          </div>
+          <button onClick={isTablet ? undefined : onToggle} title={isTablet ? "Feedbox" : "Expand sidebar"} aria-label={isTablet ? "Feedbox" : "Expand sidebar"}
+            style={{ width:36, height:36, borderRadius:9, background:BRAND.ink, border:"none", padding:0, cursor: isTablet ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <FeedboxMark size={19} fill={BRAND.mint} />
+          </button>
         )}
         {!isTablet && !collapsed && (
           <button onClick={onToggle} title="Collapse sidebar" aria-label="Collapse sidebar"
@@ -484,13 +485,6 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
             onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
             onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
           >‹</button>
-        )}
-        {!isTablet && collapsed && (
-          <button onClick={onToggle} title="Expand sidebar" aria-label="Expand sidebar"
-            style={{ position:"absolute", right:4, top:16, width:20, height:20, borderRadius:5, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.textTertiary, fontSize:13, fontFamily:"inherit", transition:"color .12s" }}
-            onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
-            onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
-          >›</button>
         )}
       </div>
 
