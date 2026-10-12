@@ -602,8 +602,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
         {/* Light / Dark quick toggle — collapsed sidebar */}
         {collapsed && (
           <div style={{ display:"flex", gap:3, marginTop:6, justifyContent:"center" }}>
-            {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
-              const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
+            {[{Icon:Icons.Sun,id:"paper",label:"Light"},{Icon:Icons.Moon,id:"slate",label:"Dark"}].map(({Icon,id,label}) => {
+              const isActive = id === "light" ? ["light","cream","sepia","paper"].includes(theme) : ["distilled","nocturne","ink","slate"].includes(theme);
               return (
                 <button key={label} onClick={() => setTheme(id)} title={label} aria-label={label} aria-pressed={isActive}
                   style={{ width:24, height:22, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"background .15s, color .15s, border-color .15s" }}
@@ -637,8 +637,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
           </button>
           {!collapsed && (
             <>
-              {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
-                const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
+              {[{Icon:Icons.Sun,id:"paper",label:"Light"},{Icon:Icons.Moon,id:"slate",label:"Dark"}].map(({Icon,id,label}) => {
+                const isActive = id === "light" ? ["light","cream","sepia","paper"].includes(theme) : ["distilled","nocturne","ink","slate"].includes(theme);
                 return (
                   <button key={label} onClick={() => setTheme(id)} aria-label={label} aria-pressed={isActive} title={label}
                     style={{ width:24, height:24, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, flexShrink:0, transition:"background .15s, color .15s, border-color .15s" }}

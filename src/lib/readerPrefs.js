@@ -5,6 +5,7 @@ const DEFAULTS = {
   fontSize:  20,          // px  — range 14–24
   lineWidth: "medium",    // "narrow" | "medium" | "wide"
   fontFamily:"serif",     // "sans" | "serif" — default to editorial serif
+  lineHeight: 1.7,        // 1.55 tight | 1.7 comfortable | 1.9 loose
   bionic:    false,       // bionic reading mode
 };
 

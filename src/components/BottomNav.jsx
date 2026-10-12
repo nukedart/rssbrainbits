@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
-import { SHAPE } from "../lib/tokens";
+import { SHAPE, BRAND } from "../lib/tokens";
 
 // ── Icons ──────────────────────────────────────────────────────
 const ListIcon   = ({ size, sw }) => (
@@ -87,7 +87,12 @@ export default function BottomNav({
   unreadCount = 0,
   dueCount = 0,
 }) {
-  const { T } = useTheme();
+  const { T: baseT, theme } = useTheme();
+  // Paper/Slate: a dark charcoal dock with mint active state (Procreate-style)
+  const dock = theme === "paper" || theme === "slate";
+  const T = dock
+    ? { ...baseT, card: BRAND.ink, border: "transparent", textSecondary: "#AEB7BB", textTertiary: "#8B949A", accent: BRAND.mint, accentSurface: "rgba(101,213,196,0.16)", accentText: "#0C2824" }
+    : baseT;
   const [visible, setVisible] = useState(true);
 
   // Always show nav when switching pages
@@ -104,7 +109,7 @@ export default function BottomNav({
     bottom: `calc(${SHAPE.barInset}px + env(safe-area-inset-bottom, 0px))`,
     left: "50%",
     zIndex: 600,
-    background: hexToRgba(T.card, 0.72),
+    background: hexToRgba(T.card, dock ? 0.96 : 0.72),
     backdropFilter: SHAPE.blur,
     WebkitBackdropFilter: SHAPE.blur,
     transform: `translateX(-50%) translateY(${visible ? "0" : "120px"})`,

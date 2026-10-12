@@ -392,9 +392,15 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.bg,
               opacity: dimmed ? 0.48 : 1,
-              transition: "opacity .15s",
+              transition: "opacity .15s", position: "relative",
             }}
           >
+            <div aria-hidden="true" style={{ position: "absolute", left: 16, right: 0, bottom: 0, height: 1, background: T.border, pointerEvents: "none" }} />
+            <div aria-hidden="true" style={{
+              width: 20, height: 20, flex: "none", marginTop: 2, boxSizing: "border-box",
+              borderRadius: "50%", border: `1.6px solid ${T.borderStrong}`, background: "transparent",
+              visibility: isRead ? "hidden" : "visible",
+            }} />
             {inMultiSelect && (
               <div style={{
                 width: 22, height: 22, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
@@ -413,8 +419,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {/* Title */}
               <div style={{
                 fontFamily: titleFont,
-                fontSize: titleSize,
-                fontWeight: isRead ? 400 : 600,
+                fontSize: Math.max(titleSize, 17),
+                fontWeight: isRead ? 400 : 500,
                 color: T.text,
                 lineHeight: 1.3,
                 overflow: "hidden", display: "-webkit-box",
@@ -426,7 +432,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               </div>
 
               {/* Preview text */}
-              {preview && (
+              {preview && imgPos === "none" && (
                 <div style={{
                   fontSize: titleSize - 3, color: T.textTertiary, lineHeight: 1.4,
                   overflow: "hidden", display: "-webkit-box",
@@ -442,19 +448,16 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 
               {/* Source · time */}
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
-                {!isRead && (
-                  <span style={{ width: 8, height: 8, borderRadius: SHAPE.radiusPill, flexShrink: 0, background: T.accent }} />
-                )}
                 {showFavicon && (
                   <img src={favicon} alt="" width={12} height={12} loading="lazy" decoding="async"
                     style={faviconStyle}
                     onError={e => { e.target.style.display = "none"; }} />
                 )}
-                <span style={{ fontSize: 11, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                <span style={{ fontSize: 13, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                   {item.source}
                 </span>
                 {item.date && (
-                  <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, color: T.textTertiary, flexShrink: 0 }}>
                     {formatDate(item.date)}
                   </span>
                 )}
