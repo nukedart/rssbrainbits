@@ -5,7 +5,7 @@ Format: `## [Unreleased]
 
 - [Polish] Desktop now follows the minimal redesign: the Feeds picker is a centered rounded list with larger favicons, 16px names and plain unread numbers instead of pills; the sidebar uses quieter sentence-case section labels, 14px items, lighter folder weights and plain-number badges.
 
-## [Unreleased]
+## [1.46.511] — 2026-10-12 17:50
 
 - [Fix] The Paper/Slate redesign now applies once to existing users (their saved theme kept hiding it); light/dark preference is preserved and they can switch back in Settings → Appearance.
 
