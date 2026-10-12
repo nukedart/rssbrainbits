@@ -58,7 +58,7 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
       style={{
         display:"flex", alignItems:"center",
         gap: collapsed ? 0 : 9,
-        padding: collapsed ? "7px 0" : "6px 10px",
+        padding: collapsed ? "8px 0" : "8px 12px",
         justifyContent: collapsed ? "center" : "flex-start",
         borderRadius: SHAPE.radiusSm, border:"none", cursor:"pointer",
         width:"100%", textAlign:"left",
@@ -86,15 +86,15 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
       </span>
       {!collapsed && (
         <>
-          <span style={{ flex:1, fontSize:12.5, fontWeight: isActive ? 500 : 400, color: isActive ? T.text : T.textSecondary, letterSpacing:"-.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+          <span style={{ flex:1, fontSize:14, fontWeight: isActive ? 500 : 400, color: isActive ? T.text : T.textSecondary, letterSpacing:"-.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
             {label}
           </span>
           {badge > 0 && (
             <span style={{
               fontSize:10, fontWeight:700, lineHeight:1,
               minWidth:20, height:17, borderRadius:9,
-              background: badgeColor ? bc + "22" : T.accentSurface,
-              color: badgeColor ? bc : T.accent,
+              background: "transparent",
+              color: badgeColor ? bc : T.textTertiary,
               display:"flex", alignItems:"center", justifyContent:"center",
               padding:"0 5px", boxSizing:"border-box", flexShrink:0,
             }}>
@@ -213,11 +213,11 @@ const FeedRow = memo(function FeedRow({ feed, unread, active, onNavigate, onCtxM
       </span>
       {/* Name */}
       <span style={{
-        flex:1, fontSize:12.5,
+        flex:1, fontSize:13.5,
         overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
         letterSpacing:"-.01em",
         color: isActive ? T.text : unread > 0 ? T.text : T.textSecondary,
-        fontWeight: unread > 0 ? 500 : 400,
+        fontWeight: 400,
       }}>
         {name}
       </span>
@@ -292,11 +292,11 @@ function FolderSection({ folder, folderFeeds, feedUnreadCounts, active, onNaviga
         >
           <span style={{ width:8, height:8, borderRadius:2, background:dot, flexShrink:0, marginTop:.5 }} />
           <span style={{
-            flex:1, fontSize:13,
+            flex:1, fontSize:14,
             overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
             letterSpacing:"-.01em",
             color: T.text,
-            fontWeight: folderUnread > 0 ? 600 : 500,
+            fontWeight: folderUnread > 0 ? 500 : 400,
           }}>
             {folder.name}
           </span>
@@ -384,7 +384,7 @@ function SmartRow({ sf, active, onNavigate, onEdit, collapsed, T }) {
 function SectionLabel({ label, action, actionTitle, T }) {
   return (
     <div style={{ display:"flex", alignItems:"center", padding:"8px 10px 4px", flexShrink:0 }}>
-      <span style={{ flex:1, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:".05em", color:T.textTertiary }}>{label}</span>
+      <span style={{ flex:1, fontSize:12, fontWeight:500, letterSpacing:".01em", color:T.textTertiary }}>{label}</span>
       {action && (
         <button onClick={action} title={actionTitle} aria-label={actionTitle}
           style={{ background:"none", border:"none", cursor:"pointer", color:T.textTertiary, display:"flex", padding:"2px 3px", borderRadius:4, transition:"color .1s" }}

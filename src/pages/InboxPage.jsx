@@ -2112,21 +2112,21 @@ function FeedPickerRow({ feed, count, onSelect, T, isMobile }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex", alignItems: "center", gap: 12, width: "100%",
-        padding: isMobile ? "13px 16px" : "11px 20px",
-        minHeight: 48, border: "none", borderBottom: `1px solid ${T.border}`,
+        padding: isMobile ? "14px 16px" : "14px 22px",
+        minHeight: 56, border: "none", borderBottom: `1px solid ${T.border}`,
         background: hovered ? T.surface2 : "transparent",
         cursor: "pointer", fontFamily: "inherit", textAlign: "left",
         transition: "background .12s",
       }}
     >
-      <div style={{ width: 20, height: 20, borderRadius: 5, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        {favicon && <img src={favicon} alt="" width={16} height={16} loading="lazy" decoding="async" style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
+      <div style={{ width: 24, height: 24, borderRadius: 7, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {favicon && <img src={favicon} alt="" width={20} height={20} loading="lazy" decoding="async" style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
       </div>
-      <span style={{ flex: 1, minWidth: 0, fontSize: isMobile ? 15 : 14, fontWeight: 500, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 500, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
         {feed.name || feed.url}
       </span>
       {count > 0 && (
-        <span style={{ flexShrink: 0, padding: "1px 7px", borderRadius: 10, background: T.accentSurface, color: T.accent, fontSize: 11, fontWeight: 700 }}>
+        <span style={{ flexShrink: 0, color: T.textTertiary, fontSize: 14, fontWeight: 400, fontVariantNumeric: "tabular-nums" }}>
           {count}
         </span>
       )}
@@ -2137,7 +2137,7 @@ function FeedPickerRow({ feed, count, onSelect, T, isMobile }) {
 
 function FeedPickerList({ feeds, counts, onSelectFeed, T, isMobile }) {
   return (
-    <div style={{ background: T.card }}>
+    <div style={isMobile ? { background: T.card } : { background: T.card, maxWidth: 720, margin: "28px auto", borderRadius: 18, overflow: "hidden", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
       {feeds.map(f => (
         <FeedPickerRow key={f.id} feed={f} count={counts[f.id] || 0} onSelect={onSelectFeed} T={T} isMobile={isMobile} />
       ))}
