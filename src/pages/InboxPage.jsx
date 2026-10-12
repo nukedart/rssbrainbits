@@ -1150,33 +1150,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       {/* ── Article list ── */}
       <div style={{ flex: !isMobile && openItem ? `0 0 ${isTablet ? 280 : 420}px` : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
 
-        {/* Toolbar */}
-        <div style={{ padding: isMobile ? "0 12px" : "0 12px", background: T.bg, display: "flex", alignItems: "center", gap: isMobile ? 6 : 5, flexShrink: 0, flexWrap: "nowrap", minWidth: 0, height: isMobile ? 64 : 54, borderBottom: `1px solid ${T.border}` }}>
-
-          {/* ☰ Hamburger — mobile only, opens feeds drawer */}
-          {isMobile && (
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent("fb-open-feeds"))}
-              style={{
-                width: 44, height: 44, borderRadius: 10, border: "none",
-                background: "transparent", cursor: "pointer", flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: T.textSecondary,
-                WebkitTapHighlightColor: "transparent",
-              }}
-              onTouchStart={e => { e.currentTarget.style.opacity = "0.55"; }}
-              onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
-              onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
-            >
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                <path d="M2 4h12M2 8h12M2 11.5h8"/>
-              </svg>
-            </button>
-          )}
+        {/* Header — large title + quiet icon actions */}
+        <div style={{ padding: isMobile ? "calc(env(safe-area-inset-top, 0px) + 40px) 12px 4px 24px" : "32px max(20px, calc((100% - 720px) / 2)) 4px", background: T.bg, display: "flex", alignItems: "flex-start", gap: isMobile ? 2 : 4, flexShrink: 0, flexWrap: "nowrap", minWidth: 0 }}>
 
           {/* Title + unread badge + error badge — hidden when desktop search open */}
           {(!searchOpen || isMobile) && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 1, minWidth: 0, overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexShrink: 1, minWidth: 0, overflow: "hidden", paddingTop: 2 }}>
               {showPickerBack && (
                 <button
                   onClick={() => { setActiveSource("all"); setPickerDismissed(false); }}
@@ -1193,19 +1172,21 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg>
                 </button>
               )}
-              <div style={{ fontSize: isMobile ? 20 : 17, fontWeight: 700, color: T.text, letterSpacing: "-.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {activeFeedName}
+              <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+                <div style={{ fontSize: 36, fontWeight: 600, lineHeight: 1.1, color: T.text, letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {activeFeedName}
+                </div>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={markAboveRead}
+                    title="Tap to mark scrolled-past items as read"
+                    aria-label="Mark scrolled-past items as read"
+                    style={{ fontSize: 15, fontWeight: 400, background: "none", color: T.textTertiary, padding: 0, marginTop: 4, border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left", WebkitTapHighlightColor: "transparent" }}
+                  >
+                    {unreadCount} unread{activeSource === "all" && filterMode === "all" && feeds.length > 1 ? ` across ${feeds.length} feeds` : ""}
+                  </button>
+                )}
               </div>
-              {unreadCount > 0 && (
-                <button
-                  onClick={markAboveRead}
-                  title="Tap to mark scrolled-past items as read"
-                  aria-label="Mark scrolled-past items as read"
-                  style={{ fontSize: isMobile ? 13 : 11, fontWeight: 600, background: T.accent, color: T.accentText, padding: isMobile ? "3px 10px" : "1px 7px", borderRadius: 20, flexShrink: 0, letterSpacing: "-.01em", border: "none", cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent" }}
-                >
-                  {unreadCount}
-                </button>
-              )}
               {/* Red ! error badge with popover */}
               {Object.keys(feedErrors).length > 0 && (
                 <div ref={errorPopoverRef} style={{ position: "relative", flexShrink: 0 }}>
@@ -1305,36 +1286,19 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Spacer — pushes controls right when title is visible */}
           {(!searchOpen || isMobile) && <div style={{ flex: 1 }} />}
 
-          {/* All / Unread toggle — desktop only; moved to bottom bar on mobile */}
-          {filterMode !== "unread" && !searchOpen && !isMobile && (
-            <div style={{ display: "flex", background: T.surface, borderRadius: 100, padding: 2, gap: 0, flexShrink: 0 }}>
-              {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }].map(({ label, val }) => (
-                <button key={label} onClick={() => setReadFilter(val)} aria-pressed={readFilter === val} style={{
-                  padding: "3px 11px", borderRadius: 100, border: "none",
-                  background: readFilter === val ? T.bg : "transparent",
-                  color: readFilter === val ? T.text : T.textTertiary,
-                  fontWeight: readFilter === val ? 600 : 400,
-                  fontSize: 11, cursor: "pointer", fontFamily: "inherit",
-                  transition: "background .15s, color .15s, outline .1s",
-                  outline: "none",
-                }} onFocus={e => { e.currentTarget.style.outline = `2px solid ${T.accent}44`; e.currentTarget.style.outlineOffset = "2px"; }} onBlur={e => { e.currentTarget.style.outline = "none"; }}>{label}</button>
-              ))}
-            </div>
-          )}
-
           {/* Mark all read — desktop only; moved to bottom bar on mobile */}
           {unreadCount > 0 && !searchOpen && !isMobile && (
             <button onClick={handleMarkAllRead} disabled={markingAllRead} title="Mark all as read" aria-label="Mark all as read"
               style={{
                 background: "transparent", border: "none", borderRadius: 8,
-                width: isMobile ? 40 : 30, height: isMobile ? 40 : 30, cursor: markingAllRead ? "default" : "pointer", flexShrink: 0,
+                width: 44, height: 44, cursor: markingAllRead ? "default" : "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: T.textTertiary, transition: "background .15s, color .15s",
               }}
               onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
             >
-              <svg width={isMobile ? 17 : 14} height={isMobile ? 17 : 14} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M1 9l4 4 10-10"/><path d="M1 5l4 4 10-10" strokeOpacity=".3"/>
               </svg>
             </button>
@@ -1352,15 +1316,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               title="Search"
               aria-label="Search"
               style={{
-                background: searchOpen ? T.accentSurface : "transparent", border: "none", borderRadius: 9,
-                width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+                background: "transparent", border: "none", borderRadius: 9,
+                width: 44, height: 44, cursor: "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: searchOpen ? T.accent : T.textTertiary, transition: "background .15s, color .15s",
               }}
               onMouseEnter={e => { if (!searchOpen) { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.text; } }}
               onMouseLeave={e => { if (!searchOpen) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
                 <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/>
               </svg>
             </button>
@@ -1370,14 +1334,14 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
           {/* Refresh button — desktop only; mobile uses pull-to-refresh */}
           {!isMobile && <button onClick={handleRefreshAll} title={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)}m ago` : "Refresh feeds"} aria-label={lastRefresh ? `Last refreshed ${Math.round((Date.now()-lastRefresh)/60000)} minutes ago` : "Refresh feeds"} style={{
             background: "transparent", border: "none", borderRadius: 8,
-            width: 30, height: 30, cursor: "pointer", flexShrink: 0,
+            width: 44, height: 44, cursor: "pointer", flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
             color: T.textTertiary, transition: "background .15s, color .15s",
           }}
             onMouseEnter={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.color = T.accent; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; }}
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5"/><path d="M13.5 2.5v3.5h-3.5"/>
             </svg>
           </button>}
@@ -1389,8 +1353,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               title="View options"
               aria-label="View options"
               style={{
-                width: 30, height: 30, borderRadius: 8, border: "none",
-                background: viewMenuOpen ? T.surface2 : "transparent",
+                width: 44, height: 44, borderRadius: 8, border: "none",
+                background: "transparent",
                 color: viewMenuOpen ? T.text : T.textTertiary,
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
                 transition: "background .15s, color .15s",
@@ -1399,8 +1363,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               onMouseLeave={e => { if (!viewMenuOpen) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textTertiary; } }}
             >
               {viewMode === "card"
-                ? <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
-                : <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+                ? <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+                  : <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
               }
             </button>
             {viewMenuOpen && (
@@ -1472,36 +1436,28 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             )}
           </div>}
 
-          {/* Mobile icon cluster — Search · Unread · Display */}
+          {/* Mobile icon cluster — Feeds · Search · Display */}
           {isMobile && (<>
+            <button onClick={() => window.dispatchEvent(new CustomEvent("fb-open-feeds"))}
+              aria-label="Feeds"
+              style={{ display:"flex", alignItems:"center", justifyContent:"center", width:44, height:44, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
+              onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
+            >
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M2 8h12M2 11.5h8"/></svg>
+            </button>
             <button onClick={() => setSearchOpen(true)}
               aria-label="Search"
               style={{ display:"flex", alignItems:"center", justifyContent:"center", width:44, height:44, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
               onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
             >
-              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/></svg>
-            </button>
-            <button onClick={() => setReadFilter(v => v === "unread" ? "all" : "unread")}
-              aria-label={readFilter === "unread" ? "Show all articles" : "Show unread only"}
-              aria-pressed={readFilter === "unread"}
-              style={{ display:"flex", alignItems:"center", justifyContent:"center", width:44, height:44, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color: readFilter==="unread"?T.accent:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
-              onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
-            >
-              <span style={{ position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <span style={{ width:8, height:8, borderRadius:"50%", background:readFilter==="unread"?T.bg:T.accent, border:readFilter==="unread"?`2px solid ${T.accent}`:"none", display:"block", transform:readFilter==="unread"?"scale(1.25)":"scale(1)", transition:"transform .18s, background .18s" }} />
-                {unreadCount > 0 && readFilter !== "unread" && (
-                  <span style={{ position:"absolute", top:-5, right:-7, minWidth:13, height:13, borderRadius:7, background:T.accent, color:T.accentText, fontSize:8, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 3px", boxSizing:"border-box" }}>
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </span>
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/></svg>
             </button>
             <button onClick={() => setShowDisplaySheet(true)}
               aria-label="Display settings"
               style={{ display:"flex", alignItems:"center", justifyContent:"center", width:44, height:44, border:"none", background:"transparent", borderRadius:8, cursor:"pointer", color:T.textSecondary, flexShrink:0, WebkitTapHighlightColor:"transparent" }}
               onTouchStart={e => { e.currentTarget.style.opacity="0.5"; }} onTouchEnd={e => { e.currentTarget.style.opacity="1"; }} onTouchCancel={e => { e.currentTarget.style.opacity="1"; }}
             >
-              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg>
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg>
             </button>
           </>)}
 
@@ -1510,24 +1466,36 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             title="Add feed or article"
             aria-label="Add feed or article"
             style={{
-              display:"flex", alignItems:"center", justifyContent:"center", gap: 5,
-              height: isMobile ? 44 : 32, padding: isMobile ? "0 16px" : "0 12px",
-              background: T.accent, color: T.accentText,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              width: 44, height: 44, background: "transparent", color: T.accent,
               border:"none", borderRadius:8, cursor:"pointer",
-              fontFamily:"inherit", flexShrink:0,
-              fontSize:12, fontWeight:600, letterSpacing:"-.01em",
+              fontFamily:"inherit", flexShrink:0, WebkitTapHighlightColor:"transparent",
               transition:"opacity .12s",
             }}
-            onMouseEnter={e => e.currentTarget.style.opacity = ".85"}
+            onMouseEnter={e => e.currentTarget.style.opacity = ".7"}
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-              <line x1="5" y1="1" x2="5" y2="9"/>
-              <line x1="1" y1="5" x2="9" y2="5"/>
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              <line x1="8" y1="2" x2="8" y2="14"/>
+              <line x1="2" y1="8" x2="14" y2="8"/>
             </svg>
-            {!isMobile && "Add"}
           </button>
         </div>
+
+        {/* Filter tabs */}
+        {filterMode !== "unread" && !(searchOpen && !isMobile) && (
+          <div role="tablist" aria-label="Filter articles" style={{ display: "flex", gap: 22, padding: isMobile ? "10px 24px 0" : "10px max(20px, calc((100% - 720px) / 2)) 0", flexShrink: 0, background: T.bg }}>
+            {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }].map(({ label, val }) => (
+              <button key={label} role="tab" aria-selected={readFilter === val} onClick={() => setReadFilter(val)} style={{
+                padding: "8px 0", minHeight: 44, border: "none", background: "transparent",
+                borderBottom: `2px solid ${readFilter === val ? T.accent : "transparent"}`,
+                color: readFilter === val ? T.text : T.textTertiary,
+                fontWeight: readFilter === val ? 600 : 500, fontSize: 15,
+                cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent",
+              }}>{label}</button>
+            ))}
+          </div>
+        )}
 
         {/* Article list / grid */}
         <div
@@ -1555,7 +1523,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               setDisplayedCount(c => c < baseItems.length ? Math.min(c + 40, baseItems.length) : c);
             }
           }}
-          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 12px" : "14px") : "0", paddingBottom: isMobile ? "calc(80px + env(safe-area-inset-bottom, 16px))" : undefined, WebkitOverflowScrolling: "touch" }}>
+          style={{ flex: 1, overflowY: "auto", padding: viewMode === "card" ? (isMobile ? "8px 8px 12px" : "14px max(14px, calc((100% - 720px) / 2))") : (isMobile ? "0" : "12px max(14px, calc((100% - 720px) / 2)) 24px"), paddingBottom: isMobile ? "calc(80px + env(safe-area-inset-bottom, 16px))" : undefined, WebkitOverflowScrolling: "touch" }}>
           {/* Pull-to-refresh indicator */}
           {isMobile && (pullY > 0 || refreshing) && (
             <div style={{
@@ -1688,7 +1656,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 />
               );
             });
-            return rows;
+            return isMobile ? rows : <div style={{ background: T.card, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>{rows}</div>;
           })()}
 
           {/* Load-more indicator — shows while there are items beyond displayedCount */}

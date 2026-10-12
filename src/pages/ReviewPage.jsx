@@ -108,6 +108,7 @@ export default function ReviewPage({ onDueCount }) {
   const [sessionQuota, setSessionQuota] = useState(null); // cards left in today's quota at session start
   const [finalStreak, setFinalStreak]   = useState(null);
   const [addingNote, setAddingNote]     = useState(false);
+  const [revealedId, setRevealedId]     = useState(null);
   const [noteText, setNoteText]         = useState("");
   const [swipeHintDone, setSwipeHintDone] = useState(() => !!localStorage.getItem("fb-swipe-hint-done"));
   const [sessionSize] = useState(() => parseInt(localStorage.getItem("fb-review-count") || "10", 10));
@@ -297,7 +298,7 @@ export default function ReviewPage({ onDueCount }) {
   if (highlights.length === 0) return (
     <div style={center}>
       <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: T.textTertiary, opacity: 0.4 }}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-      <div style={{ fontSize: 22, fontWeight: 800, color: T.text, letterSpacing: "-.025em" }}>No highlights yet</div>
+      <div style={{ fontSize: 28, fontWeight: 600, color: T.text, letterSpacing: "-0.02em" }}>No highlights yet</div>
       <div style={{ fontSize: 14, color: T.textSecondary, textAlign: "center", maxWidth: 280, lineHeight: 1.65 }}>
         Select text while reading to create a highlight. Cards appear here for daily review.
       </div>
@@ -321,7 +322,7 @@ export default function ReviewPage({ onDueCount }) {
             marginBottom: 8,
           }}>
             <div style={{
-              fontSize: 52, fontWeight: 900, color: T.accent,
+              fontSize: 52, fontWeight: 600, color: T.accent,
               letterSpacing: "-.04em", lineHeight: 1,
             }}>{streak}</div>
             <div style={{
@@ -338,22 +339,22 @@ export default function ReviewPage({ onDueCount }) {
           </svg>
         </div>
 
-        <div style={{ fontSize: 24, fontWeight: 800, color: T.text, letterSpacing: "-.03em" }}>
+        <div style={{ fontSize: 28, fontWeight: 600, color: T.text, letterSpacing: "-0.02em" }}>
           {quotaMet ? "All done for today" : sessionCount > 0 ? `${sessionCount} reviewed` : "All caught up"}
         </div>
         {sessionCount > 0 && (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-            <span style={{ fontSize: 13, fontWeight: 700, padding: "4px 14px", borderRadius: 20, background: T.accentSurface, color: T.accent }}>
+            <span style={{ fontSize: 15, fontWeight: 500, padding: 0, background: "transparent", color: T.textTertiary }}>
               {sessionGot} got it
             </span>
             {sessionAgain > 0 && (
-              <span style={{ fontSize: 13, fontWeight: 700, padding: "4px 14px", borderRadius: 20, background: T.surface2, color: T.textSecondary }}>
+              <span style={{ fontSize: 15, fontWeight: 500, padding: 0, background: "transparent", color: T.textTertiary }}>
                 {sessionAgain} again
               </span>
             )}
           </div>
         )}
-        <div style={{ fontSize: 15, color: T.textSecondary }}>
+        <div style={{ fontSize: 15, color: T.textTertiary }}>
           {quotaMet
             ? `Come back tomorrow — ${dueCount > dailyQuota ? dueCount - dailyQuota : 0} more cards waiting.`
             : sessionCount > 0
@@ -373,255 +374,199 @@ export default function ReviewPage({ onDueCount }) {
     : exitAnim === "right" ? "rv-exit-right .27s ease forwards"
     : "rv-enter .32s cubic-bezier(.22,.68,0,1.05)";
 
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", background: T.bg, minHeight: 0, userSelect: "none" }}>
+  const DOTS = ["#65D5C4", "#F2C462", "#EE9A8E", "#A99BE0"];
+  const tag0 = current.tags?.[0];
+  const dotColor = tag0 ? DOTS[[...tag0].reduce((a, c) => a + c.charCodeAt(0), 0) % DOTS.length] : T.textTertiary;
+  const revealed = revealedId === current.id;
+  const hasNote = !!current.note || addingNote;
+  const ratingBtn = (label, knew, strong) => (
+    <button
+      key={label}
+      onClick={() => handleRating(knew)}
+      style={{
+        flex: 1, minHeight: 44, border: "none", borderRadius: 999,
+        background: strong ? T.text : "transparent",
+        color: strong ? T.bg : T.text,
+        fontSize: 15, fontWeight: 500, fontFamily: "inherit", cursor: "pointer",
+        transition: "opacity .1s",
+      }}
+      onTouchStart={e => e.currentTarget.style.opacity = ".6"}
+      onTouchEnd={e => e.currentTarget.style.opacity = "1"}
+      onTouchCancel={e => e.currentTarget.style.opacity = "1"}
+    >{label}</button>
+  );
 
-      {/* Progress bar — 6px with labels */}
-      <div style={{ padding: "16px 20px 4px", flexShrink: 0 }}>
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", background: T.bg, minHeight: 0, userSelect: "none", overflowY: "auto" }}>
+      <div style={{ width: "100%", maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", flex: 1 }}>
+
+      {/* Header */}
+      <div style={{ padding: "56px 24px 0", display: "flex", alignItems: "baseline", justifyContent: "space-between", flexShrink: 0 }}>
+        <h1 style={{ margin: 0, fontSize: 36, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.1, color: T.text }}>Review</h1>
+        <span style={{ fontSize: 15, color: T.textTertiary }}>{Math.min(queueIdx + 1, total)} of {total}</span>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ padding: "16px 24px 20px", flexShrink: 0 }}>
         <div
           role="progressbar"
           aria-valuenow={queueIdx}
           aria-valuemin={0}
           aria-valuemax={total}
           aria-label={`Review progress: ${queueIdx} of ${total} done`}
-          style={{ height: 6, background: T.surface2, borderRadius: SHAPE.radiusPill, overflow: "hidden" }}
+          style={{ height: 4, background: T.surface2, borderRadius: 999, overflow: "hidden" }}
         >
           <div style={{
-            height: "100%", borderRadius: SHAPE.radiusPill,
-            width: "100%",
+            height: "100%", borderRadius: 999, width: "100%",
             background: T.accent,
             transform: `scaleX(${progress})`,
             transformOrigin: "left",
             transition: "transform .5s cubic-bezier(.4,0,.2,1)",
           }} />
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 7 }}>
-          <span style={{ fontSize: 12, color: T.textTertiary }}>{queueIdx} done</span>
-          <span style={{ fontSize: 12, fontWeight: 600, color: T.textSecondary }}>{queueIdx + 1} of {total} today</span>
-        </div>
       </div>
 
       {/* Card area */}
       <div
-        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "8px 16px 8px" }}
+        style={{ flex: 1, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "0 24px" }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <div key={cardKey} style={{ width: "100%", maxWidth: 580, animation: cardAnim }}>
-          <div style={{
-            background: T.card, borderRadius: SHAPE.radiusCard,
-            border: `1px solid ${T.border}`,
-            boxShadow: SHAPE.shadowFloat,
-            overflow: "hidden",
-          }}>
+        <div key={cardKey} style={{ width: "100%", animation: cardAnim }}>
+          <div
+            onClick={() => { if (!revealed) setRevealedId(current.id); }}
+            style={{
+              background: T.card, borderRadius: 28, padding: 28,
+              minHeight: isMobile ? 360 : 400, boxSizing: "border-box",
+              boxShadow: "0 2px 4px rgba(0,0,0,.04), 0 16px 40px rgba(0,0,0,.08)",
+              display: "flex", flexDirection: "column", gap: 16,
+              cursor: revealed ? "default" : "pointer",
+            }}
+          >
+            {/* Tag label */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.textTertiary, minHeight: 10 }}>
+              <span style={{ width: 10, height: 10, borderRadius: "50%", background: dotColor, flexShrink: 0 }} />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {tag0 || current.article_title || "Untagged"}
+              </span>
+            </div>
 
-            {/* Source — visible in question view for memory context */}
-            {(current.article_title || current.article_url) && (
-              <div style={{
-                padding: "16px 24px 0",
-                fontSize: 11, color: T.textTertiary,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                letterSpacing: ".01em",
-              }}>
-                {current.article_title || current.article_url}
+            {/* Highlight */}
+            <div style={{
+              flex: 1, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center",
+              fontFamily: "var(--reader-font-family)", fontSize: 26, lineHeight: 1.35, color: T.text,
+              WebkitFontSmoothing: "antialiased",
+            }}>
+              <span>{current.passage}</span>
+            </div>
+
+            {!revealed ? (
+              <div style={{ textAlign: "center", fontSize: 14, color: T.textTertiary }}>Tap to reveal your note</div>
+            ) : (
+              <div style={{ userSelect: "text" }} onClick={e => e.stopPropagation()}>
+                {current.note && !addingNote ? (
+                  <div style={{ fontSize: 15, color: T.textSecondary, lineHeight: 1.6, textAlign: "center" }}>
+                    {current.note}
+                  </div>
+                ) : addingNote ? (
+                  <div>
+                    <textarea
+                      autoFocus
+                      value={noteText}
+                      onChange={e => setNoteText(e.target.value)}
+                      placeholder="Write your annotation…"
+                      aria-label="Write your annotation"
+                      rows={3}
+                      style={{
+                        width: "100%", boxSizing: "border-box", resize: "none",
+                        fontSize: 15, lineHeight: 1.6, fontFamily: "inherit",
+                        padding: "10px 12px", borderRadius: 16,
+                        border: `1px solid ${T.accent}`,
+                        background: T.bg, color: T.text, outline: "none",
+                      }}
+                    />
+                    <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                      <button onClick={handleSaveNote} style={{
+                        flex: 1, minHeight: 44, borderRadius: 999, border: "none",
+                        background: T.text, color: T.bg,
+                        fontSize: 15, fontWeight: 500, fontFamily: "inherit", cursor: "pointer",
+                      }}>Save</button>
+                      <button onClick={() => { setAddingNote(false); setNoteText(""); }} style={{
+                        minHeight: 44, padding: "0 20px", borderRadius: 999,
+                        border: "none", background: "transparent",
+                        color: T.textTertiary, fontSize: 15, fontWeight: 500, fontFamily: "inherit", cursor: "pointer",
+                      }}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setAddingNote(true); setNoteText(""); }}
+                    style={{
+                      display: "block", margin: "0 auto", minHeight: 44, padding: "0 16px",
+                      border: "none", background: "transparent", cursor: "pointer",
+                      color: T.textTertiary, fontSize: 14, fontFamily: "inherit",
+                    }}
+                  >Add a note in your own words</button>
+                )}
+                {connectedCards.length > 0 && (
+                  <div style={{ marginTop: 16, fontSize: 13, color: T.textTertiary, textAlign: "center" }}>
+                    {connectedCards.length} connected {connectedCards.length === 1 ? "card" : "cards"}
+                  </div>
+                )}
               </div>
             )}
-
-            {/* Passage */}
-            <div
-              style={{
-                padding: (current.article_title || current.article_url) ? "12px 24px 24px" : "28px 24px 24px",
-                fontSize: 20, lineHeight: 1.72,
-                fontStyle: "italic",
-                fontFamily: "var(--font-serif, Georgia, serif)",
-                color: T.text,
-                WebkitFontSmoothing: "antialiased",
-              }}
-            >
-              "{current.passage}"
-            </div>
-
-            {/* Note, synthesis nudge, and tags — always visible with the card */}
-            <div style={{ padding: "20px 24px 20px" }}>
-              {current.note && !addingNote ? (
-                <div style={{
-                  fontSize: 15, color: T.textSecondary, lineHeight: 1.68,
-                  borderLeft: `3px solid ${T.accent}`,
-                  paddingLeft: 16,
-                  marginBottom: current.tags?.length ? 16 : 0,
-                  WebkitFontSmoothing: "antialiased",
-                }}>
-                  {current.note}
-                </div>
-              ) : addingNote ? (
-                <div style={{ marginBottom: current.tags?.length ? 16 : 0 }}>
-                  <textarea
-                    autoFocus
-                    value={noteText}
-                    onChange={e => setNoteText(e.target.value)}
-                    placeholder="Write your annotation…"
-                    aria-label="Write your annotation"
-                    rows={3}
-                    style={{
-                      width: "100%", boxSizing: "border-box", resize: "none",
-                      fontSize: 14, lineHeight: 1.6, fontFamily: "inherit",
-                      padding: "10px 12px", borderRadius: SHAPE.radiusSm,
-                      border: `1px solid ${T.accent}`,
-                      background: T.bg, color: T.text, outline: "none",
-                    }}
-                  />
-                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                    <button onClick={handleSaveNote} style={{
-                      flex: 1, padding: "9px", borderRadius: SHAPE.radiusSm, border: "none",
-                      background: T.accent, color: T.accentText,
-                      fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
-                    }}>Save</button>
-                    <button onClick={() => { setAddingNote(false); setNoteText(""); }} style={{
-                      padding: "9px 16px", borderRadius: SHAPE.radiusSm,
-                      border: `1px solid ${T.border}`, background: "transparent",
-                      color: T.textSecondary, fontSize: 13, fontFamily: "inherit", cursor: "pointer",
-                    }}>Cancel</button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => { setAddingNote(true); setNoteText(""); }}
-                  style={{
-                    width: "100%", padding: "10px 14px", borderRadius: SHAPE.radiusSm, cursor: "pointer",
-                    border: `1px dashed ${T.border}`, background: "transparent",
-                    color: T.textSecondary, fontSize: 13, fontFamily: "inherit",
-                    textAlign: "center",
-                    marginBottom: current.tags?.length ? 16 : 0,
-                  }}
-                >✍ In your own words — what does this mean to you?</button>
-              )}
-              {current.tags?.length > 0 && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {current.tags.map(t => (
-                    <span key={t} style={{
-                      fontSize: 11, padding: "3px 10px", borderRadius: 20,
-                      background: T.accentSurface, color: T.accent,
-                      border: `1px solid ${T.accent}33`,
-                      fontWeight: 600, letterSpacing: ".03em",
-                    }}>{t}</span>
-                  ))}
-                </div>
-              )}
-              {connectedCards.length > 0 && (
-                <div style={{ marginTop: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>
-                    Connected cards
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    {connectedCards.map(c => (
-                      <div
-                        key={c.id}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 8,
-                          padding: "6px 8px", borderRadius: SHAPE.radiusSm,
-                        }}
-                      >
-                        <span style={{
-                          flex: 1, minWidth: 0, fontSize: 13, color: T.textSecondary,
-                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                        }}>{c.passage}</span>
-                        {c.tags?.[0] && (
-                          <span style={{
-                            flexShrink: 0, display: "inline-flex", alignItems: "center",
-                            padding: "2px 7px", borderRadius: 20,
-                            background: T.accentSurface, color: T.accent,
-                            fontSize: 11, fontWeight: 500,
-                          }}>#{c.tags[0]}</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Rating buttons — always visible */}
-      <div style={{
-        padding: `10px 16px calc(env(safe-area-inset-bottom, 0px) + 80px)`,
-        display: "flex", gap: 12, flexShrink: 0,
-      }}>
-        {/* Again */}
-        <button
-          onClick={() => handleRating(false)}
+      {/* Rating pill */}
+      <div style={{ padding: "20px 24px 8px", flexShrink: 0 }}>
+        <div
+          role="group"
+          aria-label="Rate recall"
           style={{
-            flex: 1, border: `1.5px solid ${T.border}`,
-            background: T.surface, borderRadius: SHAPE.radiusSm, padding: "15px 8px",
-            cursor: "pointer", fontFamily: "inherit",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-            transition: "background .1s",
+            display: "flex", gap: 4, alignItems: "center", height: 56, padding: 6, boxSizing: "border-box",
+            borderRadius: 999, background: T.card, boxShadow: "0 1px 2px rgba(0,0,0,.05)",
           }}
-          onMouseEnter={e => e.currentTarget.style.background = T.surface2}
-          onMouseLeave={e => e.currentTarget.style.background = T.surface}
-          onTouchStart={e => e.currentTarget.style.opacity = ".6"}
-          onTouchEnd={e => e.currentTarget.style.opacity = "1"}
-          onTouchCancel={e => e.currentTarget.style.opacity = "1"}
         >
-          <span style={{ fontSize: 16, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>↻ Show again soon</span>
-          <span style={{ fontSize: 11, color: T.textTertiary }}>
-            {intervalLabel(rate(reviews[current?.id], false).interval)}
-          </span>
-        </button>
-
-        {/* Got it */}
-        <button
-          onClick={() => handleRating(true)}
-          style={{
-            flex: 1, border: "none",
-            background: T.accent, borderRadius: SHAPE.radiusSm, padding: "15px 8px",
-            cursor: "pointer", fontFamily: "inherit",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-            transition: "opacity .1s",
-          }}
-          onMouseEnter={e => e.currentTarget.style.opacity = ".85"}
-          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-          onTouchStart={e => e.currentTarget.style.opacity = ".6"}
-          onTouchEnd={e => e.currentTarget.style.opacity = "1"}
-          onTouchCancel={e => e.currentTarget.style.opacity = "1"}
-        >
-          <span style={{ fontSize: 16, fontWeight: 700, color: T.accentText, letterSpacing: "-.01em" }}>Next →</span>
-          <span style={{ fontSize: 11, color: T.accentText, opacity: .75 }}>
-            {intervalLabel(rate(reviews[current?.id], true).interval)}
-          </span>
-        </button>
+          {ratingBtn("Again", false, false)}
+          {ratingBtn("Hard", true, false)}
+          {ratingBtn("Good", true, true)}
+          {ratingBtn("Easy", true, false)}
+        </div>
       </div>
 
       {/* Mastered — retire card from rotation */}
-      <div style={{ padding: "0 16px", flexShrink: 0, textAlign: "center" }}>
+      <div style={{ padding: "0 24px", flexShrink: 0, textAlign: "center" }}>
         <button
           onClick={handleMaster}
           style={{
             border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
-            color: T.textTertiary, fontSize: 12, borderRadius: SHAPE.radiusSm,
-            padding: "8px 12px", transition: "color .12s",
+            color: T.textTertiary, fontSize: 13, borderRadius: 999,
+            minHeight: 44, padding: "0 16px", transition: "color .12s",
           }}
           onMouseEnter={e => e.currentTarget.style.color = T.text}
           onMouseLeave={e => e.currentTarget.style.color = T.textTertiary}
         >
-          ✓ Mastered — retire this card
+          Mastered — retire this card
         </button>
       </div>
 
       {/* Hint row — swipe on mobile, keyboard on desktop */}
       {isMobile ? (
         !swipeHintDone && (
-          <div style={{ textAlign: "center", fontSize: 11, color: T.textTertiary, paddingBottom: 8, opacity: .5, letterSpacing: ".01em", transition: "opacity .3s" }}>
+          <div style={{ textAlign: "center", fontSize: 12, color: T.textTertiary, paddingBottom: 8, opacity: .6 }}>
             ← swipe to rate →
           </div>
         )
       ) : (
-        <div style={{ textAlign: "center", fontSize: 11, color: T.textTertiary, paddingBottom: 8, opacity: .4, letterSpacing: ".01em" }}>
-          space · next &nbsp;·&nbsp; ← again &nbsp;·&nbsp; next →
+        <div style={{ textAlign: "center", fontSize: 12, color: T.textTertiary, paddingBottom: 8, opacity: .6 }}>
+          space · next &nbsp;·&nbsp; ← again
         </div>
       )}
+      <div style={{ height: "calc(env(safe-area-inset-bottom, 0px) + 72px)", flexShrink: 0 }} />
+      </div>
     </div>
   );
 }
