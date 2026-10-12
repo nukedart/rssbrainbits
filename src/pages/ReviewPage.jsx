@@ -393,7 +393,12 @@ export default function ReviewPage({ onDueCount }) {
       onTouchStart={e => e.currentTarget.style.opacity = ".6"}
       onTouchEnd={e => e.currentTarget.style.opacity = "1"}
       onTouchCancel={e => e.currentTarget.style.opacity = "1"}
-    >{label}</button>
+    >
+      <span style={{ display: "block", fontSize: 15, fontWeight: 500, lineHeight: 1.2 }}>{label}</span>
+      <span style={{ display: "block", fontSize: 11, fontWeight: 400, lineHeight: 1.2, marginTop: 2, color: strong ? T.bg : T.textTertiary, opacity: strong ? .7 : 1 }}>
+        {intervalLabel(rate(reviews[current?.id], knew).interval)}
+      </span>
+    </button>
   );
 
   return (
@@ -510,8 +515,25 @@ export default function ReviewPage({ onDueCount }) {
                   >Add a note in your own words</button>
                 )}
                 {connectedCards.length > 0 && (
-                  <div style={{ marginTop: 16, fontSize: 13, color: T.textTertiary, textAlign: "center" }}>
-                    {connectedCards.length} connected {connectedCards.length === 1 ? "card" : "cards"}
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ fontSize: 13, color: T.textTertiary, marginBottom: 4 }}>Connected cards</div>
+                    {connectedCards.map((c, i) => (
+                      <div
+                        key={c.id}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 8, padding: "10px 0",
+                          borderTop: i === 0 ? "none" : `1px solid ${T.border}`,
+                        }}
+                      >
+                        <span style={{
+                          flex: 1, minWidth: 0, fontSize: 14, color: T.textSecondary,
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        }}>{c.passage}</span>
+                        {c.tags?.[0] && (
+                          <span style={{ flexShrink: 0, fontSize: 13, color: T.textTertiary }}>#{c.tags[0]}</span>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

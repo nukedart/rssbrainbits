@@ -3,6 +3,12 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+- [Nav] Minimal navigation: the mobile dock is now Inbox, Cards, Review, Today and More (Feeds moved to a button in the Inbox header, Saved lives in the feeds drawer), and the desktop sidebar starts as a slim icon rail with the Feedbox tile (click it to expand; the choice is remembered).
+- [UX] Large-title page headers on Inbox, Cards, Review and Today, with quiet text-tab filters, 44px stroke icon actions and a centered 720px column on desktop; lists sit on rounded cards.
+- [UX] Cards: theme cards with a colored dot, count and a representative quote; Review: one large flashcard with a progress bar and a pill rating row; Today: calm stat row and stacked cards.
+
+## [Unreleased]
+
 - [Polish] Desktop now follows the minimal redesign: the Feeds picker is a centered rounded list with larger favicons, 16px names and plain unread numbers instead of pills; the sidebar uses quieter sentence-case section labels, 14px items, lighter folder weights and plain-number badges.
 
 ## [1.46.511] — 2026-10-12 17:50
