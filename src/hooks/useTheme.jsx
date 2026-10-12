@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA } from "../lib/tokens";
+import { NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA, PAPER, SLATE } from "../lib/tokens";
 
 const ThemeContext = createContext(null);
 
-const THEMES = { nocturne: NOCTURNE, distilled: DISTILLED, light: LIGHT, cream: CREAM, ink: INK, sepia: SEPIA };
-const DARK_THEMES = new Set(["nocturne", "distilled", "ink"]);
+const THEMES = { nocturne: NOCTURNE, distilled: DISTILLED, light: LIGHT, cream: CREAM, ink: INK, sepia: SEPIA, paper: PAPER, slate: SLATE };
+const DARK_THEMES = new Set(["nocturne", "distilled", "ink", "slate"]);
 const EDITORIAL_THEMES = new Set(["cream", "ink", "sepia"]);
 
 export function ThemeProvider({ children }) {
@@ -12,7 +12,7 @@ export function ThemeProvider({ children }) {
     const saved = localStorage.getItem("fb-theme");
     if (THEMES[saved]) return saved;
     if (saved === "dark") return "nocturne";
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "distilled" : "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "slate" : "paper";
   });
 
   const T = THEMES[theme] || NOCTURNE;
@@ -27,6 +27,23 @@ export function ThemeProvider({ children }) {
   function setIsDark(dark) {
     setTheme(dark ? "nocturne" : "light");
   }
+
+  // Newsreader for the Paper/Slate minimal themes
+  useEffect(() => {
+    const id = "fb-newsreader-font";
+    let link = document.getElementById(id);
+    if (theme === "paper" || theme === "slate") {
+      if (!link) {
+        link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = "https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap";
+        document.head.appendChild(link);
+      }
+    } else {
+      link?.remove();
+    }
+  }, [theme]);
 
   // Load Cormorant Garamond only for editorial themes — keeps default themes font-free
   useEffect(() => {

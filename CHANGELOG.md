@@ -1,7 +1,13 @@
 # Feedbox Changelog
 
 All notable changes documented here.
-Format: `## [version] — YYYY-MM-DD`
+Format: `## [Unreleased]
+
+- [Polish] New minimal "Paper" (light) and "Slate" (dark) themes, inspired by Things 3 and Procreate, built from the Feedbox mark's teal and charcoal; they are now the default for new users and the sidebar light/dark toggle. Mobile nav becomes a dark charcoal dock with a mint active state in these themes.
+- [UX] Mobile article rows: open-circle unread marker, calmer 17px medium-weight titles, hairline separators, larger meta text; thumbnails are kept and the preview text is hidden when an image shows.
+- [UX] Reader: larger lighter article title, a "N min left" label while scrolling, and a Tight/Comfortable/Loose line-spacing setting.
+
+## [version] — YYYY-MM-DD`
 
 ## [1.46.508] — 2026-08-28 15:41
 

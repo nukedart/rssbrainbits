@@ -176,6 +176,61 @@ export const SEPIA = {
   readerFont: "'Cormorant Garamond', Georgia, ui-serif, serif",
 };
 
+// ── Theme 7: Paper (minimal — Things 3 / Procreate inspired) ─
+// Cool white sheet, hairlines, teal accent drawn from the Feedbox mark.
+export const PAPER = {
+  bg:            "#F6F7F8",
+  surface:       "#EEF1F2",
+  surface2:      "#E3E6E8",
+  border:        "#E6E8EA",
+  borderStrong:  "#CDD2D5",
+  text:          "#1C2123",
+  textSecondary: "#4A5358",
+  textTertiary:  "#636C71",
+  accent:        "#17806F",
+  accentHover:   "#106656",
+  accentSurface: "rgba(101,213,196,0.18)",
+  accentText:    "#FFFFFF",
+  card:          "#FFFFFF",
+  success:       "#17806F",
+  warning:       "#9A6B1F",
+  danger:        "#B3261E",
+  dangerText:    "#FFFFFF",
+  green:  { bg: "rgba(101,213,196,0.18)", text: "#106656" },
+  amber:  { bg: "rgba(242,196,98,0.25)",  text: "#7A5410" },
+  blue:   { bg: "rgba(60,100,160,0.10)",  text: "#2F5A93" },
+  purple: { bg: "rgba(169,155,224,0.20)", text: "#52459A" },
+  overlay: "rgba(28,33,35,0.4)",
+  readerFont: "'Newsreader', Georgia, ui-serif, serif",
+};
+
+// ── Theme 8: Slate (Paper's dark twin) ───────────────────────
+export const SLATE = {
+  bg:            "#15181A",
+  surface:       "#1A1E20",
+  surface2:      "#262B2E",
+  border:        "rgba(255,255,255,0.08)",
+  borderStrong:  "rgba(255,255,255,0.16)",
+  text:          "#E3E6E7",
+  textSecondary: "#B4BBBF",
+  textTertiary:  "#8B949A",
+  accent:        "#65D5C4",
+  accentHover:   "#8BE3D5",
+  accentSurface: "rgba(101,213,196,0.12)",
+  accentText:    "#0C2824",
+  card:          "#1E2326",
+  success:       "#65D5C4",
+  warning:       "#F2C462",
+  danger:        "#EE9A8E",
+  dangerText:    "#2A0F0B",
+  green:  { bg: "rgba(101,213,196,0.12)", text: "#65D5C4" },
+  amber:  { bg: "rgba(242,196,98,0.12)",  text: "#F2C462" },
+  blue:   { bg: "rgba(155,173,181,0.12)", text: "#9BADB5" },
+  purple: { bg: "rgba(169,155,224,0.14)", text: "#A99BE0" },
+  overlay: "rgba(0,0,0,0.65)",
+  readerFont: "'Newsreader', Georgia, ui-serif, serif",
+};
+
 // ── Shared shape & spacing scale (Reeder-style) ──────────────
 // Consumed by components for consistent radii/spacing across themes.
 export const SHAPE = {

@@ -90,9 +90,18 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   // toggles once at 8%, uses React state.
   const progressBarRef = useRef(null);
   const progressPctRef = useRef(0);
+  const minsLeftRef = useRef(null);
+  const wordsTotalRef = useRef(0);
+  wordsTotalRef.current = content?.bodyText ? content.bodyText.split(/\s+/).length : 0;
   function paintProgress(pct) {
     progressPctRef.current = pct;
     if (progressBarRef.current) progressBarRef.current.style.transform = `scaleX(${pct / 100})`;
+    const lbl = minsLeftRef.current;
+    if (lbl) {
+      const left = Math.ceil((wordsTotalRef.current / 230) * (1 - pct / 100));
+      lbl.textContent = left > 0 ? `${left} min left` : "";
+      lbl.style.opacity = pct > 2 && left > 0 ? "1" : "0";
+    }
   }
   // Re-sync the bar before every browser paint so a rare React re-render can't
   // snap it back (React never manages the bar's transform).
@@ -464,6 +473,8 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         }} />
       </div>
 
+      <div ref={minsLeftRef} aria-hidden="true" style={{ position: "fixed", bottom: 14, left: "50%", transform: "translateX(-50%)", fontSize: 13, color: T.textTertiary, opacity: 0, transition: "opacity .3s ease", pointerEvents: "none", zIndex: 5 }} />
+
       {/* ── Top bar (auto-hides on scroll-down, reappears on scroll-up) ── */}
       <div style={{
         maxHeight: headerVisible ? "80px" : "0px",
@@ -586,6 +597,14 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                     <div style={{ display: "flex", gap: 3 }}>
                       {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
                         <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} aria-label={`${f.label} font`} aria-pressed={readerPrefs.fontFamily===f.id} style={{ padding: "3px 9px", borderRadius: 6, border: `1px solid ${readerPrefs.fontFamily===f.id?T.accent:T.border}`, background: readerPrefs.fontFamily===f.id?T.accentSurface:"transparent", color: readerPrefs.fontFamily===f.id?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit" }}>{f.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Spacing</span>
+                    <div style={{ display: "flex", gap: 3 }}>
+                      {[["Tight",1.55],["Comfortable",1.7],["Loose",1.9]].map(([l,v]) => (
+                        <button key={l} onClick={() => updatePref("lineHeight", v)} aria-label={`${l} line spacing`} aria-pressed={readerPrefs.lineHeight===v} style={{ padding: "3px 7px", borderRadius: 6, border: `1px solid ${readerPrefs.lineHeight===v?T.accent:T.border}`, background: readerPrefs.lineHeight===v?T.accentSurface:"transparent", color: readerPrefs.lineHeight===v?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit" }}>{l[0]}</button>
                       ))}
                     </div>
                   </div>
@@ -810,12 +829,12 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               {/* Title */}
               <h1 style={{
                 fontFamily: "var(--reader-font-family)",
-                fontSize: isMobile ? 27 : 36,
-                fontWeight: 800,
+                fontSize: isMobile ? 28 : 40,
+                fontWeight: 500,
                 color: T.text,
-                margin: "0 0 14px",
-                lineHeight: 1.12,
-                letterSpacing: "-.03em",
+                margin: "0 0 16px",
+                lineHeight: 1.15,
+                letterSpacing: "-.012em",
               }}>
                 <a href={item.url} target="_blank" rel="noopener noreferrer"
                   style={{ color: "inherit", textDecoration: "none" }}
@@ -872,7 +891,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               )}
 
               {/* Article body */}
-              <div ref={articleRef} className="fb-article-reader" style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: 1.68, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em", position: "relative" }}
+              <div ref={articleRef} className="fb-article-reader" style={{ fontSize: "var(--reader-font-size)", color: T.text, lineHeight: readerPrefs.lineHeight || 1.7, wordBreak: "break-word", fontFamily: "var(--reader-font-family)", letterSpacing: "-.005em", position: "relative" }}
                 onClick={e => { if (e.target.tagName === "IMG") handleImageHighlight(e.target.src); }}
               >
               {imgFeedback && (
