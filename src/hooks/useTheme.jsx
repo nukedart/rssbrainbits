@@ -9,7 +9,13 @@ const EDITORIAL_THEMES = new Set(["cream", "ink", "sepia"]);
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(() => {
-    const saved = localStorage.getItem("fb-theme");
+    let saved = localStorage.getItem("fb-theme");
+    // One-time migration to the minimal redesign: keep light/dark preference, switch to Paper/Slate
+    if (THEMES[saved] && !localStorage.getItem("fb-theme-paper-v1")) {
+      localStorage.setItem("fb-theme-paper-v1", "1");
+      saved = DARK_THEMES.has(saved) ? "slate" : "paper";
+      localStorage.setItem("fb-theme", saved);
+    }
     if (THEMES[saved]) return saved;
     if (saved === "dark") return "nocturne";
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "slate" : "paper";

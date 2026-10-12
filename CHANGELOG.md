@@ -3,6 +3,10 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+- [Fix] The Paper/Slate redesign now applies once to existing users (their saved theme kept hiding it); light/dark preference is preserved and they can switch back in Settings → Appearance.
+
+## [Unreleased]
+
 ## [1.46.509] — 2026-10-12 14:52
 
 ### Changes
