@@ -523,14 +523,14 @@ export default function CardsPage() {
   // ── Bucket view (all themes) ──────────────────────────────────
   return (
     <div onScroll={navDirScroll} style={{ flex: 1, overflowY: "auto", background: T.bg, minHeight: 0 }}>
-      <div style={{ maxWidth: 740, margin: "0 auto", padding: isMobile ? "16px 14px 100px" : "28px 24px 80px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "56px 24px 100px" : "56px 24px 80px" }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
           <div>
-            <div style={{ fontSize: isMobile ? 20 : 22, fontWeight: 700, color: T.text, letterSpacing: "-.02em" }}>Cards</div>
-            <div style={{ fontSize: 13, color: T.textTertiary, marginTop: 3 }}>
-              {highlights.length} highlight{highlights.length !== 1 ? "s" : ""} · {buckets.length} theme{buckets.length !== 1 ? "s" : ""}
+            <h1 style={{ margin: 0, fontSize: 36, fontWeight: 600, color: T.text, letterSpacing: "-0.02em", lineHeight: 1.1 }}>Cards</h1>
+            <div style={{ fontSize: 15, color: T.textTertiary, marginTop: 6 }}>
+              {highlights.length} card{highlights.length !== 1 ? "s" : ""} in {buckets.length} theme{buckets.length !== 1 ? "s" : ""}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
@@ -539,12 +539,11 @@ export default function CardsPage() {
                 onClick={handleExport}
                 title="Export highlights as Markdown"
                 aria-label="Export highlights as Markdown"
-                style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", color:T.textTertiary, border:`1px solid ${T.border}`, borderRadius:SHAPE.radiusSm, padding:"7px 12px", cursor:"pointer", fontSize:13, fontFamily:"inherit", transition:"color .12s, border-color .12s" }}
-                onMouseEnter={e => { e.currentTarget.style.color=T.text; e.currentTarget.style.borderColor=T.borderStrong; }}
-                onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; e.currentTarget.style.borderColor=T.border; }}
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", width:44, height:44, background:"transparent", color:T.textTertiary, border:"none", borderRadius:999, cursor:"pointer", transition:"color .12s" }}
+                onMouseEnter={e => { e.currentTarget.style.color=T.text; }}
+                onMouseLeave={e => { e.currentTarget.style.color=T.textTertiary; }}
               >
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2v9M4 8l4 4 4-4M2 14h12"/></svg>
-                {!isMobile && "Export"}
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2v9M4 8l4 4 4-4M2 14h12"/></svg>
               </button>
             )}
           <button
@@ -552,8 +551,8 @@ export default function CardsPage() {
             style={{
               display: "flex", alignItems: "center", gap: 6,
               background: T.accent, color: T.accentText, border: "none",
-              borderRadius: SHAPE.radiusSm, padding: "8px 14px", cursor: "pointer",
-              fontSize: 13, fontWeight: 600, fontFamily: "inherit", flexShrink: 0,
+              borderRadius: 999, padding: "0 18px", minHeight: 44, cursor: "pointer",
+              fontSize: 15, fontWeight: 600, fontFamily: "inherit", flexShrink: 0,
               transition: "opacity .12s",
             }}
             onMouseEnter={e => e.currentTarget.style.opacity = ".85"}
@@ -1003,78 +1002,66 @@ export default function CardsPage() {
                 onSelectEdge={(a, b) => setEdgePair({ a, b })}
               />
             ) : (
-            <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? 160 : 200}px, 1fr))`, gap: isMobile ? 10 : 12 }}>
-              {buckets.map(([theme, cards]) => {
-                const av = themeAvatar(theme);
-                const preview = cards[0]?.passage?.slice(0, 90) + (cards[0]?.passage?.length > 90 ? "…" : "");
-                const sources = new Set(cards.map(c => c.article_url).filter(Boolean)).size;
-                const dueCount = cards.filter(c => dueSet.has(c.id)).length;
-                return (
-                  <button key={theme} onClick={() => { setLastTheme(theme); setSelectedTheme(theme); }} style={{
-                    background: T.card, border: `1px solid ${T.border}`,
-                    borderRadius: SHAPE.radiusCard, padding: 0, overflow: "hidden",
-                    cursor: "pointer", textAlign: "left", fontFamily: "inherit",
-                    transition: "border-color .15s, background .15s", display: "flex", flexDirection: "column",
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = av.color; e.currentTarget.style.background = T.accentSurface; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.card; }}
-                  >
-                    <div style={{ height: 4, background: av.color + "88", flexShrink: 0 }} />
-                    <div style={{ padding: isMobile ? "16px" : "18px", flex: 1, display: "flex", flexDirection: "column" }}>
-                      {/* Large count — primary visual */}
-                      <div style={{ fontSize: 44, fontWeight: 800, color: av.color, letterSpacing: "-.05em", lineHeight: 1, marginBottom: 10 }}>
-                        {cards.length}
-                      </div>
-                      {/* Theme name */}
-                      <div style={{ fontSize: 15, fontWeight: 700, color: T.text, letterSpacing: "-.01em", marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {theme}
-                      </div>
-                      {/* Meta: sources + due */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: preview ? 10 : 0 }}>
-                        {sources > 0 && (
-                          <span style={{ fontSize: 11, color: T.textTertiary }}>
-                            {sources} source{sources !== 1 ? "s" : ""}
-                          </span>
-                        )}
-                        {dueCount > 0 && (
-                          <span style={{ fontSize: 11, fontWeight: 700, background: T.accentSurface, color: T.accent, padding: "2px 8px", borderRadius: 20 }}>
-                            {dueCount} due
-                          </span>
-                        )}
-                      </div>
-                      {/* Preview quote */}
-                      {preview && (
-                        <div style={{
-                          fontSize: 11, color: T.textTertiary, lineHeight: 1.55,
-                          fontStyle: "italic", overflow: "hidden", marginTop: "auto",
-                          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                        }}>"{preview}"</div>
-                      )}
-                    </div>
-                  </button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {(() => {
+                const DOTS = ["#65D5C4", "#F2C462", "#EE9A8E", "#A99BE0"];
+                const cardStyle = { background: T.card, borderRadius: 20, boxShadow: "0 1px 2px rgba(0,0,0,.05)", border: "none" };
+                const busiest = new Set([...buckets].sort((a, b) => b[1].length - a[1].length).slice(0, 3).filter(([, c]) => c.length > 1).map(([t]) => t));
+                const rowBtn = { display: "flex", alignItems: "center", gap: 12, width: "100%", background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left", fontFamily: "inherit", color: T.text };
+                const open = t => { setLastTheme(t); setSelectedTheme(t); };
+                const countEl = (n, due) => (
+                  <span style={{ fontSize: 14, color: T.textTertiary, flexShrink: 0 }}>
+                    {due > 0 && <span style={{ color: T.accent, marginRight: 8 }}>{due} due</span>}{n}
+                  </span>
                 );
-              })}
-
-              {/* Untagged tile */}
-              {untagged.length > 0 && (
-                <button onClick={() => { setLastTheme("__untagged__"); setSelectedTheme("__untagged__"); }} style={{
-                  background: T.card, border: `1px solid ${T.border}`,
-                  borderRadius: SHAPE.radiusCard, padding: 0, overflow: "hidden",
-                  cursor: "pointer", textAlign: "left", fontFamily: "inherit",
-                  transition: "border-color .15s", display: "flex", flexDirection: "column", opacity: 0.55,
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = T.textTertiary; e.currentTarget.style.opacity = "1"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.opacity = "0.55"; }}
-                >
-                  <div style={{ padding: isMobile ? "16px" : "18px" }}>
-                    <div style={{ fontSize: 44, fontWeight: 800, color: T.textTertiary, letterSpacing: "-.05em", lineHeight: 1, marginBottom: 10 }}>
-                      {untagged.length}
-                    </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: T.textSecondary, letterSpacing: "-.01em" }}>Untagged</div>
-                    <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 4 }}>no theme yet</div>
-                  </div>
-                </button>
-              )}
+                const featured = buckets.map((b, i) => [b, i]).filter(([[t]]) => busiest.has(t));
+                const rest = buckets.map((b, i) => [b, i]).filter(([[t]]) => !busiest.has(t));
+                return (
+                  <>
+                    {featured.map(([[theme, cards], i]) => {
+                      const q = cards.find(c => c.passage) || cards[0];
+                      const dueCount = cards.filter(c => dueSet.has(c.id)).length;
+                      return (
+                        <button key={theme} onClick={() => open(theme)} style={{ ...cardStyle, padding: "18px 20px", cursor: "pointer", textAlign: "left", fontFamily: "inherit", display: "block", width: "100%" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            <span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: "50%", background: DOTS[i % 4], flexShrink: 0 }} />
+                            <span style={{ flex: 1, minWidth: 0, fontSize: 17, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{theme}</span>
+                            {countEl(cards.length, dueCount)}
+                          </div>
+                          {q?.passage && (
+                            <div style={{ marginTop: 12 }}>
+                              <div style={{ fontFamily: "var(--reader-font-family)", fontSize: 18, lineHeight: 1.45, color: T.text, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{q.passage}</div>
+                              {q.article_title && <div style={{ fontSize: 13, color: T.textTertiary, marginTop: 8 }}>{q.article_title}</div>}
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                    {(rest.length > 0 || untagged.length > 0) && (
+                      <div style={{ ...cardStyle, padding: "6px 20px" }}>
+                        {rest.map(([[theme, cards], i], k) => (
+                          <div key={theme} style={{ borderTop: k === 0 ? "none" : `1px solid ${T.border}`, margin: "0 -4px", padding: "0 4px" }}>
+                            <button onClick={() => open(theme)} style={{ ...rowBtn, minHeight: 48 }}>
+                              <span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: "50%", background: DOTS[i % 4], flexShrink: 0 }} />
+                              <span style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{theme}</span>
+                              {countEl(cards.length, cards.filter(c => dueSet.has(c.id)).length)}
+                            </button>
+                          </div>
+                        ))}
+                        {untagged.length > 0 && (
+                          <div style={{ borderTop: rest.length ? `1px solid ${T.border}` : "none", margin: "0 -4px", padding: "0 4px" }}>
+                            <button onClick={() => open("__untagged__")} style={{ ...rowBtn, minHeight: 48 }}>
+                              <span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: "50%", background: T.border, flexShrink: 0 }} />
+                              <span style={{ flex: 1, fontSize: 16, fontWeight: 500, color: T.textSecondary }}>Untagged</span>
+                              {countEl(untagged.length, 0)}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
             )}
           </>
