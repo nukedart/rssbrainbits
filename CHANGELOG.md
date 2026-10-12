@@ -3,6 +3,22 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+## [1.46.509] — 2026-10-12 14:52
+
+### Changes
+- Minimal Paper/Slate themes, dock nav, calmer feed rows and reader typography
+- v1.46.508
+- v1.46.507
+- v1.46.506
+- v1.46.505
+- Log native v0.11.2 AI summary card polish
+- Log native v0.11.1: fix root cause of Inbox/Cards navigation failures
+- Log native v0.11.0 iPhone deploy — device caught up
+- Log native v0.11.0 /orchestrate security pass
+- Log native v0.10.0/v0.10.1: highlights/Cards edit + subscribe-save fix
+
+---
+
 - [Polish] New minimal "Paper" (light) and "Slate" (dark) themes, inspired by Things 3 and Procreate, built from the Feedbox mark's teal and charcoal; they are now the default for new users and the sidebar light/dark toggle. Mobile nav becomes a dark charcoal dock with a mint active state in these themes.
 - [UX] Mobile article rows: open-circle unread marker, calmer 17px medium-weight titles, hairline separators, larger meta text; thumbnails are kept and the preview text is hidden when an image shows.
 - [UX] Reader: larger lighter article title, a "N min left" label while scrolling, and a Tight/Comfortable/Loose line-spacing setting.
