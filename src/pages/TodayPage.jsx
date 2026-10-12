@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { useState, Fragment, useEffect, useMemo, lazy, Suspense } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
@@ -142,7 +142,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
   [savedItems]);
 
   const pad = isMobile ? "0 16px 96px" : "0 24px 48px";
-  const maxW = isMobile ? "100%" : 560;
+  const maxW = isMobile ? "100%" : 720;
 
   return (
     <>
@@ -150,34 +150,28 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
       <div style={{ maxWidth: maxW, margin: "0 auto" }}>
 
         {/* ── Header ────────────────────────────────────────── */}
-        <div style={{ padding: "22px 0 18px", borderBottom: `1px solid ${T.border}`, marginBottom: 28 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: T.accent, textTransform: "uppercase", letterSpacing: ".14em", marginBottom: 4 }}>
+        <div style={{ padding: isMobile ? "56px 8px 20px" : "56px 0 20px" }}>
+          <div style={{ fontSize: 36, fontWeight: 600, color: T.text, letterSpacing: "-0.02em", lineHeight: 1.1 }}>
+            Today
+          </div>
+          <div style={{ fontSize: 15, color: T.textTertiary, marginTop: 4 }}>
             {dateLabel}
           </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ fontSize: 30, fontWeight: 800, color: T.text, letterSpacing: "-.03em", lineHeight: 1 }}>
-              Today
-            </div>
-            <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          {(streak > 0 || thisWeek > 0) && (
+            <div style={{ display: "flex", gap: 16, alignItems: "baseline", marginTop: 12, fontSize: 13, color: T.textTertiary }}>
               {streak > 0 && (
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 18, lineHeight: 1 }}>🔥</span>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: T.text, letterSpacing: "-.02em" }}>{streak}</span>
-                  <span style={{ fontSize: 11, color: T.textTertiary }}>day{streak !== 1 ? "s" : ""}</span>
-                </div>
+                <span><span style={{ color: T.textSecondary, fontWeight: 500 }}>{streak}</span> day{streak !== 1 ? "s" : ""} streak</span>
               )}
               {thisWeek > 0 && (
-                <div style={{ fontSize: 12, color: T.textTertiary }}>
-                  <span style={{ fontWeight: 700, color: T.textSecondary }}>{thisWeek}</span> this week
-                </div>
+                <span><span style={{ color: T.textSecondary, fontWeight: 500 }}>{thisWeek}</span> this week</span>
               )}
             </div>
-          </div>
+          )}
         </div>
 
         {/* ── Queue ─────────────────────────────────────────── */}
         <SectionLabel T={T}>Your Queue</SectionLabel>
-        <div style={{ marginBottom: 32, background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, overflow: "hidden" }}>
+        <div style={{ marginBottom: 12, background: T.card, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
           <QueueRow
             T={T}
             icon={<Ic.Review />}
@@ -186,6 +180,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
             sub={reviewDue === null ? "" : (reviewDue > 0 ? "Spaced repetition · tap to review" : "All caught up")}
             cta={reviewDue > 0 ? "Review" : null}
             onCta={() => onNavigate("review")}
+            first
             loading={reviewDue === null}
           />
           <QueueRow
@@ -209,7 +204,6 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
             sub={unreadCount > 0 ? "New articles in your feeds" : "Nothing new"}
             cta={unreadCount > 0 ? "Open" : null}
             onCta={() => onNavigate("inbox")}
-            last
           />
         </div>
 
@@ -217,10 +211,11 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
         {feedPulse.length > 0 && (
           <>
             <SectionLabel T={T}>Feed Pulse</SectionLabel>
-            <div style={{ marginBottom: 32, background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, overflow: "hidden" }}>
+            <div style={{ marginBottom: 12, background: T.card, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
               {feedPulse.map((f, i) => (
+                <Fragment key={i}>
+                {i > 0 && <div style={{ height: 1, background: T.border, margin: "0 16px" }} />}
                 <button
-                  key={i}
                   onClick={() => onNavigate(`feed:${f.feedId}`)}
                   onMouseEnter={e => { e.currentTarget.style.background = T.accentSurface; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
@@ -228,8 +223,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                     display: "flex", alignItems: "center", gap: 12,
                     padding: "11px 16px", width: "100%",
                     border: "none", background: "transparent", borderRadius: SHAPE.radiusSm,
-                    borderBottom: i < feedPulse.length - 1 ? `1px solid ${T.border}` : "none",
-                    cursor: "pointer", transition: "background .1s",
+                                        cursor: "pointer", transition: "background .1s",
                     fontFamily: "inherit", textAlign: "left",
                     WebkitTapHighlightColor: "transparent",
                   }}
@@ -253,10 +247,11 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                       opacity: 0.7,
                     }} />
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: T.textSecondary, minWidth: 24, textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: T.textTertiary, minWidth: 24, textAlign: "right", flexShrink: 0 }}>
                     {f.count}
                   </div>
                 </button>
+                </Fragment>
               ))}
             </div>
           </>
@@ -268,20 +263,21 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
             <SectionLabel T={T}>
               Read Today
               {todayLog.length > 0 && (
-                <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, color: T.accent, background: T.accentSurface, padding: "2px 7px", borderRadius: 100 }}>
+                <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 500, color: T.textTertiary }}>
                   {todayLog.length}
                 </span>
               )}
             </SectionLabel>
-            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, overflow: "hidden", marginBottom: 32 }}>
+            <div style={{ background: T.card, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden", marginBottom: 12 }}>
               {todayLog.length === 0 ? (
                 <div style={{ padding: "20px 16px", fontSize: 13, color: T.textTertiary }}>
                   Nothing read yet today. Open the Inbox to get started.
                 </div>
               ) : (
                 todayLog.map((h, i) => (
+                  <Fragment key={h.url || i}>
+                  {i > 0 && <div style={{ height: 1, background: T.border, margin: "0 16px" }} />}
                   <button
-                    key={h.url || i}
                     onClick={() => setOpenItem(h)}
                     onMouseEnter={e => { e.currentTarget.style.background = T.accentSurface; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
@@ -289,8 +285,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                       display: "flex", alignItems: "center", gap: 10,
                       padding: "10px 16px", width: "100%",
                       border: "none", background: "transparent", borderRadius: SHAPE.radiusSm,
-                      borderBottom: i < todayLog.length - 1 ? `1px solid ${T.border}` : "none",
-                      cursor: "pointer", transition: "background .1s",
+                                            cursor: "pointer", transition: "background .1s",
                       fontFamily: "inherit", textAlign: "left",
                       WebkitTapHighlightColor: "transparent",
                     }}
@@ -309,6 +304,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                       </div>
                     </div>
                   </button>
+                  </Fragment>
                 ))
               )}
             </div>
@@ -342,20 +338,19 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
 function SectionLabel({ T, children }) {
   return (
     <div style={{
-      fontSize: 11, fontWeight: 700, color: T.textTertiary,
-      textTransform: "uppercase", letterSpacing: ".05em",
-      marginBottom: 10,
+      fontSize: 15, fontWeight: 600, color: T.text,
+      padding: "0 8px", marginBottom: 8,
     }}>
       {children}
     </div>
   );
 }
 
-function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, last, loading }) {
+function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, first, loading }) {
   const [hov, setHov] = useState(false);
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderBottom: `1px solid ${T.border}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
         <div className="skeleton" style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0 }} />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
           <div className="skeleton" style={{ height: 13, borderRadius: 4, width: "45%" }} />
@@ -365,13 +360,14 @@ function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, last, loading
     );
   }
   return (
+    <>
+    {!first && <div style={{ height: 1, background: T.border, margin: "0 16px" }} />}
     <div
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
         display: "flex", alignItems: "center", gap: 12,
         padding: "13px 16px",
-        borderBottom: last ? "none" : `1px solid ${T.border}`,
         background: hov ? T.accentSurface : "transparent",
         borderRadius: SHAPE.radiusSm,
         transition: "background .1s",
@@ -387,7 +383,7 @@ function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, last, loading
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 14, fontWeight: 700,
+          fontSize: 14, fontWeight: 600,
           color: accent ? T.accent : T.text,
           lineHeight: 1.2, marginBottom: 2,
         }}>
@@ -404,7 +400,7 @@ function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, last, loading
             background: accent ? T.accent : T.surface2,
             color: accent ? T.accentText : T.textSecondary,
             border: "none", borderRadius: SHAPE.radiusSm,
-            padding: "7px 13px", fontSize: 12, fontWeight: 700,
+            padding: "7px 13px", fontSize: 12, fontWeight: 600,
             cursor: "pointer", fontFamily: "inherit", flexShrink: 0,
             transition: "opacity .1s",
           }}
@@ -415,5 +411,6 @@ function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, last, loading
         </button>
       )}
     </div>
+    </>
   );
 }
