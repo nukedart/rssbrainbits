@@ -49,3 +49,4 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-10-12 | v[next] | Fix | One-time localStorage migration so existing users see Paper/Slate | `src/hooks/useTheme.jsx:11` | — |
 | 2026-10-12 | v[next] | Polish | Desktop sidebar + Feeds picker restyle to match Paper/Slate redesign | `Sidebar.jsx:49,387`, `InboxPage.jsx:2104` | — |
 | 2026-10-12 | v[next] | Nav | Minimal layout across nav + Inbox/Cards/Review/Today (/orchestrate: 4 Sonnet workers on disjoint pages, 1 revision on Review for removed Connected cards; nav done by orchestrator; npm test 33/33, build clean) | `BottomNav.jsx`, `Sidebar.jsx`, `InboxPage.jsx`, `CardsPage.jsx`, `ReviewPage.jsx`, `TodayPage.jsx` | — |
+| 2026-10-13 | v[next] | UX | Inbox rows: drop unread circle, image-left 64px thumb, mobile list on rounded card | `FeedItem.jsx:305`, `InboxPage.jsx:1659` | — |

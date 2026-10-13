@@ -314,7 +314,7 @@ function MobileThumb({ item, T, size = 72 }) {
     <div
       className={shimmer ? "skeleton" : undefined}
       style={{
-        width: size, height: size, borderRadius: SHAPE.radiusMd, flexShrink: 0,
+        width: size, height: size, borderRadius: 12, flexShrink: 0,
         overflow: "hidden", position: "relative",
         background: shimmer ? undefined : (showImg ? T.surface2 : ph.bg),
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -384,23 +384,18 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             onClick={swiped ? close : onClick}
             onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (swiped) close(); else onClick?.(); } }}
             onTouchStart={e => { if (!swiped) e.currentTarget.style.background = T.surface; }}
-            onTouchEnd={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.bg; }}
-            onTouchCancel={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.bg; }}
+            onTouchEnd={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.card; }}
+            onTouchCancel={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.card; }}
             style={{
-              display: "flex", alignItems: "flex-start", gap: SHAPE.rowGap,
+              display: "flex", alignItems: "center", gap: SHAPE.rowGap + 2,
               padding: `${SHAPE.rowPadY}px ${SHAPE.rowPadX}px`,
               cursor: "pointer",
-              background: isSelected ? T.accentSurface : T.bg,
+              background: isSelected ? T.accentSurface : T.card,
               opacity: dimmed ? 0.48 : 1,
               transition: "opacity .15s", position: "relative",
             }}
           >
-            <div aria-hidden="true" style={{ position: "absolute", left: 16, right: 0, bottom: 0, height: 1, background: T.border, pointerEvents: "none" }} />
-            <div aria-hidden="true" style={{
-              width: 20, height: 20, flex: "none", marginTop: 2, boxSizing: "border-box",
-              borderRadius: "50%", border: `1.6px solid ${T.borderStrong}`, background: "transparent",
-              visibility: isRead ? "hidden" : "visible",
-            }} />
+            <div aria-hidden="true" style={{ position: "absolute", left: imgPos === "left" ? SHAPE.rowPadX + imgSize + SHAPE.rowGap + 2 : SHAPE.rowPadX, right: 0, bottom: 0, height: 1, background: T.border, pointerEvents: "none" }} />
             {inMultiSelect && (
               <div style={{
                 width: 22, height: 22, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
@@ -419,9 +414,9 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {/* Title */}
               <div style={{
                 fontFamily: titleFont,
-                fontSize: Math.max(titleSize, 17),
-                fontWeight: isRead ? 400 : 500,
-                color: T.text,
+                fontSize: Math.max(titleSize, 16),
+                fontWeight: isRead ? 400 : 600,
+                color: isRead ? T.textSecondary : T.text,
                 lineHeight: 1.3,
                 overflow: "hidden", display: "-webkit-box",
                 WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
@@ -550,18 +545,6 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {!item.isPodcast && readingTimeText && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTimeText}</span>}
             </div>
           </div>
-
-          {/* Feed-color dot or unread accent dot */}
-          {!hovered && (
-            <span style={{
-              position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-              width: 6, height: 6, borderRadius: "50%",
-              background: feedColor || T.accent,
-              opacity: isRead ? 0 : 1,
-              transition: "opacity .15s",
-              pointerEvents: "none",
-            }} />
-          )}
 
           {/* Action buttons — absolute overlay, right-aligned, never shifts layout */}
           {hovered && (

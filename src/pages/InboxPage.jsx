@@ -173,7 +173,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       imgPosition:  localStorage.getItem("fb-img-pos") || "left",
       previewLines: parseInt(localStorage.getItem("fb-preview-lines") ?? "2", 10),
       fontSize,
-      imgSize: rawImg ? parseInt(rawImg, 10) : (isMobile ? 96 : 72),
+      imgSize: rawImg ? parseInt(rawImg, 10) : (isMobile ? 64 : 72),
       showFavicons:     localStorage.getItem("fb-show-favicons") !== "false",
       faviconGrayscale: localStorage.getItem("fb-favicon-grayscale") === "true",
       dimRead:          localStorage.getItem("fb-dim-read") !== "false",
@@ -1656,7 +1656,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 />
               );
             });
-            return isMobile ? rows : <div style={{ background: T.card, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>{rows}</div>;
+            return <div style={{ background: T.card, borderRadius: SHAPE.radiusCard, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden", margin: isMobile ? "8px 16px 0" : 0 }}>{rows}</div>;
           })()}
 
           {/* Load-more indicator — shows while there are items beyond displayedCount */}
