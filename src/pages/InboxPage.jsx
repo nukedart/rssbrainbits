@@ -2105,7 +2105,7 @@ function FeedPickerRow({ feed, count, onSelect, T, isMobile }) {
 
 function FeedPickerList({ feeds, counts, onSelectFeed, T, isMobile }) {
   return (
-    <div style={isMobile ? { background: T.card } : { background: T.card, maxWidth: 720, margin: "28px auto", borderRadius: 18, overflow: "hidden", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+    <div style={{ background: T.card, maxWidth: 720, margin: isMobile ? "8px 16px 0" : "28px auto", borderRadius: SHAPE.radiusCard, overflow: "hidden", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
       {feeds.map(f => (
         <FeedPickerRow key={f.id} feed={f} count={counts[f.id] || 0} onSelect={onSelectFeed} T={T} isMobile={isMobile} />
       ))}

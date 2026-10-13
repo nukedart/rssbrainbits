@@ -171,7 +171,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
 
         {/* ── Queue ─────────────────────────────────────────── */}
         <SectionLabel T={T}>Your Queue</SectionLabel>
-        <div style={{ marginBottom: 12, background: T.card, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
+        <div style={{ marginBottom: 12, background: T.card, borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
           <QueueRow
             T={T}
             icon={<Ic.Review />}
@@ -211,7 +211,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
         {feedPulse.length > 0 && (
           <>
             <SectionLabel T={T}>Feed Pulse</SectionLabel>
-            <div style={{ marginBottom: 12, background: T.card, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
+            <div style={{ marginBottom: 12, background: T.card, borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
               {feedPulse.map((f, i) => (
                 <Fragment key={i}>
                 {i > 0 && <div style={{ height: 1, background: T.border, margin: "0 16px" }} />}
@@ -268,7 +268,7 @@ export default function TodayPage({ feeds = [], onNavigate, feedUnreadCounts = {
                 </span>
               )}
             </SectionLabel>
-            <div style={{ background: T.card, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden", marginBottom: 12 }}>
+            <div style={{ background: T.card, borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden", marginBottom: 12 }}>
               {todayLog.length === 0 ? (
                 <div style={{ padding: "20px 16px", fontSize: 13, color: T.textTertiary }}>
                   Nothing read yet today. Open the Inbox to get started.

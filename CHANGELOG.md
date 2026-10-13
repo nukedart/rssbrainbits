@@ -3,6 +3,7 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+- [Polish] One 16px card radius across Cards, Today and the Feeds picker (was a mix of 16/18/20); the mobile Feeds picker now sits on the same inset rounded card as the Inbox list.
 - [UX] Inbox rows (iPhone PWA + desktop): removed the unread circle and desktop dot — unread is now a semibold title, read is regular and muted; 64px thumbnail sits on the left with a 12px radius; hairlines start at the text; the mobile list now sits on the same 16px rounded card as desktop.
 - [Nav] Minimal navigation: the mobile dock is now Inbox, Cards, Review, Today and More (Feeds moved to a button in the Inbox header, Saved lives in the feeds drawer), and the desktop sidebar starts as a slim icon rail with the Feedbox tile (click it to expand; the choice is remembered).
 - [UX] Large-title page headers on Inbox, Cards, Review and Today, with quiet text-tab filters, 44px stroke icon actions and a centered 720px column on desktop; lists sit on rounded cards.

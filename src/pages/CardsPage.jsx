@@ -602,7 +602,7 @@ export default function CardsPage() {
             }}
           >
             <div role="dialog" aria-modal="true" aria-label="New card" style={{
-              background: T.card, borderRadius: 18, padding: "24px",
+              background: T.card, borderRadius: SHAPE.radiusCard, padding: "24px",
               width: "100%", maxWidth: 500, boxShadow: SHAPE.shadowFloat,
               display: "flex", flexDirection: "column", gap: 16,
             }}>
@@ -1005,7 +1005,7 @@ export default function CardsPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {(() => {
                 const DOTS = ["#65D5C4", "#F2C462", "#EE9A8E", "#A99BE0"];
-                const cardStyle = { background: T.card, borderRadius: 20, boxShadow: "0 1px 2px rgba(0,0,0,.05)", border: "none" };
+                const cardStyle = { background: T.card, borderRadius: SHAPE.radiusCard, boxShadow: "0 1px 2px rgba(0,0,0,.05)", border: "none" };
                 const busiest = new Set([...buckets].sort((a, b) => b[1].length - a[1].length).slice(0, 3).filter(([, c]) => c.length > 1).map(([t]) => t));
                 const rowBtn = { display: "flex", alignItems: "center", gap: 12, width: "100%", background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left", fontFamily: "inherit", color: T.text };
                 const open = t => { setLastTheme(t); setSelectedTheme(t); };
