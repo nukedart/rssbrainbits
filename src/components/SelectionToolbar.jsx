@@ -3,16 +3,17 @@ import { useTheme } from "../hooks/useTheme";
 import { lookupTerm } from "../lib/fetchers";
 import { SHAPE } from "../lib/tokens";
 
+// Ids stay stable (saved highlights reference them); hues follow the Feedbox palette.
 export const HIGHLIGHT_COLORS = [
-  { id: "yellow", label: "Yellow", bg: "#FEF08A", border: "#EAB308", text: "#713F12" },
-  { id: "green",  label: "Green",  bg: "#BBF7D0", border: "#22C55E", text: "#14532D" },
-  { id: "blue",   label: "Blue",   bg: "#BFDBFE", border: "#3B82F6", text: "#1E3A5F" },
-  { id: "purple", label: "Purple", bg: "#E9D5FF", border: "#A855F7", text: "#3B0764" },
+  { id: "yellow", label: "Amber",  bg: "#F2C462", border: "#D9A530", mark: "rgba(242,196,98,0.45)",  text: "#3A2C05" },
+  { id: "green",  label: "Teal",   bg: "#65D5C4", border: "#3FB5A3", mark: "rgba(101,213,196,0.40)", text: "#0C2824" },
+  { id: "blue",   label: "Rose",   bg: "#EE9A8E", border: "#D6786A", mark: "rgba(238,154,142,0.45)", text: "#4A1A14" },
+  { id: "purple", label: "Violet", bg: "#A99BE0", border: "#8878CC", mark: "rgba(169,155,224,0.45)", text: "#231A4D" },
 ];
 
 export function getHighlightStyle(colorId) {
   const c = HIGHLIGHT_COLORS.find((h) => h.id === colorId) || HIGHLIGHT_COLORS[0];
-  return { backgroundColor: c.bg, borderRadius: 3, padding: "1px 0" };
+  return { backgroundColor: c.mark, borderRadius: 3, padding: "1px 0" };
 }
 
 export default function SelectionToolbar({ containerRef, onHighlight }) {
@@ -124,58 +125,54 @@ export default function SelectionToolbar({ containerRef, onHighlight }) {
     setLookupResult(result || "No explanation available.");
   }
 
-  const TOOLBAR_W = lookupResult ? 280 : 248;
-  const TOOLBAR_H = lookupResult && lookupResult !== "loading" ? 90 : 52;
+  const TOOLBAR_W = 304;
+  const TOOLBAR_H = lookupResult && lookupResult !== "loading" ? 100 : 52;
   const left = Math.max(8, Math.min(toolbar.x - TOOLBAR_W / 2, window.innerWidth - TOOLBAR_W - 8));
   // Show above selection if there's room, otherwise flip below
   const aboveY = toolbar.y - TOOLBAR_H - 8;
   const top = aboveY >= 8 ? aboveY : toolbar.bottom + 8;
+  const lookupActive = lookupResult && lookupResult !== "loading";
 
   return (
     <div ref={toolbarRef} style={{
       position: "fixed", left, top,
-      width: TOOLBAR_W, background: T.card, border: `1px solid ${T.border}`,
-      borderRadius: SHAPE.radiusMd, boxShadow: SHAPE.shadowFloat,
+      width: TOOLBAR_W, background: "#2F373B", color: "#E8ECEE",
+      borderRadius: lookupActive ? 20 : 26, boxShadow: "0 10px 30px rgba(0,0,0,.35)",
       zIndex: 600, animation: "slideUp .15s ease", overflow: "hidden",
     }}>
-      {/* Lookup result panel */}
-      {lookupResult && lookupResult !== "loading" && (
-        <div style={{ padding: "10px 12px 8px", borderBottom: `1px solid ${T.border}` }}>
-          <p style={{ margin: 0, fontSize: 12, color: T.text, lineHeight: 1.55 }}>{lookupResult}</p>
+      {lookupActive && (
+        <div style={{ padding: "12px 16px 8px", borderBottom: "1px solid rgba(255,255,255,.12)" }}>
+          <p style={{ margin: 0, fontSize: 13, color: "#E8ECEE", lineHeight: 1.5 }}>{lookupResult}</p>
         </div>
       )}
       {lookupResult === "loading" && (
-        <div style={{ padding: "8px 12px", borderBottom: `1px solid ${T.border}`, fontSize: 12, color: T.textTertiary }}>Looking up…</div>
+        <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,.12)", fontSize: 13, color: "#AEB7BB" }}>Looking up…</div>
       )}
-      {/* Toolbar buttons */}
       <div role="toolbar" aria-label="Highlight color" style={{
-        display: "flex", alignItems: "center", justifyContent: "center",
-        gap: 6, padding: "8px 12px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        height: 52, padding: "0 8px 0 16px", boxSizing: "border-box",
       }}>
-        <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 600, marginRight: 2 }}>Highlight</span>
         {HIGHLIGHT_COLORS.map((c) => (
           <button key={c.id} aria-label={`Highlight ${c.label}`} onClick={() => handlePickColor(c.id)} style={{
-            width: 22, height: 22, borderRadius: "50%",
-            background: c.bg, border: `2px solid ${c.border}`,
-            cursor: "pointer", transition: "transform .1s", flexShrink: 0,
-          }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.25)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-          />
+            width: 26, height: 26, padding: 0, borderRadius: "50%",
+            background: c.bg, border: "none",
+            cursor: "pointer", flexShrink: 0, WebkitTapHighlightColor: "transparent",
+          }} />
         ))}
-        <div style={{ width: 1, height: 16, background: T.border, flexShrink: 0, marginLeft: 2 }} />
-        <button
-          aria-label="Look up selected text"
-          onClick={handleLookup}
-          disabled={lookupResult === "loading"}
-          style={{
-            background: lookupResult && lookupResult !== "loading" ? T.accentSurface : "transparent",
-            border: `1px solid ${lookupResult && lookupResult !== "loading" ? T.accent : T.border}`,
-            borderRadius: 6, padding: "3px 8px", cursor: "pointer",
-            fontSize: 11, fontWeight: 600, color: lookupResult && lookupResult !== "loading" ? T.accent : T.textSecondary,
-            fontFamily: "inherit", flexShrink: 0, transition: "background .1s",
-          }}
-        >?</button>
+        <div style={{ width: 1, height: 24, background: "rgba(255,255,255,.16)", flexShrink: 0 }} />
+        <button aria-label="Highlight and add note" onClick={() => handlePickColor(HIGHLIGHT_COLORS[1].id)} style={{
+          width: 44, height: 40, border: "none", borderRadius: 20, background: "rgba(255,255,255,.1)", color: "#fff",
+          display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 19l1-4 9.5-9.5a2 2 0 0 1 3 3L9 18z"/></svg>
+        </button>
+        <button aria-label="Look up selected text" onClick={handleLookup} disabled={lookupResult === "loading"} style={{
+          width: 40, height: 40, border: "none", borderRadius: 20, cursor: "pointer", flexShrink: 0,
+          background: lookupActive ? "rgba(101,213,196,.16)" : "transparent", color: lookupActive ? "#65D5C4" : "#AEB7BB",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 5h9a4 4 0 0 1 4 4v10H9a4 4 0 0 1-4-4z"/><path d="M9 9h5M9 13h3"/></svg>
+        </button>
       </div>
     </div>
   );

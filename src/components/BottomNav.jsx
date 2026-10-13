@@ -92,6 +92,14 @@ export default function BottomNav({
     ? { ...baseT, card: BRAND.ink, border: "transparent", textSecondary: "#AEB7BB", textTertiary: "#8B949A", accent: BRAND.mint, accentSurface: "rgba(101,213,196,0.16)", accentText: "#0C2824" }
     : baseT;
   const [visible, setVisible] = useState(true);
+  const [readerOpen, setReaderOpen] = useState(false);
+
+  // The full-screen reader owns the whole screen — tuck the dock away while it's open
+  useEffect(() => {
+    function onReader(e) { setReaderOpen(!!e.detail); }
+    window.addEventListener("fb-reader", onReader);
+    return () => window.removeEventListener("fb-reader", onReader);
+  }, []);
 
   // Always show nav when switching pages
   useEffect(() => { setVisible(true); }, [active]);
@@ -110,7 +118,8 @@ export default function BottomNav({
     background: hexToRgba(T.card, dock ? 0.96 : 0.72),
     backdropFilter: SHAPE.blur,
     WebkitBackdropFilter: SHAPE.blur,
-    transform: `translateX(-50%) translateY(${visible ? "0" : "120px"})`,
+    transform: `translateX(-50%) translateY(${visible && !readerOpen ? "0" : "160px"})`,
+    pointerEvents: readerOpen ? "none" : "auto",
     transition: "transform .3s cubic-bezier(.4,0,.2,1)",
     willChange: "transform",
     display: "flex",

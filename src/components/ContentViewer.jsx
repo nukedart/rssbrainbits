@@ -38,6 +38,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const { T } = useTheme();
   const { user } = useAuth();
   const { isMobile } = useBreakpoint();
+  useEffect(() => {
+    if (!isMobile) return;
+    window.dispatchEvent(new CustomEvent("fb-reader", { detail: true }));
+    return () => window.dispatchEvent(new CustomEvent("fb-reader", { detail: false }));
+  }, [isMobile]);
 
   // Article
   const [content, setContent]     = useState(null);
@@ -562,60 +567,60 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                   }
                   return next;
                 })} title="Reading preferences" aria-label="Reading preferences" aria-expanded={showReaderControls}
-                style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s" }}
+                style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? 0 : "6px 10px", width: isMobile ? 44 : undefined, height: isMobile ? 44 : undefined, borderRadius: isMobile ? 14 : undefined, cursor: "pointer", fontSize: isMobile ? 16 : 12, fontWeight: isMobile ? 600 : 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s" }}
                 onMouseEnter={e => { if (!showReaderControls) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
                 onMouseLeave={e => { if (!showReaderControls) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
               >Aa</button>
-              {showReaderControls && (
-                <div style={{
-                  position: "fixed", right: aaMenuPos?.right ?? 0, top: aaMenuPos?.top ?? 0, zIndex: 300,
-                  background: T.card, border: `1px solid ${T.border}`,
-                  borderRadius: SHAPE.radiusMd, boxShadow: SHAPE.shadowFloat, backdropFilter: SHAPE.blur, WebkitBackdropFilter: SHAPE.blur,
-                  padding: "14px 16px", minWidth: 220,
-                  display: "flex", flexDirection: "column", gap: 12,
-                  animation: "fadeInScale .15s ease",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Size</span>
-                    <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
-                      aria-label="Font size"
-                      aria-valuetext={`${readerPrefs.fontSize}px`}
-                      onChange={e => updatePref("fontSize", parseInt(e.target.value))}
-                      style={{ width: 90, accentColor: T.accent }} />
-                    <span style={{ fontSize: 11, color: T.textSecondary, minWidth: 24, textAlign: "right" }}>{readerPrefs.fontSize}</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Width</span>
-                    <div style={{ display: "flex", gap: 3 }}>
-                      {["narrow","medium","wide"].map(w => (
-                        <button key={w} onClick={() => updatePref("lineWidth", w)} aria-label={`${w} line width`} aria-pressed={readerPrefs.lineWidth===w} style={{ padding: "3px 7px", borderRadius: 6, border: `1px solid ${readerPrefs.lineWidth===w?T.accent:T.border}`, background: readerPrefs.lineWidth===w?T.accentSurface:"transparent", color: readerPrefs.lineWidth===w?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit", textTransform: "capitalize" }}>{w[0].toUpperCase()}</button>
-                      ))}
+              {showReaderControls && (() => {
+                const panel = (
+                  <>
+                    {isMobile && <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-.01em", color: T.text }}>Text</div>}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <span style={{ fontSize: 13, color: T.textTertiary }}>A</span>
+                      <input type="range" min="14" max="22" step="1" value={readerPrefs.fontSize}
+                        aria-label="Font size"
+                        aria-valuetext={`${readerPrefs.fontSize}px`}
+                        onChange={e => updatePref("fontSize", parseInt(e.target.value))}
+                        style={{ flex: 1, minWidth: isMobile ? 0 : 110, accentColor: T.accent }} />
+                      <span style={{ fontSize: 20, color: T.text }}>A</span>
                     </div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Font</span>
-                    <div style={{ display: "flex", gap: 3 }}>
-                      {[{id:"sans",label:"Sans"},{id:"serif",label:"Serif"}].map(f => (
-                        <button key={f.id} onClick={() => updatePref("fontFamily", f.id)} aria-label={`${f.label} font`} aria-pressed={readerPrefs.fontFamily===f.id} style={{ padding: "3px 9px", borderRadius: 6, border: `1px solid ${readerPrefs.fontFamily===f.id?T.accent:T.border}`, background: readerPrefs.fontFamily===f.id?T.accentSurface:"transparent", color: readerPrefs.fontFamily===f.id?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit" }}>{f.label}</button>
-                      ))}
+                    <PrefSeg T={T} label="Font" value={readerPrefs.fontFamily} onPick={v => updatePref("fontFamily", v)} options={[["sans","Sans"],["serif","Serif"]]} />
+                    <PrefSeg T={T} label="Width" value={readerPrefs.lineWidth} onPick={v => updatePref("lineWidth", v)} options={[["narrow","Narrow"],["medium","Mid"],["wide","Wide"]]} />
+                    <PrefSeg T={T} label="Spacing" value={readerPrefs.lineHeight} onPick={v => updatePref("lineHeight", v)} options={[[1.55,"Tight"],[1.7,"Cozy"],[1.9,"Loose"]]} />
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 44 }}>
+                      <span style={{ fontSize: 15, color: T.textSecondary }}>Bionic reading</span>
+                      <button onClick={() => updatePref("bionic", !readerPrefs.bionic)} role="switch" aria-checked={readerPrefs.bionic} aria-label="Bionic reading" style={{ width: 50, height: 30, borderRadius: 15, border: "none", cursor: "pointer", background: readerPrefs.bionic ? T.accent : T.surface2, position: "relative", transition: "background .18s", padding: 0 }}>
+                        <span style={{ position: "absolute", top: 3, left: readerPrefs.bionic ? 23 : 3, width: 24, height: 24, borderRadius: "50%", background: "#fff", transition: "left .18s", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
+                      </button>
                     </div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Spacing</span>
-                    <div style={{ display: "flex", gap: 3 }}>
-                      {[["Tight",1.55],["Comfortable",1.7],["Loose",1.9]].map(([l,v]) => (
-                        <button key={l} onClick={() => updatePref("lineHeight", v)} aria-label={`${l} line spacing`} aria-pressed={readerPrefs.lineHeight===v} style={{ padding: "3px 7px", borderRadius: 6, border: `1px solid ${readerPrefs.lineHeight===v?T.accent:T.border}`, background: readerPrefs.lineHeight===v?T.accentSurface:"transparent", color: readerPrefs.lineHeight===v?T.accentText:T.textSecondary, cursor: "pointer", fontSize: 10, fontWeight: 600, fontFamily: "inherit" }}>{l[0]}</button>
-                      ))}
+                  </>
+                );
+                if (isMobile) return (
+                  <>
+                    <div onClick={() => setShowReaderControls(false)} style={{ position: "fixed", inset: 0, zIndex: 699, background: "rgba(0,0,0,.4)" }} />
+                    <div role="dialog" aria-label="Text settings" style={{
+                      position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 700,
+                      background: T.card, borderRadius: "24px 24px 0 0",
+                      padding: "12px 24px calc(28px + env(safe-area-inset-bottom, 0px))",
+                      boxShadow: SHAPE.shadowFloatUp, display: "flex", flexDirection: "column", gap: 16,
+                      animation: "slideUp .2s ease",
+                    }}>
+                      <div style={{ width: 36, height: 4, borderRadius: 2, background: T.border, margin: "0 auto 4px" }} />
+                      {panel}
                     </div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".07em", flex: 1 }}>Bionic</span>
-                    <button onClick={() => updatePref("bionic", !readerPrefs.bionic)} role="switch" aria-checked={readerPrefs.bionic} aria-label="Bionic reading" style={{ width: 32, height: 18, borderRadius: 9, border: "none", cursor: "pointer", background: readerPrefs.bionic?T.accent:T.border, position: "relative", transition: "background .2s", flexShrink: 0 }}>
-                      <span style={{ position: "absolute", top: 2, left: readerPrefs.bionic?16:2, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .18s", boxShadow: "0 1px 3px rgba(0,0,0,.15)" }} />
-                    </button>
-                  </div>
-                </div>
-              )}
+                  </>
+                );
+                return (
+                  <div style={{
+                    position: "fixed", right: aaMenuPos?.right ?? 0, top: aaMenuPos?.top ?? 0, zIndex: 300,
+                    background: T.card, border: `1px solid ${T.border}`,
+                    borderRadius: SHAPE.radiusMd, boxShadow: SHAPE.shadowFloat, backdropFilter: SHAPE.blur, WebkitBackdropFilter: SHAPE.blur,
+                    padding: "14px 16px", minWidth: 260,
+                    display: "flex", flexDirection: "column", gap: 12,
+                    animation: "fadeInScale .15s ease",
+                  }}>{panel}</div>
+                );
+              })()}
             </div>
           )}
 
@@ -625,27 +630,27 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               <button onClick={() => readAloud.status === "speaking" ? readAloud.pause() : readAloud.play()}
                 title={readAloud.status === "speaking" ? "Pause read aloud" : "Read aloud"}
                 aria-label={readAloud.status === "speaking" ? "Pause read aloud" : "Read aloud"}
-                style={{ background: readAloud.status !== "idle" ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: readAloud.status !== "idle" ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+                style={{ background: readAloud.status !== "idle" ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? "11px" : "6px 8px", cursor: "pointer", color: readAloud.status !== "idle" ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
                 onMouseEnter={e => { if (readAloud.status === "idle") { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
                 onMouseLeave={e => { if (readAloud.status === "idle") { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
               >
                 {readAloud.status === "speaking" ? (
-                  <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
+                  <svg width={isMobile ? 22 : 15} height={isMobile ? 22 : 15} viewBox="0 0 16 16" fill="currentColor">
                     <rect x="4" y="3" width="3" height="10" rx="1"/><rect x="9" y="3" width="3" height="10" rx="1"/>
                   </svg>
                 ) : (
-                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width={isMobile ? 22 : 15} height={isMobile ? 22 : 15} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4.5 2.8v10.4l8-5.2z"/>
                   </svg>
                 )}
               </button>
               {readAloud.status !== "idle" && (
                 <button onClick={readAloud.stop} title="Stop read aloud" aria-label="Stop read aloud"
-                  style={{ background: "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+                  style={{ background: "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? "11px" : "6px 8px", cursor: "pointer", color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
                   onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
                   onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
                 >
-                  <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
+                  <svg width={isMobile ? 22 : 15} height={isMobile ? 22 : 15} viewBox="0 0 16 16" fill="currentColor">
                     <rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>
                   </svg>
                 </button>
@@ -656,22 +661,22 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           {/* Save — tap to save, tap again to unsave */}
           <button onClick={handleSave} title={saved ? "Remove from Saved" : "Save article"}
             aria-label={saved ? "Remove from Saved" : "Save article"}
-            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? "11px" : "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background = saved ? T.accentSurface : T.surface2; e.currentTarget.style.color = saved ? T.danger : T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background = saved ? T.accentSurface : "transparent"; e.currentTarget.style.color = saved ? T.accent : T.textTertiary; }}
           >
-            <svg width="15" height="15" viewBox="0 0 16 16" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <svg width={isMobile ? 22 : 15} height={isMobile ? 22 : 15} viewBox="0 0 16 16" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/>
             </svg>
           </button>
 
           {/* Share */}
           <button onClick={handleShare} title={shareFeedback || "Share"} aria-label={shareFeedback || "Share article"}
-            style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: shareFeedback ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+            style={{ background: shareFeedback ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? "11px" : "6px 8px", cursor: "pointer", color: shareFeedback ? T.accent : T.textTertiary, display: isMobile ? "none" : "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
             onMouseEnter={e => { if (!shareFeedback) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
             onMouseLeave={e => { if (!shareFeedback) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
           >
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <svg width={isMobile ? 22 : 15} height={isMobile ? 22 : 15} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 1v10M4 4l4-3 4 3"/><path d="M4 8H2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-2"/>
             </svg>
           </button>
@@ -682,11 +687,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
               title="Open original article"
               aria-label="Open original article"
-              style={{ background: "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: "6px 8px", cursor: "pointer", color: T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+              style={{ background: "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? "11px" : "6px 8px", cursor: "pointer", color: T.textTertiary, display: isMobile ? "none" : "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
               onMouseEnter={e => { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}
               onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <svg width={isMobile ? 22 : 14} height={isMobile ? 22 : 14} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9"/>
                 <path d="M10 1h5v5"/>
                 <path d="M15 1L8 8"/>
@@ -857,7 +862,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
 
               {/* RSS-fallback notice — shown when article couldn't be fetched */}
               {content._fromRSS && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 20px", padding: "8px 12px", borderRadius: 8, background: T.surface2, fontSize: 12, color: T.textTertiary }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 20px", padding: 0, fontSize: 13, color: T.textTertiary }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
                   <span>Showing RSS feed preview — </span>
                   <a href={item?.url} target="_blank" rel="noopener noreferrer" style={{ color: T.accent, textDecoration: "none", fontWeight: 600 }}>read full article ↗</a>
@@ -1071,7 +1076,7 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false, r
           const colorDef = token.hl ? (HIGHLIGHT_COLORS.find((c) => c.id === token.hl.color) || HIGHLIGHT_COLORS[0]) : null;
           return (
             <span key={i} data-char={token.offset} style={{
-              background: active ? T.accent : (colorDef ? colorDef.bg : undefined),
+              background: active ? T.accent : (colorDef ? colorDef.mark : undefined),
               color: active ? T.accentText : undefined,
               borderRadius: 3,
             }}>{token.t}</span>
@@ -1113,8 +1118,8 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false, r
             aria-label={seg.highlight.note ? `Highlight with note: ${seg.highlight.note}` : "Highlight — press Enter to add a note"}
             title={seg.highlight.note ? "Note: " + seg.highlight.note : "Click to add a note"}
             style={{
-              backgroundColor: colorDef.bg, borderRadius: 3, padding: "1px 0",
-              cursor: "pointer", background: colorDef.bg,
+              backgroundColor: colorDef.mark, borderRadius: 3, padding: "1px 0",
+              cursor: "pointer", background: colorDef.mark, color: "inherit",
               borderBottom: seg.highlight.note ? `2px solid ${colorDef.border}` : "none",
             }}
           >{seg.content}</mark>
@@ -1122,6 +1127,21 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false, r
       })}
     </p>
   ));
+}
+
+// ── Segmented control row for the reader text settings ────────
+function PrefSeg({ T, label, value, onPick, options }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <span style={{ fontSize: 15, color: T.textSecondary }}>{label}</span>
+      <div role="group" aria-label={label} style={{ display: "flex", padding: 3, borderRadius: 12, background: T.bg }}>
+        {options.map(([v, l]) => (
+          <button key={String(v)} onClick={() => onPick(v)} aria-pressed={value === v}
+            style={{ minWidth: 56, height: 36, padding: "0 10px", border: "none", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: value === v ? 600 : 500, background: value === v ? T.surface2 : "transparent", color: value === v ? T.accent : T.textSecondary }}>{l}</button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ── SummaryBlock ──────────────────────────────────────────────
@@ -1267,23 +1287,22 @@ function SummaryBlock({ summary, summarizing, onSummarize, summaryStyle = "keypo
 
   // ── Pre-summary: single button ────────────────────────────
   return (
-    <div style={{ textAlign: "center", padding: "24px 0 28px" }}>
+    <div style={{ padding: "0 0 16px" }}>
       <button
         onClick={() => onSummarize?.(summaryStyle)}
         disabled={summarizing}
         style={{
           display: "inline-flex", alignItems: "center", gap: 8,
-          padding: "10px 26px", borderRadius: 100,
-          border: `1px solid ${T.borderStrong || T.border}`,
-          background: "transparent", color: T.text,
-          fontSize: 11, fontWeight: 700, fontFamily: "inherit",
-          letterSpacing: ".1em", textTransform: "uppercase",
+          padding: "0 16px", height: 36, borderRadius: 18,
+          border: "none",
+          background: T.surface2, color: T.text,
+          fontSize: 14, fontWeight: 500, fontFamily: "inherit",
           cursor: "pointer", transition: "border-color .2s, color .2s",
         }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = T.borderStrong || T.border; e.currentTarget.style.color = T.text; }}
+        onMouseEnter={e => { e.currentTarget.style.color = T.accent; }}
+        onMouseLeave={e => { e.currentTarget.style.color = T.text; }}
       >
-        <SparkleIcon size={12} />
+        <SparkleIcon size={14} />
         Summarize
       </button>
     </div>
@@ -1325,6 +1344,7 @@ function OverflowMenu({ T, item, content, yt, highlights, tags, showTags, setSho
 
   const menuItems = (
     <>
+      {isMobile && menuItem("Share", handleShare)}
       {item?.url && menuItem("Open in browser ↗", () => window.open(item.url, "_blank"))}
       <div style={{ height:1, background:T.border, margin:"4px 0" }} />
       {menuItem(showTags ? "Hide tags" : `Tags${tags.length > 0 ? ` (${tags.length})` : ""}`, () => setShowTags(v => !v))}
