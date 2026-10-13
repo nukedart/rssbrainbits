@@ -493,13 +493,15 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         padding: isMobile ? "8px 12px" : "10px 16px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 10,
       }}>
         <button onClick={onClose} aria-label="Close article" style={{
-          background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm,
-          width: isMobile ? 38 : 32, height: isMobile ? 38 : 32,
+          background: isMobile ? "transparent" : T.surface2, border: "none", borderRadius: SHAPE.radiusSm,
+          width: isMobile ? 44 : 32, height: isMobile ? 44 : 32,
           cursor: "pointer", display: "flex",
-          alignItems: "center", justifyContent: "center", color: T.textSecondary,
-          fontSize: isMobile ? 20 : 18, fontFamily: "inherit", flexShrink: 0,
+          alignItems: "center", justifyContent: "center", color: isMobile ? T.text : T.textSecondary,
+          fontSize: 18, fontFamily: "inherit", flexShrink: 0,
           WebkitTapHighlightColor: "transparent",
-        }}>←</button>
+        }}>{isMobile
+          ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+          : "←"}</button>
 
         {/* Prev — desktop only; mobile uses swipe-right-body */}
         {!isMobile && onPrev && (
@@ -824,20 +826,26 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             }}>
 
               {/* Source + favicon */}
+              {isMobile ? (
+                <div style={{ fontSize: 13, fontWeight: 500, color: T.textTertiary, lineHeight: 1.4 }}>
+                  {[item.source, item.author, readingTimeMins && `${readingTimeMins} min`].filter(Boolean).join(" · ")}
+                </div>
+              ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
                 {faviconUrl && <img src={faviconUrl} alt="" width={15} height={15} loading="lazy" decoding="async" style={{ borderRadius: 3, flexShrink: 0, opacity: .85 }} onError={e => { e.target.style.display="none"; }} />}
                 <span style={{ fontSize: 12, fontWeight: 600, color: T.textTertiary, letterSpacing: ".02em", textTransform: "uppercase", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {item.source}
                 </span>
               </div>
+              )}
 
               {/* Title */}
               <h1 style={{
                 fontFamily: "var(--reader-font-family)",
-                fontSize: isMobile ? 28 : 40,
+                fontSize: isMobile ? 30 : 40,
                 fontWeight: 500,
                 color: T.text,
-                margin: "0 0 16px",
+                margin: isMobile ? "10px 0 18px" : "0 0 16px",
                 lineHeight: 1.15,
                 letterSpacing: "-.012em",
               }}>
@@ -851,11 +859,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
               </h1>
 
               {/* Date · author · reading time */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 28, fontSize: 13, color: T.textTertiary, lineHeight: 1.5 }}>
+              {!isMobile && <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 28, fontSize: 13, color: T.textTertiary, lineHeight: 1.5 }}>
                 {item.date && <span>{formatArticleDate(item.date)}</span>}
                 {item.author && <><span style={{ opacity: .4 }}>·</span><span>{item.author}</span></>}
                 {readingTimeMins && <><span style={{ opacity: .4 }}>·</span><span>{readingTimeMins} min read</span></>}
-              </div>
+              </div>}
 
               {/* AI Summarize */}
               <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} bodyText={content?.bodyText} articleTitle={content?.title || item?.title} />

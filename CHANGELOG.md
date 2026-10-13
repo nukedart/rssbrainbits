@@ -3,6 +3,7 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+- [UX] Mobile reader matches refined mockups: chevron back button, "Source · Author · min" meta above a 30px serif title
 - [UX] Reader fits iPhone 17 Pro: clears the Dynamic Island (safe-area top), 26px text gutters, bottom safe-area padding
 
 
