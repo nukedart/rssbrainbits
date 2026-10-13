@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reader</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position:relative;width:390px;height:844px;overflow:hidden;box-sizing:border-box;background:#FFFFFF;color:#1C2123;font-family:'Figtree',system-ui,sans-serif">
+
+<div style="display:flex;align-items:center;justify-content:space-between;padding:56px 12px 0 12px">
+<button aria-label="Back" style="width:44px;height:44px;border:0;background:transparent;color:#1C2123;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+<div style="display:flex">
+<button aria-label="Listen" style="width:44px;height:44px;border:0;background:transparent;color:#1C2123;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10v4h3l5 4V6l-5 4z"/><path d="M16.5 9a4 4 0 0 1 0 6"/></svg></button>
+<button aria-label="More" style="width:44px;height:44px;border:0;background:transparent;color:#1C2123;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18.5" cy="12" r="1.5"/></svg></button>
+</div>
+</div>
+
+<div style="padding:16px 28px 0 28px">
+<div style="font-size:13px;color:#636C71;font-weight:500">Ryan Holiday · 8 min</div>
+<h1 style="margin:10px 0 0 0;font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:32px;line-height:1.15;letter-spacing:-0.01em">The notecard habit that outlasts every app</h1>
+
+<p style="margin:24px 0 0 0;font-family:'Newsreader',Georgia,serif;font-size:19px;line-height:1.55;color:#2A3033">Every book I have written began as a stack of index cards. Each card held a single idea, <span style="background:rgba(101,213,196,0.38);border-radius:3px;padding:1px 0">copied from something I had read and phrased in my own words</span>, filed under a theme I could find again a year later.</p>
+
+<p style="margin:16px 0 0 0;font-family:'Newsreader',Georgia,serif;font-size:19px;line-height:1.55;color:#2A3033">The tool never mattered. What mattered was the <span style="background:rgba(242,196,98,0.5);border-radius:3px;padding:1px 0">small act of stopping to decide what was worth keeping</span>.</p>
+
+<p style="margin:16px 0 0 0;font-family:'Newsreader',Georgia,serif;font-size:19px;line-height:1.55;color:#2A3033">Reading without that pause is just scrolling with better manners.</p>
+</div>
+
+<div style="position:absolute;left:28px;right:28px;top:610px;height:64px;border-radius:20px;background:#2F373B;box-shadow:0 12px 32px rgba(28,33,35,0.3);display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 18px;box-sizing:border-box">
+<div style="display:flex;align-items:center;gap:14px">
+<button aria-label="Highlight teal" style="width:30px;height:30px;padding:0;border-radius:50%;background:#65D5C4;border:2px solid #FFFFFF;box-shadow:0 0 0 2px #2F373B inset"></button>
+<button aria-label="Highlight amber" style="width:26px;height:26px;padding:0;border-radius:50%;background:#F2C462;border:0"></button>
+<button aria-label="Highlight rose" style="width:26px;height:26px;padding:0;border-radius:50%;background:#EE9A8E;border:0"></button>
+<button aria-label="Highlight violet" style="width:26px;height:26px;padding:0;border-radius:50%;background:#A99BE0;border:0"></button>
+</div>
+<div style="display:flex;align-items:center;gap:4px">
+<div style="width:1px;height:28px;background:rgba(255,255,255,0.16);margin-right:8px"></div>
+<button aria-label="Add note" style="width:44px;height:44px;border:0;border-radius:14px;background:rgba(255,255,255,0.1);color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19l1-4 9.5-9.5a2 2 0 0 1 3 3L9 18z"/></svg></button>
+</div>
+</div>
+
+<div style="position:absolute;left:0;right:0;bottom:0;height:150px;background:#F6F7F8;border-radius:28px 28px 0 0;box-sizing:border-box;padding:12px 28px 0 28px">
+<div style="width:36px;height:4px;border-radius:2px;background:#D5DADD;margin:0 auto 14px auto"></div>
+<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#636C71;font-weight:500"><span style="width:10px;height:10px;border-radius:50%;background:#65D5C4;display:inline-block"></span>Note on highlight</div>
+<div style="margin-top:8px;font-size:16px;line-height:1.4;color:#1C2123">Capture in your own words. The paraphrase is the learning, not the quote.</div>
+<div style="margin-top:8px;font-size:14px;color:#17806F;font-weight:500">#notetaking</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

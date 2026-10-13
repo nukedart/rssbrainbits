@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cards</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position:relative;width:390px;height:844px;overflow:hidden;box-sizing:border-box;background:#F6F7F8;color:#1C2123;font-family:'Figtree',system-ui,sans-serif">
+
+<div style="padding:64px 24px 0 24px;display:flex;align-items:center;justify-content:space-between">
+<h1 style="margin:0;font-size:36px;font-weight:600;letter-spacing:-0.02em;line-height:1.1">Cards</h1>
+<button aria-label="Search cards" style="width:44px;height:44px;margin-right:-10px;border:0;background:transparent;color:#1C2123;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></button>
+</div>
+<div style="padding:6px 24px 0 24px;font-size:15px;color:#636C71">48 cards in 6 themes</div>
+
+<div style="margin:22px 16px 0 16px;display:flex;flex-direction:column;gap:12px">
+
+<div style="background:#FFFFFF;border-radius:20px;padding:18px 20px 20px 20px;box-shadow:0 1px 2px rgba(28,33,35,0.04)">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="width:12px;height:12px;border-radius:50%;background:#65D5C4;display:inline-block"></span>
+<span style="font-size:17px;font-weight:600">Notetaking</span>
+<span style="margin-left:auto;font-size:14px;color:#636C71">14</span>
+</div>
+<p style="margin:12px 0 0 0;font-family:'Newsreader',Georgia,serif;font-size:18px;line-height:1.45;color:#2A3033">The paraphrase is the learning, not the quote.</p>
+<div style="margin-top:8px;font-size:13px;color:#636C71">The notecard habit that outlasts every app</div>
+</div>
+
+<div style="background:#FFFFFF;border-radius:20px;padding:18px 20px 20px 20px;box-shadow:0 1px 2px rgba(28,33,35,0.04)">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="width:12px;height:12px;border-radius:50%;background:#F2C462;display:inline-block"></span>
+<span style="font-size:17px;font-weight:600">Craft</span>
+<span style="margin-left:auto;font-size:14px;color:#636C71">11</span>
+</div>
+<p style="margin:12px 0 0 0;font-family:'Newsreader',Georgia,serif;font-size:18px;line-height:1.45;color:#2A3033">Constraints are what make a drawing decisive.</p>
+<div style="margin-top:8px;font-size:13px;color:#636C71">Notes on drawing with constraints</div>
+</div>
+
+<div style="display:flex;flex-direction:column;background:#FFFFFF;border-radius:20px;padding:6px 20px;box-shadow:0 1px 2px rgba(28,33,35,0.04)">
+<div style="display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #EDEFF0">
+<span style="width:12px;height:12px;border-radius:50%;background:#EE9A8E;display:inline-block"></span>
+<span style="font-size:17px;font-weight:500">Attention</span>
+<span style="margin-left:auto;font-size:14px;color:#636C71">9</span>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #EDEFF0">
+<span style="width:12px;height:12px;border-radius:50%;background:#A99BE0;display:inline-block"></span>
+<span style="font-size:17px;font-weight:500">Strategy</span>
+<span style="margin-left:auto;font-size:14px;color:#636C71">8</span>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:14px 0">
+<span style="width:12px;height:12px;border-radius:50%;background:#B7BEC2;display:inline-block"></span>
+<span style="font-size:17px;font-weight:500">Untagged</span>
+<span style="margin-left:auto;font-size:14px;color:#636C71">6</span>
+</div>
+</div>
+
+</div>
+
+<div style="position:absolute;left:50%;bottom:28px;transform:translateX(-50%);height:60px;padding:0 10px;border-radius:30px;background:#2F373B;display:flex;align-items:center;gap:6px;box-shadow:0 10px 30px rgba(28,33,35,0.28)">
+<button aria-label="Inbox" style="width:52px;height:44px;border:0;border-radius:22px;background:transparent;color:#AEB7BB;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13l2.5-7h11L20 13v5H4z"/><path d="M4 13h4l1.5 2.5h5L16 13h4"/></svg></button>
+<button aria-label="Cards, current" style="width:52px;height:44px;border:0;border-radius:22px;background:rgba(101,213,196,0.16);color:#65D5C4;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3"/><path d="M8 10h8M8 14h5"/></svg></button>
+<button aria-label="Review" style="width:52px;height:44px;border:0;border-radius:22px;background:transparent;color:#AEB7BB;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.5-5.8"/><path d="M20 4v4h-4"/></svg></button>
+<button aria-label="Today" style="width:52px;height:44px;border:0;border-radius:22px;background:transparent;color:#AEB7BB;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></svg></button>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

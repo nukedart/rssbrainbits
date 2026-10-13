@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Night with highlight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position:relative;width:390px;height:844px;overflow:hidden;box-sizing:border-box;background:#15181A;color:#E3E6E7;font-family:'Figtree',system-ui,sans-serif">
+
+<div style="position:absolute;left:0;top:0;right:0;height:3px;background:#262B2E"><div style="width:52%;height:3px;background:#65D5C4"></div></div>
+
+<div style="padding:72px 26px 0 26px;font-family:'Newsreader',Georgia,serif;font-size:20px;line-height:1.62;color:#CBD0D2">
+<p style="margin:0">Reading without that pause is just scrolling with better manners. You finish the page, feel briefly clever, and a week later cannot say what it argued.</p>
+<p style="margin:20px 0 0 0"><span style="background:rgba(101,213,196,0.3);border-radius:3px;padding:1px 0;color:#F2F5F5">So the system is deliberately small: read, mark the line that earns it, say it back in a sentence of your own.</span></p>
+<p style="margin:20px 0 0 0">Over time the cards stop being a record of what you read and become a record of what you thought. That is the part no feed can give you.</p>
+</div>
+
+<div style="position:absolute;left:26px;right:26px;top:430px;height:60px;border-radius:20px;background:#2A3033;box-shadow:0 12px 32px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 18px;box-sizing:border-box">
+<div style="display:flex;align-items:center;gap:14px">
+<button aria-label="Highlight teal" style="width:30px;height:30px;padding:0;border-radius:50%;background:#65D5C4;border:0;box-shadow:0 0 0 2px #2A3033,0 0 0 4px #E3E6E7"></button>
+<button aria-label="Highlight amber" style="width:26px;height:26px;padding:0;border-radius:50%;background:#F2C462;border:0"></button>
+<button aria-label="Highlight rose" style="width:26px;height:26px;padding:0;border-radius:50%;background:#EE9A8E;border:0"></button>
+<button aria-label="Highlight violet" style="width:26px;height:26px;padding:0;border-radius:50%;background:#A99BE0;border:0"></button>
+</div>
+<div style="display:flex;align-items:center">
+<button aria-label="Add note" style="width:44px;height:44px;border:0;border-radius:14px;background:rgba(255,255,255,0.1);color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19l1-4 9.5-9.5a2 2 0 0 1 3 3L9 18z"/></svg></button>
+</div>
+</div>
+
+<div style="position:absolute;left:0;right:0;bottom:0;height:200px;background:#1E2326;border-radius:28px 28px 0 0;box-sizing:border-box;padding:12px 26px 0 26px">
+<div style="width:36px;height:4px;border-radius:2px;background:#3A4146;margin:0 auto 16px auto"></div>
+<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#9AA3A7;font-weight:500"><span style="width:10px;height:10px;border-radius:50%;background:#65D5C4;display:inline-block"></span>Your note</div>
+<div style="margin-top:10px;font-size:17px;line-height:1.45;color:#ECEFF0">Small system, low friction: mark it, restate it, move on.</div>
+<div style="margin-top:12px;display:flex;gap:8px">
+<span style="font-size:14px;color:#65D5C4;font-weight:500;padding:6px 12px;border-radius:14px;background:rgba(101,213,196,0.12)">#notetaking</span>
+<button style="font-size:14px;color:#9AA3A7;font-weight:500;padding:6px 12px;border-radius:14px;background:transparent;border:1px dashed #4A5257">+ tag</button>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
