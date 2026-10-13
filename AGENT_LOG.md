@@ -52,3 +52,4 @@ Each row is one `/iterate` run. Token costs are for the full Claude Code session
 | 2026-10-13 | v[next] | UX | Inbox rows: drop unread circle, image-left 64px thumb, mobile list on rounded card | `FeedItem.jsx:305`, `InboxPage.jsx:1659` | — |
 | 2026-10-13 | v[next] | Polish | Unify card radius to 16 across Cards/Today/Feeds picker | `CardsPage.jsx:605,1008`, `TodayPage.jsx:174`, `InboxPage.jsx:2108` | — |
 | 2026-10-13 | v[next] | UX | Reader redesign: hide dock, 44px toolbar, text-settings sheet, highlight pill, new palette | `ContentViewer.jsx:554`, `SelectionToolbar.jsx:6`, `BottomNav.jsx:95` | — |
+| 2026-10-13 | v[next] | UX | Reader: iPhone 17 Pro safe-area top/bottom + 26px gutters | `ContentViewer.jsx:463,822` | — |

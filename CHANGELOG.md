@@ -3,6 +3,9 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+- [UX] Reader fits iPhone 17 Pro: clears the Dynamic Island (safe-area top), 26px text gutters, bottom safe-area padding
+
+
 ## [1.46.514] — 2026-10-13 11:35
 
 ### Changes since v1.46.513

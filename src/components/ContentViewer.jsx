@@ -460,7 +460,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
       style={{
         ...(inline
           ? { position: "relative", flex: 1, height: "100%" }
-          : { position: "fixed", inset: 0, zIndex: 500 }
+          : { position: "fixed", inset: 0, zIndex: 500, paddingTop: "env(safe-area-inset-top, 0px)", boxSizing: "border-box" }
         ),
         background: T.bg,
         display: "flex", flexDirection: "column", overflow: "hidden",
@@ -819,7 +819,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
             <div style={{
               maxWidth: "var(--reader-line-width)",
               margin: "0 auto",
-              padding: isMobile ? "20px 20px 140px" : "28px 36px 120px",
+              padding: isMobile ? "24px 26px calc(140px + env(safe-area-inset-bottom, 0px))" : "28px 36px 120px",
               width: "100%",
             }}>
 
