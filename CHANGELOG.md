@@ -3,6 +3,13 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+## [1.46.514] — 2026-10-13 11:35
+
+### Changes since v1.46.513
+- Reader redesign: text sheet, highlight pill, new palette, dock hidden in reader
+
+---
+
 - [UX] Reader redesign for iPhone: the bottom dock tucks away while reading; the toolbar is Aa, listen, save, more at 44px (Share moves into the ⋯ menu); Aa opens a bottom sheet with a slider, full-word Font/Width/Spacing segments and a standard Bionic switch; the highlight popover is a dark pill with round dots, a note button and a define button; Summarize is a compact pill and the RSS-preview notice is a quiet line.
 - [UX] Highlight palette is now amber, teal, rose and violet (existing highlights keep their ids: yellow→amber, green→teal, blue→rose, purple→violet) and in-text highlights use soft translucent tints that read on light and dark themes.
 ## [1.46.513] — 2026-10-13 11:27
