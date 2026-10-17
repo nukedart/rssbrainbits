@@ -3,6 +3,59 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+## [2.0.0] — 2026-10-17 08:09
+
+### Changes since v1.46.508
+- Changelog: launch snapshot, desktop panes, dialog hook, What's new
+- Desktop rows: keep meta on one line (ellipsis on source) in the 400px list
+- One-time What's new in Feedbox 2.0 card
+- Desktop: fixed 400px list pane beside the reader (>=900px)
+- Startup: seed feeds/folders/smart feeds from local snapshot so the Inbox paints before Supabase returns
+- Dialogs: shared useDialog hook (focus trap, Escape, focus restore) for sheets and modals
+- Changelog and agent log for 2.0
+- Reader: hide bottom toolbar while the Aa sheet is open so Theme row is reachable
+- Inbox: batched merges, cancellation, stable keys, read/saved sync fix, revalidated feeds swap in
+- Cards: deferred search, memoized cards, paged lists
+- App shell: stale-chunk reload, overlay error boundary, SW asset caching, ref-driven edge swipe
+- Feed cache: stale-while-revalidate, indexed eviction with quota recovery, body timeout, idle pre-cache
+- Review: queue and retry failed rating saves with a notice
+- Reader: hoist BionicSpan, memoize read-aloud tokens
+- Auth: stable user identity across token refresh, survive getSession failure
+- Inbox: lighter segmented pill, feed title no longer truncates on mobile
+- Modals: 2.0 sheet/card styling, 48px inputs, Escape to close
+- Saved: large title, 44px targets, inset hairlines
+- Settings/History/Sources: 2.0 titles and cards, collapsible More themes
+- Admin page: keep the Admin title
+- Admin stats, More sheet, Login: 2.0 title, card and hairline language
+- Reader: mobile bottom toolbar and hero image under title
+- Cards: sort/map/shuffle become quiet 44px icon buttons
+- Mobile rows: Reeder-style source line, unread dot, 2-line excerpt, optional 72px thumb
+- Reader: Aa sheet gets Mono typeface, theme dots, Escape/click-away, 44px targets
+- Inbox: segmented Unread/All pill and quieter date section headers
+- Add Feedbox 2.0 redesign developer handoff pack
+- Reader: match refined iPhone mockups (back chevron, meta above title)
+- Reader: iPhone 17 Pro safe-area insets and 26px gutters
+- v1.46.514
+- Reader redesign: text sheet, highlight pill, new palette, dock hidden in reader
+- v1.46.513
+- Unify card radius to 16 across Cards, Today, Feeds picker
+- Inbox rows: remove unread circle, image left, mobile list on rounded card
+- Save design mockups to docs/mockups
+- v1.46.512
+- Minimal layout: Inbox header, Review flashcard, changelog
+- WIP: minimal layout for Inbox header and Review page (under review)
+- Minimal layout for Cards page
+- Minimal layout for Today page
+- Minimal navigation: 4-item dock + More, slim desktop rail by default
+- v1.46.511
+- Restyle desktop sidebar and Feeds picker for the minimal redesign
+- v1.46.510
+- Migrate existing users to Paper/Slate once
+- v1.46.509
+- Minimal Paper/Slate themes, dock nav, calmer feed rows and reader typography
+
+---
+
 - [UX] Mobile reader matches refined mockups: chevron back button, "Source · Author · min" meta above a 30px serif title
 - [UX] Reader fits iPhone 17 Pro: clears the Dynamic Island (safe-area top), 26px text gutters, bottom safe-area padding
 - [Feature] Feedbox 2.0 — minimal redesign ("Things 3 + Procreate, with Reeder 5 ideas"): Paper (light) and Slate (dark) are the primary themes; the older six sit behind "More themes" in Settings

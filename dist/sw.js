@@ -5,7 +5,7 @@
  * Caches the app shell for offline support.
  */
 
-const CACHE = "feedbox-v1.18";
+const CACHE = "feedbox-v1.19";
 const SHELL = [
   "/", "/index.html", "/feedbox-logo.png", "/favicon.svg", "/manifest.json",
   "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png",
@@ -35,10 +35,20 @@ self.addEventListener("fetch", (e) => {
     );
     return;
   }
-  // For assets — try cache first
-  if (e.request.method === "GET" && e.request.url.startsWith(self.location.origin)) {
+  // Same-origin built assets — stale-while-revalidate so the app works offline
+  const url = new URL(e.request.url);
+  if (e.request.method === "GET" && url.origin === self.location.origin && url.pathname.startsWith("/assets/")) {
     e.respondWith(
-      caches.match(e.request).then((cached) => cached || fetch(e.request))
+      caches.open(CACHE).then((cache) =>
+        cache.match(e.request).then((cached) => {
+          const network = fetch(e.request).then((res) => {
+            if (res && res.ok) cache.put(e.request, res.clone());
+            return res;
+          });
+          if (cached) { network.catch(() => {}); return cached; }
+          return network;
+        })
+      )
     );
   }
 });
