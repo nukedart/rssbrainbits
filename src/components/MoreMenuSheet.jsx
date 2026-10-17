@@ -53,8 +53,8 @@ export default function MoreMenuSheet({ active, onNavigate, onClose, feedErrorCo
           position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 901,
           background: T.card,
           display: "flex", flexDirection: "column",
-          borderTopLeftRadius: SHAPE.radiusCard,
-          borderTopRightRadius: SHAPE.radiusCard,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           boxShadow: SHAPE.shadowFloatUp,
           animation: "slideInUp .25s cubic-bezier(.22,.68,0,1.12)",
           paddingBottom: "env(safe-area-inset-bottom, 20px)",
@@ -62,17 +62,18 @@ export default function MoreMenuSheet({ active, onNavigate, onClose, feedErrorCo
       >
         {/* Drag handle (visual only — tap backdrop or close button to dismiss) */}
         <div style={{ padding: "12px 0 8px", display: "flex", justifyContent: "center", flexShrink: 0 }}>
-          <div style={{ width: 40, height: 4, borderRadius: SHAPE.radiusPill, background: T.surface2 }} />
+          <div style={{ width: 40, height: 4, borderRadius: SHAPE.radiusPill, background: T.border }} />
         </div>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", padding: "2px 20px 8px", flexShrink: 0 }}>
-          <span style={{ fontSize: 22, fontWeight: 800, color: T.text, flex: 1, letterSpacing: "-.03em" }}>More</span>
+        <div style={{ display: "flex", alignItems: "center", padding: "2px 20px 8px 24px", flexShrink: 0 }}>
+          <span style={{ fontSize: 28, fontWeight: 600, lineHeight: 1.1, color: T.text, flex: 1, letterSpacing: "-0.02em" }}>More</span>
           <button
             onClick={onClose}
             aria-label="Close"
             style={{
-              background: "none", border: "none", padding: "4px",
+              background: "none", border: "none", padding: 0,
+              width: 44, height: 44, justifyContent: "center",
               cursor: "pointer", color: T.textTertiary,
               display: "flex", alignItems: "center",
               WebkitTapHighlightColor: "transparent",
@@ -83,8 +84,8 @@ export default function MoreMenuSheet({ active, onNavigate, onClose, feedErrorCo
         </div>
 
         {/* Rows */}
-        <div style={{ padding: "4px 12px 12px", display: "flex", flexDirection: "column", gap: 2 }}>
-          {ITEMS.map(({ id, label, Icon }) => {
+        <div style={{ margin: "4px 20px 16px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          {ITEMS.map(({ id, label, Icon }, idx) => {
             const isActive = active === id;
             return (
               <button
@@ -93,11 +94,12 @@ export default function MoreMenuSheet({ active, onNavigate, onClose, feedErrorCo
                 aria-current={isActive ? "page" : undefined}
                 style={{
                   display: "flex", alignItems: "center", gap: 14,
-                  padding: "12px 14px",
-                  minHeight: 44,
+                  padding: "12px 16px",
+                  minHeight: 52,
                   width: "100%", border: "none",
+                  borderTop: idx === 0 ? "none" : `1px solid ${T.border}`,
                   background: isActive ? T.accentSurface : "transparent",
-                  borderRadius: SHAPE.radiusSm,
+                  borderRadius: 0,
                   cursor: "pointer", fontFamily: "inherit", textAlign: "left",
                   WebkitTapHighlightColor: "transparent",
                   transition: "background .1s",

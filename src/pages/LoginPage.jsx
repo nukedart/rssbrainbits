@@ -14,7 +14,7 @@ function OAuthBtn({ onClick, icon, label, T }) {
   return (
     <button onClick={handle} disabled={loading} style={{
       width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:10,
-      padding:"12px 16px", borderRadius:12, border:`1.5px solid ${T.border}`,
+      padding:"0 16px", minHeight:48, borderRadius:14, border:`1px solid ${T.border}`,
       background:T.surface, color:T.text, fontSize:14, fontWeight:500,
       cursor:loading?"wait":"pointer", fontFamily:"inherit",
       transition:"background .15s, border-color .15s, opacity .15s",  opacity:loading?0.6:1,
@@ -68,13 +68,13 @@ function MagicLinkForm({ onSend, T }) {
         placeholder="you@example.com"
         required
         style={{
-          width:"100%", padding:"11px 14px", borderRadius:12,
-          border:`1.5px solid ${T.border}`, background:T.surface, color:T.text,
+          width:"100%", padding:"0 16px", height:48, borderRadius:14,
+          border:`1px solid ${T.border}`, background:T.surface, color:T.text,
           fontSize:14, fontFamily:"inherit", boxSizing:"border-box",
         }}
       />
       <button type="submit" disabled={loading} style={{
-        width:"100%", padding:"12px 16px", borderRadius:12, border:"none",
+        width:"100%", padding:"0 16px", minHeight:48, borderRadius:14, border:"none",
         background:T.accent, color:T.accentText, fontSize:14, fontWeight:600,
         cursor:loading?"wait":"pointer", fontFamily:"inherit", opacity:loading?0.6:1,
       }}>
@@ -108,10 +108,10 @@ export default function LoginPage() {
           }}>
             <FeedboxMark size={26} fill={BRAND.mint} />
           </div>
-          <div style={{ fontSize:22, fontWeight:700, color:T.text, letterSpacing:"-.02em", marginBottom:6 }}>
+          <div style={{ fontSize:28, fontWeight:600, color:T.text, letterSpacing:"-0.02em", lineHeight:1.1, marginBottom:8 }}>
             Feedbox
           </div>
-          <div style={{ fontSize:14, color:T.textTertiary, lineHeight:1.5 }}>
+          <div style={{ fontSize:15, color:T.textTertiary, lineHeight:1.5 }}>
             Your calm, intelligent reading space.
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function LoginPage() {
         <div style={{
           background:T.card, border:`1px solid ${T.border}`,
           borderRadius:20, padding:"28px 24px",
-          boxShadow: isDark?"0 8px 32px rgba(0,0,0,.3)":"0 4px 24px rgba(0,0,0,.07)",
+          boxShadow:"0 1px 2px rgba(0,0,0,.05)",
         }}>
           <div style={{ fontSize:15, fontWeight:600, color:T.text, marginBottom:16, letterSpacing:"-.01em" }}>
             Sign in to continue
@@ -148,8 +148,8 @@ export default function LoginPage() {
 
         <p style={{ textAlign:"center", fontSize:11, color:T.textTertiary, marginTop:16, lineHeight:1.8 }}>
           Free to start · No credit card ·{" "}
-          <a href="/terms.html" style={{ color:T.textTertiary }} target="_blank">Terms</a>{" "}·{" "}
-          <a href="/privacy.html" style={{ color:T.textTertiary }} target="_blank">Privacy</a>
+          <a href="/terms.html" style={{ color:T.textTertiary, display:"inline-block", padding:"10px 4px" }} target="_blank">Terms</a>{" "}·{" "}
+          <a href="/privacy.html" style={{ color:T.textTertiary, display:"inline-block", padding:"10px 4px" }} target="_blank">Privacy</a>
         </p>
       </div>
     </div>

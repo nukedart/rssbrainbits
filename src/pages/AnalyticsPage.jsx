@@ -34,7 +34,7 @@ function startOfDay(offsetDays = 0) {
 function Stat({ label, value, sub, color }) {
   const { T } = useTheme();
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14,
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)",
       padding: "18px 20px", display: "flex", flexDirection: "column", gap: 4 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary,
         textTransform: "uppercase", letterSpacing: ".07em" }}>{label}</div>
@@ -49,7 +49,7 @@ function BarChart({ data, label, color }) {
   const { T } = useTheme();
   const max = Math.max(1, ...data.map(d => d.count));
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: "18px 20px" }}>
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", padding: "18px 20px" }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: T.textSecondary,
         textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 16 }}>{label}</div>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 72 }}>
@@ -73,7 +73,7 @@ function BarChart({ data, label, color }) {
 
 function EventTable({ events, T }) {
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
       <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`,
         fontSize: 12, fontWeight: 700, color: T.textSecondary,
         textTransform: "uppercase", letterSpacing: ".07em" }}>Top events (last 30 days)</div>
@@ -232,7 +232,7 @@ function AISettingsTab({ T }) {
       </div>
 
       {/* Model picker + API keys in one card */}
-      <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+      <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
         <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700,
           color: T.textSecondary, textTransform: "uppercase", letterSpacing: ".07em" }}>
           AI Model &amp; API Keys
@@ -456,18 +456,18 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 40px" }}>
+    <div style={{ flex: 1, overflowY: "auto", padding: "28px 24px 40px" }}>
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-          marginBottom: 20 }}>
-          <div style={{ fontSize: 20, fontWeight: 800, color: T.text, letterSpacing: "-.01em" }}>
-            Admin
+          marginBottom: 24 }}>
+          <div style={{ fontSize: 36, fontWeight: 600, color: T.text, letterSpacing: "-0.02em", lineHeight: 1.1 }}>
+            Stats
           </div>
           {tab === "analytics" && (
             <button onClick={loadData} style={{ background: T.surface2, border: `1px solid ${T.border}`,
-              borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600,
+              borderRadius: 12, padding: "0 16px", minHeight: 44, fontSize: 14, fontWeight: 600,
               color: T.textSecondary, cursor: "pointer", fontFamily: "inherit" }}>
               Refresh
             </button>
@@ -476,7 +476,7 @@ export default function AnalyticsPage() {
 
         {/* Tabs */}
         <div role="tablist" aria-label="Admin sections" style={{ display: "flex", gap: 4, marginBottom: 20, background: T.surface2,
-          borderRadius: 10, padding: 4, alignSelf: "flex-start", width: "fit-content" }}>
+          borderRadius: 14, padding: 4, alignSelf: "flex-start", width: "fit-content" }}>
           {[
             { id: "analytics", label: "Analytics" },
             { id: "ai-settings", label: "AI Settings" },
@@ -484,7 +484,7 @@ export default function AnalyticsPage() {
             <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} style={{
               background: tab === t.id ? T.card : "transparent",
               border: tab === t.id ? `1px solid ${T.border}` : "1px solid transparent",
-              borderRadius: 7, padding: "6px 16px", fontSize: 12, fontWeight: 600,
+              borderRadius: 9, padding: "0 18px", minHeight: 44, fontSize: 14, fontWeight: 600,
               color: tab === t.id ? T.text : T.textSecondary, cursor: "pointer",
               fontFamily: "inherit", transition: "background .15s, color .15s, border-color .15s",
             }}>
@@ -545,7 +545,7 @@ export default function AnalyticsPage() {
 
             {/* Upgrade funnel */}
             <div style={{ background: T.card, border: `1px solid ${T.border}`,
-              borderRadius: 14, overflow: "hidden" }}>
+              borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
               <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`,
                 fontSize: 12, fontWeight: 700, color: T.textSecondary,
                 textTransform: "uppercase", letterSpacing: ".07em" }}>Upgrade funnel (30d)</div>
@@ -566,7 +566,7 @@ export default function AnalyticsPage() {
 
             {/* Recent users — from edge function */}
             {data.userStats?.recentUsers?.length > 0 && (
-              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
                 <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700, color: T.textSecondary, textTransform: "uppercase", letterSpacing: ".07em" }}>
                   Recent signups
                 </div>
