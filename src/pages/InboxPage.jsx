@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo, memo, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, memo, lazy, Suspense, startTransition } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useAuth } from "../hooks/useAuth";
@@ -19,6 +19,12 @@ import SearchBar from "../components/SearchBar";
 const MobileSearchOverlay = lazy(() => import("../components/MobileSearchOverlay"));
 import { track } from "../lib/analytics";
 import { SHAPE } from "../lib/tokens";
+
+// localStorage can throw (Safari private mode, quota, disabled storage) — never let it break render.
+function lsGet(key, fallback = null) {
+  try { const v = localStorage.getItem(key); return v === null ? fallback : v; } catch { return fallback; }
+}
+function lsSet(key, val) { try { localStorage.setItem(key, val); } catch {} }
 
 // Runs `fn` over items with at most `limit` in flight at once.
 async function pooledForEach(items, limit, fn) {
@@ -107,9 +113,11 @@ const FeedItemRow = memo(function FeedItemRow({
 }) {
   const handleClick = useCallback(() => {
     if (multiSelectMode) { handlersRef.current.toggleSelectUrl(item.url); return; }
-    if (alsoSetCursor) handlersRef.current.setCursorIdx(idx);
-    handlersRef.current.openByIdx(idx);
-  }, [multiSelectMode, alsoSetCursor, item.url, idx, handlersRef]);
+    const i = handlersRef.current.indexOfUrl(item.url); // read lazily so the callback survives list shifts
+    if (i < 0) return;
+    if (alsoSetCursor) handlersRef.current.setCursorIdx(i);
+    handlersRef.current.openByIdx(i);
+  }, [multiSelectMode, alsoSetCursor, item.url, handlersRef]);
 
   const handleSave = useCallback(() => handlersRef.current.handleSaveItem(item), [item, handlersRef]);
   const handleReadLater = useCallback(() => handlersRef.current.handleReadLater(item), [item, handlersRef]);
@@ -162,21 +170,21 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [openIdx, setOpenIdx]           = useState(-1);
   const [expandedView, setExpandedView] = useState(false);
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
-  const [viewMode, setViewMode]         = useState(() => isMobile ? (localStorage.getItem("fb-viewmode-mobile") || "list") : (localStorage.getItem("fb-viewmode") || "list"));
-  const [cardSize, setCardSize]           = useState(() => localStorage.getItem("fb-cardsize") || "lg");
+  const [viewMode, setViewMode]         = useState(() => isMobile ? (lsGet("fb-viewmode-mobile") || "list") : (lsGet("fb-viewmode") || "list"));
+  const [cardSize, setCardSize]           = useState(() => lsGet("fb-cardsize") || "lg");
   const [displayPrefs, setDisplayPrefs]   = useState(() => {
-    const raw = localStorage.getItem("fb-list-font");
+    const raw = lsGet("fb-list-font");
     const fontSize = raw && !isNaN(Number(raw)) ? Number(raw) : 16;
-    const rawImg = localStorage.getItem("fb-img-size");
+    const rawImg = lsGet("fb-img-size");
     return {
-      imgPosition:  localStorage.getItem("fb-img-pos") || "left",
-      previewLines: parseInt(localStorage.getItem("fb-preview-lines") ?? "2", 10),
+      imgPosition:  lsGet("fb-img-pos") || "left",
+      previewLines: parseInt(lsGet("fb-preview-lines") ?? "2", 10),
       fontSize,
       imgSize: rawImg ? parseInt(rawImg, 10) : (isMobile ? 64 : 72),
-      showFavicons:     localStorage.getItem("fb-show-favicons") !== "false",
-      faviconGrayscale: localStorage.getItem("fb-favicon-grayscale") === "true",
-      dimRead:          localStorage.getItem("fb-dim-read") !== "false",
-      fontStyle:        localStorage.getItem("fb-list-font-style") || "serif",
+      showFavicons:     lsGet("fb-show-favicons") !== "false",
+      faviconGrayscale: lsGet("fb-favicon-grayscale") === "true",
+      dimRead:          lsGet("fb-dim-read") !== "false",
+      fontStyle:        lsGet("fb-list-font-style") || "serif",
     };
   });
   const [showDisplaySheet, setShowDisplaySheet] = useState(false);
@@ -186,12 +194,36 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     try {
       const uid = propUser?.id;
       if (!uid) return new Set();
-      const cached = localStorage.getItem(`fb-readurls-${uid}`);
+      const cached = lsGet(`fb-readurls-${uid}`);
       return cached ? new Set(JSON.parse(cached)) : new Set();
     } catch { return new Set(); }
   });
   const readUrlsRef = useRef(readUrls);
   useEffect(() => { readUrlsRef.current = readUrls; }, [readUrls]);
+  // Debounced persistence of the read set — avoids re-stringifying the whole set on every click.
+  const userIdRef = useRef(propUser?.id || authUser?.id || null);
+  userIdRef.current = (propUser || authUser)?.id || null;
+  const readPersistTimerRef = useRef(null);
+  const flushReadPersist = useCallback(() => {
+    if (readPersistTimerRef.current === null) return;
+    clearTimeout(readPersistTimerRef.current);
+    readPersistTimerRef.current = null;
+    if (userIdRef.current) lsSet(`fb-readurls-${userIdRef.current}`, JSON.stringify([...readUrlsRef.current]));
+  }, []);
+  const scheduleReadPersist = useCallback(() => {
+    clearTimeout(readPersistTimerRef.current);
+    readPersistTimerRef.current = setTimeout(flushReadPersist, 500);
+  }, [flushReadPersist]);
+  useEffect(() => {
+    const onHide = () => { if (document.visibilityState === "hidden") flushReadPersist(); };
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", flushReadPersist);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", flushReadPersist);
+      flushReadPersist();
+    };
+  }, [flushReadPersist]);
   // Snapshot of readUrls used for list filtering — frozen at session/filter start so
   // marking items read during scroll doesn't remove them from the list mid-scroll.
   // Live readUrls still drives the visual isRead state (dimming/opacity).
@@ -199,13 +231,13 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [savedUrls, setSavedUrls]       = useState(new Set());
   const [savedItems, setSavedItems]     = useState([]);
   const [readFilter, setReadFilter]     = useState("unread"); // "all" | "unread"
-  const [autoMarkRead, setAutoMarkRead] = useState(() => localStorage.getItem("fb-automark") === "true");
+  const [autoMarkRead, setAutoMarkRead] = useState(() => lsGet("fb-automark") === "true");
   const [markingAllRead, setMarkingAllRead] = useState(false); // guards handleMarkAllRead against double-fire
   const [toast, setToast]               = useState(null);
   const [searchResult, setSearchResult]   = useState(null);
   const [liveSearch, setLiveSearch]       = useState(""); // client-side search across unread
   const [mutedKeywords, setMutedKeywords] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("fb-muted-keywords") || "[]"); } catch { return []; }
+    try { return JSON.parse(lsGet("fb-muted-keywords") || "[]"); } catch { return []; }
   });
   const [feedErrors, setFeedErrors]         = useState({});   // feedId -> error message
   const [feedLoading, setFeedLoading]       = useState({});   // feedId -> bool
@@ -226,10 +258,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [selectedUrls, setSelectedUrls]       = useState(new Set());
   const longPressTimerRef = useRef(null);
   const [interestKeywords, setInterestKeywords] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("fb-interest-kw") || "[]"); } catch { return []; }
+    try { return JSON.parse(lsGet("fb-interest-kw") || "[]"); } catch { return []; }
   });
-  const [sortOrder, setSortOrder] = useState(() => localStorage.getItem("fb-sort-order") || "newest");
-  const [groupBy, setGroupBy]     = useState(() => localStorage.getItem("fb-group-by") || "date");
+  const [sortOrder, setSortOrder] = useState(() => lsGet("fb-sort-order") || "newest");
+  const [groupBy, setGroupBy]     = useState(() => lsGet("fb-group-by") || "date");
   const pullStartY = useRef(null); // touch start Y for pull-to-refresh
   const fetchAllRef = useRef(null); // stable ref to fetchAll — accessible from PTR handlers
   const [draggingFeed, setDraggingFeed]     = useState(null); // feed id being dragged
@@ -321,7 +353,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       }
       const kws = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 80).map(([w]) => w);
       setInterestKeywords(kws);
-      try { localStorage.setItem("fb-interest-kw", JSON.stringify(kws)); } catch {}
+      lsSet("fb-interest-kw", JSON.stringify(kws));
     }).catch(() => {});
   }, [user?.id]);
 
@@ -336,23 +368,29 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   }, []);
 
   useEffect(() => {
-    if (!user) return;
-    // If feeds are lifted from App.jsx, don't re-fetch
-    if (propFeeds !== null) { setLoadingFeeds(false); return; }
-    getFeeds(user.id).then(_setLocalFeeds).catch(console.error).finally(() => setLoadingFeeds(false));
-    // Open all folders by default when component mounts
-    if (folders.length > 0) setOpenFolders(new Set(folders.map(f => f.id)));
+    if (!user?.id) return;
+    let cancelled = false;
+    const uid = user.id;
+    // If feeds are lifted from App.jsx, don't re-fetch them (read/saved state still loads below)
+    if (propFeeds !== null) setLoadingFeeds(false);
+    else {
+      getFeeds(uid).then(f => { if (!cancelled) _setLocalFeeds(f); }).catch(console.error).finally(() => { if (!cancelled) setLoadingFeeds(false); });
+      // Open all folders by default when component mounts
+      if (folders.length > 0) setOpenFolders(new Set(folders.map(f => f.id)));
+    }
     // Merge Supabase read URLs (authoritative) with localStorage cache
-    const cacheKey = `fb-readurls-${user.id}`;
-    getReadUrls(user.id).then(urls => {
+    getReadUrls(uid).then(urls => {
+      if (cancelled) return;
       setReadUrls(urls);
-      try { localStorage.setItem(cacheKey, JSON.stringify([...urls])); } catch {}
+      lsSet(`fb-readurls-${uid}`, JSON.stringify([...urls]));
     }).catch(console.error);
-    getSaved(user.id).then(items => {
+    getSaved(uid).then(items => {
+      if (cancelled) return;
       setSavedUrls(new Set(items.map(i => i.url)));
       setSavedItems(items);
     }).catch(() => {});
-  }, [user]);
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   useEffect(() => {
     // Include youtube feeds — they use the same RSS fetch path
@@ -361,10 +399,19 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
     setFeedErrors({});
 
+    // Cancellation: `cancelled` flips on cleanup (feeds changed / unmount); `runId` supersedes
+    // an older in-flight fetchAll when a newer one starts (manual refresh, interval, BG sync).
+    let cancelled = false;
+    let runId = 0;
+
     // Fetch all feeds — each resolves independently, items merge as they arrive.
     // fetchRSSFeed handles cache internally (returns cached data instantly when fresh).
     const fetchAll = async (forceRefresh = false) => {
       const itemMap = new Map();
+      const myRun = ++runId;
+      const stale = () => cancelled || myRun !== runId;
+      let dirty = false;
+      let flushTimer = null; // per-run so a superseded run can't clear a newer run's timer
 
       function normaliseUrl(url) {
         try {
@@ -377,16 +424,25 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         } catch { return url; }
       }
 
-      function mergeAndSort(newItems) {
-        newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item, _ts: new Date(item.date || 0).getTime() }); });
+      // Merges are buffered and flushed with a trailing throttle so a refresh of N feeds
+      // does a handful of sort+render passes instead of N.
+      function flush() {
+        clearTimeout(flushTimer); flushTimer = null;
+        if (stale() || !dirty) return;
+        dirty = false;
         const sorted = [...itemMap.values()].sort((a, b) => b._ts - a._ts);
         if (prevItemUrlsRef.current.size > 0) {
-          const freshUrls = sorted.filter(i => !prevItemUrlsRef.current.has(i.url)).map(i => i.url);
+          const freshUrls = sorted.filter(i => !prevItemUrlsRef.current.has(i.url) && !newItemUrlsRef.current.has(i.url)).map(i => i.url);
           freshUrls.forEach(u => newItemUrlsRef.current.add(u));
           if (freshUrls.length > 0) setNewArticleCount(n => n + freshUrls.length);
         }
-        setAllItems(sorted);
-        setLoadingItems(false);
+        startTransition(() => { setAllItems(sorted); setLoadingItems(false); });
+      }
+
+      function mergeItems(newItems) {
+        newItems.forEach(item => { if (item.url) itemMap.set(normaliseUrl(item.url), { ...item, _ts: new Date(item.date || 0).getTime() }); });
+        dirty = true;
+        if (flushTimer === null) flushTimer = setTimeout(flush, 300);
       }
 
       // ── Instant paint: synchronously seed itemMap from localStorage cache ──
@@ -413,28 +469,36 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
       await pooledForEach(rssFeeds, 6, async (feed) => {
           try {
-            const data = await fetchRSSFeed(feed.url, { forceRefresh });
-            if (!data?.items?.length) throw new Error("No items in feed");
-            const items = data.items.map((item) => ({
+            const toItems = (d) => d.items.map((item) => ({
               ...item,
               feedId: feed.id,
-              source: feed.name || data.title,
+              source: feed.name || d.title,
               fetchFullContent: !!feed.fetch_full_content,
               type: feed.type || "rss",
             }));
-            mergeAndSort(items);
+            // A stale-cache hit returns instantly; onFresh swaps in the revalidated feed when it lands.
+            const data = await fetchRSSFeed(feed.url, {
+              forceRefresh,
+              onFresh: (d) => { if (!stale() && d?.items?.length) mergeItems(toItems(d)); },
+            });
+            if (!data?.items?.length) throw new Error("No items in feed");
+            const items = toItems(data);
+            if (stale()) return;
+            mergeItems(items);
             setFeedErrors(prev => { const n = { ...prev }; delete n[feed.id]; return n; });
           } catch (err) {
-            setFeedErrors(prev => ({ ...prev, [feed.id]: err.message || "Failed to load" }));
+            if (!stale()) setFeedErrors(prev => ({ ...prev, [feed.id]: err.message || "Failed to load" }));
           } finally {
-            setFeedLoading(prev => ({ ...prev, [feed.id]: false }));
+            if (!stale()) setFeedLoading(prev => ({ ...prev, [feed.id]: false }));
           }
         });
 
+      if (stale()) return;
+      flush(); // final flush so nothing buffered is lost
       setLoadingItems(false);
       setLastRefresh(new Date());
       // Store all known URLs for new-article detection on next refresh
-      setAllItems(prev => { prevItemUrlsRef.current = new Set(prev.map(i => i.url)); return prev; });
+      prevItemUrlsRef.current = new Set([...itemMap.values()].map(i => i.url));
       // Background pre-cache recent articles for offline reading
       preCacheArticles([...itemMap.values()]);
     };
@@ -446,7 +510,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     const REFRESH_INTERVAL = 30 * 60 * 1000;
     const timer = setInterval(() => fetchAll(false), REFRESH_INTERVAL);
 
-    return () => clearInterval(timer);
+    return () => { cancelled = true; clearInterval(timer); };
   }, [feeds]);
 
   // Debounced search term — avoids re-running the full filter/sort pipeline on every keystroke.
@@ -785,10 +849,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     // Optimistic update — sidebar counts and unread filter respond instantly
     setReadUrls((prev) => {
       if (prev.has(url)) return prev;
-      const next = new Set([...prev, url]);
-      try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
-      return next;
+      return new Set([...prev, url]);
     });
+    scheduleReadPersist();
     if (newItemUrlsRef.current.has(url)) {
       newItemUrlsRef.current.delete(url);
       setNewArticleCount(n => Math.max(0, n - 1));
@@ -802,9 +865,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   function handleMarkUnread(url) {
     setReadUrls((prev) => {
       const next = new Set(prev); next.delete(url);
-      try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
       return next;
     });
+    scheduleReadPersist();
     markUnread(user.id, url).catch(console.error);
   }
 
@@ -854,11 +917,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     const urlsToMark = baseItems.map(i => i.url).filter(u => !readUrls.has(u));
     if (urlsToMark.length === 0) return;
     setMarkingAllRead(true);
-    setReadUrls(prev => {
-      const next = new Set([...prev, ...urlsToMark]);
-      try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
-      return next;
-    });
+    setReadUrls(prev => new Set([...prev, ...urlsToMark]));
+    scheduleReadPersist();
     showToast(`✓ Marked ${urlsToMark.length} as read`);
     track("mark_all_read", { count: urlsToMark.length });
     markAllRead(user.id, urlsToMark)
@@ -866,9 +926,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         setReadUrls(prev => {
           const next = new Set(prev);
           urlsToMark.forEach(u => next.delete(u));
-          try { localStorage.setItem(`fb-readurls-${user.id}`, JSON.stringify([...next])); } catch {}
           return next;
         });
+        scheduleReadPersist();
       })
       .finally(() => setMarkingAllRead(false));
   }
@@ -957,11 +1017,11 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     toastTimerRef.current = setTimeout(() => setToast(null), 2000);
   }
 
-  function toggleViewMode(mode) { setViewMode(mode); localStorage.setItem(isMobile ? "fb-viewmode-mobile" : "fb-viewmode", mode); }
+  function toggleViewMode(mode) { setViewMode(mode); lsSet(isMobile ? "fb-viewmode-mobile" : "fb-viewmode", mode); }
 
   function updateDisplayPref(key, val) {
     setDisplayPrefs(p => ({ ...p, [key]: val }));
-    localStorage.setItem(DISPLAY_PREF_KEYS[key], val);
+    lsSet(DISPLAY_PREF_KEYS[key], String(val));
   }
 
   useEffect(() => {
@@ -1054,7 +1114,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       setSavedUrls(new Set(items.map(i => i.url)));
       setSavedItems(items);
     }).catch(() => {});
-  }, [readFilter, user]);
+  }, [readFilter, user?.id]);
 
   // ── Auto-mark-read on scroll ─────────────────────────────
   // Mark an item as read once its bottom edge has scrolled above the
@@ -1132,6 +1192,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   // Keep the ref current every render so FeedItemRow's stable callbacks
   // always call through to the latest version of each handler.
   handlersRef.current.openByIdx        = openByIdx;
+  handlersRef.current.indexOfUrl       = (url) => baseItems.findIndex(b => b.url === url);
   handlersRef.current.toggleSelectUrl  = toggleSelectUrl;
   handlersRef.current.handleSaveItem   = handleSaveItem;
   handlersRef.current.handleReadLater  = handleReadLater;
@@ -1395,7 +1456,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 }}>Size</div>
                   <div style={{ display: "flex", gap: 4 }}>
                     {[{ size: "sm", label: "S", name: "Small" }, { size: "md", label: "M", name: "Medium" }, { size: "lg", label: "L", name: "Large" }].map(({ size, label, name }) => (
-                      <button key={size} onClick={() => { setCardSize(size); localStorage.setItem("fb-cardsize", size); }} aria-label={`${name} card size`} aria-pressed={cardSize === size} style={{
+                      <button key={size} onClick={() => { setCardSize(size); lsSet("fb-cardsize", size); }} aria-label={`${name} card size`} aria-pressed={cardSize === size} style={{
                         flex: 1, padding: "5px 0", borderRadius: 8, border: "none",
                         background: cardSize === size ? T.accentSurface : T.surface,
                         color: cardSize === size ? T.accent : T.textSecondary,
@@ -1406,8 +1467,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   </div>
                 </div>
                 <div style={{ padding: "6px 12px 10px", borderTop: `1px solid ${T.border}` }}>
-                  {[["Sort", sortOrder, v => { setSortOrder(v); localStorage.setItem("fb-sort-order", v); }, SORT_OPTIONS],
-                    ["Group by", groupBy, v => { setGroupBy(v); localStorage.setItem("fb-group-by", v); }, GROUP_OPTIONS],
+                  {[["Sort", sortOrder, v => { setSortOrder(v); lsSet("fb-sort-order", v); }, SORT_OPTIONS],
+                    ["Group by", groupBy, v => { setGroupBy(v); lsSet("fb-group-by", v); }, GROUP_OPTIONS],
                     ["Font", displayPrefs.fontStyle, v => updateDisplayPref("fontStyle", v), FONT_OPTIONS],
                   ].map(([label, value, onChange, options]) => (
                     <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 8 }}>
@@ -1605,10 +1666,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
             />
           )}
 
-          {showFeedPicker ? null : viewMode === "card" ? (
+          {showFeedPicker ? null : viewMode === "card" ? (() => { const seenUrls = new Set(); return (
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : `repeat(auto-fill, minmax(${cardSize === "sm" ? 180 : cardSize === "lg" ? 340 : 260}px, 1fr))`, gap: isMobile ? 8 : (cardSize === "lg" ? 18 : 14) }}>
-              {baseItems.slice(0, displayedCount).map((item, i) => (
-                <FeedItemRow key={item.url + i}
+              {baseItems.slice(0, displayedCount).map((item, i) => (seenUrls.has(item.url) ? null : (seenUrls.add(item.url), (
+                <FeedItemRow key={item.url}
                   item={item} idx={i} viewMode="card" cardSize={isMobile ? "sm" : cardSize}
                   isSelected={openItem?.url === item.url}
                   isRead={readUrls.has(item.url)}
@@ -1620,13 +1681,16 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                   alsoSetCursor={false}
                   handlersRef={handlersRef}
                 />
-              ))}
+              ))))}
             </div>
-          ) : (() => {
+          ); })() : (() => {
             const rows = [];
+            const seenUrls = new Set();
             let lastBucket = null;
             const n = new Date(); const todayTs = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
             baseItems.slice(0, displayedCount).forEach((item, i) => {
+              if (seenUrls.has(item.url)) return; // defensive: keys must be unique
+              seenUrls.add(item.url);
               const bucket = groupBy === "none" ? null
                 : groupBy === "feed" ? (item.source || "Unknown feed")
                 : dateBucket(item.date, todayTs);
@@ -1642,7 +1706,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 );
               }
               rows.push(
-                <FeedItemRow key={item.url + i}
+                <FeedItemRow key={item.url}
                   item={item} idx={i} viewMode="list" cardSize={cardSize}
                   isSelected={openItem ? openItem?.url === item.url : (!isMobile && cursorIdx === i)}
                   isRead={readUrls.has(item.url)}
@@ -1766,8 +1830,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
             {/* Sort · Group · Font */}
             <div style={{ marginTop:24 }}>
-              {[["Sort", sortOrder, v => { setSortOrder(v); localStorage.setItem("fb-sort-order", v); }, SORT_OPTIONS],
-                ["Group by", groupBy, v => { setGroupBy(v); localStorage.setItem("fb-group-by", v); }, GROUP_OPTIONS],
+              {[["Sort", sortOrder, v => { setSortOrder(v); lsSet("fb-sort-order", v); }, SORT_OPTIONS],
+                ["Group by", groupBy, v => { setGroupBy(v); lsSet("fb-group-by", v); }, GROUP_OPTIONS],
                 ["Font style", displayPrefs.fontStyle, v => updateDisplayPref("fontStyle", v), FONT_OPTIONS],
               ].map(([label, value, onChange, options]) => (
                 <div key={label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:20 }}>
