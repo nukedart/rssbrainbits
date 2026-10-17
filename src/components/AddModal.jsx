@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useDialog } from "../hooks/useDialog";
 import { useTheme } from "../hooks/useTheme";
 import { SHAPE } from "../lib/tokens";
 import { Input, Button, Spinner } from "./UI";
@@ -53,15 +54,15 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
   const { T } = useTheme();
 
   const [activeTab, setActiveTab]   = useState("url");
+  const dialogRef = useRef(null);
+  useDialog(dialogRef, { onClose });
   const [mob, setMob] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches);
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 640px)");
     const onMq = e => setMob(e.matches);
-    const onKey = e => { if (e.key === "Escape") onClose(); };
     mq.addEventListener("change", onMq);
-    document.addEventListener("keydown", onKey);
-    return () => { mq.removeEventListener("change", onMq); document.removeEventListener("keydown", onKey); };
-  }, [onClose]);
+    return () => mq.removeEventListener("change", onMq);
+  }, []);
 
   // URL tab state
   const [url, setUrl]               = useState("");
@@ -200,7 +201,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
       }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div role="dialog" aria-modal="true" aria-labelledby="add-modal-title" style={{
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="add-modal-title" style={{
         background: T.card,
         borderRadius: mob ? "24px 24px 0 0" : 24,
         width: "100%", maxWidth: mob ? "none" : "min(440px, 94vw)",
@@ -360,7 +361,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
               placeholder="Paste a URL, @handle, or feed link…"
               aria-label="Feed URL or handle"
               autoFocus
-              onKeyDown={e => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }}
+              onKeyDown={e => { if (e.key === "Enter") handleSubmit(); }}
               style={{
                 width: "100%", boxSizing: "border-box",
                 background: T.surface, border: `1px solid ${T.border}`,

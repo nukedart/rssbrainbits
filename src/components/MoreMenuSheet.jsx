@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { useDialog } from "../hooks/useDialog";
 import { useTheme } from "../hooks/useTheme";
 import { SHAPE } from "../lib/tokens";
 
@@ -24,6 +26,8 @@ const ITEMS = [
 
 export default function MoreMenuSheet({ active, onNavigate, onClose, feedErrorCount = 0 }) {
   const { T } = useTheme();
+  const dialogRef = useRef(null);
+  useDialog(dialogRef, { onClose });
 
   function navigate(page) {
     onNavigate(page);
@@ -46,6 +50,7 @@ export default function MoreMenuSheet({ active, onNavigate, onClose, feedErrorCo
 
       {/* Bottom sheet */}
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="More"

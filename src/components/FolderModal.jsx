@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useDialog } from "../hooks/useDialog";
 import { useTheme } from "../hooks/useTheme";
 import { SHAPE } from "../lib/tokens";
 
@@ -20,15 +21,15 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
   const [color, setColor] = useState(folder?.color || "gray");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
+  const dialogRef = useRef(null);
+  useDialog(dialogRef, { onClose });
   const [mob, setMob] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches);
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 640px)");
     const onMq = e => setMob(e.matches);
-    const onKey = e => { if (e.key === "Escape") onClose(); };
     mq.addEventListener("change", onMq);
-    document.addEventListener("keydown", onKey);
-    return () => { mq.removeEventListener("change", onMq); document.removeEventListener("keydown", onKey); };
-  }, [onClose]);
+    return () => mq.removeEventListener("change", onMq);
+  }, []);
 
   async function handleSave() {
     if (!name.trim() || saving) return;
@@ -57,7 +58,7 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
 
   return (
     <div style={overlayStyle} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" aria-modal="true" aria-labelledby="folder-modal-title" style={cardStyle}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="folder-modal-title" style={cardStyle}>
         <div aria-hidden="true" style={{ display: mob ? "block" : "none", width: 36, height: 4, borderRadius: 2, background: T.border, margin: "0 auto 16px" }} />
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
@@ -74,7 +75,7 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
             id="folder-name"
             value={name}
             onChange={e => setName(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onClose(); }}
+            onKeyDown={e => { if (e.key === "Enter") handleSave(); }}
             placeholder="e.g. Tech, News, Work…"
             autoFocus
             style={{ width: "100%", boxSizing: "border-box", height: 48, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 14, padding: "0 14px", fontSize: 16, color: T.text, fontFamily: "inherit", outline: "none" }}

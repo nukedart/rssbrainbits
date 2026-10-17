@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useDialog } from "../hooks/useDialog";
 import { useTheme } from "../hooks/useTheme";
 import { HIGHLIGHT_COLORS } from "./SelectionToolbar";
 import { highlightsToMarkdown, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
@@ -6,6 +7,8 @@ import { SHAPE } from "../lib/tokens";
 
 export default function HighlightsDrawer({ highlights, onSelectHighlight, onClose, onUpdateTags, articleTitle, articleUrl }) {
   const { T } = useTheme();
+  const dialogRef = useRef(null);
+  useDialog(dialogRef, { onClose });
   const [feedback, setFeedback] = useState(null);
   const [editingTagId, setEditingTagId] = useState(null);
   const [tagInput, setTagInput] = useState("");
@@ -39,7 +42,7 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 650, background: T.overlay, display: "flex", justifyContent: "flex-end" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" aria-modal="true" aria-labelledby="highlights-drawer-title" style={{
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="highlights-drawer-title" style={{
         width: "min(380px, 100vw)", background: T.card, height: "100%",
         overflowY: "auto", overscrollBehavior: "contain", boxShadow: SHAPE.shadowFloatLeft, borderLeft: `1px solid ${T.border}`,
         borderRadius: `${SHAPE.radiusCard}px 0 0 ${SHAPE.radiusCard}px`,
@@ -113,7 +116,7 @@ export default function HighlightsDrawer({ highlights, onSelectHighlight, onClos
                             autoFocus
                             value={tagInput}
                             onChange={e => setTagInput(e.target.value)}
-                            onKeyDown={e => { if (e.key === "Enter") commitTag(h); if (e.key === "Escape") { setTagInput(""); setEditingTagId(null); } }}
+                            onKeyDown={e => { if (e.key === "Enter") commitTag(h); if (e.key === "Escape") { e.stopPropagation(); setTagInput(""); setEditingTagId(null); } }}
                             onBlur={() => { commitTag(h); }}
                             placeholder="theme…"
                             aria-label="Add theme tag"

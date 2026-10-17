@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useDialog } from "../hooks/useDialog";
 import { useTheme } from "../hooks/useTheme";
 import { SHAPE } from "../lib/tokens";
 import { Button } from "./UI";
@@ -26,15 +27,15 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
   const [error,     setError]     = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
+  const dialogRef = useRef(null);
+  useDialog(dialogRef, { onClose });
   const [mob, setMob] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches);
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 640px)");
     const onMq = e => setMob(e.matches);
-    const onKey = e => { if (e.key === "Escape") onClose(); };
     mq.addEventListener("change", onMq);
-    document.addEventListener("keydown", onKey);
-    return () => { mq.removeEventListener("change", onMq); document.removeEventListener("keydown", onKey); };
-  }, [onClose]);
+    return () => mq.removeEventListener("change", onMq);
+  }, []);
 
   function addKeyword() {
     const kw = kwInput.trim().toLowerCase();
@@ -67,7 +68,7 @@ export default function SmartFeedModal({ feed = null, feeds = [], onSave, onDele
       position: "fixed", inset: 0, background: T.overlay, zIndex: 1100,
       display: "flex", alignItems: mob ? "flex-end" : "center", justifyContent: "center", padding: mob ? 0 : 24,
     }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" aria-modal="true" aria-labelledby="smart-feed-modal-title" style={{
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="smart-feed-modal-title" style={{
         background: T.card, borderRadius: mob ? "24px 24px 0 0" : 24,
         padding: mob ? "12px 24px calc(22px + env(safe-area-inset-bottom))" : "26px 26px 22px",
         width: "100%", maxWidth: mob ? "none" : "min(460px, 95vw)", maxHeight: "92vh", overflowY: "auto",

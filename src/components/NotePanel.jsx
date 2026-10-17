@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useDialog } from "../hooks/useDialog";
 import { useTheme } from "../hooks/useTheme";
 import { Button } from "./UI";
 import { HIGHLIGHT_COLORS } from "./SelectionToolbar";
@@ -12,6 +13,8 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
   const [tagInput, setTagInput] = useState("");
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const dialogRef = useRef(null);
+  useDialog(dialogRef, { onClose });
   const color = HIGHLIGHT_COLORS.find((c) => c.id === highlight?.color) || HIGHLIGHT_COLORS[0];
 
   useEffect(() => {
@@ -46,7 +49,7 @@ export default function NotePanel({ highlight, onSave, onDelete, onClose, onUpda
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 700, background: T.overlay, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" aria-modal="true" aria-label="Highlight note" style={{
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Highlight note" style={{
         background: T.card, borderRadius: `${SHAPE.radiusCard}px ${SHAPE.radiusCard}px 0 0`,
         border: `1px solid ${T.border}`, borderBottom: "none",
         padding: "20px 20px 40px", width: "100%", maxWidth: 560,

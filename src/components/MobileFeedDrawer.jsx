@@ -1,3 +1,4 @@
+import { useDialog } from "../hooks/useDialog";
 import { useState, useEffect, useRef, useMemo, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { SHAPE } from "../lib/tokens";
@@ -223,6 +224,8 @@ export default function MobileFeedDrawer({
   user = null,
 }) {
   const { T } = useTheme();
+  const dialogRef = useRef(null);
+  useDialog(dialogRef, { onClose });
   const [activeTab, setActiveTab] = useState("unread");
   const [expandedSection, setExpandedSection] = useState({ folders:true, feeds:true });
   const [savedItems, setSavedItems] = useState([]);
@@ -282,6 +285,7 @@ export default function MobileFeedDrawer({
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label="Feeds"
