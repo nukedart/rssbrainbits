@@ -86,8 +86,7 @@ function dateBucket(dateStr, todayTs) {
     const diffDays = Math.round((todayTs - itemTs) / 86400000);
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7)   return d.toLocaleDateString("en-US", { weekday: "long" });
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   } catch { return null; }
 }
 
@@ -1484,16 +1483,18 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
         {/* Filter tabs */}
         {filterMode !== "unread" && !(searchOpen && !isMobile) && (
-          <div role="tablist" aria-label="Filter articles" style={{ display: "flex", gap: 22, padding: isMobile ? "10px 24px 0" : "10px max(20px, calc((100% - 720px) / 2)) 0", flexShrink: 0, background: T.bg }}>
-            {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }].map(({ label, val }) => (
-              <button key={label} role="tab" aria-selected={readFilter === val} onClick={() => setReadFilter(val)} style={{
-                padding: "8px 0", minHeight: 44, border: "none", background: "transparent",
-                borderBottom: `2px solid ${readFilter === val ? T.accent : "transparent"}`,
-                color: readFilter === val ? T.text : T.textTertiary,
-                fontWeight: readFilter === val ? 600 : 500, fontSize: 15,
-                cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent",
-              }}>{label}</button>
-            ))}
+          <div style={{ padding: isMobile ? "10px 16px 0" : "10px max(20px, calc((100% - 720px) / 2)) 0", flexShrink: 0, background: T.bg }}>
+            <div role="tablist" aria-label="Filter articles" style={{ display: "flex", padding: 3, gap: 2, borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
+              {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }].map(({ label, val }) => (
+                <button key={label} role="tab" aria-selected={readFilter === val} aria-pressed={readFilter === val} onClick={() => setReadFilter(val)} style={{
+                  flex: 1, minHeight: 44, border: "none", borderRadius: 9,
+                  background: readFilter === val ? T.accent : "transparent",
+                  color: readFilter === val ? T.bg : T.textTertiary,
+                  fontWeight: readFilter === val ? 600 : 500, fontSize: 14,
+                  cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent",
+                }}>{label}</button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -1633,8 +1634,8 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 rows.push(
                   <div key={`hdr-${bucket}-${i}`} style={{
                     padding: isMobile ? "14px 16px 6px" : "14px 20px 6px",
-                    fontSize: 11, fontWeight: 700, letterSpacing: ".08em",
-                    textTransform: "uppercase", color: T.textTertiary,
+                    fontSize: 13, fontWeight: 500,
+                    color: T.textTertiary,
                     userSelect: "none",
                   }}>{bucket}</div>
                 );
