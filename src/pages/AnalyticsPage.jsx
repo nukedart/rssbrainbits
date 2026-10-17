@@ -463,7 +463,7 @@ export default function AnalyticsPage() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
           marginBottom: 24 }}>
           <div style={{ fontSize: 36, fontWeight: 600, color: T.text, letterSpacing: "-0.02em", lineHeight: 1.1 }}>
-            Stats
+            Admin
           </div>
           {tab === "analytics" && (
             <button onClick={loadData} style={{ background: T.surface2, border: `1px solid ${T.border}`,
