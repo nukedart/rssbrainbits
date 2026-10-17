@@ -943,37 +943,40 @@ export default function CardsPage() {
               title={sortAZ ? "Sort by count" : "Sort A→Z"}
               aria-label={sortAZ ? "Sort by count" : "Sort A→Z"}
               aria-pressed={sortAZ}
+              onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               style={{
-                background: sortAZ ? T.accentSurface : T.surface, border: `1px solid ${sortAZ ? T.accent : T.border}`,
-                borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", color: sortAZ ? T.accent : T.textSecondary,
-                fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s, border-color .12s",
-                whiteSpace: "nowrap",
+                width: 44, height: 44, padding: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                background: "transparent", border: "none", borderRadius: 999, cursor: "pointer",
+                color: sortAZ ? T.accent : T.textSecondary, flexShrink: 0, transition: "background .12s, color .12s",
               }}
-            >{sortAZ ? "A→Z" : "By count"}</button>
+            ><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h10M4 12h7M4 17h4"/><path d="M18 5v14M15 16l3 3 3-3"/></svg></button>
             <button
               onClick={() => setMapView(v => !v)}
               title={mapView ? "Switch to grid view" : "Switch to map view"}
               aria-label={mapView ? "Switch to grid view" : "Switch to map view"}
               aria-pressed={mapView}
+              onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               style={{
-                background: mapView ? T.accentSurface : T.surface, border: `1px solid ${mapView ? T.accent : T.border}`,
-                borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", color: mapView ? T.accent : T.textSecondary,
-                fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s, border-color .12s",
-                whiteSpace: "nowrap",
+                width: 44, height: 44, padding: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                background: "transparent", border: "none", borderRadius: 999, cursor: "pointer",
+                color: mapView ? T.accent : T.textSecondary, flexShrink: 0, transition: "background .12s, color .12s",
               }}
-            >{mapView ? "Grid" : "Map"}</button>
+            ><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4L3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4z"/><path d="M9 4v13.5M15 6.5V20"/></svg></button>
             {highlights.length > 0 && (
               <button
                 onClick={shuffleSpotlight}
                 title="Spotlight a random highlight"
                 aria-label="Spotlight a random highlight"
+                onMouseEnter={e => e.currentTarget.style.background = T.surface2}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 style={{
-                  background: T.surface, border: `1px solid ${T.border}`,
-                  borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", color: T.textSecondary,
-                  fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s, border-color .12s",
-                  whiteSpace: "nowrap",
+                  width: 44, height: 44, padding: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "transparent", border: "none", borderRadius: 999, cursor: "pointer",
+                  color: T.textSecondary, flexShrink: 0, transition: "background .12s, color .12s",
                 }}
-              >⤭ Shuffle</button>
+              ><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7h3.5c2 0 3.5 1.2 4.5 3l2 4c1 1.8 2.5 3 4.5 3H21"/><path d="M3 17h3.5c1.3 0 2.4-.6 3.2-1.6M13.5 8.6C14.3 7.6 15.4 7 16.5 7H21"/><path d="M18 4l3 3-3 3M18 14l3 3-3 3"/></svg></button>
             )}
           </div>
         )}
