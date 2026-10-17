@@ -1,7 +1,7 @@
 // ── CardsPage — Ryan Holiday notecard theme browser ───────────
 // Shows highlights grouped by their theme tags.
 // Bucket view → click a theme → card list for that theme.
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback, useDeferredValue, memo } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 import { useBreakpoint } from "../hooks/useBreakpoint.js";
@@ -40,6 +40,9 @@ function TrashIcon() {
     </svg>
   );
 }
+
+const PAGE_SIZE = 50;
+const CARD_WRAP_STYLE = { contentVisibility: "auto", containIntrinsicSize: "auto 160px" };
 
 export default function CardsPage() {
   const { T } = useTheme();
@@ -262,15 +265,47 @@ export default function CardsPage() {
     highlights.filter(h => !(h.tags || []).length),
   [highlights]);
 
+  const dCardSearch = useDeferredValue(cardSearch);
+  const dGlobalSearch = useDeferredValue(globalSearch);
+
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [selectedTheme, dCardSearch, dGlobalSearch]);
+
+  // Stable handlers: always call the latest closures via a ref so memoized cards don't re-render.
+  const hRef = useRef({});
+  hRef.current = { saveNote, updateTags, handleDeleteCard, toggleSelectCard, editNote };
+  const hs = useMemo(() => ({
+    editStart: (h) => { setEditingId(h.id); setEditNote(h.note || ""); },
+    editSave: (h) => hRef.current.saveNote(h),
+    editCancel: () => setEditingId(null),
+    updateTags: (h, tags) => hRef.current.updateTags(h, tags),
+    deleteCard: (id) => hRef.current.handleDeleteCard(id),
+    toggleSelect: (id) => hRef.current.toggleSelectCard(id),
+    tagClick: (t) => { setLastTheme(t); setSelectedTheme(t); setCardSearch(""); },
+    tagClickGlobal: (t) => { setGlobalSearch(""); setLastTheme(t); setSelectedTheme(t); setCardSearch(""); },
+  }), []);
+
+  const showMoreBtn = (total) => (
+    <button
+      onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+      aria-label={`Show more cards, ${Math.min(PAGE_SIZE, total - visibleCount)} more`}
+      style={{
+        minHeight: 44, alignSelf: "center", padding: "0 20px", background: "transparent",
+        color: T.accent, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm,
+        fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+      }}
+    >Show more ({total - visibleCount} remaining)</button>
+  );
+
   const globalResults = useMemo(() => {
-    const q = globalSearch.trim().toLowerCase();
+    const q = dGlobalSearch.trim().toLowerCase();
     if (!q) return null;
     return highlights.filter(h =>
       (h.passage || "").toLowerCase().includes(q) ||
       (h.note || "").toLowerCase().includes(q) ||
       (h.tags || []).some(t => t.toLowerCase().includes(q))
     );
-  }, [highlights, globalSearch]);
+  }, [highlights, dGlobalSearch]);
 
   if (loading) return (
     <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: T.bg }}>
@@ -284,9 +319,9 @@ export default function CardsPage() {
       ? untagged
       : buckets.find(([t]) => t === selectedTheme)?.[1] || [];
 
-    const cards = cardSearch.trim()
+    const cards = dCardSearch.trim()
       ? allCards.filter(h => {
-          const q = cardSearch.toLowerCase();
+          const q = dCardSearch.trim().toLowerCase();
           return (h.passage || "").toLowerCase().includes(q) || (h.note || "").toLowerCase().includes(q);
         })
       : allCards;
@@ -397,34 +432,36 @@ export default function CardsPage() {
 
           {/* Card stack */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {cards.map(h => {
+            {cards.slice(0, visibleCount).map(h => {
               const col = HIGHLIGHT_COLORS.find(c => c.id === h.color) || HIGHLIGHT_COLORS[0];
               const isEditing = editingId === h.id;
               return (
-                <CardItem
-                  key={h.id}
-                  h={h}
-                  col={col}
-                  reviewEntry={reviews[h.id]}
-                  isEditing={isEditing}
-                  editNote={editNote}
-                  allExistingTags={allExistingTags}
-                  T={T}
-                  onEditStart={() => { setEditingId(h.id); setEditNote(h.note || ""); }}
-                  onEditChange={setEditNote}
-                  onEditSave={() => saveNote(h)}
-                  onEditCancel={() => setEditingId(null)}
-                  onUpdateTags={(tags) => updateTags(h, tags)}
-                  onTagClick={t => { setLastTheme(t); setSelectedTheme(t); setCardSearch(""); }}
-                  onDelete={() => handleDeleteCard(h.id)}
-                  allHighlights={highlights}
-                  onOpenCard={setShuffleHighlight}
-                  selectMode={selectMode}
-                  isSelected={selectedIds.has(h.id)}
-                  onToggleSelect={() => toggleSelectCard(h.id)}
-                />
+                <div key={h.id} style={CARD_WRAP_STYLE}>
+                  <CardItem
+                    h={h}
+                    col={col}
+                    reviewEntry={reviews[h.id]}
+                    isEditing={isEditing}
+                    editNote={isEditing ? editNote : ""}
+                    allExistingTags={allExistingTags}
+                    T={T}
+                    onEditStart={hs.editStart}
+                    onEditChange={setEditNote}
+                    onEditSave={hs.editSave}
+                    onEditCancel={hs.editCancel}
+                    onUpdateTags={hs.updateTags}
+                    onTagClick={hs.tagClick}
+                    onDelete={hs.deleteCard}
+                    allHighlights={isEditing ? highlights : undefined}
+                    onOpenCard={setShuffleHighlight}
+                    selectMode={selectMode}
+                    isSelected={selectedIds.has(h.id)}
+                    onToggleSelect={hs.toggleSelect}
+                  />
+                </div>
               );
             })}
+            {cards.length > visibleCount && showMoreBtn(cards.length)}
           </div>
 
           {cards.length === 0 && (
@@ -888,29 +925,31 @@ export default function CardsPage() {
               <div style={{ textAlign: "center", padding: "40px 0", color: T.textTertiary, fontSize: 13 }}>No highlights match your search.</div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {globalResults.map(h => {
+                {globalResults.slice(0, visibleCount).map(h => {
                   const col = HIGHLIGHT_COLORS.find(c => c.id === h.color) || HIGHLIGHT_COLORS[0];
                   const isEditing = editingId === h.id;
                   return (
-                    <CardItem
-                      key={h.id}
-                      h={h}
-                      col={col}
-                      reviewEntry={reviews[h.id]}
-                      isEditing={isEditing}
-                      editNote={editNote}
-                      allExistingTags={allExistingTags}
-                      T={T}
-                      onEditStart={() => { setEditingId(h.id); setEditNote(h.note || ""); }}
-                      onEditChange={setEditNote}
-                      onEditSave={() => saveNote(h)}
-                      onEditCancel={() => setEditingId(null)}
-                      onUpdateTags={(tags) => updateTags(h, tags)}
-                      onTagClick={t => { setGlobalSearch(""); setLastTheme(t); setSelectedTheme(t); setCardSearch(""); }}
-                      onDelete={() => handleDeleteCard(h.id)}
-                    />
+                    <div key={h.id} style={CARD_WRAP_STYLE}>
+                      <CardItem
+                        h={h}
+                        col={col}
+                        reviewEntry={reviews[h.id]}
+                        isEditing={isEditing}
+                        editNote={isEditing ? editNote : ""}
+                        allExistingTags={allExistingTags}
+                        T={T}
+                        onEditStart={hs.editStart}
+                        onEditChange={setEditNote}
+                        onEditSave={hs.editSave}
+                        onEditCancel={hs.editCancel}
+                        onUpdateTags={hs.updateTags}
+                        onTagClick={hs.tagClickGlobal}
+                        onDelete={hs.deleteCard}
+                      />
+                    </div>
                   );
                 })}
+                {globalResults.length > visibleCount && showMoreBtn(globalResults.length)}
               </div>
             )}
           </div>
@@ -1085,7 +1124,7 @@ function reviewChip(entry, T) {
 }
 
 // ── Card item component ───────────────────────────────────────
-function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T, onEditStart, onEditChange, onEditSave, onEditCancel, onUpdateTags, onTagClick, onDelete, allHighlights, onOpenCard, selectMode = false, isSelected = false, onToggleSelect }) {
+const CardItem = memo(function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T, onEditStart, onEditChange, onEditSave, onEditCancel, onUpdateTags, onTagClick, onDelete, allHighlights, onOpenCard, selectMode = false, isSelected = false, onToggleSelect }) {
   const [hovered, setHovered] = useState(false);
   const chip = reviewChip(reviewEntry, T);
   const isImg = (h.passage || "").startsWith("[IMAGE]: ");
@@ -1099,7 +1138,7 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClickCapture={selectMode ? (e) => { e.preventDefault(); e.stopPropagation(); onToggleSelect && onToggleSelect(); } : undefined}
+      onClickCapture={selectMode ? (e) => { e.preventDefault(); e.stopPropagation(); onToggleSelect && onToggleSelect(h.id); } : undefined}
       style={{
         background: T.card, borderRadius: SHAPE.radiusMd,
         border: `1px solid ${isEditing ? T.accent : hovered ? T.borderStrong || col.border + "55" : T.border}`,
@@ -1150,7 +1189,7 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
 
         {/* Delete — top-right of passage, hover reveal */}
         <button
-            onClick={onDelete}
+            onClick={() => onDelete(h.id)}
             title="Delete card"
             aria-label="Delete card"
             style={{
@@ -1176,8 +1215,8 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
             autoFocus
             value={editNote}
             onChange={e => onEditChange(e.target.value)}
-            onBlur={onEditSave}
-            onKeyDown={e => { if (e.key === "Escape") onEditCancel(); if (e.key === "Enter" && e.metaKey) onEditSave(); }}
+            onBlur={() => onEditSave(h)}
+            onKeyDown={e => { if (e.key === "Escape") onEditCancel(); if (e.key === "Enter" && e.metaKey) onEditSave(h); }}
             placeholder="Your annotation in your own words…"
             style={{
               width: "100%", boxSizing: "border-box", fontSize: 13, color: T.text,
@@ -1191,8 +1230,8 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
             role="button"
             tabIndex={0}
             aria-label={h.note ? `Edit annotation: ${h.note}` : "Add annotation"}
-            onClick={onEditStart}
-            onKeyDown={e => { if (e.key === "Enter" || e.key === "F2") { e.preventDefault(); onEditStart(); } }}
+            onClick={() => onEditStart(h)}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === "F2") { e.preventDefault(); onEditStart(h); } }}
             title="Click to annotate"
             style={{
               fontSize: 13, borderRadius: SHAPE.radiusSm, padding: h.note ? "9px 11px" : "8px 11px",
@@ -1213,8 +1252,8 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
         {!selectMode && (
           <TagsInput
             tags={h.tags || []}
-            onAdd={tag => onUpdateTags([...new Set([...(h.tags || []), tag])])}
-            onRemove={tag => onUpdateTags((h.tags || []).filter(t => t !== tag))}
+            onAdd={tag => onUpdateTags(h, [...new Set([...(h.tags || []), tag])])}
+            onRemove={tag => onUpdateTags(h, (h.tags || []).filter(t => t !== tag))}
             allTags={allExistingTags}
             onTagClick={onTagClick}
           />
@@ -1289,4 +1328,4 @@ function CardItem({ h, col, isEditing, editNote, allExistingTags, reviewEntry, T
       </div>
     </div>
   );
-}
+});
