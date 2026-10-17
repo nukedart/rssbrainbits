@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { Component, useState, useEffect, useRef, lazy, Suspense } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { ThemeProvider, useTheme } from "./hooks/useTheme";
 import { Spinner, ErrorBoundary } from "./components/UI";
@@ -47,6 +47,14 @@ function PageSpinner({ T }) {
   );
 }
 
+// Renders nothing if a lazy overlay fails to load, instead of unmounting the app.
+class SilentBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch(error) { console.error("[Overlay]", error); }
+  render() { return this.state.failed ? null : this.props.children; }
+}
+
 function AppShell() {
   const { user } = useAuth();
   const { T }    = useTheme();
@@ -71,16 +79,16 @@ function AppShell() {
   const [podcastQueue, setPodcastQueue]     = useState([]);
   const [feeds, setFeeds]             = useState([]);
   const [feedsLoaded, setFeedsLoaded] = useState(false);
-  const [onboardingDone, setOnboardingDone] = useState(() => !!localStorage.getItem("fb-onboarded"));
+  const [onboardingDone, setOnboardingDone] = useState(() => { try { return !!localStorage.getItem("fb-onboarded"); } catch { return false; } });
   const [globalAdd, setGlobalAdd] = useState(false);
   const [forceOpenSearch, setForceOpenSearch] = useState(false);
   const [feedErrorCount, setFeedErrorCount] = useState(0);
   const [feedUnreadCounts, setFeedUnreadCounts] = useState({});
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-  const [edgeDx, setEdgeDx] = useState(0);
   const edgeTouchRef = useRef(null);
-  useEffect(() => { identify(user); }, [user]);
+  const mainRef = useRef(null);
+  useEffect(() => { identify(user); }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Back button closes overlays instead of exiting the app ─────
   useBackButtonClose(mobileDrawerOpen, () => setMobileDrawerOpen(false));
@@ -143,9 +151,9 @@ function AppShell() {
       .then(setFolders)
       .catch(err => { console.error("getFolders:", err); setFolders([]); });
     getFeeds(user.id)
-      .then(data => { setFeeds(data); setFeedsLoaded(true); if (data.length === 0 && !localStorage.getItem("fb-onboarded")) setOnboardingDone(false); })
+      .then(data => { setFeeds(data); setFeedsLoaded(true); if (data.length === 0 && !(() => { try { return localStorage.getItem("fb-onboarded"); } catch { return null; } })()) setOnboardingDone(false); })
       .catch(err => { console.error("getFeeds:", err); setFeeds([]); setFeedsLoaded(true); });
-  }, [user]);
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Global `/` key — navigate to inbox and open search from any page
   useEffect(() => {
@@ -312,12 +320,18 @@ function AppShell() {
       if (Math.abs(dy) > Math.abs(dx) + 8) { edgeTouchRef.current = null; return; }
       if (dx > 6) t.active = true; else return;
     }
-    setEdgeDx(Math.min(dx, 100));
+    t.dx = Math.min(dx, 100);
+    const el = mainRef.current;
+    if (el) { el.style.transition = "none"; el.style.transform = `translateX(${t.dx * 0.25}px)`; }
+  }
+  function resetEdge() {
+    const el = mainRef.current;
+    if (el) { el.style.transition = "transform .22s ease"; el.style.transform = "none"; }
   }
   function onEdgeTouchEnd() {
-    if (edgeTouchRef.current && edgeDx > 55) setMobileDrawerOpen(true);
+    if (edgeTouchRef.current && (edgeTouchRef.current.dx || 0) > 55) setMobileDrawerOpen(true);
     edgeTouchRef.current = null;
-    setEdgeDx(0);
+    resetEdge();
   }
 
   return (
@@ -349,14 +363,13 @@ function AppShell() {
         onMarkFeedAllRead={handleMarkFeedAllRead}
       />
       <main
+        ref={mainRef}
         onTouchStart={onEdgeTouchStart}
         onTouchMove={onEdgeTouchMove}
         onTouchEnd={onEdgeTouchEnd}
-        onTouchCancel={() => { edgeTouchRef.current = null; setEdgeDx(0); }}
+        onTouchCancel={() => { edgeTouchRef.current = null; resetEdge(); }}
         style={{
           flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column",
-          transform: edgeDx > 0 ? `translateX(${edgeDx * 0.25}px)` : "none",
-          transition: edgeTouchRef.current ? "none" : "transform .22s ease",
         }}>
         <div key={page} style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", animation: "fadeInScale .15s ease" }}>
           <ErrorBoundary>
@@ -380,6 +393,7 @@ function AppShell() {
         )}
       </main>
 
+      <SilentBoundary>
       {editingSF && (
         <Suspense fallback={null}>
           <SmartFeedModal
@@ -402,7 +416,7 @@ function AppShell() {
         <Suspense fallback={null}>
           <Onboarding
             onAdd={handleOnboardingAdd}
-            onDismiss={() => { setOnboardingDone(true); localStorage.setItem("fb-onboarded", "1"); }}
+            onDismiss={() => { setOnboardingDone(true); try { localStorage.setItem("fb-onboarded", "1"); } catch {} }}
           />
         </Suspense>
       )}
@@ -448,6 +462,7 @@ function AppShell() {
           />
         </Suspense>
       )}
+      </SilentBoundary>
     </div>
   );
 }
