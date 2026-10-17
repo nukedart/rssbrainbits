@@ -297,39 +297,29 @@ function ListThumb({ item, cardSize, T }) {
   );
 }
 
-// ── Square image thumbnail for mobile rows (always rendered) ─
+// ── Rounded image thumbnail for mobile rows (renders nothing when no image) ─
 function MobileThumb({ item, T, size = 72 }) {
-  const ph = sourcePlaceholder(item.source);
-  const fav = faviconUrl(item.url);
   const yt = item.url ? parseYouTubeUrl(item.url) : { isYouTube: false };
   const src = yt.isYouTube
     ? `https://img.youtube.com/vi/${yt.videoId}/mqdefault.jpg`
     : item.image || null;
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const showImg = src && !failed;
-  const shimmer = showImg && !loaded;
+  if (!src || failed) return null;
   const progress = getStoredProgress(item.url);
   return (
     <div
-      className={shimmer ? "skeleton" : undefined}
+      className={!loaded ? "skeleton" : undefined}
       style={{
         width: size, height: size, borderRadius: 12, flexShrink: 0,
         overflow: "hidden", position: "relative",
-        background: shimmer ? undefined : (showImg ? T.surface2 : ph.bg),
-        display: "flex", alignItems: "center", justifyContent: "center",
+        background: loaded ? T.surface2 : undefined,
       }}>
-      {showImg ? (
-        <img src={src} alt="" loading="lazy" decoding="async"
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-          onLoad={() => setLoaded(true)}
-          onError={() => setFailed(true)}
-        />
-      ) : fav ? (
-        <img src={fav} alt="" width={28} height={28} loading="lazy" decoding="async" style={{ borderRadius: 5, opacity: .85 }} onError={e => { e.target.style.display = "none"; }} />
-      ) : (
-        <span style={{ fontSize: 24, fontWeight: 800, color: ph.color, opacity: .9 }}>{ph.initial}</span>
-      )}
+      <img src={src} alt="" loading="lazy" decoding="async"
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        onLoad={() => setLoaded(true)}
+        onError={() => setFailed(true)}
+      />
       {progress > 5 && progress < 95 && (
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,.25)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: "100%", background: T.accent, transform: `scaleX(${progress / 100})`, transformOrigin: "left", transition: "transform .3s" }} />
@@ -373,7 +363,8 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
 
   // ── Mobile: Reeder-style row — image left/right/none, configurable preview ──
   if (isMobile) {
-    const thumb = imgPos !== "none" ? <MobileThumb item={item} T={T} size={imgSize} /> : null;
+    const thumb = imgPos !== "none" ? <MobileThumb item={item} T={T} size={72} /> : null;
+    const mobilePreviewN = previewN > 0 ? 2 : 0;
     return (
       <SwipeRow onMarkRead={onMarkRead} onReadLater={onReadLater} onSave={onSave} isRead={isRead} T={T} isMobile={isMobile} dismissOnRead={dismissOnRead}>
         {({ swiped, close } = {}) => (
@@ -387,15 +378,15 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
             onTouchEnd={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.card; }}
             onTouchCancel={e => { e.currentTarget.style.background = isSelected ? T.accentSurface : T.card; }}
             style={{
-              display: "flex", alignItems: "center", gap: SHAPE.rowGap + 2,
-              padding: `${SHAPE.rowPadY}px ${SHAPE.rowPadX}px`,
+              display: "flex", alignItems: "flex-start", gap: SHAPE.rowGap,
+              padding: `${SHAPE.rowPadY}px 20px`, minHeight: 44,
               cursor: "pointer",
               background: isSelected ? T.accentSurface : T.card,
-              opacity: dimmed ? 0.48 : 1,
+              opacity: dimmed ? 0.55 : 1,
               transition: "opacity .15s", position: "relative",
             }}
           >
-            <div aria-hidden="true" style={{ position: "absolute", left: imgPos === "left" ? SHAPE.rowPadX + imgSize + SHAPE.rowGap + 2 : SHAPE.rowPadX, right: 0, bottom: 0, height: 1, background: T.border, pointerEvents: "none" }} />
+            <div aria-hidden="true" style={{ position: "absolute", left: 20, right: 20, bottom: 0, height: 1, background: T.border, pointerEvents: "none" }} />
             {inMultiSelect && (
               <div style={{
                 width: 22, height: 22, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
@@ -407,31 +398,49 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                 {isChecked && <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
             )}
-            {imgPos === "left" && thumb}
 
-            {/* Text block */}
-            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
+            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+              {/* Source line: unread dot + favicon tile + source + time */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {!isRead && (
+                  <span aria-label="Unread" style={{ width: 7, height: 7, borderRadius: SHAPE.radiusPill, background: T.accent, flexShrink: 0 }} />
+                )}
+                {showFavicon && (
+                  <img src={favicon} alt="" width={16} height={16} loading="lazy" decoding="async"
+                    style={{ ...faviconStyle, borderRadius: SHAPE.radiusXs - 2, opacity: 1 }}
+                    onError={e => { e.target.style.display = "none"; }} />
+                )}
+                <span style={{ fontSize: 13, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+                  {item.source}
+                </span>
+                {item.date && (
+                  <span style={{ fontSize: 13, color: T.textTertiary, flexShrink: 0 }}>
+                    · {formatDate(item.date)}
+                  </span>
+                )}
+              </div>
+
               {/* Title */}
               <div style={{
                 fontFamily: titleFont,
-                fontSize: Math.max(titleSize, 16),
+                fontSize: 17,
                 fontWeight: isRead ? 400 : 600,
                 color: isRead ? T.textSecondary : T.text,
                 lineHeight: 1.3,
                 overflow: "hidden", display: "-webkit-box",
-                WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
                 letterSpacing: "-.012em",
                 WebkitFontSmoothing: "antialiased",
               }}>
                 {item.title}
               </div>
 
-              {/* Preview text */}
-              {preview && imgPos === "none" && (
+              {/* Excerpt */}
+              {preview && mobilePreviewN > 0 && (
                 <div style={{
-                  fontSize: titleSize - 3, color: T.textTertiary, lineHeight: 1.4,
+                  fontSize: 14, color: T.textTertiary, lineHeight: 1.4,
                   overflow: "hidden", display: "-webkit-box",
-                  WebkitLineClamp: previewN, WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: mobilePreviewN, WebkitBoxOrient: "vertical",
                 }}>
                   {preview}
                 </div>
@@ -440,26 +449,9 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {item.isPodcast && item.audioDuration && (
                 <div style={{ fontSize: 12, color: T.textTertiary }}>▶ {item.audioDuration}</div>
               )}
-
-              {/* Source · time */}
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
-                {showFavicon && (
-                  <img src={favicon} alt="" width={12} height={12} loading="lazy" decoding="async"
-                    style={faviconStyle}
-                    onError={e => { e.target.style.display = "none"; }} />
-                )}
-                <span style={{ fontSize: 13, color: T.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-                  {item.source}
-                </span>
-                {item.date && (
-                  <span style={{ fontSize: 13, color: T.textTertiary, flexShrink: 0 }}>
-                    {formatDate(item.date)}
-                  </span>
-                )}
-              </div>
             </div>
 
-            {imgPos === "right" && thumb}
+            {thumb}
           </div>
         )}
       </SwipeRow>
