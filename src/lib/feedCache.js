@@ -28,24 +28,70 @@ export function getCachedFeed(feedUrl) {
   }
 }
 
+// Small index { url: timestamp } so eviction never has to parse entries
+const INDEX_KEY = "fb-feed-index"; // starts with CACHE_PREFIX — excluded explicitly below
+
+function isEntryKey(k) { return k.startsWith(CACHE_PREFIX) && k !== INDEX_KEY; }
+
+function readIndex() {
+  try {
+    const idx = JSON.parse(localStorage.getItem(INDEX_KEY));
+    if (idx && typeof idx === "object") return idx;
+  } catch {}
+  // Missing/corrupt index — rebuild lazily from existing entries
+  const idx = {};
+  try {
+    for (const k of Object.keys(localStorage)) {
+      if (!isEntryKey(k)) continue;
+      try { idx[k.slice(CACHE_PREFIX.length)] = JSON.parse(localStorage.getItem(k))?.timestamp || 0; }
+      catch { idx[k.slice(CACHE_PREFIX.length)] = 0; }
+    }
+  } catch {}
+  return idx;
+}
+
+function writeIndex(idx) {
+  try { localStorage.setItem(INDEX_KEY, JSON.stringify(idx)); } catch {}
+}
+
+function evictOldest(idx, count) {
+  const urls = Object.keys(idx).sort((a, b) => idx[a] - idx[b]).slice(0, count);
+  for (const u of urls) {
+    try { localStorage.removeItem(cacheKey(u)); } catch {}
+    delete idx[u];
+  }
+}
+
+function isQuotaError(e) {
+  return e && (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED" || e.code === 22 || e.code === 1014);
+}
+
 export function setCachedFeed(feedUrl, data) {
   try {
-    // Evict oldest if at limit
-    const keys = Object.keys(localStorage)
-      .filter(k => k.startsWith(CACHE_PREFIX))
-      .sort((a, b) => {
-        try {
-          return (JSON.parse(localStorage.getItem(a))?.timestamp || 0) -
-                 (JSON.parse(localStorage.getItem(b))?.timestamp || 0);
-        } catch { return 0; }
-      });
-    while (keys.length >= MAX_ENTRIES) localStorage.removeItem(keys.shift());
-    localStorage.setItem(cacheKey(feedUrl), JSON.stringify({ data, timestamp: Date.now() }));
+    const idx = readIndex();
+    delete idx[feedUrl];
+    const over = Object.keys(idx).length - (MAX_ENTRIES - 1);
+    if (over > 0) evictOldest(idx, over);
+    const now = Date.now();
+    const payload = JSON.stringify({ data, timestamp: now });
+    try {
+      localStorage.setItem(cacheKey(feedUrl), payload);
+    } catch (e) {
+      if (!isQuotaError(e)) throw e;
+      evictOldest(idx, 10);
+      localStorage.setItem(cacheKey(feedUrl), payload); // retry once
+    }
+    idx[feedUrl] = now;
+    writeIndex(idx);
   } catch {}
 }
 
 export function invalidateCachedFeed(feedUrl) {
-  try { localStorage.removeItem(cacheKey(feedUrl)); } catch {}
+  try {
+    localStorage.removeItem(cacheKey(feedUrl));
+    const idx = readIndex();
+    if (feedUrl in idx) { delete idx[feedUrl]; writeIndex(idx); }
+  } catch {}
 }
 
 export function invalidateAllFeeds() {

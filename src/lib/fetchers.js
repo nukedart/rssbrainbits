@@ -44,7 +44,12 @@ async function fetchWithTimeout(url, ms = TIMEOUT_MS) {
   const timer = setTimeout(() => controller.abort(), ms);
   try {
     const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
+    // Keep the abort timer alive until the body is consumed so a stalled body can't hang forever
+    for (const m of ["text", "json"]) {
+      const orig = res[m]?.bind(res);
+      if (!orig) continue;
+      res[m] = async () => { try { return await orig(); } finally { clearTimeout(timer); } };
+    }
     return res;
   } catch (err) {
     clearTimeout(timer);
@@ -134,13 +139,30 @@ export async function fetchYouTubeTranscript(videoId) {
 
 // ── RSS Feed ──────────────────────────────────────────────────
 // Always returns { title, items } — unwraps the cache envelope internally.
-export async function fetchRSSFeed(feedUrl, { forceRefresh = false } = {}) {
+// `onFresh(data)` (optional) is called when a stale-cache hit finishes revalidating,
+// so callers can swap in the fresh feed after the instant stale paint.
+export async function fetchRSSFeed(feedUrl, { forceRefresh = false, onFresh } = {}) {
   if (!forceRefresh) {
     const cached = getCachedFeed(feedUrl);
     // getCachedFeed returns { data, isStale } where data = { title, items }
-    if (cached?.data) return cached.data;
+    if (cached?.data) {
+      if (cached.isStale) revalidateFeed(feedUrl).then(d => { if (d && onFresh) onFresh(d); });
+      return cached.data;
+    }
   }
+  return networkFetchFeed(feedUrl);
+}
 
+// Background revalidation, deduped per URL; errors swallowed (stale data already served)
+const _revalidating = new Map();
+export function revalidateFeed(feedUrl) {
+  if (_revalidating.has(feedUrl)) return _revalidating.get(feedUrl);
+  const p = networkFetchFeed(feedUrl).catch(() => null).finally(() => _revalidating.delete(feedUrl));
+  _revalidating.set(feedUrl, p);
+  return p;
+}
+
+async function networkFetchFeed(feedUrl) {
   let result;
   try {
     const text = await proxiedFetch(feedUrl);
@@ -603,8 +625,14 @@ export async function fetchArticleContent(articleUrl) {
 let _precaching = false;
 export async function preCacheArticles(items) {
   if (_precaching || !navigator.onLine) return;
+  const visible = () => typeof document === "undefined" || document.visibilityState === "visible";
+  if (!visible() || navigator.connection?.saveData) return;
   _precaching = true;
   try {
+    // Wait for an idle moment so we don't compete with rendering
+    await new Promise(r => typeof requestIdleCallback === "function"
+      ? requestIdleCallback(() => r(), { timeout: 5000 })
+      : setTimeout(r, 1000));
     const TWO_DAYS = 48 * 60 * 60 * 1000;
     const candidates = items.filter(item => {
       if (!item.url || item.isPodcast) return false;
@@ -615,7 +643,7 @@ export async function preCacheArticles(items) {
     }).slice(0, 20);
 
     for (const item of candidates) {
-      if (!navigator.onLine) break;
+      if (!navigator.onLine || !visible() || navigator.connection?.saveData) break;
       // Skip if already cached (in-memory or IndexedDB)
       if (_articleCache.has(item.url)) continue;
       const existing = await getOfflineArticle(item.url);
