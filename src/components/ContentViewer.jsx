@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo, memo } from "react";
 import { useSwipe } from "../hooks/useSwipe.js";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
@@ -1054,7 +1054,23 @@ function classifyArticleError(msg = "") {
 // straddle tag boundaries (rare in practice).
 
 // ── HighlightedText ───────────────────────────────────────────
-function HighlightedText({ text, highlights, onClickHighlight, bionic = false, readAloudCharIndex = null, T }) {
+const BionicSpan = memo(function BionicSpan({ word }) {
+  const n = Math.max(1, Math.ceil(word.length * 0.45));
+  return <><strong style={{ fontWeight: 700 }}>{word.slice(0, n)}</strong>{word.slice(n)}</>;
+});
+
+// Read-aloud word span; memoized so only the previously/currently spoken word re-renders.
+const Token = memo(function Token({ t, offset, mark, active, T }) {
+  return (
+    <span data-char={offset} style={{
+      background: active ? T.accent : mark,
+      color: active ? T.accentText : undefined,
+      borderRadius: 3,
+    }}>{t}</span>
+  );
+});
+
+const HighlightedText = memo(function HighlightedText({ text, highlights, onClickHighlight, bionic = false, readAloudCharIndex = null, T }) {
   const hasHighlights = highlights && highlights.length > 0;
   const speaking = readAloudCharIndex !== null;
 
@@ -1085,7 +1101,9 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false, r
     return bounds.filter(([s, e]) => e > s).map(([s, e]) => {
       let offset = s;
       return text.slice(s, e).split(/(\s+)/).map((t) => {
-        const token = { t, offset, hl: intervals.find((iv) => offset >= iv.start && offset < iv.end) };
+        const hl = intervals.find((iv) => offset >= iv.start && offset < iv.end);
+        const colorDef = hl ? (HIGHLIGHT_COLORS.find((c) => c.id === hl.color) || HIGHLIGHT_COLORS[0]) : null;
+        const token = { t, offset, mark: colorDef ? colorDef.mark : undefined };
         offset += t.length;
         return token;
       });
@@ -1136,22 +1154,10 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false, r
         {tokens.map((token, i) => {
           if (!/\S/.test(token.t)) return token.t;
           const active = readAloudCharIndex >= token.offset && readAloudCharIndex < token.offset + token.t.length;
-          const colorDef = token.hl ? (HIGHLIGHT_COLORS.find((c) => c.id === token.hl.color) || HIGHLIGHT_COLORS[0]) : null;
-          return (
-            <span key={i} data-char={token.offset} style={{
-              background: active ? T.accent : (colorDef ? colorDef.mark : undefined),
-              color: active ? T.accentText : undefined,
-              borderRadius: 3,
-            }}>{token.t}</span>
-          );
+          return <Token key={i} t={token.t} offset={token.offset} mark={token.mark} active={active} T={T} />;
         })}
       </p>
     ));
-  }
-
-  function BionicSpan({ word }) {
-    const n = Math.max(1, Math.ceil(word.length * 0.45));
-    return <><strong style={{ fontWeight: 700 }}>{word.slice(0, n)}</strong>{word.slice(n)}</>;
   }
 
   if (!hasHighlights) {
@@ -1190,7 +1196,7 @@ function HighlightedText({ text, highlights, onClickHighlight, bionic = false, r
       })}
     </p>
   ));
-}
+});
 
 // ── Segmented control row for the reader text settings ────────
 function PrefSeg({ T, label, value, onPick, options }) {
