@@ -148,7 +148,7 @@ const FeedItemRow = memo(function FeedItemRow({
   );
 });
 
-export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, folderDef = null, ytFeedIds = null, onUnreadCount, onFeedErrors, onFeedUnreadCounts, folders = [], feeds: propFeeds = null, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose, forceOpenSearch = false, onForcedSearchClose, onNavigate }) {
+export default function InboxPage({ filterMode = "all", smartFeedDef = null, feedDef = null, folderDef = null, ytFeedIds = null, onUnreadCount, onFeedErrors, onFeedUnreadCounts, folders = [], feeds: propFeeds = null, feedsLoaded = true, onFeedAdded, onFeedDeleted, onAddFolder, onEditFolder, onMoveFeedToFolder, onPlayPodcast, user: propUser = null, forceShowAdd = false, onForcedAddClose, forceOpenSearch = false, onForcedSearchClose, onNavigate }) {
   const { T } = useTheme();
   const { user: authUser } = useAuth();
   const user = propUser || authUser;
@@ -395,7 +395,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   useEffect(() => {
     // Include youtube feeds — they use the same RSS fetch path
     const rssFeeds = feeds.filter((f) => f.type === "rss" || f.type === "podcast" || f.type === "youtube");
-    if (!rssFeeds.length) { setAllItems([]); setLoadingItems(false); return; }
+    if (!rssFeeds.length) {
+      if (!feedsLoaded) return; // feeds still loading: keep skeleton, no empty/onboarding flash
+      setAllItems([]); setLoadingItems(false); return;
+    }
 
     setFeedErrors({});
 
@@ -1645,7 +1648,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 </div>
           )}
 
-          {!loadingItems && feeds.length === 0 && (
+          {!loadingItems && feedsLoaded && feeds.length === 0 && (
             <OnboardingCard
               onAddFeed={() => setShowAdd(true)}
               onQuickAdd={handleQuickAddFeed}

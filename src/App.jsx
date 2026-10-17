@@ -1,4 +1,4 @@
-import { Component, useState, useEffect, useRef, lazy, Suspense } from "react";
+import { Component, useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { ThemeProvider, useTheme } from "./hooks/useTheme";
 import { Spinner, ErrorBoundary } from "./components/UI";
@@ -10,6 +10,7 @@ import { getSmartFeeds, addSmartFeed, updateSmartFeed, deleteSmartFeed,
          getFolders, addFolder, updateFolder, deleteFolder, setFeedFolder,
          getFeeds, addFeed, deleteFeed, markAllRead } from "./lib/supabase";
 import { getCachedFeed } from "./lib/feedCache.js";
+import { loadStartup, saveStartup } from "./lib/startupCache.js";
 import { checkLimit } from "./lib/plan";
 import { identify, track } from "./lib/analytics";
 
@@ -142,17 +143,36 @@ function AppShell() {
     return () => window.removeEventListener("fb-open-feeds", onOpenFeeds);
   }, []);
 
+  // Persisted snapshots: seed synchronously before first paint, then revalidate from Supabase.
+  const startupLoaded = useRef({ feeds: false, folders: false, smartfeeds: false }); // network result received for this uid
+  const feedsSeeded = useRef(false);
+  useLayoutEffect(() => {
+    const uid = user?.id;
+    startupLoaded.current = { feeds: false, folders: false, smartfeeds: false };
+    feedsSeeded.current = false;
+    if (!uid) return;
+    const f = loadStartup("feeds", uid);
+    const fo = loadStartup("folders", uid);
+    const sf = loadStartup("smartfeeds", uid);
+    setFeeds(f || []); setFeedsLoaded(false); feedsSeeded.current = !!f;
+    setFolders(fo || []);
+    setSmartFeeds(sf || []);
+  }, [user?.id]);
+  useEffect(() => { if (startupLoaded.current.feeds) saveStartup("feeds", user?.id, feeds); }, [feeds]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (startupLoaded.current.folders) saveStartup("folders", user?.id, folders); }, [folders]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (startupLoaded.current.smartfeeds) saveStartup("smartfeeds", user?.id, smartFeeds); }, [smartFeeds]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!user) return;
     getSmartFeeds(user.id)
-      .then(setSmartFeeds)
-      .catch(err => { console.error("getSmartFeeds:", err); setSmartFeeds([]); });
+      .then(d => { startupLoaded.current.smartfeeds = true; setSmartFeeds(d); })
+      .catch(err => { console.error("getSmartFeeds:", err); setSmartFeeds(prev => prev); });
     getFolders(user.id)
-      .then(setFolders)
-      .catch(err => { console.error("getFolders:", err); setFolders([]); });
+      .then(d => { startupLoaded.current.folders = true; setFolders(d); })
+      .catch(err => { console.error("getFolders:", err); setFolders(prev => prev); });
     getFeeds(user.id)
-      .then(data => { setFeeds(data); setFeedsLoaded(true); if (data.length === 0 && !(() => { try { return localStorage.getItem("fb-onboarded"); } catch { return null; } })()) setOnboardingDone(false); })
-      .catch(err => { console.error("getFeeds:", err); setFeeds([]); setFeedsLoaded(true); });
+      .then(data => { startupLoaded.current.feeds = true; setFeeds(data); setFeedsLoaded(true); if (data.length === 0 && !(() => { try { return localStorage.getItem("fb-onboarded"); } catch { return null; } })()) setOnboardingDone(false); })
+      .catch(err => { console.error("getFeeds:", err); if (!feedsSeeded.current) setFeeds([]); setFeedsLoaded(true); });
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Global `/` key — navigate to inbox and open search from any page
@@ -268,29 +288,29 @@ function AppShell() {
       const sfId  = page.replace("smart:", "");
       const sfDef = smartFeeds.find(sf => sf.id === sfId);
       if (!sfDef) {
-        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
+        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} folders={folders} feeds={feeds} feedsLoaded={feedsLoaded} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
       }
-      return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
+      return <InboxPage filterMode="smart" smartFeedDef={sfDef} onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} folders={folders} feeds={feeds} feedsLoaded={feedsLoaded} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
     }
     if (page.startsWith("feed:")) {
       const feedId = page.replace("feed:", "");
       const feedDef = feeds.find(f => f.id === feedId);
-      if (!feedDef) return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
-      return <InboxPage filterMode="feed" feedDef={feedDef} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
+      if (!feedDef) return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} feedsLoaded={feedsLoaded} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
+      return <InboxPage filterMode="feed" feedDef={feedDef} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} feedsLoaded={feedsLoaded} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
     }
     if (page.startsWith("folder:")) {
       const folderId = page.replace("folder:", "");
       const folderDef = folders.find(f => f.id === folderId);
-      if (!folderDef) return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
-      return <InboxPage filterMode="folder" folderDef={folderDef} onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
+      if (!folderDef) return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} feedsLoaded={feedsLoaded} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
+      return <InboxPage filterMode="folder" folderDef={folderDef} onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} feedsLoaded={feedsLoaded} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
     }
     if (page === "youtube-all") {
       const ytFeeds = feeds.filter(f => f.type === "youtube" || (f.url && f.url.includes("youtube.com/feeds/videos.xml")));
       // Show all YouTube feed items by using a synthetic smart-feed-style filter
-      return <InboxPage filterMode="youtube-all" ytFeedIds={ytFeeds.map(f => f.id)} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
+      return <InboxPage filterMode="youtube-all" ytFeedIds={ytFeeds.map(f => f.id)} onUnreadCount={setUnreadCount} folders={folders} feeds={feeds} feedsLoaded={feedsLoaded} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} user={user} onNavigate={navigateTo} />;
     }
     switch (page) {
-      case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} forceOpenSearch={forceOpenSearch} onForcedSearchClose={() => setForceOpenSearch(false)} onNavigate={navigateTo} />;
+      case "inbox":        return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} feedsLoaded={feedsLoaded} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} forceShowAdd={globalAdd} onForcedAddClose={() => setGlobalAdd(false)} forceOpenSearch={forceOpenSearch} onForcedSearchClose={() => setForceOpenSearch(false)} onNavigate={navigateTo} />;
       case "today":        return <TodayPage feeds={feeds} onNavigate={navigateTo} feedUnreadCounts={feedUnreadCounts} unreadCount={unreadCount} />;
       case "readlater":    return <ReadLaterPage />;
       case "stats":        return <StatsPage />;
@@ -301,7 +321,7 @@ function AppShell() {
       case "analytics":    return <AnalyticsPage />;
       case "settings":     return <SettingsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFeedAdded={handleFeedAdded} onNavigate={navigateTo} />;
       case "manage-feeds": return <ManageFeedsPage feeds={feeds} folders={folders} onFeedUpdate={(id, data) => setFeeds(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFeedDeleted={handleFeedDeleted} onNavigate={navigateTo} onAddFolder={() => setEditingFolder("new")} onFolderUpdate={(id, data) => setFolders(prev => prev.map(f => f.id === id ? {...f, ...data} : f))} onFolderDeleted={(id) => setFolders(prev => prev.filter(f => f.id !== id))} onAddSource={handleGlobalAdd} />;
-      default:             return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} onNavigate={navigateTo} />;
+      default:             return <InboxPage filterMode="all" onUnreadCount={setUnreadCount} onFeedErrors={setFeedErrorCount} onFeedUnreadCounts={setFeedUnreadCounts} folders={folders} feeds={feeds} feedsLoaded={feedsLoaded} onFeedAdded={handleFeedAdded} onFeedDeleted={handleFeedDeleted} onAddFolder={() => setEditingFolder("new")} onEditFolder={(f) => setEditingFolder(f)} onMoveFeedToFolder={handleMoveFeedToFolder} onPlayPodcast={handlePlayPodcast} onNavigate={navigateTo} />;
     }
   }
 
