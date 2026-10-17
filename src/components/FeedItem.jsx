@@ -531,10 +531,10 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
                   style={faviconStyle}
                   onError={e => { e.target.style.display = "none"; }} />
               )}
-              <span style={{ fontSize: 11, color: T.textTertiary }}>{item.source}</span>
-              {item.date && <span style={{ fontSize: 11, color: T.textTertiary }}>· {formatDate(item.date)}</span>}
-              {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent }}>· {item.audioDuration}</span>}
-              {!item.isPodcast && readingTimeText && <span style={{ fontSize: 11, color: T.textTertiary }}>· {readingTimeText}</span>}
+              <span style={{ fontSize: 11, color: T.textTertiary, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.source}</span>
+              {item.date && <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0, whiteSpace: "nowrap" }}>· {formatDate(item.date)}</span>}
+              {item.isPodcast && item.audioDuration && <span style={{ fontSize: 11, color: T.accent, flexShrink: 0, whiteSpace: "nowrap" }}>· {item.audioDuration}</span>}
+              {!item.isPodcast && readingTimeText && <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0, whiteSpace: "nowrap" }}>· {readingTimeText}</span>}
             </div>
           </div>
 
