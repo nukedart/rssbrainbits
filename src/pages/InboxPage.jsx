@@ -169,6 +169,9 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
   const [openItem, setOpenItem]         = useState(null);
   const [openIdx, setOpenIdx]           = useState(-1);
   const [expandedView, setExpandedView] = useState(false);
+  const [wideDesktop, setWideDesktop] = useState(() => typeof window === "undefined" || window.innerWidth >= 900);
+  useEffect(() => { const f = () => setWideDesktop(window.innerWidth >= 900); window.addEventListener("resize", f, { passive: true }); return () => window.removeEventListener("resize", f); }, []);
+  const threePane = !isMobile && !!openItem && wideDesktop;
   const [cursorIdx, setCursorIdx]       = useState(0); // keyboard nav cursor
   const [viewMode, setViewMode]         = useState(() => isMobile ? (lsGet("fb-viewmode-mobile") || "list") : (lsGet("fb-viewmode") || "list"));
   const [cardSize, setCardSize]           = useState(() => lsGet("fb-cardsize") || "lg");
@@ -1211,10 +1214,10 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
 
       {/* ── Article list ── */}
-      <div style={{ flex: !isMobile && openItem ? `0 0 ${isTablet ? 280 : 420}px` : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease" }}>
+      <div style={{ flex: !isMobile && openItem ? (threePane ? "0 0 400px" : `0 0 ${isTablet ? 280 : 420}px`) : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease", ...(!isMobile && openItem ? { borderRight: `1px solid ${T.border}` } : {}) }}>
 
         {/* Header — large title + quiet icon actions */}
-        <div style={{ padding: isMobile ? "calc(env(safe-area-inset-top, 0px) + 40px) 12px 4px 24px" : "32px max(20px, calc((100% - 720px) / 2)) 4px", background: T.bg, display: "flex", alignItems: "flex-start", gap: isMobile ? 2 : 4, flexShrink: 0, flexWrap: "nowrap", minWidth: 0 }}>
+        <div style={{ padding: isMobile ? "calc(env(safe-area-inset-top, 0px) + 40px) 12px 4px 24px" : (threePane ? "20px 16px 4px" : "32px max(20px, calc((100% - 720px) / 2)) 4px"), background: T.bg, display: "flex", alignItems: "flex-start", gap: isMobile ? 2 : 4, flexShrink: 0, flexWrap: threePane ? "wrap" : "nowrap", minWidth: 0 }}>
 
           {/* Title + unread badge + error badge — hidden when desktop search open */}
           {(!searchOpen || isMobile) && (
@@ -1236,7 +1239,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 </button>
               )}
               <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
-                <div style={{ fontSize: isMobile && activeSource !== "all" ? 28 : 36, fontWeight: 600, lineHeight: 1.1, color: T.text, letterSpacing: "-0.02em", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                <div style={{ fontSize: isMobile && activeSource !== "all" ? 28 : threePane ? 24 : 36, fontWeight: 600, lineHeight: 1.1, color: T.text, letterSpacing: "-0.02em", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                   {activeFeedName}
                 </div>
                 {unreadCount > 0 && (
@@ -1884,7 +1887,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
       {/* ── Right panel — shown on desktop when an article is open ── */}
       {!isMobile && openItem && !expandedView && (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: `1px solid ${T.border}` }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
           <Suspense fallback={<ReaderSkeleton />}>
             <ContentViewer
               inline={true}
