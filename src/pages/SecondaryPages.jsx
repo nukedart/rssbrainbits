@@ -22,10 +22,10 @@ function PageShell({ title, subtitle, action, children }) {
   const { T } = useTheme();
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
-      <div style={{ padding: "14px 22px 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+      <div style={{ padding: "32px 24px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>{title}</div>
-          {subtitle && <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{subtitle}</div>}
+          <div style={{ fontSize: 36, fontWeight: 600, color: T.text, letterSpacing: "-0.02em", lineHeight: 1.1 }}>{title}</div>
+          {subtitle && <div style={{ fontSize: 15, color: T.textTertiary, marginTop: 4 }}>{subtitle}</div>}
         </div>
         {action}
       </div>
@@ -565,6 +565,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
     try { return JSON.parse(localStorage.getItem("fb-muted-keywords") || "[]"); } catch { return []; }
   });
   const [newKeyword, setNewKeyword] = useState("");
+  const [moreThemes, setMoreThemes] = useState(false);
 
   function saveMuted(updated) {
     localStorage.setItem("fb-muted-keywords", JSON.stringify(updated));
@@ -593,7 +594,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
 
   return (
     <PageShell title="Settings">
-      <div style={{ maxWidth: 520, width: "100%", padding: "24px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ maxWidth: 520, width: "100%", padding: "8px 24px 32px", display: "flex", flexDirection: "column", gap: 14 }}>
 
         {/* Account + Appearance inline */}
         <Card title="Account" T={T}>
@@ -632,24 +633,25 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
         {/* Appearance — theme picker */}
         <Card title="Appearance" T={T}>
           <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14 }}>Choose a theme. Light and Dark can also be toggled from the sidebar.</div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {[
+          {(() => {
+            const THEME_OPTS = [
               { id: "paper",    label: "Paper",    bg: "#F6F7F8",  accent: "#17806F" },
               { id: "slate",    label: "Slate",    bg: "#15181A",  accent: "#65D5C4" },
+              { id: "nocturne", label: "Nocturne", bg: "#121416",  accent: "#accfae" },
+              { id: "distilled",label: "Distilled",bg: "#131315",  accent: "#aac7ff" },
               { id: "light",    label: "Light",    bg: "#ffffff",  accent: "#4f6f52" },
               { id: "cream",    label: "Cream",    bg: "#F5F1EA",  accent: "#7A8770" },
-              { id: "sepia",    label: "Sepia",    bg: "#ECE0CB",  accent: "#9A6B3F" },
               { id: "ink",      label: "Ink",      bg: "#1B1814",  accent: "#8E9C82" },
-              { id: "distilled",label: "Distilled",bg: "#131315",  accent: "#aac7ff" },
-              { id: "nocturne", label: "Nocturne", bg: "#121416",  accent: "#accfae" },
-            ].map(({ id, label, bg, accent }) => {
+              { id: "sepia",    label: "Sepia",    bg: "#ECE0CB",  accent: "#9A6B3F" },
+            ];
+            const renderOpt = ({ id, label, bg, accent }) => {
               const active = theme === id;
               return (
                 <button key={id} onClick={() => setTheme(id)} aria-label={`${label} theme`} aria-pressed={active} style={{
                   display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
                   background: active ? T.accentSurface : "transparent",
                   border: `1px solid ${active ? T.accent : "transparent"}`,
-                  borderRadius: SHAPE.radiusSm, padding: "10px 12px", cursor: "pointer",
+                  borderRadius: SHAPE.radiusSm, padding: "10px 12px", cursor: "pointer", minHeight: 44,
                   transition: "background .15s, border-color .15s", minWidth: 68,
                 }}>
                   <div style={{
@@ -660,11 +662,27 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
                   }}>
                     <span style={{ position: "absolute", bottom: 3, right: 3, width: 9, height: 9, borderRadius: "50%", background: accent, border: `1.5px solid ${bg}` }} />
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: active ? 600 : 400, color: active ? T.accent : T.textSecondary, whiteSpace: "nowrap" }}>{label}</span>
+                  <span style={{ fontSize: 12, fontWeight: active ? 600 : 400, color: active ? T.accent : T.textSecondary, whiteSpace: "nowrap" }}>{label}</span>
                 </button>
               );
-            })}
-          </div>
+            };
+            const legacyActive = THEME_OPTS.slice(2).some(o => o.id === theme);
+            const showMore = moreThemes || legacyActive;
+            return (
+              <>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{THEME_OPTS.slice(0, 2).map(renderOpt)}</div>
+                <button onClick={() => setMoreThemes(v => !v)} aria-expanded={showMore} style={{
+                  display: "flex", alignItems: "center", gap: 6, minHeight: 44, marginTop: 8, padding: "0 4px",
+                  background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
+                  fontSize: 13, color: T.textTertiary,
+                }}>
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showMore ? "rotate(90deg)" : "none", transition: "transform .15s" }}><path d="M4 1l5 5-5 5"/></svg>
+                  More themes
+                </button>
+                {showMore && <div style={{ display: "flex", gap: 6, flexWrap: "wrap", paddingTop: 4 }}>{THEME_OPTS.slice(2).map(renderOpt)}</div>}
+              </>
+            );
+          })()}
         </Card>
 
         {/* Reading preferences */}
@@ -1546,14 +1564,14 @@ export function ManageFeedsPage({ feeds: appFeeds = [], folders: appFolders = []
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
       {/* ── Header ── */}
-      <div style={{ padding: "14px 24px 0", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
+      <div style={{ padding: "32px 24px 0", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Source Dashboard</div>
-            <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>{feeds.length} source{feeds.length !== 1 ? "s" : ""} · {folders.length} collection{folders.length !== 1 ? "s" : ""}</div>
+            <div style={{ fontSize: 36, fontWeight: 600, color: T.text, letterSpacing: "-0.02em", lineHeight: 1.1 }}>Source Dashboard</div>
+            <div style={{ fontSize: 15, color: T.textTertiary, marginTop: 4 }}>{feeds.length} source{feeds.length !== 1 ? "s" : ""} · {folders.length} collection{folders.length !== 1 ? "s" : ""}</div>
           </div>
           <button onClick={onAddSource}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "background .15s, color .15s" }}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", minHeight: 44, borderRadius: 100, border: `1.5px solid ${T.accent}`, background: T.accentSurface, color: T.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "background .15s, color .15s" }}
             onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = T.accentText; }}
             onMouseLeave={e => { e.currentTarget.style.background = T.accentSurface; e.currentTarget.style.color = T.accent; }}
           >
@@ -1949,8 +1967,8 @@ function DataPrivacyCard({ T, user }) {
 
 function Card({ title, children, T }) {
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusCard, padding: "16px 18px" }}>
-      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: T.textTertiary, marginBottom: 14 }}>{title}</div>
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, padding: "18px 20px", boxShadow: "0 1px 2px rgba(0,0,0,.05)" }}>
+      <div style={{ fontSize: 13, fontWeight: 500, color: T.textTertiary, marginBottom: 14 }}>{title}</div>
       {children}
     </div>
   );
