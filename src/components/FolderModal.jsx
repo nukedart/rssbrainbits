@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { SHAPE } from "../lib/tokens";
 
@@ -20,6 +20,15 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
   const [color, setColor] = useState(folder?.color || "gray");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [mob, setMob] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const onMq = e => setMob(e.matches);
+    const onKey = e => { if (e.key === "Escape") onClose(); };
+    mq.addEventListener("change", onMq);
+    document.addEventListener("keydown", onKey);
+    return () => { mq.removeEventListener("change", onMq); document.removeEventListener("keydown", onKey); };
+  }, [onClose]);
 
   async function handleSave() {
     if (!name.trim() || saving) return;
@@ -33,33 +42,34 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
 
   const overlayStyle = {
     position: "fixed", inset: 0, background: T.overlay,
-    zIndex: 1100, display: "flex", alignItems: "center",
-    justifyContent: "center", padding: 20,
+    zIndex: 1100, display: "flex", alignItems: mob ? "flex-end" : "center",
+    justifyContent: "center", padding: mob ? 0 : 20,
   };
 
   const cardStyle = {
-    background: T.card, borderRadius: SHAPE.radiusCard, padding: "26px 24px 22px",
-    width: "100%", maxWidth: "min(420px, 95vw)",
+    background: T.card, borderRadius: mob ? "24px 24px 0 0" : 24,
+    padding: mob ? "12px 24px calc(22px + env(safe-area-inset-bottom))" : "26px 24px 22px",
+    width: "100%", maxWidth: mob ? "none" : "min(420px, 95vw)", maxHeight: "92vh", overflowY: "auto",
     border: `1px solid ${T.border}`,
     boxShadow: SHAPE.shadowFloat,
-    animation: "fadeInScale .18s ease",
+    animation: mob ? "slideUp .22s ease" : "fadeInScale .18s ease",
   };
 
   return (
     <div style={overlayStyle} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div role="dialog" aria-modal="true" aria-labelledby="folder-modal-title" style={cardStyle}>
+        <div aria-hidden="true" style={{ display: mob ? "block" : "none", width: 36, height: 4, borderRadius: 2, background: T.border, margin: "0 auto 16px" }} />
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📁</div>
           <div style={{ flex: 1 }}>
-            <div id="folder-modal-title" style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{isNew ? "New collection" : "Edit collection"}</div>
+            <div id="folder-modal-title" style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em", color: T.text }}>{isNew ? "New collection" : "Edit collection"}</div>
           </div>
-          <button onClick={onClose} aria-label="Close" style={{ background: T.surface2, border: "none", borderRadius: SHAPE.radiusSm, width: 44, height: 44, cursor: "pointer", color: T.textSecondary, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", borderRadius: "50%", width: 44, height: 44, cursor: "pointer", color: T.textSecondary, fontSize: 22, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
         </div>
 
         {/* Name */}
         <div style={{ marginBottom: 16 }}>
-          <label htmlFor="folder-name" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: T.textTertiary, display: "block", marginBottom: 6 }}>Collection name</label>
+          <label htmlFor="folder-name" style={{ fontSize: 13, fontWeight: 500, color: T.textTertiary, display: "block", marginBottom: 8 }}>Collection name</label>
           <input
             id="folder-name"
             value={name}
@@ -67,22 +77,22 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
             onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onClose(); }}
             placeholder="e.g. Tech, News, Work…"
             autoFocus
-            style={{ width: "100%", background: T.surface2, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 12px", fontSize: 14, color: T.text, fontFamily: "inherit", outline: "none" }}
-            onFocus={e => { e.target.style.borderColor = T.accent; }}
-            onBlur={e => { e.target.style.borderColor = T.border; }}
+            style={{ width: "100%", boxSizing: "border-box", height: 48, background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 14, padding: "0 14px", fontSize: 16, color: T.text, fontFamily: "inherit", outline: "none" }}
+            onFocus={e => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = `0 0 0 3px ${T.accent}33`; }}
+            onBlur={e => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
           />
         </div>
 
         {/* Color picker */}
         <div style={{ marginBottom: 22 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: T.textTertiary, display: "block", marginBottom: 8 }}>Color</label>
+          <label style={{ fontSize: 13, fontWeight: 500, color: T.textTertiary, display: "block", marginBottom: 10 }}>Color</label>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {FOLDER_COLORS.map(c => (
               <button
-                key={c.id}
+                key={c.id} aria-label={c.id} aria-pressed={color === c.id}
                 onClick={() => setColor(c.id)}
                 style={{
-                  width: 26, height: 26, borderRadius: "50%", border: "none",
+                  width: 32, height: 32, borderRadius: "50%", border: "none",
                   background: c.hex, cursor: "pointer",
                   outline: color === c.id ? `3px solid ${c.hex}` : "none",
                   outlineOffset: 2,
@@ -95,22 +105,22 @@ export default function FolderModal({ folder = null, onSave, onDelete, onClose }
         </div>
 
         {/* Actions */}
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", borderTop: `1px solid ${T.border}`, paddingTop: 16 }}>
           {!isNew && !confirmDelete && (
-            <button onClick={() => setConfirmDelete(true)} style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
+            <button onClick={() => setConfirmDelete(true)} style={{ background: "transparent", border: "none", borderRadius: 14, height: 48, padding: "0 16px", cursor: "pointer", fontSize: 14, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
               Delete
             </button>
           )}
           {confirmDelete && (
-            <button onClick={() => onDelete(folder.id)} style={{ background: `${T.danger}22`, border: `1px solid ${T.danger}`, borderRadius: SHAPE.radiusSm, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
+            <button onClick={() => onDelete(folder.id)} style={{ background: `${T.danger}22`, border: `1px solid ${T.danger}`, borderRadius: 14, height: 48, padding: "0 16px", cursor: "pointer", fontSize: 14, fontWeight: 600, color: T.danger, fontFamily: "inherit" }}>
               Confirm delete
             </button>
           )}
           <div style={{ flex: 1 }} />
-          <button onClick={onClose} style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.textSecondary, fontFamily: "inherit" }}>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", borderRadius: 14, height: 48, padding: "0 16px", cursor: "pointer", fontSize: 14, fontWeight: 600, color: T.textSecondary, fontFamily: "inherit" }}>
             Cancel
           </button>
-          <button onClick={handleSave} disabled={!name.trim() || saving} style={{ background: name.trim() ? T.accent : T.surface2, border: "none", borderRadius: SHAPE.radiusSm, padding: "9px 18px", cursor: name.trim() && !saving ? "pointer" : "default", fontSize: 13, fontWeight: 600, color: name.trim() ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "background .15s, color .15s" }}>
+          <button onClick={handleSave} disabled={!name.trim() || saving} style={{ background: name.trim() ? T.accent : T.surface2, border: "none", borderRadius: 14, height: 48, padding: "0 22px", cursor: name.trim() && !saving ? "pointer" : "default", fontSize: 14, fontWeight: 600, color: name.trim() ? T.accentText : T.textTertiary, fontFamily: "inherit", transition: "background .15s, color .15s" }}>
             {saving ? "Saving…" : (isNew ? "Create folder" : "Save")}
           </button>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { SHAPE } from "../lib/tokens";
 import { Input, Button, Spinner } from "./UI";
@@ -53,6 +53,15 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
   const { T } = useTheme();
 
   const [activeTab, setActiveTab]   = useState("url");
+  const [mob, setMob] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const onMq = e => setMob(e.matches);
+    const onKey = e => { if (e.key === "Escape") onClose(); };
+    mq.addEventListener("change", onMq);
+    document.addEventListener("keydown", onKey);
+    return () => { mq.removeEventListener("change", onMq); document.removeEventListener("keydown", onKey); };
+  }, [onClose]);
 
   // URL tab state
   const [url, setUrl]               = useState("");
@@ -186,51 +195,40 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
         background: T.overlay,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "20px",
+        display: "flex", alignItems: mob ? "flex-end" : "center", justifyContent: "center",
+        padding: mob ? 0 : "20px",
       }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div role="dialog" aria-modal="true" aria-labelledby="add-modal-title" style={{
         background: T.card,
-        borderRadius: SHAPE.radiusCard,
-        width: "100%", maxWidth: "min(440px, 94vw)",
-        maxHeight: "90vh", overflowY: "auto",
+        borderRadius: mob ? "24px 24px 0 0" : 24,
+        width: "100%", maxWidth: mob ? "none" : "min(440px, 94vw)",
+        maxHeight: "92vh", overflowY: "auto",
+        paddingBottom: mob ? "env(safe-area-inset-bottom)" : 0,
         boxShadow: SHAPE.shadowFloat,
-        animation: "fadeInScale .18s ease",
+        animation: mob ? "slideUp .22s ease" : "fadeInScale .18s ease",
         border: `1px solid ${T.border}`,
         overflow: "hidden",
       }}>
 
+        <div aria-hidden="true" style={{ display: mob ? "block" : "none", width: 36, height: 4, borderRadius: 2, background: T.border, margin: "10px auto 0" }} />
         {/* Header */}
         <div style={{
           display: "flex", alignItems: "center", gap: 10,
-          padding: "18px 18px 16px",
-          borderBottom: `1px solid ${T.border}`,
+          padding: "18px 12px 12px 22px",
         }}>
-          {/* RSS waves icon */}
-          <div style={{
-            width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-            background: T.accentSurface,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round">
-              <circle cx="4" cy="12" r="1.2" fill={T.accent} stroke="none"/>
-              <path d="M2 8.5a5.5 5.5 0 0 1 5.5 5.5"/>
-              <path d="M2 4.5a9.5 9.5 0 0 1 9.5 9.5"/>
-            </svg>
-          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div id="add-modal-title" style={{ fontSize: 15, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Add a source</div>
-            <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>RSS · YouTube · Podcast · Article</div>
+            <div id="add-modal-title" style={{ fontSize: 22, fontWeight: 600, color: T.text, letterSpacing: "-0.02em" }}>Add a source</div>
+            <div style={{ fontSize: 13, color: T.textTertiary, marginTop: 4 }}>RSS · YouTube · Podcast · Article</div>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
             style={{
-              background: T.surface2, border: "none", borderRadius: "50%",
-              width: 28, height: 28, cursor: "pointer", flexShrink: 0,
-              color: T.textSecondary, fontSize: 17, lineHeight: 1,
+              background: "transparent", border: "none", borderRadius: "50%",
+              width: 44, height: 44, cursor: "pointer", flexShrink: 0,
+              color: T.textSecondary, fontSize: 22, lineHeight: 1,
               display: "flex", alignItems: "center", justifyContent: "center",
               WebkitTapHighlightColor: "transparent",
             }}
@@ -238,7 +236,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ display: "flex", borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
           {[
             { id: "url",      label: "Add URL"  },
             { id: "podcasts", label: "Podcasts" },
@@ -247,9 +245,9 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
               key={id}
               onClick={() => setActiveTab(id)}
               style={{
-                flex: 1, padding: "11px 0",
+                flex: 1, minHeight: 44, padding: "11px 0",
                 background: "none", border: "none",
-                fontSize: 13, fontWeight: activeTab === id ? 700 : 500,
+                fontSize: 14, fontWeight: activeTab === id ? 600 : 500,
                 color: activeTab === id ? T.accent : T.textSecondary,
                 cursor: "pointer", fontFamily: "inherit",
                 borderBottom: `2px solid ${activeTab === id ? T.accent : "transparent"}`,
@@ -264,7 +262,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
         </div>
 
         {/* Body */}
-        <div style={{ padding: "20px 18px 22px" }}>
+        <div style={{ padding: "20px 22px 24px" }}>
 
           {/* Podcast search pane */}
           {activeTab === "podcasts" && (
@@ -277,8 +275,8 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                 autoFocus
                 style={{
                   width: "100%", boxSizing: "border-box",
-                  background: T.surface, border: `1.5px solid ${T.border}`,
-                  borderRadius: SHAPE.radiusSm, padding: "13px 16px",
+                  background: T.surface, border: `1px solid ${T.border}`,
+                  height: 48, borderRadius: 14, padding: "0 16px",
                   fontSize: 16, color: T.text,
                   fontFamily: "inherit", outline: "none",
                 }}
@@ -365,8 +363,8 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
               onKeyDown={e => { if (e.key === "Enter") handleSubmit(); if (e.key === "Escape") onClose(); }}
               style={{
                 width: "100%", boxSizing: "border-box",
-                background: T.surface, border: `1.5px solid ${T.border}`,
-                borderRadius: SHAPE.radiusSm, padding: "13px 16px",
+                background: T.surface, border: `1px solid ${T.border}`,
+                height: 48, borderRadius: 14, padding: "0 16px",
                 fontSize: 16, color: T.text,
                 fontFamily: "inherit", outline: "none",
               }}
@@ -410,8 +408,8 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                 aria-label="Feed nickname (optional)"
                 style={{
                   width: "100%", boxSizing: "border-box",
-                  background: T.surface, border: `1.5px solid ${T.border}`,
-                  borderRadius: SHAPE.radiusSm, padding: "11px 16px",
+                  background: T.surface, border: `1px solid ${T.border}`,
+                  height: 48, borderRadius: 14, padding: "0 16px",
                   fontSize: 16, color: T.text,
                   fontFamily: "inherit", outline: "none",
                 }}
@@ -436,14 +434,14 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
                 try { await onSaveForLater({ url: normalizeUrlInput(url.trim()), type: "article" }); onClose(); }
                 catch (err) { setError(err.message || "Failed to save."); }
                 finally { setLoading(false); }
-              }} disabled={!url.trim() || loading} style={{ flex: 1, justifyContent: "center" }}>
+              }} disabled={!url.trim() || loading} style={{ flex: 1, justifyContent: "center", height: 48, borderRadius: 14 }}>
                 {loading ? "Saving…" : "Save"}
               </Button>
             )}
             <Button
               onClick={handleSubmit}
               disabled={!url.trim() || loading}
-              style={{ flex: 1, justifyContent: "center", padding: "12px" }}
+              style={{ flex: 1, justifyContent: "center", height: 48, borderRadius: 14 }}
             >
               {btnLabel}
             </Button>
@@ -456,7 +454,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
               style={{
               display: "flex", alignItems: "center", gap: 6, width: "100%",
               background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
-              fontSize: 12, fontWeight: 600, color: T.textSecondary, padding: 0,
+              fontSize: 13, fontWeight: 500, color: T.textSecondary, padding: 0, minHeight: 44,
               marginBottom: showDiscover ? 14 : 0,
               WebkitTapHighlightColor: "transparent",
             }}>
@@ -467,7 +465,7 @@ export default function AddModal({ onAdd, onClose, onSaveForLater }) {
               <div style={{ maxHeight: 300, overflowY: "auto" }}>
                 {Object.entries(DISCOVER_FEEDS).map(([category, feeds]) => (
                   <div key={category}>
-                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: T.textTertiary, padding: "6px 2px 4px" }}>{category}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: T.textTertiary, padding: "8px 2px 6px" }}>{category}</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       {feeds.map(feed => (
                         <div key={feed.url}
