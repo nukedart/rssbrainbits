@@ -377,6 +377,21 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
     }
   }
 
+  // Mobile toolbar: highlight current selection, else show a brief hint
+  const [hlHint, setHlHint] = useState(null);
+  const tbBtn = { width: 44, height: 44, minWidth: 44, border: "none", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, flexShrink: 0, transition: "opacity .12s" };
+  function handleToolbarHighlight() {
+    const sel = window.getSelection();
+    const text = sel && !sel.isCollapsed ? sel.toString().trim() : "";
+    if (text.length >= 5 && articleRef.current && sel.rangeCount && articleRef.current.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+      handleHighlight({ passage: text, color: HIGHLIGHT_COLORS[0].id, position: sel.getRangeAt(0).startOffset });
+      sel.removeAllRanges();
+      return;
+    }
+    setHlHint("Select text to highlight");
+    setTimeout(() => setHlHint(null), 2000);
+  }
+
   async function handleExportHighlights(asFile = false) {
     const md = highlightsToMarkdown(highlights, content?.title || item.title, item.url);
     if (!md) return;
@@ -575,7 +590,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                   }
                   return next;
                 })} title="Reading preferences" aria-label="Reading preferences" aria-expanded={showReaderControls}
-                style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? 0 : "6px 10px", width: isMobile ? 44 : undefined, height: isMobile ? 44 : undefined, borderRadius: isMobile ? 14 : undefined, cursor: "pointer", fontSize: isMobile ? 16 : 12, fontWeight: isMobile ? 600 : 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s" }}
+                style={{ background: showReaderControls ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? 0 : "6px 10px", width: isMobile ? 44 : undefined, height: isMobile ? 44 : undefined, borderRadius: isMobile ? 14 : undefined, cursor: "pointer", display: isMobile ? "none" : undefined, fontSize: 12, fontWeight: 700, color: showReaderControls ? T.accentText : T.textTertiary, fontFamily: "inherit", flexShrink: 0, transition: "background .12s, color .12s" }}
                 onMouseEnter={e => { if (!showReaderControls) { e.currentTarget.style.background=T.surface2; e.currentTarget.style.color=T.textSecondary; }}}
                 onMouseLeave={e => { if (!showReaderControls) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.textTertiary; }}}
               >Aa</button>
@@ -683,7 +698,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           {/* Save — tap to save, tap again to unsave */}
           <button onClick={handleSave} title={saved ? "Remove from Saved" : "Save article"}
             aria-label={saved ? "Remove from Saved" : "Save article"}
-            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? "11px" : "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
+            style={{ background: saved ? T.accentSurface : "transparent", border: "none", borderRadius: SHAPE.radiusSm, padding: isMobile ? "11px" : "6px 8px", cursor: "pointer", color: saved ? T.accent : T.textTertiary, display: isMobile ? "none" : "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background .12s, color .12s" }}
             onMouseEnter={e => { e.currentTarget.style.background = saved ? T.accentSurface : T.surface2; e.currentTarget.style.color = saved ? T.danger : T.textSecondary; }}
             onMouseLeave={e => { e.currentTarget.style.background = saved ? T.accentSurface : "transparent"; e.currentTarget.style.color = saved ? T.accent : T.textTertiary; }}
           >
@@ -825,23 +840,11 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
         {!yt.isYouTube && content && (
           <div>
 
-            {/* ── Hero image — full bleed, no text overlay ── */}
-            {content.image && (
-              <div style={{ width: "100%", aspectRatio: "16/9", overflow: "hidden", flexShrink: 0, background: T.surface2 }}>
-                <img
-                  src={content.image} alt=""
-                  loading="eager" decoding="async"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%", display: "block" }}
-                  onError={e => { e.target.parentElement.style.display = "none"; }}
-                />
-              </div>
-            )}
-
             {/* ── Content column ── */}
             <div style={{
               maxWidth: "var(--reader-line-width)",
               margin: "0 auto",
-              padding: isMobile ? "24px 26px calc(140px + env(safe-area-inset-bottom, 0px))" : "28px 36px 120px",
+              padding: isMobile ? `24px 26px calc(${inline ? 140 : 170}px + env(safe-area-inset-bottom, 0px))` : "28px 36px 120px",
               width: "100%",
             }}>
 
@@ -884,6 +887,15 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                 {item.author && <><span style={{ opacity: .4 }}>·</span><span>{item.author}</span></>}
                 {readingTimeMins && <><span style={{ opacity: .4 }}>·</span><span>{readingTimeMins} min read</span></>}
               </div>}
+
+              {/* Hero image — under title/meta, content width */}
+              {content.image && (
+                <img
+                  src={content.image} alt="" loading="lazy" decoding="async"
+                  style={{ display: "block", width: "100%", height: "auto", borderRadius: 16, margin: isMobile ? "0 0 20px" : "0 0 28px", background: T.surface2 }}
+                  onError={e => { e.target.style.display = "none"; }}
+                />
+              )}
 
               {/* AI Summarize */}
               <SummaryBlock summary={summary} summarizing={summarizing} onSummarize={handleSummarize} summaryStyle={summaryStyle} onStyleChange={setSummaryStyle} T={T} bodyText={content?.bodyText} articleTitle={content?.title || item?.title} />
@@ -978,6 +990,29 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
           >↑</button>
         )}
       </div>{/* closes scrollContainerRef */}
+
+      {/* ── Mobile reader bottom toolbar ── */}
+      {isMobile && !inline && !yt.isYouTube && content && (
+        <div role="toolbar" aria-label="Reader actions" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-around", padding: "8px 8px calc(8px + env(safe-area-inset-bottom, 0px))", background: T.card, borderTop: `1px solid ${T.border}`, backdropFilter: SHAPE.blur, WebkitBackdropFilter: SHAPE.blur }}>
+        <button onClick={onPrev} aria-label="Previous article" disabled={!onPrev || currentIdx <= 0}
+          style={{ ...tbBtn, color: T.textSecondary, background: "transparent", opacity: !onPrev || currentIdx <= 0 ? .35 : 1 }}><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg></button>
+        <button onClick={onNext} aria-label="Next article" disabled={!onNext || (totalCount > 0 && currentIdx >= totalCount - 1)}
+          style={{ ...tbBtn, color: T.textSecondary, background: "transparent", opacity: !onNext || (totalCount > 0 && currentIdx >= totalCount - 1) ? .35 : 1 }}><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3l5 5-5 5"/></svg></button>
+        <button onClick={handleSave} aria-label="Save article"
+          style={{ ...tbBtn, color: saved ? T.accent : T.textSecondary, background: "transparent" }}><svg width="22" height="22" viewBox="0 0 16 16" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1.5.87L8 11.5l-4.5 2.37A1 1 0 0 1 2 13V3a1 1 0 0 1 1-1z"/></svg></button>
+        <button onClick={handleToolbarHighlight} onMouseDown={e => e.preventDefault()} onTouchStart={e => { if (window.getSelection()?.toString()) e.preventDefault(); }} aria-label="Highlight selected text"
+          style={{ ...tbBtn, width: 52, height: 52, borderRadius: "50%", background: T.accent, color: T.bg, boxShadow: SHAPE.shadowFloat }}>
+          <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2.5l4 4L6 14H2v-4z"/><path d="M8 4l4 4"/></svg>
+        </button>
+        <button onClick={() => setShowReaderControls(true)} aria-label="Reading preferences"
+          style={{ ...tbBtn, fontSize: 16, fontWeight: 700, color: showReaderControls ? T.accent : T.textSecondary, fontFamily: "inherit" }}>Aa</button>
+        <button onClick={handleShare} aria-label="Share article"
+          style={{ ...tbBtn, color: T.textSecondary, background: "transparent" }}><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1v10M4 4l4-3 4 3"/><path d="M4 8H2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-2"/></svg></button>
+      </div>
+      )}
+      {hlHint && (
+        <div role="status" style={{ position: "fixed", bottom: "calc(90px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", zIndex: 900, background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, padding: "8px 16px", fontSize: 13, fontWeight: 600, color: T.text, pointerEvents: "none", animation: "fadeInScale .15s ease" }}>{hlHint}</div>
+      )}
 
       {/* ── Note panel ── */}
       {activeNote && (
