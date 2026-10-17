@@ -38,6 +38,7 @@ const PodcastPlayer      = lazy(() => import("./components/PodcastPlayer"));
 const Onboarding         = lazy(() => import("./components/Onboarding"));
 const MobileFeedDrawer   = lazy(() => import("./components/MobileFeedDrawer"));
 const MoreMenuSheet      = lazy(() => import("./components/MoreMenuSheet"));
+const WhatsNew           = lazy(() => import("./components/WhatsNew"));
 
 // Fallback shown while a page chunk is downloading
 function PageSpinner({ T }) {
@@ -80,6 +81,7 @@ function AppShell() {
   const [podcastQueue, setPodcastQueue]     = useState([]);
   const [feeds, setFeeds]             = useState([]);
   const [feedsLoaded, setFeedsLoaded] = useState(false);
+  const [whatsNewOpen, setWhatsNewOpen] = useState(() => { try { return !localStorage.getItem("fb-whats-new-2"); } catch { return false; } });
   const [onboardingDone, setOnboardingDone] = useState(() => { try { return !!localStorage.getItem("fb-onboarded"); } catch { return false; } });
   const [globalAdd, setGlobalAdd] = useState(false);
   const [forceOpenSearch, setForceOpenSearch] = useState(false);
@@ -460,6 +462,16 @@ function AppShell() {
             onAddSource={() => { handleGlobalAdd(); }}
             onMarkAllRead={handleMarkFeedAllRead}
             onUnsubscribeFeed={async (feedId) => { await deleteFeed(feedId); handleFeedDeleted(feedId); }}
+          />
+        </Suspense>
+      )}
+
+      {whatsNewOpen && user && feedsLoaded && (onboardingDone || feeds.length > 0) && (
+        <Suspense fallback={null}>
+          <WhatsNew
+            isMobile={isMobile}
+            onDismiss={() => { setWhatsNewOpen(false); try { localStorage.setItem("fb-whats-new-2", "1"); } catch {} }}
+            onChooseTheme={() => { setWhatsNewOpen(false); try { localStorage.setItem("fb-whats-new-2", "1"); } catch {} navigateTo("settings"); }}
           />
         </Suspense>
       )}
