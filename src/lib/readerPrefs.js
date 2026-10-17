@@ -4,7 +4,7 @@
 const DEFAULTS = {
   fontSize:  20,          // px  — range 14–24
   lineWidth: "medium",    // "narrow" | "medium" | "wide"
-  fontFamily:"serif",     // "sans" | "serif" — default to editorial serif
+  fontFamily:"serif",     // "sans" | "serif" | "mono" — default to editorial serif
   lineHeight: 1.7,        // 1.55 tight | 1.7 comfortable | 1.9 loose
   bionic:    false,       // bionic reading mode
 };
@@ -36,7 +36,9 @@ export function applyReaderPrefs(prefs) {
   root.style.setProperty("--reader-font-family",
     p.fontFamily === "sans"
       ? "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif"
-      : "ui-serif, Georgia, 'Times New Roman', serif"
+      : p.fontFamily === "mono"
+        ? "ui-monospace, 'SF Mono', Menlo, Consolas, monospace"
+        : "ui-serif, Georgia, 'Times New Roman', serif"
   );
 }
 

@@ -21,7 +21,7 @@ import { useBackButtonClose } from "../hooks/useBackButtonClose.js";
 import { highlightsToMarkdown, highlightsToObsidian, copyToClipboard, downloadFile } from "../lib/exportUtils.js";
 import { track } from "../lib/analytics";
 import { isProUser, PLANS } from "../lib/plan";
-import { SHAPE } from "../lib/tokens";
+import { SHAPE, PAPER, SEPIA, SLATE, NOCTURNE } from "../lib/tokens";
 
 function formatArticleDate(dateStr) {
   if (!dateStr) return null;
@@ -35,7 +35,7 @@ function formatArticleDate(dateStr) {
 }
 
 export default function ContentViewer({ item, onClose, onNext, onPrev, inline = false, currentIdx = -1, totalCount = 0, onExpand, isSaved = false, onSave, onUnsave }) {
-  const { T } = useTheme();
+  const { T, theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { isMobile } = useBreakpoint();
   useEffect(() => {
@@ -86,6 +86,12 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
   const [showReaderControls, setShowReaderControls] = useState(false);
   const aaAnchorRef = useRef(null);
   const [aaMenuPos, setAaMenuPos] = useState(null);
+  useEffect(() => {
+    if (!showReaderControls) return;
+    const h = e => { if (e.key === "Escape") setShowReaderControls(false); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [showReaderControls]);
   const [retryKey, setRetryKey] = useState(0);
   const [exportFeedback, setExportFeedback]   = useState(null);
   const [imgFeedback, setImgFeedback]         = useState(null);
@@ -586,7 +592,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                         style={{ flex: 1, minWidth: isMobile ? 0 : 110, accentColor: T.accent }} />
                       <span style={{ fontSize: 20, color: T.text }}>A</span>
                     </div>
-                    <PrefSeg T={T} label="Font" value={readerPrefs.fontFamily} onPick={v => updatePref("fontFamily", v)} options={[["sans","Sans"],["serif","Serif"]]} />
+                    <PrefSeg T={T} label="Typeface" value={readerPrefs.fontFamily} onPick={v => updatePref("fontFamily", v)} options={[["serif","Serif"],["sans","Sans"],["mono","Mono"]]} />
                     <PrefSeg T={T} label="Width" value={readerPrefs.lineWidth} onPick={v => updatePref("lineWidth", v)} options={[["narrow","Narrow"],["medium","Mid"],["wide","Wide"]]} />
                     <PrefSeg T={T} label="Spacing" value={readerPrefs.lineHeight} onPick={v => updatePref("lineHeight", v)} options={[[1.55,"Tight"],[1.7,"Cozy"],[1.9,"Loose"]]} />
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 44 }}>
@@ -595,12 +601,23 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                         <span style={{ position: "absolute", top: 3, left: readerPrefs.bionic ? 23 : 3, width: 24, height: 24, borderRadius: "50%", background: "#fff", transition: "left .18s", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
                       </button>
                     </div>
+                    <div role="group" aria-label="Theme" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                      <span style={{ fontSize: 15, color: T.textSecondary }}>Theme</span>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        {[["paper","Paper",PAPER],["sepia","Sepia",SEPIA],["slate","Slate",SLATE],["nocturne","Night",NOCTURNE]].map(([id, name, tk]) => (
+                          <button key={id} onClick={() => setTheme(id)} aria-label={`${name} theme`} aria-pressed={theme === id}
+                            style={{ width: 44, height: 44, padding: 0, border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <span style={{ width: 28, height: 28, borderRadius: "50%", background: tk.bg, border: `2px solid ${theme === id ? T.accent : T.border}`, boxShadow: theme === id ? `0 0 0 2px ${T.card}` : "none" }} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </>
                 );
                 if (isMobile) return (
                   <>
                     <div onClick={() => setShowReaderControls(false)} style={{ position: "fixed", inset: 0, zIndex: 699, background: "rgba(0,0,0,.4)" }} />
-                    <div role="dialog" aria-label="Text settings" style={{
+                    <div role="dialog" aria-modal="true" aria-label="Text settings" style={{
                       position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 700,
                       background: T.card, borderRadius: "24px 24px 0 0",
                       padding: "12px 24px calc(28px + env(safe-area-inset-bottom, 0px))",
@@ -613,14 +630,17 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
                   </>
                 );
                 return (
-                  <div style={{
+                  <>
+                  <div onClick={() => setShowReaderControls(false)} style={{ position: "fixed", inset: 0, zIndex: 299 }} />
+                  <div role="dialog" aria-modal="true" aria-label="Text settings" style={{
                     position: "fixed", right: aaMenuPos?.right ?? 0, top: aaMenuPos?.top ?? 0, zIndex: 300,
                     background: T.card, border: `1px solid ${T.border}`,
                     borderRadius: SHAPE.radiusMd, boxShadow: SHAPE.shadowFloat, backdropFilter: SHAPE.blur, WebkitBackdropFilter: SHAPE.blur,
-                    padding: "14px 16px", minWidth: 260,
+                    padding: "14px 16px", minWidth: 300,
                     display: "flex", flexDirection: "column", gap: 12,
                     animation: "fadeInScale .15s ease",
                   }}>{panel}</div>
+                  </>
                 );
               })()}
             </div>
@@ -1145,7 +1165,7 @@ function PrefSeg({ T, label, value, onPick, options }) {
       <div role="group" aria-label={label} style={{ display: "flex", padding: 3, borderRadius: 12, background: T.bg }}>
         {options.map(([v, l]) => (
           <button key={String(v)} onClick={() => onPick(v)} aria-pressed={value === v}
-            style={{ minWidth: 56, height: 36, padding: "0 10px", border: "none", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: value === v ? 600 : 500, background: value === v ? T.surface2 : "transparent", color: value === v ? T.accent : T.textSecondary }}>{l}</button>
+            style={{ minWidth: 56, height: 44, padding: "0 10px", border: "none", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: value === v ? 600 : 500, background: value === v ? T.surface2 : "transparent", color: value === v ? T.accent : T.textSecondary }}>{l}</button>
         ))}
       </div>
     </div>
