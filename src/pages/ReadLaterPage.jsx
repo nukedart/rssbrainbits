@@ -131,13 +131,13 @@ export default function ReadLaterPage() {
 
       {/* ── Header ──────────────────────────────────────────── */}
       <div style={{
-        padding: "14px 20px 12px", borderBottom: `1px solid ${T.border}`,
+        padding: "32px 24px 16px",
         flexShrink: 0, display: "flex", alignItems: "center", gap: 12,
       }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: T.text, letterSpacing: "-.01em" }}>Saved</div>
+          <div style={{ fontSize: 36, fontWeight: 600, color: T.text, letterSpacing: "-0.02em", lineHeight: 1.1 }}>Saved</div>
           {!loading && (
-            <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 1 }}>
+            <div style={{ fontSize: 15, color: T.textTertiary, marginTop: 4 }}>
               {items.length} article{items.length !== 1 ? "s" : ""}
             </div>
           )}
@@ -148,7 +148,7 @@ export default function ReadLaterPage() {
           aria-label="Save article URL"
           aria-expanded={showAdd}
           style={{
-            width: 32, height: 32, borderRadius: SHAPE.radiusSm, border: "none",
+            width: 44, height: 44, borderRadius: SHAPE.radiusSm, border: "none",
             background: showAdd ? T.accent : T.surface2,
             color: showAdd ? T.accentText : T.textSecondary,
             cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
@@ -162,7 +162,7 @@ export default function ReadLaterPage() {
 
       {/* ── Add URL bar ─────────────────────────────────────── */}
       {showAdd && (
-        <div style={{ padding: "12px 20px", borderBottom: `1px solid ${T.border}`, flexShrink: 0, background: T.surface }}>
+        <div style={{ padding: "12px 24px", borderBottom: `1px solid ${T.border}`, flexShrink: 0, background: T.surface }}>
           <div style={{ display: "flex", gap: 8 }}>
             <input
               autoFocus value={addUrl}
@@ -214,7 +214,7 @@ export default function ReadLaterPage() {
             {/* Source filter pills */}
             {sources.length > 1 && (
               <div style={{
-                display: "flex", gap: 6, padding: "10px 20px",
+                display: "flex", gap: 6, padding: "4px 24px",
                 overflowX: "auto", scrollbarWidth: "none",
                 borderBottom: `1px solid ${T.border}`,
               }}>
@@ -225,7 +225,7 @@ export default function ReadLaterPage() {
                       background: active ? T.accent : T.surface,
                       color: active ? T.accentText : T.textSecondary,
                       border: `1px solid ${active ? T.accent : T.border}`,
-                      borderRadius: SHAPE.radiusPill, padding: "5px 12px",
+                      borderRadius: SHAPE.radiusPill, padding: "5px 14px", minHeight: 44,
                       fontSize: 12, fontWeight: active ? 700 : 500,
                       cursor: "pointer", flexShrink: 0, fontFamily: "inherit",
                       whiteSpace: "nowrap", transition: "background .1s",
@@ -367,7 +367,7 @@ function Card({ item, T, onOpen, onRemove }) {
           aria-label="Remove"
           style={{
             position: "absolute", top: 8, right: 8,
-            width: 26, height: 26, borderRadius: "50%", border: "none",
+            width: 44, height: 44, borderRadius: "50%", border: "none",
             background: "rgba(0,0,0,.55)", color: "#fff",
             cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
             opacity: hov ? 1 : 0, transition: "opacity .15s",
@@ -437,12 +437,12 @@ function ListRow({ item, T, onOpen, onRemove }) {
       aria-label={item.title || item.url}
       style={{
         display: "flex", alignItems: "center", gap: 12,
-        padding: "10px 4px",
+        padding: "10px 0", minHeight: 44,
         borderBottom: `1px solid ${T.border}`,
         cursor: "pointer",
         background: hov ? T.surface : "transparent",
         borderRadius: SHAPE.radiusSm,
-        margin: "0 -4px",
+        margin: "0 20px",
         transition: "background .1s",
       }}
     >
@@ -485,7 +485,7 @@ function ListRow({ item, T, onOpen, onRemove }) {
         aria-label="Remove"
         style={{
           background: "none", border: "none", cursor: "pointer", flexShrink: 0,
-          color: T.textTertiary, padding: "6px 8px", borderRadius: SHAPE.radiusSm,
+          color: T.textTertiary, minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: SHAPE.radiusSm,
           opacity: hov ? 1 : 0, transition: "opacity .15s, color .1s",
         }}
         onMouseEnter={e => { e.currentTarget.style.color = T.danger; }}
