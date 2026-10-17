@@ -992,7 +992,7 @@ export default function ContentViewer({ item, onClose, onNext, onPrev, inline = 
       </div>{/* closes scrollContainerRef */}
 
       {/* ── Mobile reader bottom toolbar ── */}
-      {isMobile && !inline && !yt.isYouTube && content && (
+      {isMobile && !inline && !yt.isYouTube && content && !showReaderControls && (
         <div role="toolbar" aria-label="Reader actions" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-around", padding: "8px 8px calc(8px + env(safe-area-inset-bottom, 0px))", background: T.card, borderTop: `1px solid ${T.border}`, backdropFilter: SHAPE.blur, WebkitBackdropFilter: SHAPE.blur }}>
         <button onClick={onPrev} aria-label="Previous article" disabled={!onPrev || currentIdx <= 0}
           style={{ ...tbBtn, color: T.textSecondary, background: "transparent", opacity: !onPrev || currentIdx <= 0 ? .35 : 1 }}><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg></button>
