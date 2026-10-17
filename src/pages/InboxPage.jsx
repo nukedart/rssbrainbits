@@ -1172,7 +1172,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
                 </button>
               )}
               <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
-                <div style={{ fontSize: 36, fontWeight: 600, lineHeight: 1.1, color: T.text, letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <div style={{ fontSize: isMobile && activeSource !== "all" ? 28 : 36, fontWeight: 600, lineHeight: 1.1, color: T.text, letterSpacing: "-0.02em", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                   {activeFeedName}
                 </div>
                 {unreadCount > 0 && (
@@ -1484,12 +1484,13 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         {/* Filter tabs */}
         {filterMode !== "unread" && !(searchOpen && !isMobile) && (
           <div style={{ padding: isMobile ? "10px 16px 0" : "10px max(20px, calc((100% - 720px) / 2)) 0", flexShrink: 0, background: T.bg }}>
-            <div role="tablist" aria-label="Filter articles" style={{ display: "flex", padding: 3, gap: 2, borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
+            <div role="tablist" aria-label="Filter articles" style={{ display: "flex", padding: 3, gap: 2, borderRadius: 12, background: T.surface2 }}>
               {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }].map(({ label, val }) => (
                 <button key={label} role="tab" aria-selected={readFilter === val} aria-pressed={readFilter === val} onClick={() => setReadFilter(val)} style={{
                   flex: 1, minHeight: 44, border: "none", borderRadius: 9,
-                  background: readFilter === val ? T.accent : "transparent",
-                  color: readFilter === val ? T.bg : T.textTertiary,
+                  background: readFilter === val ? T.card : "transparent",
+                  boxShadow: readFilter === val ? "0 1px 2px rgba(0,0,0,.08)" : "none",
+                  color: readFilter === val ? T.text : T.textTertiary,
                   fontWeight: readFilter === val ? 600 : 500, fontSize: 14,
                   cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent",
                 }}>{label}</button>
