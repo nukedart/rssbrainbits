@@ -6,6 +6,7 @@ import { getAllHighlights, getHighlightReviews, upsertHighlightReview, updateHig
 import { Spinner } from "../components/UI";
 import { SHAPE } from "../lib/tokens";
 import { relatedHighlights } from "../lib/zettel";
+import { enqueue, flush } from "../lib/reviewQueue";
 
 const MIN_EASE = 1.3;
 const MAX_EASE = 3.0;
@@ -202,11 +203,29 @@ export default function ReviewPage({ onDueCount }) {
   const progress = total > 0 ? queueIdx / total : (done ? 1 : 0);
   const dailyQuota = getDailyQuota();
 
+  const [saveFailed, setSaveFailed] = useState(false);
+  function persistReview(hid, updated) {
+    upsertHighlightReview(user.id, hid, updated)
+      .then(() => { setSaveFailed(false); flush(upsertHighlightReview, user.id); })
+      .catch(err => {
+        console.error(err);
+        enqueue({ userId: user.id, highlightId: hid, payload: updated });
+        setSaveFailed(true);
+      });
+  }
+  useEffect(() => {
+    if (!user) return;
+    const run = () => flush(upsertHighlightReview, user.id).then(() => {});
+    run();
+    window.addEventListener("online", run);
+    return () => window.removeEventListener("online", run);
+  }, [user?.id]);
+
   function handleRating(knew) {
     if (!current || !user || exitAnimRef.current) return;
     const updated = rate(reviews[current.id], knew);
     setReviews(prev => ({ ...prev, [current.id]: { highlight_id: current.id, ...updated } }));
-    upsertHighlightReview(user.id, current.id, updated).catch(console.error);
+    persistReview(current.id, updated);
     incTodayCount(user.id);
     if (knew) setSessionGot(n => n + 1); else setSessionAgain(n => n + 1);
     setExitAnim(knew ? "left" : "right");
@@ -226,7 +245,7 @@ export default function ReviewPage({ onDueCount }) {
     const ease = reviews[current.id]?.ease ?? 2.5;
     const updated = { ease, interval: 3650, next_review: addDays(todayStr(), 3650) };
     setReviews(prev => ({ ...prev, [current.id]: { highlight_id: current.id, ...updated } }));
-    upsertHighlightReview(user.id, current.id, updated).catch(console.error);
+    persistReview(current.id, updated);
     incTodayCount(user.id);
     setSessionGot(n => n + 1);
     setExitAnim("left");
@@ -404,6 +423,12 @@ export default function ReviewPage({ onDueCount }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", background: T.bg, minHeight: 0, userSelect: "none", overflowY: "auto" }}>
       <div style={{ width: "100%", maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", flex: 1 }}>
+
+      {saveFailed && (
+        <div role="status" style={{ position: "fixed", bottom: 88, left: "50%", transform: "translateX(-50%)", zIndex: 50, background: T.surface, color: T.text, border: `1px solid ${T.border}`, borderRadius: 999, padding: "8px 16px", fontSize: 13 }}>
+          Couldn't save — will retry
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ padding: "56px 24px 0", display: "flex", alignItems: "baseline", justifyContent: "space-between", flexShrink: 0 }}>
