@@ -5,6 +5,19 @@ Format: `## [Unreleased]
 
 - [UX] Mobile reader matches refined mockups: chevron back button, "Source · Author · min" meta above a 30px serif title
 - [UX] Reader fits iPhone 17 Pro: clears the Dynamic Island (safe-area top), 26px text gutters, bottom safe-area padding
+- [Feature] Feedbox 2.0 — minimal redesign ("Things 3 + Procreate, with Reeder 5 ideas"): Paper (light) and Slate (dark) are the primary themes; the older six sit behind "More themes" in Settings
+- [UX] Reader: Aa sheet now has Serif/Sans/Mono, size, width, spacing, bionic and four theme dots; mobile bottom toolbar (prev, next, save, highlight, Aa, share); hero image sits under the title and is skipped when the article has none
+- [UX] Inbox: Reeder-style dense rows (source line with favicon, unread dot, 17px title, 2-line excerpt, 72px thumbnail only when there is an image), quieter date section headers, Unread/All segmented pill
+- [UX] Cards, Review, Saved, Settings, Admin, More sheet, Login and the Add/Folder/Smart-feed modals restyled to the large-title, rounded-card, hairline language; Cards sort/map/shuffle are quiet 44px icon buttons
+- [Fix] Read and saved state now loads from Supabase on mount (an early return skipped it), so articles read on another device no longer show as unread here
+- [Perf] Feed cache is now stale-while-revalidate: stale feeds paint instantly and the fresh copy swaps in when it lands, so the 30-minute refresh actually refreshes (it was a no-op for up to 4h)
+- [Perf] Inbox refresh batches merges (one sort/render per ~300ms instead of one per feed), keys rows by URL so rows no longer remount when the list shifts, and cancels superseded refreshes
+- [Perf] Reader: bionic mode no longer remounts every word, and read-aloud only re-renders the previous and current word
+- [Perf] Cards: deferred search, memoized card rows, first 50 cards with "Show more"
+- [Perf] Feed cache writes no longer parse every cached feed (indexed eviction), recover from a full localStorage, and the fetch timeout now covers the response body; background article pre-caching waits for idle and pauses when the tab is hidden or on data saver
+- [Fix] Auth: token refreshes keep the same user object (no redundant queries or feed re-merge), and a corrupted session token no longer leaves the app stuck on the loading screen
+- [Fix] A tab opened before a deploy reloads once instead of crashing when a lazy chunk 404s; lazy modals have their own error boundary; the service worker caches built assets for offline use; edge-swipe no longer re-renders the app every frame
+- [Fix] Review: failed rating saves are queued and retried (with a "Couldn't save — will retry" notice) instead of being lost silently
 
 
 ## [1.46.514] — 2026-10-13 11:35
