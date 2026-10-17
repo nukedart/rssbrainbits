@@ -1,6 +1,6 @@
 import { Component } from "react";
 import { useTheme } from "../hooks/useTheme";
-import { SHAPE, NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA } from "../lib/tokens";
+import { SHAPE, NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA, PAPER, GRAPHITE } from "../lib/tokens";
 
 export function Card({ children, style = {}, onClick }) {
   const { T } = useTheme();
@@ -120,6 +120,8 @@ export class ErrorBoundary extends Component {
       cream: { bg: CREAM.bg, text: CREAM.text, muted: CREAM.textSecondary, accent: CREAM.accent, accentText: CREAM.accentText },
       ink: { bg: INK.bg, text: INK.text, muted: INK.textSecondary, accent: INK.accent, accentText: INK.accentText },
       sepia: { bg: SEPIA.bg, text: SEPIA.text, muted: SEPIA.textSecondary, accent: SEPIA.accent, accentText: SEPIA.accentText },
+      paper: { bg: PAPER.bg, text: PAPER.text, muted: PAPER.textSecondary, accent: PAPER.accent, accentText: PAPER.accentText },
+      graphite: { bg: GRAPHITE.bg, text: GRAPHITE.text, muted: GRAPHITE.textSecondary, accent: GRAPHITE.accent, accentText: GRAPHITE.accentText },
     };
     const EB = themeMap[t] || themeMap.nocturne;
     return (

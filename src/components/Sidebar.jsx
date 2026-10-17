@@ -454,12 +454,12 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
       width:W, flexShrink:0,
       background:T.bg,
       display:"flex", flexDirection:"column",
-      height:"100dvh",
+      height: T.floating ? "100%" : "100dvh",
       userSelect:"none",
       overflow:"hidden",
       position:"relative",
       transition:"width .2s ease",
-      borderRight: `1px solid ${T.border}`,
+      ...(T.floating ? { borderRadius: 20 } : { borderRight: `1px solid ${T.border}` }),
     }}>
 
       {/* ── Header ── */}
@@ -602,8 +602,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
         {/* Light / Dark quick toggle — collapsed sidebar */}
         {collapsed && (
           <div style={{ display:"flex", gap:3, marginTop:6, justifyContent:"center" }}>
-            {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
-              const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
+            {[{Icon:Icons.Sun,id:"paper",label:"Light"},{Icon:Icons.Moon,id:"graphite",label:"Dark"}].map(({Icon,id,label}) => {
+              const isActive = id === "paper" ? ["light","paper","cream","sepia"].includes(theme) : ["distilled","nocturne","ink","graphite"].includes(theme);
               return (
                 <button key={label} onClick={() => setTheme(id)} title={label} aria-label={label} aria-pressed={isActive}
                   style={{ width:24, height:22, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, transition:"background .15s, color .15s, border-color .15s" }}
@@ -637,8 +637,8 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
           </button>
           {!collapsed && (
             <>
-              {[{Icon:Icons.Sun,id:"light",label:"Light"},{Icon:Icons.Moon,id:"distilled",label:"Dark"}].map(({Icon,id,label}) => {
-                const isActive = id === "light" ? ["light","cream","sepia"].includes(theme) : ["distilled","nocturne","ink"].includes(theme);
+              {[{Icon:Icons.Sun,id:"paper",label:"Light"},{Icon:Icons.Moon,id:"graphite",label:"Dark"}].map(({Icon,id,label}) => {
+                const isActive = id === "paper" ? ["light","paper","cream","sepia"].includes(theme) : ["distilled","nocturne","ink","graphite"].includes(theme);
                 return (
                   <button key={label} onClick={() => setTheme(id)} aria-label={label} aria-pressed={isActive} title={label}
                     style={{ width:24, height:24, borderRadius:6, border:`1px solid ${isActive?T.accent:"transparent"}`, background:isActive?T.accentSurface:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isActive?T.accent:T.textTertiary, flexShrink:0, transition:"background .15s, color .15s, border-color .15s" }}

@@ -13,6 +13,7 @@
     "deploy:dry": "bash deploy.sh --dry-run",
     "deploy:local": "bash deploy.sh --local",
     "sync": "bash sync.sh",
+    "status": "bash scripts/status.sh",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

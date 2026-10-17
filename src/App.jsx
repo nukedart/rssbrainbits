@@ -321,7 +321,8 @@ function AppShell() {
   return (
     <div style={{
       height: "100dvh", display: "flex", flexDirection: "row",
-      background: T.bg, color: T.text,
+      background: T.ground || T.bg, color: T.text,
+      ...(T.floating && !isMobile ? { padding: 12, gap: 12, boxSizing: "border-box" } : {}),
       fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif",
       WebkitFontSmoothing: "antialiased", overflow: "hidden",
     }}>
@@ -353,6 +354,7 @@ function AppShell() {
         onTouchCancel={() => { edgeTouchRef.current = null; setEdgeDx(0); }}
         style={{
           flex: 1, display: "flex", minWidth: 0, overflow: "hidden", flexDirection: "column",
+          ...(T.floating && !isMobile ? { background: T.bg, borderRadius: 20 } : {}),
           transform: edgeDx > 0 ? `translateX(${edgeDx * 0.25}px)` : "none",
           transition: edgeTouchRef.current ? "none" : "transform .22s ease",
         }}>

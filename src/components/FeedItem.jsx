@@ -443,7 +443,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
               {/* Source · time */}
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
                 {!isRead && (
-                  <span style={{ width: 8, height: 8, borderRadius: SHAPE.radiusPill, flexShrink: 0, background: T.accent }} />
+                  <span style={{ width: T.floating ? 11 : 8, height: T.floating ? 11 : 8, boxSizing: "border-box", borderRadius: SHAPE.radiusPill, flexShrink: 0, background: T.floating ? "transparent" : T.accent, border: T.floating ? `1.6px solid ${T.accent}` : "none" }} />
                 )}
                 {showFavicon && (
                   <img src={favicon} alt="" width={12} height={12} loading="lazy" decoding="async"
@@ -552,8 +552,9 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           {!hovered && (
             <span style={{
               position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-              width: 6, height: 6, borderRadius: "50%",
-              background: feedColor || T.accent,
+              width: T.floating ? 11 : 6, height: T.floating ? 11 : 6, borderRadius: "50%", boxSizing: "border-box",
+              background: T.floating ? "transparent" : (feedColor || T.accent),
+              border: T.floating ? `1.6px solid ${T.accent}` : "none",
               opacity: isRead ? 0 : 1,
               transition: "opacity .15s",
               pointerEvents: "none",

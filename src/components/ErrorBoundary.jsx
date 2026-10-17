@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA } from "../lib/tokens";
+import { NOCTURNE, DISTILLED, LIGHT, CREAM, INK, SEPIA, PAPER, GRAPHITE } from "../lib/tokens";
 
 const THEMES = {
   nocturne: NOCTURNE,
@@ -8,6 +8,8 @@ const THEMES = {
   cream: CREAM,
   ink: INK,
   sepia: SEPIA,
+  paper: PAPER,
+  graphite: GRAPHITE,
 };
 
 function getResolvedTheme() {

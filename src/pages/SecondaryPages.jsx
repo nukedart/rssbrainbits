@@ -634,7 +634,9 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
           <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 14 }}>Choose a theme. Light and Dark can also be toggled from the sidebar.</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {[
-              { id: "light",    label: "Light",    bg: "#ffffff",  accent: "#4f6f52" },
+              { id: "paper",    label: "Paper",    bg: "#ECEDEA",  accent: "#65D5C4" },
+            { id: "graphite", label: "Graphite", bg: "#1B1D1F",  accent: "#65D5C4" },
+            { id: "light",    label: "Light",    bg: "#ffffff",  accent: "#4f6f52" },
               { id: "cream",    label: "Cream",    bg: "#F5F1EA",  accent: "#7A8770" },
               { id: "sepia",    label: "Sepia",    bg: "#ECE0CB",  accent: "#9A6B3F" },
               { id: "ink",      label: "Ink",      bg: "#1B1814",  accent: "#8E9C82" },

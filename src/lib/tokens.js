@@ -176,6 +176,66 @@ export const SEPIA = {
   readerFont: "'Cormorant Garamond', Georgia, ui-serif, serif",
 };
 
+// ── Theme 7: Paper (minimal light — Things 3 / Procreate) ────
+// `bg` is the panel surface; `ground` is the calm backdrop the floating
+// panels sit on. `floating: true` switches the shell to the panel layout.
+export const PAPER = {
+  floating:      true,
+  ground:        "#ECEDEA",
+  bg:            "#ffffff",
+  surface:       "#F1F3F2",
+  surface2:      "#E7EAE9",
+  border:        "rgba(29,32,34,0.06)",
+  borderStrong:  "#D3D8D7",
+  text:          "#1D2022",
+  textSecondary: "#4A5054",
+  textTertiary:  "#8B9195",
+  accent:        "#65D5C4",
+  accentHover:   "#47AD9E",
+  accentSurface: "rgba(101,213,196,0.16)",
+  accentText:    "#1D2022",
+  card:          "#FAFBFA",
+  success:       "#1F8F80",
+  warning:       "#aa8439",
+  danger:        "#ba1a1a",
+  dangerText:    "#ffffff",
+  green:  { bg: "rgba(101,213,196,0.16)", text: "#1F8F80" },
+  amber:  { bg: "#fdf3e3", text: "#7a5e26" },
+  blue:   { bg: "#e8eef8", text: "#3a5a8a" },
+  purple: { bg: "#f0eef8", text: "#5b4fa0" },
+  overlay: "rgba(29,32,34,0.45)",
+  readerFont: "ui-serif, Georgia, 'Times New Roman', serif",
+};
+
+// ── Theme 8: Graphite (minimal dark — charcoal panels) ───────
+export const GRAPHITE = {
+  floating:      true,
+  ground:        "#0E0F10",
+  bg:            "#1B1D1F",
+  surface:       "#232628",
+  surface2:      "#2A2D30",
+  border:        "rgba(236,238,238,0.06)",
+  borderStrong:  "#3A3E41",
+  text:          "#ECEEEE",
+  textSecondary: "#C9CDCD",
+  textTertiary:  "#8A9093",
+  accent:        "#65D5C4",
+  accentHover:   "#8BE0D3",
+  accentSurface: "rgba(101,213,196,0.12)",
+  accentText:    "#0E0F10",
+  card:          "#232628",
+  success:       "#65D5C4",
+  warning:       "#c9a050",
+  danger:        "#ff8a80",
+  dangerText:    "#1B1D1F",
+  green:  { bg: "rgba(101,213,196,0.10)", text: "#65D5C4" },
+  amber:  { bg: "#2d2410", text: "#c9a050" },
+  blue:   { bg: "#1a2033", text: "#9badb5" },
+  purple: { bg: "#1f1a30", text: "#a89fd5" },
+  overlay: "rgba(0,0,0,0.65)",
+  readerFont: "ui-serif, Georgia, 'Times New Roman', serif",
+};
+
 // ── Shared shape & spacing scale (Reeder-style) ──────────────
 // Consumed by components for consistent radii/spacing across themes.
 export const SHAPE = {
