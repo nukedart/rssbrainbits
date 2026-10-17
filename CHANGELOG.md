@@ -18,6 +18,10 @@ Format: `## [Unreleased]
 - [Fix] Auth: token refreshes keep the same user object (no redundant queries or feed re-merge), and a corrupted session token no longer leaves the app stuck on the loading screen
 - [Fix] A tab opened before a deploy reloads once instead of crashing when a lazy chunk 404s; lazy modals have their own error boundary; the service worker caches built assets for offline use; edge-swipe no longer re-renders the app every frame
 - [Fix] Review: failed rating saves are queued and retried (with a "Couldn't save — will retry" notice) instead of being lost silently
+- [Perf] Launch: feeds, folders and smart feeds are snapshotted per user in localStorage, so the Inbox paints cached articles before Supabase answers and no longer flashes the empty/onboarding state
+- [UX] Desktop: with an article open (>=900px) the list is a fixed 400px column beside the reader (three panes with the rail); row meta stays on one line
+- [UX] Sheets and modals share one dialog hook: Tab is trapped, Escape closes only the top dialog, focus returns to what opened it
+- [Feature] One-time "What's new in Feedbox 2.0" card with a shortcut to the theme picker
 
 
 ## [1.46.514] — 2026-10-13 11:35
