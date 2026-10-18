@@ -105,12 +105,12 @@ const FeedRow = memo(function FeedRow({ feed, count, active, onNavigate, onMarkA
       >
         {/* Favicon — 28px rounded rect */}
         <span style={{
-          width:28, height:28, flexShrink:0, borderRadius:7,
+          width:28, height:28, flexShrink:0, borderRadius: 6,
           overflow:"hidden", background: T.surface2,
           display:"flex", alignItems:"center", justifyContent:"center",
         }}>
           {favicon
-            ? <img src={favicon} alt="" width={28} height={28} loading="lazy" decoding="async" style={{ borderRadius:7, display:"block" }} onError={e => { e.target.style.display="none"; }} />
+            ? <img src={favicon} alt="" width={28} height={28} loading="lazy" decoding="async" style={{ borderRadius: 6, display:"block" }} onError={e => { e.target.style.display="none"; }} />
             : <span style={{ fontSize:13, fontWeight:700, color:T.textTertiary }}>{name[0]?.toUpperCase()}</span>
           }
         </span>

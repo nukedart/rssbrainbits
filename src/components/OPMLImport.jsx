@@ -125,7 +125,7 @@ export default function OPMLImport({ onImport, onClose }) {
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div role="dialog" aria-modal="true" aria-label="Import OPML" style={{
-        background: T.card, borderRadius: 18,
+        background: T.card, borderRadius: 16,
         padding: "28px 28px 24px", width: "100%", maxWidth: "min(520px, 95vw)",
         boxShadow: "0 24px 80px rgba(0,0,0,.22)",
         border: `1px solid ${T.border}`,
@@ -219,7 +219,7 @@ export default function OPMLImport({ onImport, onClose }) {
             </div>
 
             {error && (
-              <div style={{ fontSize: 13, color: T.danger, padding: "9px 13px", background: `${T.danger}15`, borderRadius: 9, marginTop: 14 }}>
+              <div style={{ fontSize: 13, color: T.danger, padding: "9px 13px", background: `${T.danger}15`, borderRadius: 10, marginTop: 14 }}>
                 {error}
               </div>
             )}
@@ -249,7 +249,7 @@ export default function OPMLImport({ onImport, onClose }) {
             {/* Select all toggle */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexShrink: 0 }}>
               <button onClick={toggleAll} style={{
-                background: "none", border: `1px solid ${T.border}`, borderRadius: 7,
+                background: "none", border: `1px solid ${T.border}`, borderRadius: 6,
                 padding: "5px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600,
                 color: T.textSecondary, fontFamily: "inherit",
               }}>

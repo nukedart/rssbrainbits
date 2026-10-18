@@ -244,7 +244,7 @@ export default function MobileSearchOverlay({ onClose, onSelectResult, onLiveSea
             >
               {/* Favicon */}
               <div style={{
-                width: 28, height: 28, borderRadius: 7, overflow: "hidden",
+                width: 28, height: 28, borderRadius: 6, overflow: "hidden",
                 background: T.surface2, flexShrink: 0, marginTop: 1,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>

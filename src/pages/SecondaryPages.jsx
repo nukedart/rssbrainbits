@@ -6,12 +6,12 @@ import { getHistory, clearHistory,
          getSaved, unsaveItem, saveItem,
          getFeeds, getFolders, setFeedFolder, updateFeedSettings, deleteFeed,
          updateFolder, deleteFolder, addFeed,
-         getReadingStats } from "../lib/supabase";
+         getReadingStats, getAllHighlights } from "../lib/supabase";
 import { parseYouTubeUrl, isPodcastUrl } from "../lib/fetchers";
 import FeedItem from "../components/FeedItem";
 import ContentViewer from "../components/ContentViewer";
 import { Button, EmptyState, Spinner } from "../components/UI";
-import { feedsToOPML, downloadFile } from "../lib/exportUtils";
+import { feedsToOPML, downloadFile, allHighlightsToMarkdown } from "../lib/exportUtils";
 import { getCachedFeed, cacheAge, invalidateCachedFeed } from "../lib/feedCache";
 import { getPlan, getPlanName, PLANS } from "../lib/plan";
 import { track } from "../lib/analytics";
@@ -560,6 +560,7 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
   const { user, signOut } = useAuth();
   const planName = getPlanName(user);
   const opmlInputRef = useRef(null);
+  const [hlExport, setHlExport] = useState(null); // null | "loading" | "empty" | "error"
   const [opmlState, setOpmlState] = useState(null); // null | { status: "importing"|"done"|"error", added, failed, total }
   const [mutedKeywords, setMutedKeywords] = useState(() => {
     try { return JSON.parse(localStorage.getItem("fb-muted-keywords") || "[]"); } catch { return []; }
@@ -935,6 +936,42 @@ export function SettingsPage({ feeds: appFeeds = [], folders: appFolders = [], o
               {opmlState.status === "importing" && `Importing… ${opmlState.added + opmlState.failed}/${opmlState.total}`}
               {opmlState.status === "done" && `Done — ${opmlState.added} feed${opmlState.added !== 1 ? "s" : ""} added${opmlState.failed > 0 ? `, ${opmlState.failed} skipped (already subscribed or invalid)` : ""}.`}
               {opmlState.status === "error" && "No feeds found in this file. Make sure it's a valid OPML file."}
+            </div>
+          )}
+          <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.7, margin: "18px 0 14px" }}>
+            Export all your highlights, notes and tags as one Markdown document, grouped by article.
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <button disabled={hlExport === "loading"} onClick={async () => {
+              setHlExport("loading");
+              try {
+                const all = await getAllHighlights(user.id, 5000);
+                if (!all?.length) { setHlExport("empty"); return; }
+                downloadFile(allHighlightsToMarkdown(all, "markdown"), "feedbox-highlights.md");
+                setHlExport(null);
+              } catch { setHlExport("error"); }
+            }} style={{
+              background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "8px 16px", minHeight: 44,
+              cursor: hlExport === "loading" ? "default" : "pointer", opacity: hlExport === "loading" ? 0.6 : 1, fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "inherit",
+            }}>↓ Export highlights (Markdown)</button>
+            <button disabled={hlExport === "loading"} onClick={async () => {
+              setHlExport("loading");
+              try {
+                const all = await getAllHighlights(user.id, 5000);
+                if (!all?.length) { setHlExport("empty"); return; }
+                downloadFile(allHighlightsToMarkdown(all, "obsidian"), "feedbox-highlights-obsidian.md");
+                setHlExport(null);
+              } catch { setHlExport("error"); }
+            }} style={{
+              background: T.surface, border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, padding: "8px 16px", minHeight: 44,
+              cursor: hlExport === "loading" ? "default" : "pointer", opacity: hlExport === "loading" ? 0.6 : 1, fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "inherit",
+            }}>↓ Export for Obsidian</button>
+          </div>
+          {hlExport && (
+            <div style={{ marginTop: 12, fontSize: 13, color: hlExport === "error" ? T.danger : T.textSecondary, lineHeight: 1.5 }}>
+              {hlExport === "loading" && "Preparing export…"}
+              {hlExport === "empty" && "No highlights yet"}
+              {hlExport === "error" && "Couldn't export highlights. Please try again."}
             </div>
           )}
         </Card>

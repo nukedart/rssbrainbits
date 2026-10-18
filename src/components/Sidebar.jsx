@@ -92,7 +92,7 @@ function NavItem({ id, Icon, label, badge, badgeColor, active, onNavigate, colla
           {badge > 0 && (
             <span style={{
               fontSize:10, fontWeight:700, lineHeight:1,
-              minWidth:20, height:17, borderRadius:9,
+              minWidth:20, height:17, borderRadius:10,
               background: "transparent",
               color: badgeColor ? bc : T.textTertiary,
               display:"flex", alignItems:"center", justifyContent:"center",
@@ -466,7 +466,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
       <div style={{ padding: collapsed ? "14px 8px 8px" : "16px 12px 8px", display:"flex", alignItems:"center", justifyContent: collapsed?"center":"space-between", flexShrink:0 }}>
         {!collapsed ? (
           <div style={{ display:"flex", alignItems:"center", gap:8, flex:1 }}>
-            <div style={{ width:26, height:26, borderRadius:7, background:T.surface, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <div style={{ width:26, height:26, borderRadius:6, background:T.surface, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
               <FeedboxMark size={14} fill={BRAND.mint} />
             </div>
             <div style={{ fontSize:16, fontWeight:700, color:T.text, letterSpacing:"-.02em", lineHeight:1.2 }}>
@@ -475,7 +475,7 @@ export default function Sidebar({ active, onNavigate, unreadCount=0, dueCount=0,
           </div>
         ) : (
           <button onClick={isTablet ? undefined : onToggle} title={isTablet ? "Feedbox" : "Expand sidebar"} aria-label={isTablet ? "Feedbox" : "Expand sidebar"}
-            style={{ width:36, height:36, borderRadius:9, background:BRAND.ink, border:"none", padding:0, cursor: isTablet ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            style={{ width:36, height:36, borderRadius:10, background:BRAND.ink, border:"none", padding:0, cursor: isTablet ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <FeedboxMark size={19} fill={BRAND.mint} />
           </button>
         )}

@@ -298,7 +298,7 @@ function QueuePanel({ queue, onPlay, onRemove, onReorder, T, light }) {
           }}
         >
           {ep.image
-            ? <img src={ep.image} alt="" loading="lazy" decoding="async" style={{ width: 40, height: 40, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} />
+            ? <img src={ep.image} alt="" loading="lazy" decoding="async" style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} />
             : <ArtworkPlaceholder size={40} radius={7} T={T} />
           }
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -763,7 +763,7 @@ export default function PodcastPlayer({ item, queue = [], onNext, onPlayFromQueu
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <button onClick={cycleRate} style={{
                     background: rate !== 1 ? T.accentSurface : T.surface2,
-                    border: "none", borderRadius: 7, padding: "5px 10px",
+                    border: "none", borderRadius: 6, padding: "5px 10px",
                     cursor: "pointer", fontSize: 12, fontWeight: 700,
                     color: rate !== 1 ? T.accent : T.textSecondary,
                     fontFamily: "inherit", minWidth: 40, textAlign: "center",
@@ -771,7 +771,7 @@ export default function PodcastPlayer({ item, queue = [], onNext, onPlayFromQueu
                   <VolumeSlider volume={volume} onChange={changeVolume} T={T} light={false} />
                   <button onClick={toggleSleep} title={sleepTimer ? `Sleep in ${sleepTimer}m` : "Sleep timer (30 min)"} aria-label={sleepTimer ? `Sleep in ${sleepTimer} minutes` : "Sleep timer (30 min)"} style={{
                     background: sleepTimer ? T.accentSurface : T.surface2,
-                    border: "none", borderRadius: 7, padding: "5px 9px",
+                    border: "none", borderRadius: 6, padding: "5px 9px",
                     cursor: "pointer", fontSize: sleepTimer ? 12 : 15, fontWeight: 700,
                     color: sleepTimer ? T.accent : T.textTertiary,
                     fontFamily: "inherit", minWidth: 40, textAlign: "center",
@@ -802,7 +802,7 @@ export default function PodcastPlayer({ item, queue = [], onNext, onPlayFromQueu
         <div style={{ display: "flex", alignItems: "center", padding: "9px 10px 9px 12px", gap: 10 }}>
           {/* Artwork */}
           {item.image
-            ? <img src={item.image} alt="" loading="lazy" decoding="async" style={{ width: 40, height: 40, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />
+            ? <img src={item.image} alt="" loading="lazy" decoding="async" style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />
             : <ArtworkPlaceholder size={40} radius={7} T={T} />
           }
           {/* Title + source — click opens expanded */}

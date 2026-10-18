@@ -1062,7 +1062,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     setActiveSource("all");
   }, [filterMode]);
 
-  const feedPickerVisible = filterMode === "all" && activeSource === "all" && !pickerDismissed && !searchOpen && !searchResult;
+  const feedPickerVisible = filterMode === "all" && readFilter === "all" && activeSource === "all" && !pickerDismissed && !searchOpen && !searchResult;
 
   const pickerUnreadCounts = useMemo(() => {
     const counts = {};
@@ -1082,10 +1082,12 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
     : filterMode === "folder"     ? (folderDef?.name || "Folder")
     : filterMode === "youtube-all" ? "YouTube Channels"
     : feedPickerVisible ? "Feeds"
+    : activeSource === "all" && readFilter === "unread" ? "Unread"
+    : activeSource === "all" && readFilter === "saved" ? "Saved"
     : activeSource === "all" ? "All Items"
     : feeds.find((f) => f.id === activeSource)?.name || "Feed";
 
-  const showPickerBack = filterMode === "all" && (activeSource !== "all" || pickerDismissed);
+  const showPickerBack = filterMode === "all" && (activeSource !== "all" || (readFilter === "all" && pickerDismissed));
   const showFeedPicker = feedPickerVisible && feeds.length > 0;
 
   const unreadCount = useMemo(() => allItems.filter(i => !readUrls.has(i.url)).length, [allItems, readUrls]);
@@ -1217,7 +1219,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
       <div style={{ flex: !isMobile && openItem ? (threePane ? "0 0 400px" : `0 0 ${isTablet ? 280 : 420}px`) : 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: T.bg, transition: "flex .2s ease", ...(!isMobile && openItem ? { borderRight: `1px solid ${T.border}` } : {}) }}>
 
         {/* Header — large title + quiet icon actions */}
-        <div style={{ padding: isMobile ? "calc(env(safe-area-inset-top, 0px) + 40px) 12px 4px 24px" : (threePane ? "20px 16px 4px" : "32px max(20px, calc((100% - 720px) / 2)) 4px"), background: T.bg, display: "flex", alignItems: "flex-start", gap: isMobile ? 2 : 4, flexShrink: 0, flexWrap: threePane ? "wrap" : "nowrap", minWidth: 0 }}>
+        <div style={{ padding: isMobile ? "calc(env(safe-area-inset-top, 0px) + 40px) 12px 4px 16px" : (threePane ? "20px 16px 4px" : "32px max(20px, calc((100% - 720px) / 2)) 4px"), background: T.bg, display: "flex", alignItems: "flex-start", gap: isMobile ? 2 : 4, flexShrink: 0, flexWrap: threePane ? "wrap" : "nowrap", minWidth: 0 }}>
 
           {/* Title + unread badge + error badge — hidden when desktop search open */}
           {(!searchOpen || isMobile) && (
@@ -1382,7 +1384,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
               title="Search"
               aria-label="Search"
               style={{
-                background: "transparent", border: "none", borderRadius: 9,
+                background: "transparent", border: "none", borderRadius: 10,
                 width: 44, height: 44, cursor: "pointer", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: searchOpen ? T.accent : T.textTertiary, transition: "background .15s, color .15s",
@@ -1550,15 +1552,15 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
 
         {/* Filter tabs */}
         {filterMode !== "unread" && !(searchOpen && !isMobile) && (
-          <div style={{ padding: isMobile ? "10px 16px 0" : "10px max(20px, calc((100% - 720px) / 2)) 0", flexShrink: 0, background: T.bg }}>
-            <div role="tablist" aria-label="Filter articles" style={{ display: "flex", padding: 3, gap: 2, borderRadius: 12, background: T.surface2 }}>
-              {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }, { label: "Saved", val: "saved" }].map(({ label, val }) => (
+          <div style={{ padding: isMobile ? "6px 16px 0" : "6px max(20px, calc((100% - 720px) / 2)) 0", flexShrink: 0, background: T.bg }}>
+            <div role="tablist" aria-label="Filter articles" style={{ display: "flex", padding: 2, gap: 2, borderRadius: 12, background: T.surface2 }}>
+              {[{ label: "Unread", val: "unread" }, { label: "Saved", val: "saved" }, { label: "All", val: "all" }].map(({ label, val }) => (
                 <button key={label} role="tab" aria-selected={readFilter === val} aria-pressed={readFilter === val} onClick={() => setReadFilter(val)} style={{
-                  flex: 1, minHeight: 44, border: "none", borderRadius: 9,
+                  flex: 1, minHeight: 34, border: "none", borderRadius: 10,
                   background: readFilter === val ? T.card : "transparent",
                   boxShadow: readFilter === val ? "0 1px 2px rgba(0,0,0,.08)" : "none",
                   color: readFilter === val ? T.text : T.textTertiary,
-                  fontWeight: readFilter === val ? 600 : 500, fontSize: 14,
+                  fontWeight: readFilter === val ? 600 : 500, fontSize: 13,
                   cursor: "pointer", fontFamily: "inherit", WebkitTapHighlightColor: "transparent",
                 }}>{label}</button>
               ))}
@@ -2061,7 +2063,7 @@ function OnboardingCard({ onAddFeed, onQuickAdd, T }) {
       {/* CTA */}
       <button onClick={onAddFeed} style={{
         display: "block", width: "100%", padding: "13px 0", background: T.accent, color: T.accentText,
-        border: "none", borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: "pointer",
+        border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
         fontFamily: "inherit", letterSpacing: "-.01em", marginBottom: 24,
         boxShadow: "0 2px 12px rgba(47,111,237,.25)", transition: "opacity .15s",
       }}
@@ -2159,7 +2161,7 @@ function FeedPickerRow({ feed, count, onSelect, T, isMobile }) {
         transition: "background .12s",
       }}
     >
-      <div style={{ width: 24, height: 24, borderRadius: 7, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ width: 24, height: 24, borderRadius: 6, overflow: "hidden", background: T.surface2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         {favicon && <img src={favicon} alt="" width={20} height={20} loading="lazy" decoding="async" style={{ display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
       </div>
       <span style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 500, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -2208,7 +2210,7 @@ function SkeletonList({ count = 8, cardSize = "md", viewMode = "list" }) {
     <div>
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: cardSize === "lg" ? "14px 18px" : "10px 16px", animation: `fadeIn .25s ease both`, animationDelay: `${i * 40}ms` }}>
-          <div className="skeleton" style={{ width: cardSize === "lg" ? 96 : 60, height: cardSize === "lg" ? 64 : 44, borderRadius: 7, flexShrink: 0 }} />
+          <div className="skeleton" style={{ width: cardSize === "lg" ? 96 : 60, height: cardSize === "lg" ? 64 : 44, borderRadius: 6, flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="skeleton" style={{ height: 13, width: `${60 + (i % 3) * 15}%`, marginBottom: 7 }} />
             <div className="skeleton" style={{ height: 10, width: "35%" }} />

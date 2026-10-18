@@ -61,7 +61,7 @@ export default function PlanGate({ user, resource, currentCount, children }) {
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           background: loading ? T.surface2 : T.accent,
           color: loading ? T.textTertiary : T.accentText,
-          borderRadius: 9, padding: "8px 16px", fontSize: 13, fontWeight: 600,
+          borderRadius: 10, padding: "8px 16px", fontSize: 13, fontWeight: 600,
           border: "none", cursor: loading ? "wait" : "pointer",
           fontFamily: "inherit", marginTop: 2,
         }}>

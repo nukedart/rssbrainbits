@@ -34,7 +34,7 @@ function startOfDay(offsetDays = 0) {
 function Stat({ label, value, sub, color }) {
   const { T } = useTheme();
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)",
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,.05)",
       padding: "18px 20px", display: "flex", flexDirection: "column", gap: 4 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: T.textTertiary,
         textTransform: "uppercase", letterSpacing: ".07em" }}>{label}</div>
@@ -49,7 +49,7 @@ function BarChart({ data, label, color }) {
   const { T } = useTheme();
   const max = Math.max(1, ...data.map(d => d.count));
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", padding: "18px 20px" }}>
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,.05)", padding: "18px 20px" }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: T.textSecondary,
         textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 16 }}>{label}</div>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 72 }}>
@@ -73,7 +73,7 @@ function BarChart({ data, label, color }) {
 
 function EventTable({ events, T }) {
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
       <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`,
         fontSize: 12, fontWeight: 700, color: T.textSecondary,
         textTransform: "uppercase", letterSpacing: ".07em" }}>Top events (last 30 days)</div>
@@ -232,7 +232,7 @@ function AISettingsTab({ T }) {
       </div>
 
       {/* Model picker + API keys in one card */}
-      <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
+      <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
         <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700,
           color: T.textSecondary, textTransform: "uppercase", letterSpacing: ".07em" }}>
           AI Model &amp; API Keys
@@ -484,7 +484,7 @@ export default function AnalyticsPage() {
             <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} style={{
               background: tab === t.id ? T.card : "transparent",
               border: tab === t.id ? `1px solid ${T.border}` : "1px solid transparent",
-              borderRadius: 9, padding: "0 18px", minHeight: 44, fontSize: 14, fontWeight: 600,
+              borderRadius: 10, padding: "0 18px", minHeight: 44, fontSize: 14, fontWeight: 600,
               color: tab === t.id ? T.text : T.textSecondary, cursor: "pointer",
               fontFamily: "inherit", transition: "background .15s, color .15s, border-color .15s",
             }}>
@@ -545,7 +545,7 @@ export default function AnalyticsPage() {
 
             {/* Upgrade funnel */}
             <div style={{ background: T.card, border: `1px solid ${T.border}`,
-              borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
+              borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
               <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`,
                 fontSize: 12, fontWeight: 700, color: T.textSecondary,
                 textTransform: "uppercase", letterSpacing: ".07em" }}>Upgrade funnel (30d)</div>
@@ -566,7 +566,7 @@ export default function AnalyticsPage() {
 
             {/* Recent users — from edge function */}
             {data.userStats?.recentUsers?.length > 0 && (
-              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 18, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,.05)", overflow: "hidden" }}>
                 <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700, color: T.textSecondary, textTransform: "uppercase", letterSpacing: ".07em" }}>
                   Recent signups
                 </div>

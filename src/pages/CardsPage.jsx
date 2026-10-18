@@ -8,7 +8,7 @@ import { useBreakpoint } from "../hooks/useBreakpoint.js";
 import { Spinner } from "../components/UI";
 import TagsInput from "../components/TagsInput";
 import ThemeGraph from "../components/ThemeGraph";
-import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags, deleteHighlight, deleteHighlights, getHighlightReviews } from "../lib/supabase";
+import { getAllHighlights, addHighlight, updateHighlightNote, updateHighlightTags, deleteHighlight, deleteHighlights, getHighlightReviews, replaceTagAcrossHighlights, normalizeTag } from "../lib/supabase";
 import { HIGHLIGHT_COLORS } from "../components/SelectionToolbar";
 import { askQuestion } from "../lib/fetchers";
 import { SHAPE } from "../lib/tokens";
@@ -50,6 +50,9 @@ export default function CardsPage() {
   const { isMobile } = useBreakpoint();
   const [highlights, setHighlights] = useState([]);
   const [reviews, setReviews] = useState({});
+  const [manageOpen, setManageOpen] = useState(false);
+  const [manageTag, setManageTag] = useState(null);
+  const [manageInput, setManageInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -101,6 +104,18 @@ export default function CardsPage() {
     setHighlights(prev => prev.map(x => x.id === h.id ? { ...x, note } : x));
     setEditingId(null);
     try { await updateHighlightNote(h.id, note); } catch {}
+  }
+
+  async function applyTagChange(from, to, confirmMsg) {
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    try {
+      const changed = await replaceTagAcrossHighlights(user.id, from, to);
+      const map = new Map(changed.map(c => [c.id, c.tags]));
+      setHighlights(prev => prev.map(x => map.has(x.id) ? { ...x, tags: map.get(x.id) } : x));
+      if (selectedTheme === from) setSelectedTheme(to || null);
+      if (lastTheme === from) setLastTheme(to || null);
+    } catch { window.alert("Could not update tags. Please try again."); }
+    setManageTag(null); setManageInput("");
   }
 
   async function updateTags(h, tags) {
@@ -349,7 +364,7 @@ export default function CardsPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                 {av && (
                   <div style={{
-                    width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+                    width: 38, height: 38, borderRadius: 10, flexShrink: 0,
                     background: av.color + "18", border: `1.5px solid ${av.color}44`,
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: 16, fontWeight: 700, color: av.color,
@@ -1045,6 +1060,40 @@ export default function CardsPage() {
               />
             ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {allExistingTags.length > 0 && (
+                <button onClick={() => setManageOpen(true)} style={{ alignSelf: "flex-end", minHeight: 44, padding: "0 14px", background: "none", border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusSm, color: T.textSecondary, fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>Manage tags</button>
+              )}
+              {manageOpen && (
+                <div onClick={() => { setManageOpen(false); setManageTag(null); }} style={{ position: "fixed", inset: 0, zIndex: 900, background: "rgba(0,0,0,.45)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+                  <div onClick={e => e.stopPropagation()} role="dialog" aria-label="Manage tags" style={{ background: T.card, color: T.text, borderRadius: `${SHAPE.radiusCard}px ${SHAPE.radiusCard}px 0 0`, width: "100%", maxWidth: 480, maxHeight: "80vh", overflowY: "auto", padding: 16, boxShadow: SHAPE.shadowFloatUp }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                      <div style={{ fontSize: 16, fontWeight: 600 }}>Manage tags</div>
+                      <button onClick={() => { setManageOpen(false); setManageTag(null); }} style={{ minHeight: 44, minWidth: 44, background: "none", border: "none", color: T.textSecondary, fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>Done</button>
+                    </div>
+                    {allExistingTags.map(tag => (
+                      <div key={tag} style={{ borderTop: `1px solid ${T.border}` }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 44 }}>
+                          <span style={{ flex: 1, fontSize: 15 }}>#{tag}</span>
+                          <button onClick={() => { setManageTag(manageTag?.tag === tag ? null : { tag, mode: "rename" }); setManageInput(tag); }} style={{ minHeight: 44, minWidth: 44, background: "none", border: "none", color: T.accent, fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>Edit</button>
+                          <button onClick={() => applyTagChange(tag, null, `Delete tag #${tag} from all cards? The cards themselves are kept.`)} style={{ minHeight: 44, minWidth: 44, background: "none", border: "none", color: T.danger, fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>Delete</button>
+                        </div>
+                        {manageTag?.tag === tag && (
+                          <div style={{ display: "flex", gap: 8, paddingBottom: 10 }}>
+                            <input value={manageInput} onChange={e => setManageInput(e.target.value)} list="manage-tag-options" aria-label="New tag name" placeholder="New name, or existing tag to merge" style={{ flex: 1, minHeight: 44, padding: "0 12px", borderRadius: SHAPE.radiusSm, border: `1px solid ${T.border}`, background: T.bg, color: T.text, fontSize: 16, fontFamily: "inherit" }} />
+                            <button onClick={() => {
+                              const to = normalizeTag(manageInput);
+                              if (!to || to === tag) return;
+                              const merging = allExistingTags.includes(to);
+                              applyTagChange(tag, to, merging ? `Merge #${tag} into #${to}? All cards tagged #${tag} will use #${to}.` : null);
+                            }} style={{ minHeight: 44, padding: "0 14px", borderRadius: SHAPE.radiusSm, border: "none", background: T.accent, color: "#fff", fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>{allExistingTags.includes(normalizeTag(manageInput)) && normalizeTag(manageInput) !== tag ? "Merge" : "Rename"}</button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <datalist id="manage-tag-options">{allExistingTags.map(t => <option key={t} value={t} />)}</datalist>
+                  </div>
+                </div>
+              )}
               {(() => {
                 const DOTS = ["#65D5C4", "#F2C462", "#EE9A8E", "#A99BE0"];
                 const cardStyle = { background: T.card, borderRadius: SHAPE.radiusCard, boxShadow: "0 1px 2px rgba(0,0,0,.05)", border: "none" };
@@ -1194,7 +1243,7 @@ const CardItem = memo(function CardItem({ h, col, isEditing, editNote, allExisti
             aria-label="Delete card"
             style={{
               position: "absolute", top: 10, right: 10,
-              background: T.surface2, border: "none", borderRadius: 7,
+              background: T.surface2, border: "none", borderRadius: 6,
               width: 28, height: 28, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               color: T.textSecondary, transition: "background .12s, color .12s, opacity .12s",

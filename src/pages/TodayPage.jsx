@@ -351,7 +351,7 @@ function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, first, loadin
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
-        <div className="skeleton" style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0 }} />
+        <div className="skeleton" style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0 }} />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
           <div className="skeleton" style={{ height: 13, borderRadius: 4, width: "45%" }} />
           <div className="skeleton" style={{ height: 10, borderRadius: 4, width: "65%" }} />
@@ -374,7 +374,7 @@ function QueueRow({ T, icon, label, sub, cta, onCta, accent, warn, first, loadin
       }}
     >
       <div style={{
-        width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+        width: 34, height: 34, borderRadius: 10, flexShrink: 0,
         background: accent ? T.accentSurface : T.surface,
         color: accent ? T.accent : warn ? T.warning : T.textSecondary,
         display: "flex", alignItems: "center", justifyContent: "center",

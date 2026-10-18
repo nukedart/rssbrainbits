@@ -104,7 +104,7 @@ function ActionBtn({ icon, title, onClick, T, color }) {
   }
   return (
     <button onClick={handleClick} title={title} aria-label={title} style={{
-      background: "transparent", border: "none", borderRadius: 7,
+      background: "transparent", border: "none", borderRadius: 6,
       width: 28, height: 28,
       cursor: "pointer",
       color: color || T.textTertiary, fontFamily: "inherit",
@@ -268,7 +268,7 @@ function ListThumb({ item, cardSize, T }) {
 
   return (
     <div style={{
-      width: w, height: h, borderRadius: 9, flexShrink: 0, overflow: "hidden",
+      width: w, height: h, borderRadius: 10, flexShrink: 0, overflow: "hidden",
       background: showImg ? T.surface2 : ph.bg,
       display: "flex", alignItems: "center", justifyContent: "center",
       position: "relative",
@@ -497,7 +497,7 @@ function ListItem({ item, onClick, onSave, onReadLater, onMarkRead, onPlayPodcas
           {/* Thumbnail (md/lg) or type icon (sm) */}
           {cardSize !== "sm"
             ? <ListThumb item={item} cardSize={cardSize} T={T} />
-            : <div style={{ width:26, height:26, flexShrink:0, borderRadius:7, background:hovered?T.accentSurface:T.surface, display:"flex", alignItems:"center", justifyContent:"center", color:hovered?T.accent:T.textTertiary, transition:"background .15s, color .15s" }}><ContentTypeIcon item={item} /></div>
+            : <div style={{ width:26, height:26, flexShrink:0, borderRadius: 6, background:hovered?T.accentSurface:T.surface, display:"flex", alignItems:"center", justifyContent:"center", color:hovered?T.accent:T.textTertiary, transition:"background .15s, color .15s" }}><ContentTypeIcon item={item} /></div>
           }
 
           {/* Text block */}

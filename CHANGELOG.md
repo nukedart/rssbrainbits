@@ -3,6 +3,20 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+## [2.1.0] — 2026-10-18 08:58
+
+### Changes since v2.0.1
+
+---
+
+- [UX] Inbox: filter tabs reordered Unread, Saved, All and made more compact (34px tall, 13px text)
+- [UX] Inbox: Unread tab now lists unread articles directly (feeds list moved to All); Saved tab shows saved articles instead of the feeds list
+- [Feature] Cards: Manage tags sheet - rename, merge or delete a tag across all highlights
+- [Feature] Settings: Export all highlights as one Markdown or Obsidian file, grouped by article
+- [UX] Onboarding: new skippable "How Feedbox works" step (Highlight, Note + tag, Review)
+- [Polish] Off-scale border radii snapped to the 6/10/14/16 scale across 12 files; Inbox mobile title gutter aligned to 16px; onboarding radii and padding aligned
+- [Fix] Obsidian export: quote and escape YAML title, source and tags so odd characters cannot break frontmatter
+
 ## [2.0.1] — 2026-10-17 22:09
 
 ### Changes since v2.0.0

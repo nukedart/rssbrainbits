@@ -27,6 +27,9 @@ export function highlightsToMarkdown(highlights, articleTitle, articleUrl) {
 
 // Export highlights for one article formatted for Obsidian
 // Produces YAML frontmatter + blockquote highlights with [[wikilink]] tags
+const yamlStr = (v) => String(v ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+const yamlTag = (t) => (/^[\w-]+$/.test(t) ? t : `"${yamlStr(t)}"`);
+
 export function highlightsToObsidian(highlights, articleTitle, articleUrl) {
   if (!highlights?.length) return "";
 
@@ -35,10 +38,10 @@ export function highlightsToObsidian(highlights, articleTitle, articleUrl) {
 
   const lines = [];
   lines.push("---");
-  lines.push(`title: "${(articleTitle || "Article").replace(/"/g, '\\"')}"`);
-  lines.push(`source: "${articleUrl || ""}"`);
+  lines.push(`title: "${yamlStr(articleTitle || "Article")}"`);
+  lines.push(`source: "${yamlStr(articleUrl)}"`);
   lines.push(`date: ${date}`);
-  lines.push(`tags: [feedbox${allTags.map(t => `, ${t}`).join("")}]`);
+  lines.push(`tags: [feedbox${allTags.map(t => `, ${yamlTag(t)}`).join("")}]`);
   lines.push("---");
   lines.push("");
 
@@ -111,4 +114,34 @@ ${items}
     </outline>
   </body>
 </opml>`;
+}
+
+// Export ALL highlights grouped by article as one Markdown document.
+// format: "markdown" (default) or "obsidian"
+export function allHighlightsToMarkdown(highlights, format = "markdown") {
+  if (!highlights?.length) return "";
+  const groups = new Map();
+  for (const h of highlights) {
+    const key = h.article_url || h.article_title || "unknown";
+    if (!groups.has(key)) groups.set(key, { url: h.article_url || "", title: h.article_title || h.title || h.article_url || "Untitled", items: [] });
+    groups.get(key).items.push(h);
+  }
+  const date = new Date().toISOString().slice(0, 10);
+  const out = [`# Feedbox highlights`, "", `*${highlights.length} highlight${highlights.length !== 1 ? "s" : ""} from ${groups.size} article${groups.size !== 1 ? "s" : ""} · exported ${date}*`, ""];
+  for (const g of groups.values()) {
+    if (format === "obsidian") {
+      out.push(highlightsToObsidian(g.items, g.title, g.url), "---", "");
+    } else {
+      out.push(`## ${g.title}`);
+      if (g.url) out.push(g.url);
+      out.push("");
+      const tags = [...new Set(g.items.flatMap(h => h.tags || []))];
+      if (tags.length) { out.push(`**Tags:** ${tags.join(", ")}`, ""); }
+      for (const h of g.items) {
+        out.push(`> ${h.passage}`, "");
+        if (h.note) out.push(`**Note:** ${h.note}`, "");
+      }
+    }
+  }
+  return out.join("\n");
 }

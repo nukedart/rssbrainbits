@@ -1,6 +1,7 @@
 // ── Onboarding — shown when user has no feeds ─────────────────
 import { useState } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { SHAPE } from "../lib/tokens";
 
 const SUGGESTED_FEEDS = [
   { name: "Hacker News",       url: "https://hnrss.org/frontpage",                   cat: "Tech",    icon: "🟠" },
@@ -21,6 +22,12 @@ const SUGGESTED_FEEDS = [
   { name: "Brain Pickings",    url: "https://www.themarginalian.org/feed/",           cat: "Reads",   icon: "🧠" },
 ];
 
+const LOOP_STEPS = [
+  { icon: "🖍️", title: "Highlight",  body: "Select a passage while you read." },
+  { icon: "📝", title: "Note + tag", body: "Add a note in your own words and tag the idea." },
+  { icon: "🔁", title: "Review",     body: "Review resurfaces it with spaced repetition." },
+];
+
 const CATS = ["All", "Tech", "Science", "News", "Business", "Design", "Reads", "Sports"];
 
 export default function Onboarding({ onAdd, onDismiss }) {
@@ -28,6 +35,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
   const [selected, setSelected]   = useState(new Set());
   const [cat, setCat]             = useState("All");
   const [loading, setLoading]     = useState(false);
+  const [step, setStep]           = useState("intro");
 
   const visible = cat === "All" ? SUGGESTED_FEEDS : SUGGESTED_FEEDS.filter(f => f.cat === cat);
 
@@ -50,13 +58,63 @@ export default function Onboarding({ onAdd, onDismiss }) {
     onDismiss();
   }
 
+  if (step === "intro") {
+    return (
+      <div style={{
+        position: "fixed", inset: 0, background: T.overlay, zIndex: 900,
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+      }}>
+        <div role="dialog" aria-modal="true" aria-label="How Feedbox works" style={{
+          background: T.card, borderRadius: SHAPE.radiusCard, padding: 16,
+          width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto",
+          display: "flex", flexDirection: "column", gap: 16,
+          boxShadow: "0 24px 80px rgba(0,0,0,.22)", border: `1px solid ${T.border}`,
+          animation: "fadeInScale .2s ease",
+        }}>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: T.text, letterSpacing: "-.02em" }}>How Feedbox works</div>
+            <div style={{ fontSize: 14, color: T.textSecondary, marginTop: 6, lineHeight: 1.5 }}>
+              Read less, remember more.
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {LOOP_STEPS.map((s, i) => (
+              <div key={s.title} style={{
+                display: "flex", alignItems: "center", gap: 12, padding: 12,
+                border: `1px solid ${T.border}`, borderRadius: SHAPE.radiusMd, background: T.surface,
+              }}>
+                <span aria-hidden="true" style={{ fontSize: 20, flexShrink: 0 }}>{s.icon}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{i + 1}. {s.title}</div>
+                  <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 2, lineHeight: 1.4 }}>{s.body}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={onDismiss} style={{
+              flex: 1, minHeight: 44, borderRadius: SHAPE.radiusSm, border: `1px solid ${T.border}`,
+              background: "transparent", color: T.textSecondary, fontSize: 14,
+              cursor: "pointer", fontFamily: "inherit",
+            }}>Skip</button>
+            <button onClick={() => setStep("feeds")} style={{
+              flex: 2, minHeight: 44, borderRadius: SHAPE.radiusSm, border: "none",
+              background: T.accent, color: T.accentText, fontSize: 14, fontWeight: 700,
+              cursor: "pointer", fontFamily: "inherit",
+            }}>Continue</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       position: "fixed", inset: 0, background: T.overlay, zIndex: 900,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
     }}>
       <div role="dialog" aria-modal="true" aria-label="Welcome to Feedbox" style={{
-        background: T.card, borderRadius: 20, padding: "28px 24px 24px",
+        background: T.card, borderRadius: 16, padding: "28px 24px 24px",
         width: "100%", maxWidth: 520, maxHeight: "90vh",
         display: "flex", flexDirection: "column", gap: 0,
         boxShadow: "0 24px 80px rgba(0,0,0,.22)", border: `1px solid ${T.border}`,
@@ -91,7 +149,7 @@ export default function Onboarding({ onAdd, onDismiss }) {
               <button key={feed.url} onClick={() => toggle(feed.url)} aria-pressed={isSelected} style={{
                 display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
                 width: "100%", border: `1.5px solid ${isSelected ? T.accent : T.border}`,
-                borderRadius: 12,
+                borderRadius: 10,
                 background: isSelected ? T.accentSurface : T.surface,
                 cursor: "pointer", transition: "background .12s, border-color .12s",
                 fontFamily: "inherit", textAlign: "left",
@@ -119,12 +177,12 @@ export default function Onboarding({ onAdd, onDismiss }) {
         {/* Actions */}
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={onDismiss} style={{
-            flex: 1, padding: "11px 0", borderRadius: 12, border: `1px solid ${T.border}`,
+            flex: 1, padding: "11px 0", borderRadius: 10, border: `1px solid ${T.border}`,
             background: "transparent", color: T.textSecondary, fontSize: 14,
             cursor: "pointer", fontFamily: "inherit",
           }}>Skip for now</button>
           <button onClick={handleSubscribe} disabled={selected.size === 0 || loading} style={{
-            flex: 2, padding: "11px 0", borderRadius: 12, border: "none",
+            flex: 2, padding: "11px 0", borderRadius: 10, border: "none",
             background: selected.size > 0 ? T.accent : T.surface2,
             color: selected.size > 0 ? T.accentText : T.textTertiary,
             fontSize: 14, fontWeight: 700, cursor: selected.size > 0 ? "pointer" : "default",

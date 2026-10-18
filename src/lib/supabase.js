@@ -153,6 +153,28 @@ export async function updateHighlightTags(highlightId, tags) {
   if (error) throw error;
 }
 
+export function normalizeTag(tag) {
+  return String(tag || "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+}
+
+// Rewrite tag `from` across all of a user's highlights: to=normalized tag (rename/merge) or null (delete).
+// Tags are deduplicated. Returns [{ id, tags }] for every changed highlight.
+export async function replaceTagAcrossHighlights(userId, from, to = null) {
+  const src = normalizeTag(from);
+  const dst = to == null ? null : normalizeTag(to);
+  if (!src || (to != null && !dst)) throw new Error("Invalid tag");
+  const { data, error } = await supabase
+    .from("highlights").select("id, tags").eq("user_id", userId).contains("tags", [src]);
+  if (error) throw error;
+  const changed = [];
+  for (const h of data || []) {
+    const next = [...new Set((h.tags || []).flatMap(t => t === src ? (dst ? [dst] : []) : [t]))];
+    await updateHighlightTags(h.id, next);
+    changed.push({ id: h.id, tags: next });
+  }
+  return changed;
+}
+
 export async function deleteHighlight(highlightId) {
   const { error } = await supabase.from("highlights").delete().eq("id", highlightId);
   if (error) throw error;
