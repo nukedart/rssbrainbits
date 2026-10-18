@@ -1552,7 +1552,7 @@ export default function InboxPage({ filterMode = "all", smartFeedDef = null, fee
         {filterMode !== "unread" && !(searchOpen && !isMobile) && (
           <div style={{ padding: isMobile ? "10px 16px 0" : "10px max(20px, calc((100% - 720px) / 2)) 0", flexShrink: 0, background: T.bg }}>
             <div role="tablist" aria-label="Filter articles" style={{ display: "flex", padding: 3, gap: 2, borderRadius: 12, background: T.surface2 }}>
-              {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }].map(({ label, val }) => (
+              {[{ label: "Unread", val: "unread" }, { label: "All", val: "all" }, { label: "Saved", val: "saved" }].map(({ label, val }) => (
                 <button key={label} role="tab" aria-selected={readFilter === val} aria-pressed={readFilter === val} onClick={() => setReadFilter(val)} style={{
                   flex: 1, minHeight: 44, border: "none", borderRadius: 9,
                   background: readFilter === val ? T.card : "transparent",

@@ -3,6 +3,15 @@
 All notable changes documented here.
 Format: `## [Unreleased]
 
+## [2.0.1] — 2026-10-17 22:09
+
+### Changes since v2.0.0
+
+---
+
+- [UX] Inbox: added a Saved tab next to Unread and All in the filter bar
+- [UX] Bottom nav: larger icons (28px), bigger active pill and count badges for easier tapping
+
 ## [2.0.0] — 2026-10-17 08:09
 
 ### Changes since v1.46.508

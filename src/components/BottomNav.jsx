@@ -61,13 +61,13 @@ function CountBadge({ count, T }) {
   return (
     <span style={{
       position: "absolute", top: -5, right: label.length > 2 ? -2 : 1,
-      minWidth: 15, height: 15,
+      minWidth: 17, height: 17,
       borderRadius: 99,
       background: T.accent,
       color: T.accentText,
       fontSize: 9,
       fontWeight: 700,
-      lineHeight: "15px",
+      lineHeight: "17px",
       textAlign: "center",
       padding: "0 3px",
       pointerEvents: "none",
@@ -164,8 +164,8 @@ export default function BottomNav({
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 7px", transition: "background .14s" }}>
-                <Icon size={22} sw={isActive ? 1.7 : 1.3} />
+              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "8px 12px", transition: "background .14s" }}>
+                <Icon size={28} sw={isActive ? 1.7 : 1.4} />
               </span>
             </button>
           );
@@ -184,8 +184,8 @@ export default function BottomNav({
               onTouchEnd={e => { e.currentTarget.style.opacity = "1"; }}
               onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 7px", transition: "background .14s" }}>
-                <Icon size={22} sw={isActive ? 1.7 : 1.3} />
+              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "8px 12px", transition: "background .14s" }}>
+                <Icon size={28} sw={isActive ? 1.7 : 1.4} />
               </span>
             </button>
           );
@@ -204,8 +204,8 @@ export default function BottomNav({
             onTouchCancel={e => { e.currentTarget.style.opacity = "1"; }}
           >
             <span style={{ position: "relative", display: "flex" }}>
-              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "6px 7px", transition: "background .14s" }}>
-                <Icon size={22} sw={isActive ? 1.7 : 1.3} filled={isActive} />
+              <span style={{ display: "flex", background: isActive ? T.accentSurface : "transparent", borderRadius: 10, padding: "8px 12px", transition: "background .14s" }}>
+                <Icon size={28} sw={isActive ? 1.7 : 1.4} filled={isActive} />
               </span>
               {id === "inbox" && unreadCount > 0 && !isActive && (
                 <CountBadge count={unreadCount} T={T} />
