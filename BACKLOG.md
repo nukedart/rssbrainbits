@@ -5,6 +5,22 @@ Mark items `[x]` when shipped.
 
 ---
 
+## 🎯 Next up — Saved redesign: "from a pile to a reading queue" (added 2026-10-28)
+
+Design approved by Pedro. Mockups (static `.dc.html` source, desktop + two mobile screens): `docs/mockups/saved-redesign/` — `Main.dc.html` (desktop, interactive time-budget filter), `Mobile.dc.html`, `Triage.dc.html`. Rebuilds `src/pages/ReadLaterPage.jsx` (currently buckets by Today / This week / Older with source pills). Reuse existing `tokens.js` colors (the mockups already use the Feedbox dark theme: `#121416` bg, `#accfae` accent, Noto Serif headings). Keep Light/Distilled themes working — no hardcoded hex.
+
+Split into sessions, in order (each is one `/iterate`):
+
+- [ ] **1. Time-budget chips + reading-time on rows** — "How long have you got?" chips (Any / 5 / 15 / 30 min) filter the queue by estimated reading time; header summary line ("8 articles · about 89 min to clear"); empty state "Nothing fits in N minutes". Reuse the existing reading-time estimate (FeedItem.jsx / ContentViewer.jsx). No schema change.
+- [ ] **2. "Next up" hero + queue ordering** — oldest non-stale item promoted to a hero card with "Start reading"; remaining items listed below as "Queue", oldest first; highlight-count label on rows that have highlights (join existing `highlights` data).
+- [ ] **3. Desktop two-pane layout** — queue pane + article preview pane (title, summary, highlights as quotes with tags, Read now / Done / Let go). Mobile keeps the single-column list from `Mobile.dc.html` (bottom nav already exists; ≥44px tap targets).
+- [ ] **4. "Going stale" + Clear-the-stale triage flow** — items saved >3 weeks ago grouped into a stale card with count; "Clear them" opens a one-at-a-time triage screen (progress bar "1 of 3", Read it now / Keep 30 more days / Let it go). "Keep" needs a snoozed-until timestamp — add `stale_snoozed_until TIMESTAMPTZ` to `saved` (migration in `supabase-schema.sql` + RLS already covers updates). "Let it go" = delete from `saved`, with undo toast. Never-opened state ("Never opened · no highlights") requires tracking opened — check `history` table before adding a column.
+- [ ] **5. Polish + tests** — unit tests for the bucketing/time-budget/stale logic (extract to `src/lib/savedQueue.js` so it's testable); a11y pass (aria-pressed on chips, real buttons); CHANGELOG + AGENT_LOG.
+
+Open questions to settle in session 4: stale threshold configurable or fixed at 21 days; whether Free-tier read-later cap (25) interacts with "Let it go" (it should free a slot).
+
+---
+
 ## 🔍 Audit findings — 2026-07-27 (next orchestration)
 
 Full-app audit (UX, perf, backend/security, competitive gap, test coverage). All findings below were verified against the actual code, not taken on a worker's word.
